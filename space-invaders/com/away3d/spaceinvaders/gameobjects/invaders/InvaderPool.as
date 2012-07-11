@@ -3,19 +3,16 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	import away3d.materials.MaterialBase;
 
-	import aze.motion.easing.Quart;
-	import aze.motion.eaze;
-
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
-	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	import flash.events.Event;
 
 	public class InvaderPool extends GameObjectPool
 	{
 		private var _invaderFactory:InvaderFactory;
+		private var _currentTypeIndex:uint;
 
 		public var targetNumInvaders:uint = 0;
 		public var creationProbability:Number = 0;
@@ -31,32 +28,51 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			// Need to create invader?
 			if( numChildren < targetNumInvaders ) {
 				if( Math.random() < creationProbability ) {
-					addItem();
+					var rand:Number = Math.random();
+					var randIndex:uint;
+					if( rand > 0.95 ) {
+						randIndex = InvaderFactory.MOTHERSHIP;
+					}
+					else if( rand > 0.75 ) {
+						randIndex = InvaderFactory.HEAVY_INVADER;
+					}
+					else if( rand > 0.5 ) {
+						randIndex = InvaderFactory.MEDIUM_INVADER;
+					}
+					else {
+						randIndex = InvaderFactory.LIGHT_INVADER;
+					}
+					var invader:Invader = addItemOfType( randIndex ) as Invader;
+					invader.fireTimerRate = invaderFireRate;
+					dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );
 				}
 			}
 
 			super.update();
 		}
 
-		override public function addItem():GameObject {
-			var gameObject:GameObject = super.addItem();
-			// Set velocity.
-			gameObject.velocity.z = -50;
-			// Set fire rate.
-			Invader( gameObject ).fireTimerRate = invaderFireRate;
-			// Randomize XY.
-			gameObject.x = MathUtils.rand( -1000, 1000 );
-			gameObject.y = MathUtils.rand( -1000, 1000 );
-			// Ease Z towards scene range.
-			gameObject.z = 100000;
-			eaze( gameObject ).to( 0.5, { z:MathUtils.rand( 4000, 5000 ) } ).easing( Quart.easeOut );
-			return gameObject;
+		private function addItemOfType( typeIndex:uint ):GameObject {
+			// Adds an unused item or creates a new item if none is found.
+			var invader:Invader;
+			var len:uint = _gameObjects.length;
+			for( var i:uint; i < len; i++ ) {
+				invader = _gameObjects[ i ] as Invader;
+				if( !invader.enabled && invader.typeIndex == _currentTypeIndex ) {
+					invader.reset();
+					return invader;
+				}
+			}
+			_currentTypeIndex = typeIndex;
+			invader = createItem() as Invader;
+			invader.reset();
+			_gameObjects.push( invader );
+			return invader;
 		}
 
 		override protected function createItem():GameObject {
 
 			// Get an invader clone from the factory.
-			var invader:Invader = _invaderFactory.createInvader();
+			var invader:Invader = _invaderFactory.createInvaderOfType( _currentTypeIndex );
 
 			// Enable mouse listeners for shooting at the invader.
 			invader.meshFrame0.mouseEnabled = true;

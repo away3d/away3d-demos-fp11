@@ -3,6 +3,9 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	import away3d.entities.Mesh;
 
+	import aze.motion.easing.Quart;
+	import aze.motion.eaze;
+
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
@@ -43,7 +46,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		public function set fireTimerRate( value:Number ):void {
-			_fireTimer.delay = MathUtils.rand( 5000, value );
+			_fireTimer.delay = MathUtils.rand( value, value * 1.5 );
 		}
 
 		override public function set enabled( value:Boolean ):void {
@@ -75,6 +78,22 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		override public function impact( hitter:GameObject ):void {
 			enabled = false;
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.DEAD, this, hitter ) );
+			super.impact( hitter );
+		}
+
+
+		override public function reset():void {
+
+			super.reset();
+
+			// Set velocity.
+			velocity.z = -50;
+			// Randomize XY.
+			x = MathUtils.rand( -1000, 1000 );
+			y = MathUtils.rand( -1000, 1000 );
+			// Ease Z towards scene range.
+			z = 100000;
+			eaze( this ).to( 0.5, { z:MathUtils.rand( 4000, 5000 ) } ).easing( Quart.easeOut );
 		}
 
 		public function get cellPositions():Vector.<Point> {
@@ -87,6 +106,10 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		public function get meshFrame0():Mesh {
 			return _meshFrame0;
+		}
+
+		public function get typeIndex():uint {
+			return _invaderVO.typeIndex;
 		}
 	}
 }

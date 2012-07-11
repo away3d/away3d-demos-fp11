@@ -1,9 +1,11 @@
 package com.away3d.spaceinvaders.views
 {
 
+	import away3d.core.base.Geometry;
 	import away3d.materials.methods.EnvMapAmbientMethod;
 	import away3d.materials.methods.EnvMapMethod;
 	import away3d.primitives.SkyBox;
+	import away3d.primitives.SphereGeometry;
 	import away3d.textures.BitmapCubeTexture;
 	import away3d.textures.CubeTextureBase;
 
@@ -30,6 +32,8 @@ package com.away3d.spaceinvaders.views
 	import com.away3d.spaceinvaders.gameobjects.player.Player;
 	import com.away3d.spaceinvaders.gameobjects.projectiles.Projectile;
 	import com.away3d.spaceinvaders.gameobjects.projectiles.ProjectilePool;
+	import com.away3d.spaceinvaders.sound.SoundManager;
+	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	import flash.display.BitmapData;
@@ -59,7 +63,8 @@ package com.away3d.spaceinvaders.views
 		private var _ui:UIView;
 
 		private var _invaderPool:InvaderPool;
-		private var _projectilePool:ProjectilePool;
+		private var _playerProjectilePool:ProjectilePool;
+		private var _invaderProjectilePool:ProjectilePool;
 		private var _cellPool:InvaderCellPool;
 		private var _gameObjectPools:Vector.<GameObjectPool>;
 		private var _totalKills:uint;
@@ -108,20 +113,14 @@ package com.away3d.spaceinvaders.views
 					bmd, bmd, bmd, bmd, bmd, bmd
 			);
 			var skyBox:SkyBox = new SkyBox( _cubeMap );
-			_view.scene.addChild( skyBox );
+//			_view.scene.addChild( skyBox );
 
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
 			createInvaders();
-			createProjectiles();
 
 			// Player.
-			_player = new Player( _view.camera );
-			_player.position = new Vector3D( 0, 0, -1000 );
-			_player.enabled = true;
-			_cameraLight.position = new Vector3D( 0, 0, -2000 );
-			_playerVector = new Vector.<GameObject>();
-			_playerVector.push( _player );
+			createPlayer();
 
 			// Back fire plane.
 			// TODO: can use view?
@@ -135,32 +134,67 @@ package com.away3d.spaceinvaders.views
 			loadLevel();
 		}
 
+		private function onPlayerHit( event:GameObjectEvent ):void {
+			SoundManager.playSound( Sounds.EXPLOSION_SOFT );
+		}
+
 		private function onBackFirePlaneMouseDown( event:MouseEvent3D ):void {
 			firePlayer();
 		}
 
-		private function createProjectiles():void {
+		private function createPlayer():void {
 
-			// Reusable mesh.
-			var projectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
-			var projectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), projectileMaterial );
+			// Reusable projectile mesh.
+			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+			var playerProjectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial );
 
 			// Crete pool.
-			_projectilePool = new ProjectilePool( projectileMesh );
-			_gameObjectPools.push( _projectilePool );
-			_view.scene.addChild( _projectilePool );
+			_playerProjectilePool = new ProjectilePool( playerProjectileMesh );
+			_gameObjectPools.push( _playerProjectilePool );
+			_view.scene.addChild( _playerProjectilePool );
+
+			// Player.
+			_player = new Player( _view.camera );
+			_player.position = new Vector3D( 0, 0, -1000 );
+			_player.enabled = true;
+			_player.addEventListener( GameObjectEvent.HIT, onPlayerHit );
+			_cameraLight.position = new Vector3D( 0, 0, -2000 );
+			_playerVector = new Vector.<GameObject>();
+			_playerVector.push( _player );
 		}
 
 		private function createInvaders():void {
 
 			// Same material for all invaders.
 			var invaderMaterial:ColorMaterial = new ColorMaterial( 0x666666 );
-			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
+//			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
+
+			// Reusable projectile mesh.
+			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
+			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, new ColorMaterial( 0xFF0000 ) );
+			// Slant vertices a little.
+			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
+			var index:uint;
+			var pz:Number;
+			for( var i:uint; i < vertices.length / 3; i++ ) {
+				index = i * 3;
+				pz = vertices[ index + 2 ];
+				if( pz > -75 && pz < 75 ) {
+					vertices[ index + 0 ] += pz > 0 ? 25 : pz == 0 ? 0 : -25;
+				}
+			}
+			invaderProjectileGeometry.subGeometries[ 0 ].updateVertexData( vertices );
+
+			// Crete pool.
+			_invaderProjectilePool = new ProjectilePool( invaderProjectileMesh );
+			_gameObjectPools.push( _invaderProjectilePool );
+			_view.scene.addChild( _invaderProjectilePool );
 
 			// Create invaders.
 			_invaderPool = new InvaderPool( invaderMaterial );
 			_invaderPool.addEventListener( MouseEvent3D.MOUSE_DOWN, onInvaderMouseDown );
+			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
 			_invaderPool.addEventListener( GameObjectEvent.DEAD, onInvaderDead );
 			_invaderPool.addEventListener( GameObjectEvent.FIRE, onInvaderFire );
 			_gameObjectPools.push( _invaderPool );
@@ -173,14 +207,22 @@ package com.away3d.spaceinvaders.views
 			_view.scene.addChild( _cellPool );
 		}
 
+		private function onInvaderCreated( event:GameObjectEvent ):void {
+			var invader:Invader = event.objectA as Invader;
+			if( invader.typeIndex == InvaderFactory.MOTHERSHIP ) {
+				SoundManager.playSound( Sounds.MOTHERSHIP );
+			}
+		}
+
 		private function onInvaderFire( event:GameObjectEvent ):void {
-			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector );
+			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
 		}
 
 		private function onInvaderMouseDown( event:MouseEvent3D ):void {
 			var position:Vector3D = event.scenePosition;
 			position.z = _player.z;
-			fireProjectile( position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects );
+			SoundManager.playSound( Sounds.PLAYER_FIRE );
+			fireProjectile( position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
 		}
 
 		private function loadLevel():void {
@@ -191,6 +233,8 @@ package com.away3d.spaceinvaders.views
 		}
 
 		private function onInvaderDead( event:GameObjectEvent ):void {
+
+			// Check level update and update UI.
 			_currentLevelKills++;
 			_totalKills++;
 			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.levelKillCount[ _currentLevel ] );
@@ -201,11 +245,21 @@ package com.away3d.spaceinvaders.views
 				loadLevel();
 				_ui.updateLevel( _currentLevel );
 			}
+
+			// Play sounds.
+			var invader:Invader = event.objectA as Invader;
+			if( invader.typeIndex == InvaderFactory.MOTHERSHIP ) {
+				SoundManager.playSound( Sounds.EXPLOSION_STRONG );
+			}
+			else {
+				SoundManager.playSound( Sounds.INVADER_DEATH );
+			}
+
+			// Show invader destruction.
 			createInvaderDeathAnimation( event.objectA as Invader, event.objectB as Projectile );
 		}
 
 		private function createInvaderDeathAnimation( invader:Invader, hitter:Projectile ):void {
-
 			var intensity:Number = GameSettings.deathExplosionIntensity;
 			var positions:Vector.<Point> = invader.cellPositions;
 			var len:uint = positions.length;
@@ -220,7 +274,7 @@ package com.away3d.spaceinvaders.views
 				var dx:Number = cell.x - hitter.x;
 				var dy:Number = cell.y - hitter.y;
 				var distanceSq:Number = dx * dx + dy * dy;
-				var rotSpeed:Number = 0;// intensity * 500 / distanceSq; // TODO: produces ugly collapse
+				var rotSpeed:Number = intensity * 5000 / distanceSq;
 				cell.rotationalVelocity.x = MathUtils.rand( -rotSpeed, rotSpeed );
 				cell.rotationalVelocity.y = MathUtils.rand( -rotSpeed, rotSpeed );
 				cell.rotationalVelocity.z = MathUtils.rand( -rotSpeed, rotSpeed );
@@ -256,11 +310,16 @@ package com.away3d.spaceinvaders.views
 		}
 
 		public function firePlayer():void {
-			fireProjectile( _player.position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects );
+			SoundManager.playSound( Sounds.PLAYER_FIRE );
+			var position:Vector3D = _player.position.clone();
+			var sc:Number = 5;
+			position.x += sc * ( stage.mouseX - stage.stageWidth / 2 );
+			position.y -= sc * ( stage.mouseY - stage.stageHeight / 2 );
+			fireProjectile( position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
 		}
 
-		public function fireProjectile( position:Vector3D, velocity:Vector3D, targets:Vector.<GameObject> ):void {
-	   		var projectile:Projectile = _projectilePool.addItem() as Projectile;
+		public function fireProjectile( position:Vector3D, velocity:Vector3D, targets:Vector.<GameObject>, pool:GameObjectPool ):void {
+	   		var projectile:Projectile = pool.addItem() as Projectile;
 			projectile.targets = targets;
 			projectile.position = position;
 			projectile.velocity = velocity;

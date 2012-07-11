@@ -42,12 +42,12 @@ package com.away3d.spaceinvaders.gameobjects
 			for( var i:uint; i < len; i++ ) {
 				gameObject = _gameObjects[ i ];
 				if( !gameObject.enabled ) {
-					gameObject.enabled = true;
+					gameObject.reset();
 					return gameObject;
 				}
 			}
 			gameObject = createItem();
-			gameObject.enabled = true;
+			gameObject.reset();
 			_gameObjects.push( gameObject );
 			return gameObject;
 		}

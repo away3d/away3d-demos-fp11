@@ -1,12 +1,17 @@
 package com.away3d.spaceinvaders
 {
 
+	import away3d.audio.Sound3D;
+
+	import com.away3d.spaceinvaders.sound.SoundManager;
+	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.views.InvaderScene;
 
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
+	import flash.media.Sound;
 
 	public class Main extends Sprite
 	{
@@ -15,7 +20,16 @@ package com.away3d.spaceinvaders
 		public function Main() {
 			initStage();
 			initScene();
+			initSound();
 			addEventListener( Event.ENTER_FRAME, enterframeHandler );
+		}
+
+		private function initSound():void {
+			SoundManager.registerSound( Sounds.PLAYER_FIRE, new SoundPlayerFire() );
+			SoundManager.registerSound( Sounds.INVADER_DEATH, new SoundInvaderDeath() );
+			SoundManager.registerSound( Sounds.EXPLOSION_SOFT, new SoundExplosionSoft() );
+			SoundManager.registerSound( Sounds.EXPLOSION_STRONG, new SoundExplosionStrong() );
+			SoundManager.registerSound( Sounds.MOTHERSHIP, new SoundMothership() );
 		}
 
 		private function initStage():void {

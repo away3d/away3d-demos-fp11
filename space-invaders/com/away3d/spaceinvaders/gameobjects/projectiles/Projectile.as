@@ -5,8 +5,6 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 
-	import flash.geom.Vector3D;
-
 	public class Projectile extends GameObject
 	{
 		private var _targets:Vector.<GameObject>;

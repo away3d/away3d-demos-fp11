@@ -8,7 +8,9 @@ package com.away3d.spaceinvaders.events
 	public class GameObjectEvent extends Event
 	{
 		public static const DEAD:String = "gameObjectEvent/dead";
+		public static const HIT:String = "gameObjectEvent/hit";
 		public static const FIRE:String = "gameObjectEvent/fire";
+		public static const CREATED:String = "gameObjectEvent/created";
 
 		public var objectA:GameObject;
 		public var objectB:GameObject;

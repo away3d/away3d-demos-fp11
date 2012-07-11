@@ -1,12 +1,15 @@
+- TODO: ------> introduce mother ships
+- TODO: introduce player health and death
+- TODO: harder, increasing shake on player
+- TODO: introduce side motion on invaders
 - TODO: compile on asus
-- TODO: ------> introduce environment
-- TODO: more invader types
-- TODO: implement UI
+- TODO: implement UI as regular sprites
+- TODO: implement UI with starling
 - TODO: projectiles wonder too far
 - TODO: do not allow invaders to wonder too close
 - TODO: invaders cause damage on player
 - TODO: alter picking so that setting listeners on a container gets events from its children
-- TODO: sounds
 - TODO: improve cell rotation on collisions
-
-- TODO: Head tracking ------> tested, very slow
+- TODO: when not clicking on an invader, make it shoot that way, at least approximate the shot
+- TODO: tidy up InvaderScene.as
+- TODO: sometimes first invader takes too long to appear, quite often actually

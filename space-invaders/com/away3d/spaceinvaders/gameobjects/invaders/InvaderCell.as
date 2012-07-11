@@ -4,6 +4,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	import away3d.entities.Mesh;
 
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
+	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
@@ -17,7 +18,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			super();
 			addChild( cellMesh );
 
-			_deathTimer = new Timer( 3000, 1 );
+			_deathTimer = new Timer( MathUtils.rand( 500, 5000 ), 1 );
 			_deathTimer.addEventListener( TimerEvent.TIMER, onDeathTimerTick );
 		}
 

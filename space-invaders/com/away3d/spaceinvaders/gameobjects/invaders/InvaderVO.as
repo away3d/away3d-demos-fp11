@@ -7,6 +7,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	public class InvaderVO
 	{
+		public var typeIndex:uint;
 		public var meshFrame0:Mesh;
 		public var meshFrame1:Mesh;
 		public var definitionFrame0:Array;

@@ -16,6 +16,11 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	public class InvaderFactory
 	{
+		public static const LIGHT_INVADER:uint = 1;
+		public static const MEDIUM_INVADER:uint = 0;
+		public static const HEAVY_INVADER:uint = 2;
+		public static const MOTHERSHIP:uint = 3;
+
 		// Invader 1.
 		private const _invaderDefinition0:Array = [
 			[
@@ -91,15 +96,40 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		];
 		private const _invaderDefinitionDimensions2:Point = new Point( 12, 8 );
 
+		// Invader 4.
+		private const _invaderDefinition3:Array = [
+			[
+				0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+				0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+				0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+				0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0
+			],
+			[
+				0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+				0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+				0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+				0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0
+			]
+		];
+		private const _invaderDefinitionDimensions3:Point = new Point( 16, 7 );
+
 		private const _invadersDefinitions:Array = [
 			_invaderDefinition0,
 			_invaderDefinition1,
-			_invaderDefinition2
+			_invaderDefinition2,
+			_invaderDefinition3
 		];
 		private const _invaderDefinitionDimensions:Array = [
 			_invaderDefinitionDimensions0,
 			_invaderDefinitionDimensions1,
-			_invaderDefinitionDimensions2
+			_invaderDefinitionDimensions2,
+			_invaderDefinitionDimensions3
 		];
 
 		private var _invaderVOs:Vector.<InvaderVO>;
@@ -110,6 +140,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_invaderVOs = new Vector.<InvaderVO>();
 			for( var i:uint; i < _invadersDefinitions.length; ++i ) {
 				var invaderVO:InvaderVO = new InvaderVO();
+				invaderVO.typeIndex = i;
 				var definition:Array = _invadersDefinitions[ i ];
 				invaderVO.definitionFrame0 = definition[ 0 ];
 				invaderVO.definitionFrame1 = definition[ 1 ];
@@ -155,10 +186,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			return positions;
 		}
 
-		public function createInvader():Invader {
-			// Choose a random invader and create it.
-			var randIndex:uint = Math.floor( _invaderVOs.length * Math.random() );
-			var invaderVO:InvaderVO = _invaderVOs[ randIndex ];
+		public function createInvaderOfType( typeIndex:uint ):Invader {
+			var invaderVO:InvaderVO = _invaderVOs[ typeIndex ];
 			return new Invader( invaderVO );
 		}
 	}

@@ -25,5 +25,6 @@ package com.away3d.spaceinvaders
 
 		// Player.
 		public static const cameraMotionEase:Number = 0.25;
+		public static const playerHitShake:Number = 100;
 	}
 }

@@ -6,6 +6,8 @@ package com.away3d.spaceinvaders.gameobjects.player
 	import aze.motion.easing.Quart;
 	import aze.motion.eaze;
 
+	import com.away3d.spaceinvaders.GameSettings;
+
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 
@@ -25,10 +27,11 @@ package com.away3d.spaceinvaders.gameobjects.player
 
 		override public function impact( hitter:GameObject ):void {
 			shake();
+			super.impact( hitter );
 		}
 
 		private function onShakeUpdate():void {
-			var shakeRange:Number = 50 * shakeT;
+			var shakeRange:Number = GameSettings.playerHitShake * shakeT;
 			_camera.x = MathUtils.rand( -shakeRange, shakeRange );
 			_camera.y = MathUtils.rand( -shakeRange, shakeRange );
 		}

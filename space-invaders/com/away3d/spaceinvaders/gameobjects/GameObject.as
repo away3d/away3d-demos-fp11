@@ -3,6 +3,10 @@ package com.away3d.spaceinvaders.gameobjects
 
 	import away3d.containers.ObjectContainer3D;
 
+	import com.away3d.spaceinvaders.events.GameObjectEvent;
+
+	import flash.geom.Matrix3D;
+
 	import flash.geom.Vector3D;
 
 	public class GameObject extends ObjectContainer3D
@@ -37,12 +41,19 @@ package com.away3d.spaceinvaders.gameobjects
 		}
 
 		public function impact( hitter:GameObject ):void {
-			// override
+			dispatchEvent( new GameObjectEvent( GameObjectEvent.HIT ) );
 		}
 
 		public function destroy():void {
 //			_velocity = null;
 //			_zSceneRange = null;
+		}
+
+		public function reset():void {
+			enabled = true;
+			transform = new Matrix3D();
+			velocity = new Vector3D();
+			rotationalVelocity = new Vector3D();
 		}
 
 		public function get enabled():Boolean {
