@@ -32,6 +32,7 @@ package com.away3d.spaceinvaders.views
 	import com.away3d.spaceinvaders.gameobjects.player.Player;
 	import com.away3d.spaceinvaders.gameobjects.projectiles.Projectile;
 	import com.away3d.spaceinvaders.gameobjects.projectiles.ProjectilePool;
+	import com.away3d.spaceinvaders.gameobjects.stars.StarPool;
 	import com.away3d.spaceinvaders.sound.SoundManager;
 	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.MathUtils;
@@ -63,6 +64,7 @@ package com.away3d.spaceinvaders.views
 		private var _ui:UIView;
 
 		private var _invaderPool:InvaderPool;
+		private var _starPool:StarPool;
 		private var _playerProjectilePool:ProjectilePool;
 		private var _invaderProjectilePool:ProjectilePool;
 		private var _cellPool:InvaderCellPool;
@@ -114,11 +116,17 @@ package com.away3d.spaceinvaders.views
 					bmd, bmd, bmd, bmd, bmd, bmd
 			);
 			var skyBox:SkyBox = new SkyBox( _cubeMap );
-			_view.scene.addChild( skyBox );
+//			_view.scene.addChild( skyBox );
 
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
 			createInvaders();
+
+			// Stars.
+			var starMesh:Mesh = new Mesh( new CubeGeometry( 10, 10, 10 ), new ColorMaterial( 0xFFFFFF ) );
+			_starPool = new StarPool( starMesh );
+			_gameObjectPools.push( _starPool );
+			_view.scene.addChild( _starPool );
 
 			// Player.
 			createPlayer();

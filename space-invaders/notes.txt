@@ -1,9 +1,15 @@
-- TODO: move accel if out of input class
+- TODO: invader fire sounds
+- TODO: different camera eases for different input types
+- TODO: -------> star objects are very innefficient
+- TODO: add bomb objects ( which explode on click )
+- TODO: open the xy range againg, and make accelerometer more sensitive instead
 - TODO: UI to GPU ( starling )
 - TODO: fire on and fire off cycles on invaders?
 - TODO: handle stage resizing
+- TODO: move warp in to lower class? invader and stars use it
 - TODO: handle out of screen mouse input
 - TODO: introduce player health and death
+- TODO: projectile and star pools look almost the same, generalize classes
 - TODO: harder, increasing shake on player
 - TODO: introduce side motion on invaders
 - TODO: compile on asus
