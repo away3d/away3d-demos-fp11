@@ -8,5 +8,6 @@ package com.away3d.spaceinvaders.sound
 		public static const EXPLOSION_STRONG:String = "sounds/explosion/strong";
 		public static const INVADER_DEATH:String = "sounds/invader/death";
 		public static const MOTHERSHIP:String = "sounds/mothership";
+		public static const BOING:String = "sounds/boing";
 	}
 }

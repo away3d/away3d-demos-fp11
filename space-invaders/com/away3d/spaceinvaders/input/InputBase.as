@@ -5,13 +5,16 @@ package com.away3d.spaceinvaders.input
 
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.geom.Point;
 
 	public class InputBase extends Sprite
 	{
+		protected var _currentPosition:Point;
 		protected var _scene:InvaderScene;
 
 		public function InputBase( scene:InvaderScene ) {
 			_scene = scene;
+			_currentPosition = new Point();
 			addEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
 		}
 

@@ -1,25 +1,27 @@
-- TODO: invader fire sounds
-- TODO: different camera eases for different input types
-- TODO: -------> star objects are very innefficient
-- TODO: add bomb objects ( which explode on click )
-- TODO: open the xy range againg, and make accelerometer more sensitive instead
-- TODO: UI to GPU ( starling )
-- TODO: fire on and fire off cycles on invaders?
+// IMPORTANT.
 - TODO: handle stage resizing
-- TODO: move warp in to lower class? invader and stars use it
-- TODO: handle out of screen mouse input
 - TODO: introduce player health and death
-- TODO: projectile and star pools look almost the same, generalize classes
-- TODO: harder, increasing shake on player
-- TODO: introduce side motion on invaders
-- TODO: compile on asus
 - TODO: implement UI as regular sprites
-- TODO: implement UI with starling
+- TODO: implement UI with starling ----> http://www.geepers.co.uk/?page_id=587, pass "badoing"
 - TODO: projectiles wonder too far
-- TODO: do not allow invaders to wonder too close
-- TODO: invaders cause damage on player
-- TODO: alter picking so that setting listeners on a container gets events from its children
-- TODO: improve cell rotation on collisions
-- TODO: when not clicking on an invader, make it shoot that way, at least approximate the shot
+
+// Gameplay improvement.
+- TODO: add bomb objects ( which explode on click )
+- TODO: fire on and fire off cycles on invaders?
+- TODO: invaders cause damage on player?
+
+// Performance improvement.
+- TODO: star objects are very inefficient
+
+// Code improvement.
+- TODO: projectile and star pools look almost the same, generalize classes
+- TODO: move warp in to lower class? invader and stars use it
+- TODO: remove not needed picking from invaders
 - TODO: tidy up InvaderScene.as
-- TODO: sometimes first invader takes too long to appear, quite often actually
+- TODO: remove InvaderVO, it's confusing
+
+// To consider.
+- TODO: introduce side motion on invaders :: could make hitting invaders quite annoying
+- TODO: do not allow invaders to wonder too close?
+- TODO: replace spawn probabilities with timers?
+- TODO: implement invader spawn sound?

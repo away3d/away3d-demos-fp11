@@ -5,19 +5,16 @@ package com.away3d.spaceinvaders.input
 	import com.away3d.spaceinvaders.views.InvaderScene;
 
 	import flash.events.AccelerometerEvent;
-
 	import flash.events.MouseEvent;
-	import flash.geom.Point;
 	import flash.sensors.Accelerometer;
 
 	public class AccelerometerInput extends InputBase
 	{
 		private var _accelerometer:Accelerometer;
-		private var _currentPosition:Point;
 
 		public function AccelerometerInput( scene:InvaderScene ) {
 			super( scene );
-			_currentPosition = new Point();
+			_scene.cameraMotionEase = GameSettings.accelerometerCameraMotionEase;
 		}
 
 		override public function init():void {

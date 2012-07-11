@@ -4,6 +4,7 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 	import away3d.entities.Mesh;
 
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
+	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	public class Projectile extends GameObject
 	{
@@ -12,6 +13,11 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 		public function Projectile( mesh:Mesh ) {
 			super();
 			addChild( mesh );
+		}
+
+		override public function reset():void {
+			super.reset();
+			rotationalVelocity.z = MathUtils.rand( -5, 5 );
 		}
 
 		override public function update():void {

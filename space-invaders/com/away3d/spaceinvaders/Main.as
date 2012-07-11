@@ -42,6 +42,7 @@ package com.away3d.spaceinvaders
 			SoundManager.registerSound( Sounds.EXPLOSION_SOFT, new SoundExplosionSoft() );
 			SoundManager.registerSound( Sounds.EXPLOSION_STRONG, new SoundExplosionStrong() );
 			SoundManager.registerSound( Sounds.MOTHERSHIP, new SoundMothership() );
+			SoundManager.registerSound( Sounds.BOING, new SoundFast() );
 		}
 
 		private function initStage():void {

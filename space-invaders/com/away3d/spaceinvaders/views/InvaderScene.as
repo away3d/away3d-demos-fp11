@@ -76,6 +76,8 @@ package com.away3d.spaceinvaders.views
 
 		private var _currentLevel:uint;
 
+		public var cameraMotionEase:Number;
+
 		public function InvaderScene() {
 			addEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
 		}
@@ -193,6 +195,7 @@ package com.away3d.spaceinvaders.views
 			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
 			_invaderPool.addEventListener( GameObjectEvent.DEAD, onInvaderDead );
 			_invaderPool.addEventListener( GameObjectEvent.FIRE, onInvaderFire );
+			_invaderPool.startSpawning();
 			_gameObjectPools.push( _invaderPool );
 			_view.scene.addChild( _invaderPool );
 
@@ -211,6 +214,7 @@ package com.away3d.spaceinvaders.views
 		}
 
 		private function onInvaderFire( event:GameObjectEvent ):void {
+			SoundManager.playSound( Sounds.BOING );
 			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
 		}
 
@@ -222,9 +226,10 @@ package com.away3d.spaceinvaders.views
 		}*/
 
 		private function loadLevel():void {
-			_invaderPool.targetNumInvaders = GameSettings.levelInvaderNum[ _currentLevel ];
-			_invaderPool.creationProbability = GameSettings.levelInvaderProb[ _currentLevel ];
-			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.levelKillCount[ _currentLevel ] );
+			_invaderPool.targetNumInvaders += GameSettings.invaderCountIncreasePerLevel;
+			_invaderPool.spawnTime -= GameSettings.spawnTimeDecreasePerLevel;
+			if( _invaderPool.spawnTime < GameSettings.minimumSpawnTime ) _invaderPool.spawnTime = GameSettings.minimumSpawnTime;
+			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.killsToAdvanceDifficulty );
 		}
 
 		private function onInvaderDead( event:GameObjectEvent ):void {
@@ -232,9 +237,9 @@ package com.away3d.spaceinvaders.views
 			// Check level update and update UI.
 			_currentLevelKills++;
 			_totalKills++;
-			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.levelKillCount[ _currentLevel ] );
+			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.killsToAdvanceDifficulty );
 			_ui.updateTotalKills( _totalKills );
-			if( _currentLevelKills > GameSettings.levelKillCount[ _currentLevel ] ) {
+			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
 				_currentLevelKills = 0;
 				_currentLevel++;
 				loadLevel();
@@ -283,8 +288,8 @@ package com.away3d.spaceinvaders.views
 			// Ease camera towards target position.
 			var dx:Number = x - _playerPosition.x;
 			var dy:Number = y - _playerPosition.y;
-			_player.x += dx * GameSettings.cameraMotionEase;
-			_player.y += dy * GameSettings.cameraMotionEase;
+			_player.x += dx * cameraMotionEase;
+			_player.y += dy * cameraMotionEase;
 			_playerPosition.x = _player.x;
 			_playerPosition.y = _player.y;
 		}

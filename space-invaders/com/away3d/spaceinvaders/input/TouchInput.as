@@ -13,13 +13,12 @@ package com.away3d.spaceinvaders.input
 	{
 		private var _firstTouchId:int = 0;
 		private var _currentTouchNum:int;
-		private var _currentPosition:Point;
 		private var _firstTouchPosition:Point;
 
 		public function TouchInput( scene:InvaderScene ) {
 			super( scene );
 			_firstTouchPosition = new Point();
-			_currentPosition = new Point();
+			_scene.cameraMotionEase = GameSettings.touchCameraMotionEase;
 		}
 
 		override public function init():void {
