@@ -50,9 +50,6 @@ package com.away3d.spaceinvaders.views
 
 	public class InvaderScene extends Sprite
 	{
-		[Embed(source="../../../../assets/skybox/space.jpg")]
-		private var ImageNegX:Class;
-
 		private var _view:View3D;
 		private var _cameraLight:LightBase;
 		private var _lightPicker:StaticLightPicker;
@@ -71,8 +68,6 @@ package com.away3d.spaceinvaders.views
 		private var _gameObjectPools:Vector.<GameObjectPool>;
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
-
-		private var _cubeMap:BitmapCubeTexture;
 
 		private var _currentLevel:uint;
 
@@ -111,14 +106,6 @@ package com.away3d.spaceinvaders.views
 			// Stats.
 			var stats:AwayStats = new AwayStats( _view );
 			addChild( stats );
-
-			// Sky box.
-			var bmd:BitmapData = new ImageNegX().bitmapData;
-			_cubeMap = new BitmapCubeTexture(
-					bmd, bmd, bmd, bmd, bmd, bmd
-			);
-			var skyBox:SkyBox = new SkyBox( _cubeMap );
-//			_view.scene.addChild( skyBox );
 
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
