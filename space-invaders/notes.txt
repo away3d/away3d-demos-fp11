@@ -1,4 +1,8 @@
-- TODO: ------> introduce mother ships
+- TODO: move accel if out of input class
+- TODO: UI to GPU ( starling )
+- TODO: fire on and fire off cycles on invaders?
+- TODO: handle stage resizing
+- TODO: handle out of screen mouse input
 - TODO: introduce player health and death
 - TODO: harder, increasing shake on player
 - TODO: introduce side motion on invaders

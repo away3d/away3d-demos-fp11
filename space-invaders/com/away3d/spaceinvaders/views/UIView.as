@@ -19,8 +19,19 @@ package com.away3d.spaceinvaders.views
 		}
 
 		private function stageInitHandler( event:Event ):void {
+
 			removeEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
 
+			// Cross hair.
+			var crossHair:Sprite = new Sprite();
+			crossHair.graphics.lineStyle( 1, 0xFF0000, 1 );
+			crossHair.graphics.moveTo( stage.stageWidth / 2 - 25, stage.stageHeight / 2 );
+			crossHair.graphics.lineTo( stage.stageWidth / 2 + 25, stage.stageHeight / 2 );
+			crossHair.graphics.moveTo( stage.stageWidth / 2, stage.stageHeight / 2 - 25 );
+			crossHair.graphics.lineTo( stage.stageWidth / 2, stage.stageHeight / 2 + 25 );
+			addChild( crossHair );
+
+			// Temp text.
 			_mainText = new TextField();
 			_mainText.width = 250;
 			_mainText.height = 400;

@@ -1,27 +1,39 @@
 package com.away3d.spaceinvaders
 {
 
-	import away3d.audio.Sound3D;
-
+	import com.away3d.spaceinvaders.input.AccelerometerInput;
+	import com.away3d.spaceinvaders.input.InputBase;
+	import com.away3d.spaceinvaders.input.MouseInput;
+	import com.away3d.spaceinvaders.input.TouchInput;
 	import com.away3d.spaceinvaders.sound.SoundManager;
 	import com.away3d.spaceinvaders.sound.Sounds;
+	import com.away3d.spaceinvaders.utils.PlatformUtil;
 	import com.away3d.spaceinvaders.views.InvaderScene;
 
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
-	import flash.media.Sound;
+	import flash.sensors.Accelerometer;
 
 	public class Main extends Sprite
 	{
 		private var _invaderScene:InvaderScene;
+		private var _input:InputBase;
 
 		public function Main() {
 			initStage();
 			initScene();
 			initSound();
+			initInput();
 			addEventListener( Event.ENTER_FRAME, enterframeHandler );
+		}
+
+		private function initInput():void {
+			_input = PlatformUtil.isRunningOnMobile() ?
+					GameSettings.useAccelerometer && Accelerometer.isSupported ? new AccelerometerInput( _invaderScene ) : new TouchInput( _invaderScene )
+					: new MouseInput( _invaderScene );
+			addChild( _input );
 		}
 
 		private function initSound():void {
@@ -44,9 +56,7 @@ package com.away3d.spaceinvaders
 		}
 
 		private function enterframeHandler( event:Event ):void {
-			var targetX:Number = 1500 * ( stage.mouseX - stage.stageWidth / 2 ) / ( stage.stageWidth / 2 );
-			var targetY:Number = -1500 * ( stage.mouseY - stage.stageHeight / 2 ) / ( stage.stageHeight / 2 );
-			_invaderScene.movePlayerTowards( targetX, targetY );
+			_input.update();
 			_invaderScene.update();
 		}
 	}

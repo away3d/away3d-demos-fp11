@@ -16,7 +16,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		public var targetNumInvaders:uint = 0;
 		public var creationProbability:Number = 0;
-		public var invaderFireRate:Number;
 
 		public function InvaderPool( invaderMaterial:MaterialBase ) {
 			super();
@@ -43,7 +42,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 						randIndex = InvaderFactory.LIGHT_INVADER;
 					}
 					var invader:Invader = addItemOfType( randIndex ) as Invader;
-					invader.fireTimerRate = invaderFireRate;
 					dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );
 				}
 			}

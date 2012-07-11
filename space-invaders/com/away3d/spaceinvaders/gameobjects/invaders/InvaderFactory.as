@@ -1,16 +1,11 @@
 package com.away3d.spaceinvaders.gameobjects.invaders
 {
 
-	import away3d.containers.ObjectContainer3D;
 	import away3d.core.base.Geometry;
-	import away3d.core.base.Object3D;
-	import away3d.entities.Entity;
 	import away3d.entities.Mesh;
 	import away3d.materials.MaterialBase;
-	import away3d.primitives.CubeGeometry;
 
 	import com.away3d.spaceinvaders.GameSettings;
-	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	import flash.geom.Point;
 

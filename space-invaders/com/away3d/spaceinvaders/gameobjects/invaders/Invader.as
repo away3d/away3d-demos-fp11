@@ -6,6 +6,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	import aze.motion.easing.Quart;
 	import aze.motion.eaze;
 
+	import com.away3d.spaceinvaders.GameSettings;
+
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
@@ -41,12 +43,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_animationTimer = new Timer( MathUtils.rand( 250, 500 ) );
 			_animationTimer.addEventListener( TimerEvent.TIMER, onAnimationTimerTick );
 
-			_fireTimer = new Timer( 5000 );
+			_fireTimer = new Timer( MathUtils.rand( 500, 2000 ) );
 			_fireTimer.addEventListener( TimerEvent.TIMER, onFireTimerTick );
-		}
-
-		public function set fireTimerRate( value:Number ):void {
-			_fireTimer.delay = MathUtils.rand( value, value * 1.5 );
 		}
 
 		override public function set enabled( value:Boolean ):void {
@@ -62,6 +60,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		private function onFireTimerTick( event:TimerEvent ):void {
+			_fireTimer.delay = MathUtils.rand( 500, 2000 );
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.FIRE, this ) );
 		}
 
@@ -81,6 +80,13 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			super.impact( hitter );
 		}
 
+		// makes invaders stop
+		/*override public function update():void {
+			super.update();
+			if( z < 1000 ) {
+				z = 1000;
+			}
+		}*/
 
 		override public function reset():void {
 
@@ -89,8 +95,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			// Set velocity.
 			velocity.z = -50;
 			// Randomize XY.
-			x = MathUtils.rand( -1000, 1000 );
-			y = MathUtils.rand( -1000, 1000 );
+			x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
+			y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
 			// Ease Z towards scene range.
 			z = 100000;
 			eaze( this ).to( 0.5, { z:MathUtils.rand( 4000, 5000 ) } ).easing( Quart.easeOut );

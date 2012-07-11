@@ -93,6 +93,7 @@ package com.away3d.spaceinvaders.views
 		private function initEngine():void {
 			_view = new View3D();
 //			_view.backgroundColor = 0xFFFFFF;
+			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
 			addChild( _view );
 		}
@@ -107,13 +108,13 @@ package com.away3d.spaceinvaders.views
 			var stats:AwayStats = new AwayStats( _view );
 			addChild( stats );
 
-			// Skybox.
+			// Sky box.
 			var bmd:BitmapData = new ImageNegX().bitmapData;
 			_cubeMap = new BitmapCubeTexture(
 					bmd, bmd, bmd, bmd, bmd, bmd
 			);
 			var skyBox:SkyBox = new SkyBox( _cubeMap );
-//			_view.scene.addChild( skyBox );
+			_view.scene.addChild( skyBox );
 
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
@@ -122,24 +123,11 @@ package com.away3d.spaceinvaders.views
 			// Player.
 			createPlayer();
 
-			// Back fire plane.
-			// TODO: can use view?
-			var backFirePlane:Mesh = new Mesh( new PlaneGeometry( 1000000, 1000000 ), new ColorMaterial( 0x000000, 0.01 ) );
-			backFirePlane.mouseEnabled = true;
-			backFirePlane.addEventListener( MouseEvent3D.MOUSE_DOWN, onBackFirePlaneMouseDown );
-			backFirePlane.rotationX = -90;
-			backFirePlane.z = 50000;
-			_view.scene.addChild( backFirePlane );
-
 			loadLevel();
 		}
 
 		private function onPlayerHit( event:GameObjectEvent ):void {
 			SoundManager.playSound( Sounds.EXPLOSION_SOFT );
-		}
-
-		private function onBackFirePlaneMouseDown( event:MouseEvent3D ):void {
-			firePlayer();
 		}
 
 		private function createPlayer():void {
@@ -193,7 +181,7 @@ package com.away3d.spaceinvaders.views
 
 			// Create invaders.
 			_invaderPool = new InvaderPool( invaderMaterial );
-			_invaderPool.addEventListener( MouseEvent3D.MOUSE_DOWN, onInvaderMouseDown );
+//			_invaderPool.addEventListener( MouseEvent3D.MOUSE_DOWN, onInvaderMouseDown );
 			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
 			_invaderPool.addEventListener( GameObjectEvent.DEAD, onInvaderDead );
 			_invaderPool.addEventListener( GameObjectEvent.FIRE, onInvaderFire );
@@ -218,17 +206,16 @@ package com.away3d.spaceinvaders.views
 			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
 		}
 
-		private function onInvaderMouseDown( event:MouseEvent3D ):void {
+		/*private function onInvaderMouseDown( event:MouseEvent3D ):void {
 			var position:Vector3D = event.scenePosition;
 			position.z = _player.z;
 			SoundManager.playSound( Sounds.PLAYER_FIRE );
 			fireProjectile( position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
-		}
+		}*/
 
 		private function loadLevel():void {
 			_invaderPool.targetNumInvaders = GameSettings.levelInvaderNum[ _currentLevel ];
 			_invaderPool.creationProbability = GameSettings.levelInvaderProb[ _currentLevel ];
-			_invaderPool.invaderFireRate = GameSettings.levelInvaderMaxFireRate[ _currentLevel ];
 			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.levelKillCount[ _currentLevel ] );
 		}
 
@@ -311,11 +298,7 @@ package com.away3d.spaceinvaders.views
 
 		public function firePlayer():void {
 			SoundManager.playSound( Sounds.PLAYER_FIRE );
-			var position:Vector3D = _player.position.clone();
-			var sc:Number = 5;
-			position.x += sc * ( stage.mouseX - stage.stageWidth / 2 );
-			position.y -= sc * ( stage.mouseY - stage.stageHeight / 2 );
-			fireProjectile( position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
+			fireProjectile( _player.position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
 		}
 
 		public function fireProjectile( position:Vector3D, velocity:Vector3D, targets:Vector.<GameObject>, pool:GameObjectPool ):void {
