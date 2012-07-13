@@ -1,10 +1,11 @@
 // IMPORTANT.
-- TODO: implement score and high score report on game over screen
 - TODO: implement high score persistence on mobile
 - TODO: handle stage resizing in 3D view -> in all views!
 - TODO: projectiles wonder too far
+- TODO: UI buttons too small for mobile
 
 // BUGS.
+- TODO: fucked up GO screen in mobile
 - TODO: invader projectiles are no longer visible and weird line on player projectiles :: 736c52e584b2ea575903869730b60dd696569a05 is damaging commit by Richard on July 12
 - TODO: sorting artifact on android
 - TODO: invaders accumulate while in splash screen
@@ -12,8 +13,7 @@
 - TODO: render a frame before dismissing the splash pop up
 
 // Gameplay improvement.
-- TODO: different invader types have
-- TODO: add bomb objects ( which explode on click )
+- TODO: add bomb objects ( which explode on click or something like that )
 - TODO: fire on and fire off cycles on invaders?
 - TODO: invaders cause damage on player?
 
