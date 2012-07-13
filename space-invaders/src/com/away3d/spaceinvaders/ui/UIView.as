@@ -28,7 +28,7 @@ package com.away3d.spaceinvaders.ui
 
 			// Cross hair.
 			var crossHair:Sprite = new Sprite();
-			crossHair.graphics.lineStyle( 1, 0x00FF00, 1 );
+			crossHair.graphics.lineStyle( 1, 0xFFFFFF, 1 );
 			crossHair.graphics.moveTo( stage.stageWidth / 2 - 15, stage.stageHeight / 2 );
 			crossHair.graphics.lineTo( stage.stageWidth / 2 + 15, stage.stageHeight / 2 );
 			crossHair.graphics.moveTo( stage.stageWidth / 2, stage.stageHeight / 2 - 15 );
@@ -65,10 +65,18 @@ package com.away3d.spaceinvaders.ui
 		// Pop ups.
 		// -----------------------
 
-		public function showGameOverPopUp():void {
+		public function showGameOverPopUp( score:uint, highScore:uint ):void {
 			var popUp:MovieClip = new GameOverPopUp();
 			var playAgainButton:SimpleButton = popUp.playAgainButton;
 			playAgainButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
+			var scoreText:TextField = popUp.scoreText;
+			scoreText.text =     "SCORE................................... " + uintToString( score );
+			var highScoreText:TextField = popUp.highScoreText;
+			highScoreText.text = "HIGH-SCORE.............................. " + uintToString( highScore );
+			scoreText.width = scoreText.textWidth * 1.05;
+			scoreText.x = -scoreText.width / 2;
+			highScoreText.width = highScoreText.textWidth * 1.05;
+			highScoreText.x = -highScoreText.width / 2;
 			initializePopUp( popUp );
 		}
 
@@ -143,7 +151,7 @@ package com.away3d.spaceinvaders.ui
 
 		public function updateScoreText( score:uint, highScore:uint ):void {
 			_scoreText.text = "< SCORE " + uintToString( score ) + " >   < ";
-			_scoreText.text += "HIGH SCORE " + uintToString( highScore ) + " >"; // TODO
+			_scoreText.text += "HIGH-SCORE " + uintToString( highScore ) + " >"; // TODO
 			_scoreText.width = _scoreText.textWidth * 1.05;
 			_scoreText.x = stage.stageWidth / 2 - _scoreText.width / 2;
 		}

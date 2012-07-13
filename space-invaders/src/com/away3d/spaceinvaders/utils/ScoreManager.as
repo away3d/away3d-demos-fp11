@@ -68,5 +68,13 @@ package com.away3d.spaceinvaders.utils
 				dispatchEvent( new GameEvent( GameEvent.GAME_OVER ) );
 			}
 		}
+
+		public function get score():uint {
+			return _score;
+		}
+
+		public function get highScore():uint {
+			return _highScore;
+		}
 	}
 }

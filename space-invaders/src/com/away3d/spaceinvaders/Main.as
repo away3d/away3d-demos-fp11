@@ -42,7 +42,7 @@ package com.away3d.spaceinvaders
 		}
 
 		private function onGameOver( event:GameEvent ):void {
-			_ui.showGameOverPopUp();
+			_ui.showGameOverPopUp( ScoreManager.instance.score, ScoreManager.instance.highScore );
 			_scene.reset();
 			stopGame();
 		}

@@ -1,14 +1,15 @@
 // IMPORTANT.
-- TODO: implement high score persistence on mobile
 - TODO: implement score and high score report on game over screen
-- TODO: handle stage resizing in 3D view
-- TODO: implement UI with starling? ----> http://www.geepers.co.uk/?page_id=587, pass "badoing"
+- TODO: implement high score persistence on mobile
+- TODO: handle stage resizing in 3D view -> in all views!
 - TODO: projectiles wonder too far
 
 // BUGS.
 - TODO: invader projectiles are no longer visible and weird line on player projectiles :: 736c52e584b2ea575903869730b60dd696569a05 is damaging commit by Richard on July 12
 - TODO: sorting artifact on android
 - TODO: invaders accumulate while in splash screen
+- TODO: do not fire right after pressing pop up buttons
+- TODO: render a frame before dismissing the splash pop up
 
 // Gameplay improvement.
 - TODO: different invader types have
@@ -33,3 +34,4 @@
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
 - TODO: do not allow invaders to wonder too close?
 - TODO: implement invader spawn sound?
+- TODO: implement UI with starling? ----> http://www.geepers.co.uk/?page_id=587, pass "badoing" - its overkill to implement for the poor UI we've got, additional starling effects?
