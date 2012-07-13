@@ -3,66 +3,74 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	import away3d.materials.MaterialBase;
 
-	import com.away3d.spaceinvaders.GameSettings;
-
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	import flash.events.Event;
-	import flash.events.TimerEvent;
-	import flash.utils.Timer;
+	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 
 	public class InvaderPool extends GameObjectPool
 	{
 		private var _invaderFactory:InvaderFactory;
 		private var _currentTypeIndex:uint;
-		private var _spawnTimer:Timer;
 
 		public var targetNumInvaders:uint = 0;
-		public var spawnTime:Number;
+		public var spawnTimeFactor:Number = 1;
+
+		private var _time:uint;
+		private var _lastSpawnTimes:Dictionary;
+		private var _spawnTimes:Dictionary;
 
 		public function InvaderPool( invaderMaterial:MaterialBase ) {
 			super();
+
 			_invaderFactory = new InvaderFactory( invaderMaterial );
-			spawnTime = GameSettings.initialSpawnTime;
-			_spawnTimer = new Timer( 0, 1 );
-			_spawnTimer.addEventListener( TimerEvent.TIMER, onSpawnTimerTick );
+
+			_lastSpawnTimes = new Dictionary();
+
+			_spawnTimes = new Dictionary();
+			_spawnTimes[ InvaderFactory.MOTHERSHIP ] = 60000;
+			_spawnTimes[ InvaderFactory.BUG_INVADER ] = 4000;
+			_spawnTimes[ InvaderFactory.OCTOPUS_INVADER ] = 5000;
+			_spawnTimes[ InvaderFactory.ROUNDED_OCTOPUS_INVADER ] = 3000;
 		}
 
-		public function startSpawning():void {
-			_spawnTimer.reset();
-			_spawnTimer.start();
+		public function resetSpawnTimes():void {
+			_time = getTimer();
+			_lastSpawnTimes[ InvaderFactory.MOTHERSHIP ] = _time;
+			_lastSpawnTimes[ InvaderFactory.BUG_INVADER ] = _time;
+			_lastSpawnTimes[ InvaderFactory.OCTOPUS_INVADER ] = _time;
+			_lastSpawnTimes[ InvaderFactory.ROUNDED_OCTOPUS_INVADER ] = _time;
 		}
 
-		public function stopSpawning():void {
-			_spawnTimer.stop();
-		}
+		override public function update():void {
+			super.update();
 
-		private function onSpawnTimerTick( event:TimerEvent ):void {
+			_time = getTimer();
+
 			if( numChildren < targetNumInvaders ) {
-				if( Math.random() < spawnTime ) {
-					var rand:Number = Math.random();
-					var randIndex:uint;
-					if( rand > 0.9 ) {
-						randIndex = InvaderFactory.MOTHERSHIP;
-					}
-					else if( rand > 0.75 ) {
-						randIndex = InvaderFactory.OCTOPUS_INVADER;
-					}
-					else if( rand > 0.5 ) {
-						randIndex = InvaderFactory.BUG_INVADER;
-					}
-					else {
-						randIndex = InvaderFactory.ROUNDED_OCTOPUS_INVADER;
-					}
-					var invader:Invader = addItemOfType( randIndex ) as Invader;
+				evaluateSpawnInvader( InvaderFactory.MOTHERSHIP );
+				evaluateSpawnInvader( InvaderFactory.BUG_INVADER );
+				evaluateSpawnInvader( InvaderFactory.OCTOPUS_INVADER );
+				evaluateSpawnInvader( InvaderFactory.ROUNDED_OCTOPUS_INVADER );
+			}
+		}
+
+		private function evaluateSpawnInvader( typeIndex:uint ):void {
+			if( Math.random() > 0.01 ) { // Causes eventual skips.
+			    var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
+				if( elapsedSinceSpawn > _spawnTimes[ typeIndex ] * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
+					var invader:Invader = addItemOfType( typeIndex ) as Invader;
 					dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );
+					_lastSpawnTimes[ typeIndex ] = _time;
 				}
 			}
-			_spawnTimer.delay = Math.floor( MathUtils.rand( spawnTime, spawnTime * 1.5 ) * 1000 );
-			startSpawning();
+			else {
+				_lastSpawnTimes[ typeIndex ] = _time;
+			}
 		}
 
 		private function addItemOfType( typeIndex:uint ):GameObject {

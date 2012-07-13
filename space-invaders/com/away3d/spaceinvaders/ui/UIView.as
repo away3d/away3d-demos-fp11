@@ -28,11 +28,11 @@ package com.away3d.spaceinvaders.ui
 
 			// Cross hair.
 			var crossHair:Sprite = new Sprite();
-			crossHair.graphics.lineStyle( 1, 0xFF0000, 1 );
-			crossHair.graphics.moveTo( stage.stageWidth / 2 - 25, stage.stageHeight / 2 );
-			crossHair.graphics.lineTo( stage.stageWidth / 2 + 25, stage.stageHeight / 2 );
-			crossHair.graphics.moveTo( stage.stageWidth / 2, stage.stageHeight / 2 - 25 );
-			crossHair.graphics.lineTo( stage.stageWidth / 2, stage.stageHeight / 2 + 25 );
+			crossHair.graphics.lineStyle( 1, 0x00FF00, 1 );
+			crossHair.graphics.moveTo( stage.stageWidth / 2 - 15, stage.stageHeight / 2 );
+			crossHair.graphics.lineTo( stage.stageWidth / 2 + 15, stage.stageHeight / 2 );
+			crossHair.graphics.moveTo( stage.stageWidth / 2, stage.stageHeight / 2 - 15 );
+			crossHair.graphics.lineTo( stage.stageWidth / 2, stage.stageHeight / 2 + 15 );
 			addChild( crossHair );
 
 			// Score text.

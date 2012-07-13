@@ -15,7 +15,6 @@ package com.away3d.spaceinvaders
 		// Level progress.
 		public static const killsToAdvanceDifficulty:uint = 5;
 		public static const invaderCountIncreasePerLevel:uint = 5;
-		public static const initialSpawnTime:Number = 2;
 		public static const minimumSpawnTime:Number = 0.25;
 		public static const spawnTimeDecreasePerLevel:Number = 0.1;
 

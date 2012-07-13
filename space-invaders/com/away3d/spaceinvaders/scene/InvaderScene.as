@@ -224,11 +224,11 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		public function resume():void {
-			_invaderPool.startSpawning();
+			_invaderPool.resetSpawnTimes();
 		}
 
 		public function stop():void {
-			_invaderPool.stopSpawning();
+
 		}
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
@@ -245,8 +245,8 @@ package com.away3d.spaceinvaders.scene
 
 		private function loadLevel():void {
 			_invaderPool.targetNumInvaders += GameSettings.invaderCountIncreasePerLevel;
-			_invaderPool.spawnTime -= GameSettings.spawnTimeDecreasePerLevel;
-			if( _invaderPool.spawnTime < GameSettings.minimumSpawnTime ) _invaderPool.spawnTime = GameSettings.minimumSpawnTime;
+			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
+			if( _invaderPool.spawnTimeFactor < GameSettings.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameSettings.minimumSpawnTime;
 		}
 
 		private function onInvaderDead( event:GameObjectEvent ):void {

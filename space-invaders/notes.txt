@@ -1,6 +1,4 @@
 // IMPORTANT.
-- TODO: touch controls suck!
-- TODO: replace spawn probabilities with timers?
 - TODO: handle stage resizing in 3D view
 - TODO: implement UI with starling? ----> http://www.geepers.co.uk/?page_id=587, pass "badoing"
 - TODO: projectiles wonder too far
@@ -27,6 +25,8 @@
 - TODO: remove not needed picking from invaders
 - TODO: tidy up InvaderScene.as
 - TODO: remove InvaderVO, it's confusing
+- TODO: remove tweening lib dependency
+- TODO: move invader definitions out of InvaderFactory
 
 // To consider.
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
