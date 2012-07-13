@@ -52,13 +52,11 @@ package com.away3d.spaceinvaders.ui
 			addChild( restartButton );
 			_pauseButton = new PauseButton();
 			_pauseButton.x = stage.stageWidth - _pauseButton.width;
-			_pauseButton.y = restartButton.y - _pauseButton.height;
 			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
 			addChild( _pauseButton );
 			_resumeButton = new PlayButton();
 			_resumeButton.visible = false;
-			_resumeButton.x = stage.stageWidth - _pauseButton.width;
-			_resumeButton.y = restartButton.y - _pauseButton.height;
+			_resumeButton.x = stage.stageWidth - _resumeButton.width;
 			_resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume );
 			addChild( _resumeButton );
 		}
@@ -69,14 +67,14 @@ package com.away3d.spaceinvaders.ui
 
 		public function showGameOverPopUp():void {
 			var popUp:MovieClip = new GameOverPopUp();
-			var playAgainButton:MovieClip = popUp.playAgainButton;
+			var playAgainButton:SimpleButton = popUp.playAgainButton;
 			playAgainButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
 			initializePopUp( popUp );
 		}
 
 		public function hideGameOverPopUp():void {
 			if( !_popUp || !( _popUp is GameOverPopUp ) ) return;
-			var playAgainButton:MovieClip = _popUp.playAgainButton;
+			var playAgainButton:SimpleButton = _popUp.playAgainButton;
 			playAgainButton.removeEventListener( MouseEvent.MOUSE_UP, onPlay );
 			removeChild( _popUp );
 			_popUp = null;

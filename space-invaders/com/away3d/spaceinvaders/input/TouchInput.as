@@ -37,8 +37,8 @@ package com.away3d.spaceinvaders.input
 			if( event.touchPointID == _firstTouchId ) {
 				var dx:Number = event.stageX - _firstTouchPosition.x;
 				var dy:Number = event.stageY - _firstTouchPosition.y;
-				_currentPosition.x = _playerTouchPosition.x + GameSettings.touchMotionFactor * dx;
-				_currentPosition.y = _playerTouchPosition.y - GameSettings.touchMotionFactor * dy;
+				if( Math.abs( dx ) > 5 ) _currentPosition.x = _playerTouchPosition.x + GameSettings.touchMotionFactor * dx;
+				if( Math.abs( dy ) > 5 ) _currentPosition.y = _playerTouchPosition.y - GameSettings.touchMotionFactor * dy;
 			}
 		}
 
@@ -54,8 +54,8 @@ package com.away3d.spaceinvaders.input
 				_playerTouchPosition = _scene.playerPosition;
 				_firstTouchPosition.x = event.stageX;
 				_firstTouchPosition.y = event.stageY;
-				_currentPosition.x = 0;
-				_currentPosition.y = 0;
+				_currentPosition.x = _playerTouchPosition.x;
+				_currentPosition.y = _playerTouchPosition.y;
 			}
 		}
 	}

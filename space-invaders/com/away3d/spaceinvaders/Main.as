@@ -1,6 +1,8 @@
 package com.away3d.spaceinvaders
 {
 
+	import away3d.textures.BitmapCubeTexture;
+
 	import com.away3d.spaceinvaders.events.GameEvent;
 	import com.away3d.spaceinvaders.input.AccelerometerInput;
 	import com.away3d.spaceinvaders.input.InputBase;
@@ -87,6 +89,7 @@ package com.away3d.spaceinvaders
 		}
 
 		private function onUiResume( event:GameEvent ):void {
+			_invaderScene.resume();
 			addEventListener( Event.ENTER_FRAME, enterframeHandler );
 		}
 
@@ -106,10 +109,12 @@ package com.away3d.spaceinvaders
 		}
 
 		private function stopGame():void {
+			_invaderScene.stop();
 			removeEventListener( Event.ENTER_FRAME, enterframeHandler );
 		}
 
 		private function startGame():void {
+			_invaderScene.resume();
 			ScoreManager.instance.reset();
 			addEventListener( Event.ENTER_FRAME, enterframeHandler );
 		}

@@ -51,10 +51,25 @@ package com.away3d.spaceinvaders.scene
 
 	public class InvaderScene extends Sprite
 	{
+		[Embed(source="../../../../assets/skybox/space_posX.jpg")]
+		private var SkyboxImagePosX:Class;
+		[Embed(source="../../../../assets/skybox/space_negX.jpg")]
+		private var SkyboxImageNegX:Class;
+		[Embed(source="../../../../assets/skybox/space_posY.jpg")]
+		private var SkyboxImagePosY:Class;
+		[Embed(source="../../../../assets/skybox/space_negY.jpg")]
+		private var SkyboxImageNegY:Class;
+		[Embed(source="../../../../assets/skybox/space_posZ.jpg")]
+		private var SkyboxImagePosZ:Class;
+		[Embed(source="../../../../assets/skybox/space_negZ.jpg")]
+		private var SkyboxImageNegZ:Class;
+
 		private var _view:View3D;
 		private var _cameraLight:LightBase;
 		private var _lightPicker:StaticLightPicker;
 		private var _playerPosition:Point = new Point();
+
+		private var _cubeMap:BitmapCubeTexture;
 
 		private var _player:Player;
 		private var _playerVector:Vector.<GameObject>;
@@ -101,6 +116,15 @@ package com.away3d.spaceinvaders.scene
 			var stats:AwayStats = new AwayStats( _view );
 			addChild( stats );
 
+			// Skybox.
+			_cubeMap = new BitmapCubeTexture(
+				new SkyboxImagePosX().bitmapData, new SkyboxImageNegX().bitmapData,
+				new SkyboxImagePosY().bitmapData, new SkyboxImageNegY().bitmapData,
+				new SkyboxImagePosZ().bitmapData, new SkyboxImageNegZ().bitmapData
+			);
+			var skyBox:SkyBox = new SkyBox( _cubeMap );
+			_view.scene.addChild( skyBox );
+
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
 			createInvaders();
@@ -123,6 +147,10 @@ package com.away3d.spaceinvaders.scene
 				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
 				gameObjectPool.reset();
 			}
+			_currentLevel = 0;
+			_currentLevelKills = 0;
+			_totalKills = 0;
+			loadLevel();
 		}
 
 		private function onPlayerHit( event:GameObjectEvent ):void {
@@ -133,7 +161,7 @@ package com.away3d.spaceinvaders.scene
 		private function createPlayer():void {
 
 			// Reusable projectile mesh.
-			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FF00 );
 			var playerProjectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial );
 
 			// Crete pool.
@@ -155,12 +183,13 @@ package com.away3d.spaceinvaders.scene
 
 			// Same material for all invaders.
 			var invaderMaterial:ColorMaterial = new ColorMaterial( 0x666666 );
-//			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
+			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
 
 			// Reusable projectile mesh.
 			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
-			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, new ColorMaterial( 0xFF0000 ) );
+			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
 			// Slant vertices a little.
 			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
 			var index:uint;
@@ -184,7 +213,6 @@ package com.away3d.spaceinvaders.scene
 			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
 			_invaderPool.addEventListener( GameObjectEvent.DEAD, onInvaderDead );
 			_invaderPool.addEventListener( GameObjectEvent.FIRE, onInvaderFire );
-			_invaderPool.startSpawning();
 			_gameObjectPools.push( _invaderPool );
 			_view.scene.addChild( _invaderPool );
 
@@ -193,6 +221,14 @@ package com.away3d.spaceinvaders.scene
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
+		}
+
+		public function resume():void {
+			_invaderPool.startSpawning();
+		}
+
+		public function stop():void {
+			_invaderPool.stopSpawning();
 		}
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
