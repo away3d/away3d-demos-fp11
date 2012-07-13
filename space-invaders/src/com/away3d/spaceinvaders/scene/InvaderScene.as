@@ -99,8 +99,8 @@ package com.away3d.spaceinvaders.scene
 
 		private function initEngine():void {
 			_view = new View3D();
-//			_view.antiAlias = 4;
-//			_view.backgroundColor = 0xFFFFFF;
+			_view.antiAlias = 4;
+			_view.backgroundColor = 0x000000;
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
 			addChild( _view );

@@ -3,11 +3,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	import away3d.entities.Mesh;
 
-	import aze.motion.easing.Quart;
-	import aze.motion.eaze;
-
 	import com.away3d.spaceinvaders.GameSettings;
-
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
@@ -27,6 +23,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		private var _currentDefinitionIndex:uint;
 
 		private var _invaderVO:InvaderVO;
+
+		private var _targetSpawnZ:Number;
 
 		public function Invader( invaderVO:InvaderVO ) {
 
@@ -80,26 +78,21 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			super.impact( hitter );
 		}
 
-		// makes invaders stop
-		/*override public function update():void {
+		override public function update():void {
 			super.update();
-			if( z < 1000 ) {
-				z = 1000;
+			if( z < _targetSpawnZ && velocity.z < -50 ) { // Slow down warping in
+				velocity.z *= 0.75;
 			}
-		}*/
+//			trace( velocity.z );
+		}
 
 		override public function reset():void {
-
 			super.reset();
-
-			// Set velocity.
-			velocity.z = -50;
-			// Randomize XY.
 			x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
 			y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
-			// Ease Z towards scene range.
-			z = 100000;
-			eaze( this ).to( 0.5, { z:MathUtils.rand( 5000, 10000 ) } ).easing( Quart.easeOut );
+			z = 100000; // Warp in...
+			velocity.z = MathUtils.rand( -2500, -1500 );
+			_targetSpawnZ = MathUtils.rand( 10000, 15000 );
 		}
 
 		public function get cellPositions():Vector.<Point> {

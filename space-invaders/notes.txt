@@ -1,13 +1,13 @@
 // IMPORTANT.
+- TODO: implement high score persistence on mobile
+- TODO: implement score and high score report on game over screen
 - TODO: handle stage resizing in 3D view
 - TODO: implement UI with starling? ----> http://www.geepers.co.uk/?page_id=587, pass "badoing"
 - TODO: projectiles wonder too far
-- TODO: implement high score persistence
 
 // BUGS.
 - TODO: invader projectiles are no longer visible and weird line on player projectiles :: 736c52e584b2ea575903869730b60dd696569a05 is damaging commit by Richard on July 12
 - TODO: sorting artifact on android
-- TODO: invader creation randomness sucks - probabilities are weird, sometimes the same object keeps appearing, etc
 - TODO: invaders accumulate while in splash screen
 
 // Gameplay improvement.
@@ -27,6 +27,7 @@
 - TODO: remove InvaderVO, it's confusing
 - TODO: remove tweening lib dependency
 - TODO: move invader definitions out of InvaderFactory
+- TODO: move web and mobile launches to the repo
 
 // To consider.
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
