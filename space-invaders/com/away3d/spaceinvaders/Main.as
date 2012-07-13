@@ -1,6 +1,7 @@
 package com.away3d.spaceinvaders
 {
 
+	import com.away3d.spaceinvaders.events.GameEvent;
 	import com.away3d.spaceinvaders.input.AccelerometerInput;
 	import com.away3d.spaceinvaders.input.InputBase;
 	import com.away3d.spaceinvaders.input.MouseInput;
@@ -8,7 +9,9 @@ package com.away3d.spaceinvaders
 	import com.away3d.spaceinvaders.sound.SoundManager;
 	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.PlatformUtil;
-	import com.away3d.spaceinvaders.views.InvaderScene;
+	import com.away3d.spaceinvaders.utils.ScoreManager;
+	import com.away3d.spaceinvaders.scene.InvaderScene;
+	import com.away3d.spaceinvaders.ui.UIView;
 
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
@@ -18,15 +21,27 @@ package com.away3d.spaceinvaders
 
 	public class Main extends Sprite
 	{
-		private var _invaderScene:InvaderScene;
+		private var _ui:UIView;
 		private var _input:InputBase;
+		private var _invaderScene:InvaderScene;
 
 		public function Main() {
 			initStage();
 			initScene();
+			initScoreManager();
 			initSound();
 			initInput();
-			addEventListener( Event.ENTER_FRAME, enterframeHandler );
+			initUi();
+		}
+
+		private function initScoreManager():void {
+			ScoreManager.instance.addEventListener( GameEvent.GAME_OVER, onGameOver );
+		}
+
+		private function onGameOver( event:GameEvent ):void {
+			_ui.showGameOverPopUp();
+			_invaderScene.reset();
+			stopGame();
 		}
 
 		private function initInput():void {
@@ -54,6 +69,49 @@ package com.away3d.spaceinvaders
 		private function initScene():void {
 			_invaderScene = new InvaderScene();
 			addChild( _invaderScene );
+		}
+
+		private function initUi():void {
+
+			_ui = new UIView();
+			addChild( _ui );
+
+			ScoreManager.instance.ui = _ui;
+
+			_ui.addEventListener( GameEvent.PLAY, onUiPlay );
+			_ui.addEventListener( GameEvent.RESTART, onUiRestart );
+			_ui.addEventListener( GameEvent.PAUSE, onUiPause );
+			_ui.addEventListener( GameEvent.RESUME, onUiResume );
+
+			_ui.showSplashPopUp();
+		}
+
+		private function onUiResume( event:GameEvent ):void {
+			addEventListener( Event.ENTER_FRAME, enterframeHandler );
+		}
+
+		private function onUiPause( event:GameEvent ):void {
+			stopGame();
+		}
+
+		private function onUiRestart( event:GameEvent ):void {
+			_invaderScene.reset();
+			ScoreManager.instance.reset();
+		}
+
+		private function onUiPlay( event:GameEvent ):void {
+			_ui.hideSplashPopUp();
+			_ui.hideGameOverPopUp();
+			startGame();
+		}
+
+		private function stopGame():void {
+			removeEventListener( Event.ENTER_FRAME, enterframeHandler );
+		}
+
+		private function startGame():void {
+			ScoreManager.instance.reset();
+			addEventListener( Event.ENTER_FRAME, enterframeHandler );
 		}
 
 		private function enterframeHandler( event:Event ):void {

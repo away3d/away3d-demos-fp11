@@ -49,13 +49,13 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 						randIndex = InvaderFactory.MOTHERSHIP;
 					}
 					else if( rand > 0.75 ) {
-						randIndex = InvaderFactory.HEAVY_INVADER;
+						randIndex = InvaderFactory.OCTOPUS_INVADER;
 					}
 					else if( rand > 0.5 ) {
-						randIndex = InvaderFactory.MEDIUM_INVADER;
+						randIndex = InvaderFactory.BUG_INVADER;
 					}
 					else {
-						randIndex = InvaderFactory.LIGHT_INVADER;
+						randIndex = InvaderFactory.ROUNDED_OCTOPUS_INVADER;
 					}
 					var invader:Invader = addItemOfType( randIndex ) as Invader;
 					dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );

@@ -11,9 +11,9 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	public class InvaderFactory
 	{
-		public static const LIGHT_INVADER:uint = 1;
-		public static const MEDIUM_INVADER:uint = 0;
-		public static const HEAVY_INVADER:uint = 2;
+		public static const ROUNDED_OCTOPUS_INVADER:uint = 2;
+		public static const BUG_INVADER:uint = 0;
+		public static const OCTOPUS_INVADER:uint = 1;
 		public static const MOTHERSHIP:uint = 3;
 
 		// Invader 1.

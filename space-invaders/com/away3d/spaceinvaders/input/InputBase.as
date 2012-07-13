@@ -1,7 +1,7 @@
 package com.away3d.spaceinvaders.input
 {
 
-	import com.away3d.spaceinvaders.views.InvaderScene;
+	import com.away3d.spaceinvaders.scene.InvaderScene;
 
 	import flash.display.Sprite;
 	import flash.events.Event;

@@ -2,7 +2,7 @@ package com.away3d.spaceinvaders.input
 {
 
 	import com.away3d.spaceinvaders.GameSettings;
-	import com.away3d.spaceinvaders.views.InvaderScene;
+	import com.away3d.spaceinvaders.scene.InvaderScene;
 
 	import flash.events.TouchEvent;
 	import flash.geom.Point;
@@ -14,6 +14,7 @@ package com.away3d.spaceinvaders.input
 		private var _firstTouchId:int = 0;
 		private var _currentTouchNum:int;
 		private var _firstTouchPosition:Point;
+		private var _playerTouchPosition:Point;
 
 		public function TouchInput( scene:InvaderScene ) {
 			super( scene );
@@ -36,17 +37,13 @@ package com.away3d.spaceinvaders.input
 			if( event.touchPointID == _firstTouchId ) {
 				var dx:Number = event.stageX - _firstTouchPosition.x;
 				var dy:Number = event.stageY - _firstTouchPosition.y;
-				_currentPosition.x =  GameSettings.touchMotionFactor * dx;
-				_currentPosition.y = -GameSettings.touchMotionFactor * dy;
+				_currentPosition.x = _playerTouchPosition.x + GameSettings.touchMotionFactor * dx;
+				_currentPosition.y = _playerTouchPosition.y - GameSettings.touchMotionFactor * dy;
 			}
 		}
 
 		private function onTouchEnd( event:TouchEvent ):void {
 			_currentTouchNum--;
-			if( event.touchPointID == _firstTouchId ) {
-				_currentPosition.x = 0;
-				_currentPosition.y = 0;
-			}
 		}
 
 		private function onTouchBegin( event:TouchEvent ):void {
@@ -54,6 +51,7 @@ package com.away3d.spaceinvaders.input
 			_scene.firePlayer();
 			if( _currentTouchNum == 1 ) {
 				_firstTouchId = event.touchPointID;
+				_playerTouchPosition = _scene.playerPosition;
 				_firstTouchPosition.x = event.stageX;
 				_firstTouchPosition.y = event.stageY;
 				_currentPosition.x = 0;

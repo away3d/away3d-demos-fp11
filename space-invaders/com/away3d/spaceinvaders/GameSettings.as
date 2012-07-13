@@ -29,7 +29,7 @@ package com.away3d.spaceinvaders
 		public static const accelerometerMotionFactorX:Number = 2;
 		public static const accelerometerMotionFactorY:Number = 4;
 		public static const accelerometerCenterY:Number = 0.7;
-		public static const touchMotionFactor:Number = 7;
+		public static const touchMotionFactor:Number = 4;
 		public static const cameraPanRange:Number = 1500;
 		public static const mouseCameraMotionEase:Number = 0.25;
 		public static const accelerometerCameraMotionEase:Number = 0.1;

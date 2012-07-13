@@ -13,6 +13,14 @@ package com.away3d.spaceinvaders.gameobjects
 			_gameObjects = new Vector.<GameObject>();
 		}
 
+		public function reset():void {
+			var len:uint = _gameObjects.length;
+			for( var i:uint; i < len; i++ ) {
+				var gameObject:GameObject = _gameObjects[ i ];
+				gameObject.enabled = false;
+			}
+		}
+
 		public function update():void {
 			var len:uint = _gameObjects.length;
 			for( var i:uint; i < len; i++ ) {

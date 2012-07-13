@@ -1,4 +1,4 @@
-package com.away3d.spaceinvaders.views
+package com.away3d.spaceinvaders.scene
 {
 
 	import away3d.core.base.Geometry;
@@ -36,6 +36,7 @@ package com.away3d.spaceinvaders.views
 	import com.away3d.spaceinvaders.sound.SoundManager;
 	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.MathUtils;
+	import com.away3d.spaceinvaders.utils.ScoreManager;
 
 	import flash.display.BitmapData;
 
@@ -58,8 +59,6 @@ package com.away3d.spaceinvaders.views
 		private var _player:Player;
 		private var _playerVector:Vector.<GameObject>;
 
-		private var _ui:UIView;
-
 		private var _invaderPool:InvaderPool;
 		private var _starPool:StarPool;
 		private var _playerProjectilePool:ProjectilePool;
@@ -79,18 +78,13 @@ package com.away3d.spaceinvaders.views
 
 		private function stageInitHandler( event:Event ):void {
 			removeEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
-			initUI();
 			initEngine();
 			initScene();
 		}
 
-		private function initUI():void {
-			_ui = new UIView();
-			addChild( _ui );
-		}
-
 		private function initEngine():void {
 			_view = new View3D();
+//			_view.antiAlias = 4;
 //			_view.backgroundColor = 0xFFFFFF;
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
@@ -123,8 +117,17 @@ package com.away3d.spaceinvaders.views
 			loadLevel();
 		}
 
+		public function reset():void {
+			// Update all game object pools.
+			for( var i:uint; i < _gameObjectPools.length; ++i ) {
+				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
+				gameObjectPool.reset();
+			}
+		}
+
 		private function onPlayerHit( event:GameObjectEvent ):void {
 			SoundManager.playSound( Sounds.EXPLOSION_SOFT );
+			ScoreManager.instance.registerPlayerHit();
 		}
 
 		private function createPlayer():void {
@@ -178,7 +181,6 @@ package com.away3d.spaceinvaders.views
 
 			// Create invaders.
 			_invaderPool = new InvaderPool( invaderMaterial );
-//			_invaderPool.addEventListener( MouseEvent3D.MOUSE_DOWN, onInvaderMouseDown );
 			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
 			_invaderPool.addEventListener( GameObjectEvent.DEAD, onInvaderDead );
 			_invaderPool.addEventListener( GameObjectEvent.FIRE, onInvaderFire );
@@ -205,36 +207,27 @@ package com.away3d.spaceinvaders.views
 			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
 		}
 
-		/*private function onInvaderMouseDown( event:MouseEvent3D ):void {
-			var position:Vector3D = event.scenePosition;
-			position.z = _player.z;
-			SoundManager.playSound( Sounds.PLAYER_FIRE );
-			fireProjectile( position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
-		}*/
-
 		private function loadLevel():void {
 			_invaderPool.targetNumInvaders += GameSettings.invaderCountIncreasePerLevel;
 			_invaderPool.spawnTime -= GameSettings.spawnTimeDecreasePerLevel;
 			if( _invaderPool.spawnTime < GameSettings.minimumSpawnTime ) _invaderPool.spawnTime = GameSettings.minimumSpawnTime;
-			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.killsToAdvanceDifficulty );
 		}
 
 		private function onInvaderDead( event:GameObjectEvent ):void {
 
+			var invader:Invader = event.objectA as Invader;
+
 			// Check level update and update UI.
 			_currentLevelKills++;
 			_totalKills++;
-			_ui.updateCurrentLevelKills( _currentLevelKills, GameSettings.killsToAdvanceDifficulty );
-			_ui.updateTotalKills( _totalKills );
+			ScoreManager.instance.registerKill( invader.typeIndex );
 			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
 				_currentLevelKills = 0;
 				_currentLevel++;
 				loadLevel();
-				_ui.updateLevel( _currentLevel );
 			}
 
 			// Play sounds.
-			var invader:Invader = event.objectA as Invader;
 			if( invader.typeIndex == InvaderFactory.MOTHERSHIP ) {
 				SoundManager.playSound( Sounds.EXPLOSION_STRONG );
 			}
@@ -306,6 +299,10 @@ package com.away3d.spaceinvaders.views
 			projectile.targets = targets;
 			projectile.position = position;
 			projectile.velocity = velocity;
+		}
+
+		public function get playerPosition():Point {
+			return _playerPosition;
 		}
 	}
 }

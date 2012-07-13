@@ -1,10 +1,17 @@
 // IMPORTANT.
-- TODO: touch release recoil is annoying
-- TODO: handle stage resizing
-- TODO: introduce player health and death
+- TODO: touch controls suck!
+- TODO: handle stage resizing in 3D view
 - TODO: implement UI as regular sprites
 - TODO: implement UI with starling ----> http://www.geepers.co.uk/?page_id=587, pass "badoing"
 - TODO: projectiles wonder too far
+- TODO: try Rob's skybox
+- TODO: implement high score persistence
+
+// BUGS.
+- TODO: invader projectiles are no longer visible
+- TODO: weird line on player projectiles
+- TODO: sorting artifact on android
+- TODO: invader creation randomness sucks - probabilities are weird, sometimes the same object keeps appearing, etc
 
 // Gameplay improvement.
 - TODO: different invader types have
