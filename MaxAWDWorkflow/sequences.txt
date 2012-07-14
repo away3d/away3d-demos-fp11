@@ -1,0 +1,5 @@
+# Sequences for characters
+# This file was written by loth
+Run 140 157
+Breathe 0 60
+Walk 70 130
