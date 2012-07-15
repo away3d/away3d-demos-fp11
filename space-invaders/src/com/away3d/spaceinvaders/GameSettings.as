@@ -5,9 +5,8 @@ package com.away3d.spaceinvaders
 
 	public class GameSettings
 	{
-		// -----------------------
-		// Settings.
-		// -----------------------
+		// General.
+		public static const debugMode:Boolean = false;
 
 		// Scene.
 		public static const xyRange:Number = 1000;

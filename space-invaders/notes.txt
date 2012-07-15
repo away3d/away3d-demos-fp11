@@ -4,7 +4,6 @@
 - TODO: projectiles wonder too far
 
 // BUGS.
-- TODO: invader projectiles slanting is disabled cause of cube geom bug
 - TODO: fucked up GO screen in mobile
 - TODO: sorting artifact on android
 - TODO: you can hear invader fire sounds on pause
@@ -12,16 +11,12 @@
 
 // Performance improvement.
 - TODO: star objects are very inefficient
+- TODO: skybox not used?
 
 // Code improvement.
 - TODO: projectile and star pools look almost the same, generalize classes
-- TODO: move warp in to lower class? invader and stars use it
-- TODO: remove not needed picking from invaders
-- TODO: tidy up InvaderScene.as
-- TODO: remove InvaderVO, it's confusing
-- TODO: remove tweening lib dependency
-- TODO: move invader definitions out of InvaderFactory
-- TODO: move web and mobile launches to the repo
+- TODO: tidy up general code
+- TODO: review in code todos
 
 // To consider.
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score

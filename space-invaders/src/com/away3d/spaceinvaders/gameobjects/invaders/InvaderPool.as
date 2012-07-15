@@ -88,10 +88,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			// Get an invader clone from the factory.
 			var invader:Invader = _invaderFactory.createInvaderOfType( _currentTypeIndex );
 
-			// Enable mouse listeners for shooting at the invader.
-			invader.meshFrame0.mouseEnabled = true;
-			invader.meshFrame1.mouseEnabled = true;
-
 			// Listen for when the invader is dead.
 			invader.addEventListener( GameObjectEvent.DEAD, forwardEvent );
 			invader.addEventListener( GameObjectEvent.FIRE, forwardEvent );
