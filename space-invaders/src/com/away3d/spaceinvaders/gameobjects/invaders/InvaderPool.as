@@ -27,7 +27,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			super();
 
 			_invaderFactory = new InvaderFactory( invaderMaterial );
-
 			_lastSpawnTimes = new Dictionary();
 
 			_spawnTimes = new Dictionary();
@@ -37,7 +36,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_spawnTimes[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = 3000;
 		}
 
-		public function resetSpawnTimes():void {
+		private function resetSpawnTimes():void {
 			_time = getTimer();
 			_lastSpawnTimes[ InvaderDefinitions.MOTHERSHIP 				] = _time;
 			_lastSpawnTimes[ InvaderDefinitions.BUG_INVADER 			] = _time;
@@ -47,13 +46,46 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		override public function update():void {
 			super.update();
-
 			_time = getTimer();
-
 			evaluateSpawnInvader( InvaderDefinitions.MOTHERSHIP );
 			evaluateSpawnInvader( InvaderDefinitions.BUG_INVADER );
 			evaluateSpawnInvader( InvaderDefinitions.OCTOPUS_INVADER );
 			evaluateSpawnInvader( InvaderDefinitions.ROUNDED_OCTOPUS_INVADER );
+		}
+
+		override protected function createItem():GameObject {
+
+			// Get an invader clone from the factory.
+			var invader:Invader = _invaderFactory.createInvaderOfType( _currentTypeIndex );
+
+			// Listen for when the invader is dead.
+			invader.addEventListener( GameObjectEvent.DEAD, forwardEvent );
+			invader.addEventListener( GameObjectEvent.FIRE, forwardEvent );
+
+			return invader;
+		}
+
+		public function stop():void {
+			var invader:Invader;
+			var len:uint = _gameObjects.length;
+			for( var i:uint; i < len; i++ ) {
+				invader = _gameObjects[ i ] as Invader;
+				invader.stopTimers();
+			}
+		}
+
+		public function resume():void {
+			var invader:Invader;
+			var len:uint = _gameObjects.length;
+			for( var i:uint; i < len; i++ ) {
+				invader = _gameObjects[ i ] as Invader;
+				invader.resumeTimers();
+			}
+			resetSpawnTimes();
+		}
+
+		private function forwardEvent( event:Event ):void {
+			dispatchEvent( event );
 		}
 
 		private function evaluateSpawnInvader( typeIndex:uint ):void {
@@ -82,23 +114,5 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_gameObjects.push( invader );
 			return invader;
 		}
-
-		override protected function createItem():GameObject {
-
-			// Get an invader clone from the factory.
-			var invader:Invader = _invaderFactory.createInvaderOfType( _currentTypeIndex );
-
-			// Listen for when the invader is dead.
-			invader.addEventListener( GameObjectEvent.DEAD, forwardEvent );
-			invader.addEventListener( GameObjectEvent.FIRE, forwardEvent );
-
-			return invader;
-		}
-
-		private function forwardEvent( event:Event ):void {
-			dispatchEvent( event );
-		}
-
-
 	}
 }

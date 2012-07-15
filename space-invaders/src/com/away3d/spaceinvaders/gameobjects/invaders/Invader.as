@@ -16,18 +16,13 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	{
 		private var _meshFrame0:Mesh;
 		private var _meshFrame1:Mesh;
-
+		private var _fireTimer:Timer;
+		private var _invaderType:uint;
+		private var _targetSpawnZ:Number;
+		private var _animationTimer:Timer;
 		private var _cellsFrame0:Vector.<Point>;
 		private var _cellsFrame1:Vector.<Point>;
-
-		private var _animationTimer:Timer;
-		private var _fireTimer:Timer;
-
 		private var _currentDefinitionIndex:uint;
-
-		private var _targetSpawnZ:Number;
-
-		private var _invaderType:uint;
 
 		public function Invader( invaderType:uint, meshFrame0:Mesh, meshFrame1:Mesh, cellsFrame0:Vector.<Point>, cellsFrame1:Vector.<Point> ) {
 
@@ -44,7 +39,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_cellsFrame0 = cellsFrame0;
 			_cellsFrame1 = cellsFrame1;
 
-			_animationTimer = new Timer( MathUtils.rand( 250, 500 ) );
+			_animationTimer = new Timer( MathUtils.rand( GameSettings.invaderAnimationTimeMS, GameSettings.invaderAnimationTimeMS * 1.5 ) );
 			_animationTimer.addEventListener( TimerEvent.TIMER, onAnimationTimerTick );
 
 			_fireTimer = new Timer( MathUtils.rand( GameSettings.invaderFireRateMS, GameSettings.invaderFireRateMS * 1.5 ) );
@@ -53,6 +48,18 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		public function getInvaderClone():Invader {
 			return new Invader( _invaderType, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh, _cellsFrame0, _cellsFrame1 );
+		}
+
+		public function stopTimers():void {
+			_animationTimer.stop();
+			_fireTimer.stop();
+		}
+
+		public function resumeTimers():void {
+			if( enabled ) {
+				_animationTimer.start();
+				_fireTimer.start();
+			}
 		}
 
 		override public function set enabled( value:Boolean ):void {
@@ -99,7 +106,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			super.reset();
 			x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
 			y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
-			z = 100000; // Warp in...
+			z = GameSettings.maxZ; // Warp in...
 			velocity.z = MathUtils.rand( -2500, -1500 );
 			_targetSpawnZ = MathUtils.rand( 15000, 20000 );
 			scaleX = scaleY = scaleZ = invaderType == InvaderDefinitions.MOTHERSHIP ? 3 : 1;
@@ -107,14 +114,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		public function get cellPositions():Vector.<Point> {
 			return _currentDefinitionIndex == 0 ? _cellsFrame0 : _cellsFrame1;
-		}
-
-		public function get meshFrame1():Mesh {
-			return _meshFrame1;
-		}
-
-		public function get meshFrame0():Mesh {
-			return _meshFrame0;
 		}
 
 		public function get invaderType():uint {

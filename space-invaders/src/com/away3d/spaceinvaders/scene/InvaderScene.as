@@ -100,6 +100,7 @@ package com.away3d.spaceinvaders.scene
 			removeEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
 			initEngine();
 			initScene();
+			update();
 		}
 
 		private function initEngine():void {
@@ -171,11 +172,12 @@ package com.away3d.spaceinvaders.scene
 		// -----------------------
 
 		public function resume():void {
-			_invaderPool.resetSpawnTimes();
+			_invaderPool.resume();
 			_active = true;
 		}
 
 		public function stop():void {
+			_invaderPool.stop();
 			_active = false;
 		}
 

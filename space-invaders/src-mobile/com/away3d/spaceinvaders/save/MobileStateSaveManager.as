@@ -7,7 +7,7 @@ package com.away3d.spaceinvaders.save
 
 	public class MobileStateSaveManager extends StateSaveManager
 	{
-		private const FILE_PATH:String = "away3dSpaceInvadersUserData.xml";
+		private const FILE_PATH:String = "away3dSpaceInvadersUserData.txt";
 
 		public function MobileStateSaveManager() {
 			super();
@@ -16,13 +16,10 @@ package com.away3d.spaceinvaders.save
 		override public function saveHighScore( score:uint ):void {
 			trace( "saving score: " + score );
 			var file:File = File.applicationStorageDirectory.resolvePath( FILE_PATH );
-			trace( "file: " + file );
 			var str:FileStream = new FileStream();
 			str.open( file, FileMode.WRITE );
 			str.position = 0;
-			var xml:XML = <xml><score>score</score></xml>;
-			trace( "xml: " + xml );
-			str.writeUTFBytes( xml );
+			str.writeUnsignedInt( score );
 		}
 
 		override public function loadHighScore():uint {
@@ -32,11 +29,7 @@ package com.away3d.spaceinvaders.save
 				var str:FileStream = new FileStream();
 				str.open( file, FileMode.READ );
 				str.position = 0;
-				var xml:XML = new XML( str.readUTFBytes( str.bytesAvailable ) );
-				trace( "xml: " + xml );
-				var score:uint = uint( xml.score[ 0 ].toString() );
-				trace( "read score: " + score );
-				return score;
+				return str.readUnsignedInt();
 			}
 			return 0;
 		}

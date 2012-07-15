@@ -10,8 +10,6 @@ package com.away3d.spaceinvaders.input
 
 	public class AccelerometerInput extends InputBase
 	{
-		private var _accelerometer:Accelerometer;
-
 		public function AccelerometerInput( scene:InvaderScene ) {
 			super( scene );
 			_scene.cameraMotionEase = GameSettings.accelerometerCameraMotionEase;
@@ -19,8 +17,8 @@ package com.away3d.spaceinvaders.input
 
 		override public function init():void {
 			stage.addEventListener( MouseEvent.MOUSE_DOWN, onStageMouseDown );
-			_accelerometer = new Accelerometer();
-			_accelerometer.addEventListener( AccelerometerEvent.UPDATE, onAccelerometerUpdate );
+			var accelerometer:Accelerometer = new Accelerometer();
+			accelerometer.addEventListener( AccelerometerEvent.UPDATE, onAccelerometerUpdate );
 		}
 
 		override public function update():void {
@@ -28,7 +26,6 @@ package com.away3d.spaceinvaders.input
 		}
 
 		private function onAccelerometerUpdate( event:AccelerometerEvent ):void {
-//			trace( "accelerometer: " + event.accelerationX + ", " + event.accelerationY + ", " + event.accelerationZ );
 			_currentPosition.x = -GameSettings.accelerometerMotionFactorX * event.accelerationX * GameSettings.cameraPanRange;
 			_currentPosition.y =  GameSettings.accelerometerMotionFactorY * ( GameSettings.accelerometerCenterY - event.accelerationY ) * GameSettings.cameraPanRange;
 			if( _currentPosition.x < -GameSettings.cameraPanRange ) _currentPosition.x = -GameSettings.cameraPanRange;

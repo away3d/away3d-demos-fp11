@@ -19,8 +19,6 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 		override public function reset():void {
 			super.reset();
-//			rotationalVelocity.x = MathUtils.rand( -5, 5 );
-//			rotationalVelocity.y = MathUtils.rand( -5, 5 );
 			rotationalVelocity.z = MathUtils.rand( -5, 5 );
 		}
 

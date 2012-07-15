@@ -1,28 +1,16 @@
-// IMPORTANT.
-- TODO: implement high score persistence on mobile
-- TODO: handle stage resizing in 3D view -> in all views!
-- TODO: projectiles wonder too far
-
 // BUGS.
-- TODO: fucked up GO screen in mobile
-- TODO: sorting artifact on android
-- TODO: you can hear invader fire sounds on pause
-- TODO: render a frame before dismissing the splash pop up
+- TODO: game over screen is not visible on android ( although you can click the invisible replay button )
+- TODO: high-score save/restore is not working on mobile
 
 // Performance improvement.
 - TODO: star objects are very inefficient
-- TODO: skybox not used?
-
-// Code improvement.
-- TODO: projectile and star pools look almost the same, generalize classes
-- TODO: tidy up general code
-- TODO: review in code todos
+- TODO: skybox is overkill since you can only see 1 image?
 
 // To consider.
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
 - TODO: do not allow invaders to wonder too close?
 - TODO: implement invader spawn sound?
-- TODO: implement UI with starling? ----> http://www.geepers.co.uk/?page_id=587, pass "badoing" - its overkill to implement for the poor UI we've got, additional starling effects?
+- TODO: implement UI with starling?
 - TODO: add bomb objects ( which explode on click or something like that )
 - TODO: fire on and fire off cycles on invaders?
 - TODO: invaders cause damage on player?

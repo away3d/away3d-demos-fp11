@@ -35,11 +35,11 @@ package com.away3d.spaceinvaders.ui
 			addChild( crossHair );
 
 			// Score text.
-			_scoreText = createTextField();
+			_scoreText = getTextField();
 			addChild( _scoreText );
 
 			// Lives text.
-			_livesText = createTextField();
+			_livesText = getTextField();
 			_livesText.y = stage.stageHeight - 20;
 			addChild( _livesText );
 
@@ -122,22 +122,16 @@ package com.away3d.spaceinvaders.ui
 		}
 
 		private function initializeButton( button:SimpleButton ):void {
-			button.addEventListener( MouseEvent.MOUSE_OVER, onBtnMouseOver, false, 0, true );
 			button.addEventListener( MouseEvent.MOUSE_DOWN, onBtnMouseDown, false, 0, true );
 		}
 
 		private function destroyButton( button:SimpleButton ):void {
-			button.removeEventListener( MouseEvent.MOUSE_OVER, onBtnMouseOver );
 			button.removeEventListener( MouseEvent.MOUSE_DOWN, onBtnMouseDown );
 		}
 
 		// -----------------------
 		// Event handlers.
 		// -----------------------
-
-		private function onBtnMouseOver( event:MouseEvent ):void {
-			SoundManager.playSound( Sounds.THUCK );
-		}
 
 		private function onBtnMouseDown( event:MouseEvent ):void {
 			SoundManager.playSound( Sounds.UFO );
@@ -180,7 +174,7 @@ package com.away3d.spaceinvaders.ui
 			_scoreText.x = stage.stageWidth / 2 - _scoreText.width / 2;
 		}
 
-		private function createTextField():TextField {
+		private function getTextField():TextField {
 			var clip:CustomTextField = new CustomTextField();
 			return clip.tf;
 		}

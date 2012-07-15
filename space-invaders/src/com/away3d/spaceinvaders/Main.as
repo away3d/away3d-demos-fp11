@@ -77,6 +77,31 @@ package com.away3d.spaceinvaders
 			_ui.showSplashPopUp();
 		}
 
+		// -----------------------
+		// App flow.
+		// -----------------------
+
+		private function stopGame():void {
+			_scene.stop();
+			removeEventListener( Event.ENTER_FRAME, enterframeHandler );
+		}
+
+		private function startGame():void {
+			_scene.reset();
+			_scene.resume();
+			ScoreManager.instance.reset();
+			addEventListener( Event.ENTER_FRAME, enterframeHandler );
+		}
+
+		private function enterframeHandler( event:Event ):void {
+			_input.update();
+			_scene.update();
+		}
+
+		// -----------------------------
+		// User interface interaction.
+		// -----------------------------
+
 		private function onUiResume( event:GameEvent ):void {
 			_scene.resume();
 			addEventListener( Event.ENTER_FRAME, enterframeHandler );
@@ -95,23 +120,6 @@ package com.away3d.spaceinvaders
 			_ui.hideSplashPopUp();
 			_ui.hideGameOverPopUp();
 			startGame();
-		}
-
-		private function stopGame():void {
-			_scene.stop();
-			removeEventListener( Event.ENTER_FRAME, enterframeHandler );
-		}
-
-		private function startGame():void {
-			_scene.reset();
-			_scene.resume();
-			ScoreManager.instance.reset();
-			addEventListener( Event.ENTER_FRAME, enterframeHandler );
-		}
-
-		private function enterframeHandler( event:Event ):void {
-			_input.update();
-			_scene.update();
 		}
 	}
 }

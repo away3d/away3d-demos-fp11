@@ -1,14 +1,13 @@
 package com.away3d.spaceinvaders.utils
 {
 
+	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameEvent;
 	import com.away3d.spaceinvaders.gameobjects.invaders.InvaderDefinitions;
-	import com.away3d.spaceinvaders.gameobjects.invaders.InvaderFactory;
 	import com.away3d.spaceinvaders.save.StateSaveManager;
 	import com.away3d.spaceinvaders.ui.UIView;
 
 	import flash.events.EventDispatcher;
-
 	import flash.utils.Dictionary;
 
 	public class ScoreManager extends EventDispatcher
@@ -44,7 +43,7 @@ package com.away3d.spaceinvaders.utils
 
 		public function reset():void {
 			_score = 0;
-			_lives = 3;
+			_lives = GameSettings.playerLives;
 			_ui.updateScoreText( _score, _highScore );
 			_ui.updateLivesText( _lives );
 		}
