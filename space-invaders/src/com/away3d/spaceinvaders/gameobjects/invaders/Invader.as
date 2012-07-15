@@ -41,7 +41,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_animationTimer = new Timer( MathUtils.rand( 250, 500 ) );
 			_animationTimer.addEventListener( TimerEvent.TIMER, onAnimationTimerTick );
 
-			_fireTimer = new Timer( MathUtils.rand( 2000, 3000 ) );
+			_fireTimer = new Timer( MathUtils.rand( GameSettings.invaderFireRateMS, GameSettings.invaderFireRateMS * 1.5 ) );
 			_fireTimer.addEventListener( TimerEvent.TIMER, onFireTimerTick );
 		}
 
@@ -58,7 +58,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		private function onFireTimerTick( event:TimerEvent ):void {
-			_fireTimer.delay = MathUtils.rand( 2000, 3000 );
+			_fireTimer.delay = MathUtils.rand( GameSettings.invaderFireRateMS, GameSettings.invaderFireRateMS * 1.5 );
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.FIRE, this ) );
 		}
 
@@ -92,7 +92,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
 			z = 100000; // Warp in...
 			velocity.z = MathUtils.rand( -2500, -1500 );
-			_targetSpawnZ = MathUtils.rand( 10000, 15000 );
+			_targetSpawnZ = MathUtils.rand( 15000, 20000 );
+			scaleX = scaleY = scaleZ = typeIndex == InvaderFactory.MOTHERSHIP ? 3 : 1;
 		}
 
 		public function get cellPositions():Vector.<Point> {

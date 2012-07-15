@@ -17,7 +17,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		private var _invaderFactory:InvaderFactory;
 		private var _currentTypeIndex:uint;
 
-		public var targetNumInvaders:uint = 0;
 		public var spawnTimeFactor:Number = 1;
 
 		private var _time:uint;
@@ -32,17 +31,17 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_lastSpawnTimes = new Dictionary();
 
 			_spawnTimes = new Dictionary();
-			_spawnTimes[ InvaderFactory.MOTHERSHIP ] = 60000;
-			_spawnTimes[ InvaderFactory.BUG_INVADER ] = 4000;
-			_spawnTimes[ InvaderFactory.OCTOPUS_INVADER ] = 5000;
+			_spawnTimes[ InvaderFactory.MOTHERSHIP				] = 60000;
+			_spawnTimes[ InvaderFactory.BUG_INVADER 			] = 5000;
+			_spawnTimes[ InvaderFactory.OCTOPUS_INVADER 		] = 10000;
 			_spawnTimes[ InvaderFactory.ROUNDED_OCTOPUS_INVADER ] = 3000;
 		}
 
 		public function resetSpawnTimes():void {
 			_time = getTimer();
-			_lastSpawnTimes[ InvaderFactory.MOTHERSHIP ] = _time;
-			_lastSpawnTimes[ InvaderFactory.BUG_INVADER ] = _time;
-			_lastSpawnTimes[ InvaderFactory.OCTOPUS_INVADER ] = _time;
+			_lastSpawnTimes[ InvaderFactory.MOTHERSHIP 				] = _time;
+			_lastSpawnTimes[ InvaderFactory.BUG_INVADER 			] = _time;
+			_lastSpawnTimes[ InvaderFactory.OCTOPUS_INVADER			] = _time;
 			_lastSpawnTimes[ InvaderFactory.ROUNDED_OCTOPUS_INVADER ] = _time;
 		}
 
@@ -51,26 +50,19 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 			_time = getTimer();
 
-			if( numChildren < targetNumInvaders ) {
-				evaluateSpawnInvader( InvaderFactory.MOTHERSHIP );
-				evaluateSpawnInvader( InvaderFactory.BUG_INVADER );
-				evaluateSpawnInvader( InvaderFactory.OCTOPUS_INVADER );
-				evaluateSpawnInvader( InvaderFactory.ROUNDED_OCTOPUS_INVADER );
-			}
+			evaluateSpawnInvader( InvaderFactory.MOTHERSHIP );
+			evaluateSpawnInvader( InvaderFactory.BUG_INVADER );
+			evaluateSpawnInvader( InvaderFactory.OCTOPUS_INVADER );
+			evaluateSpawnInvader( InvaderFactory.ROUNDED_OCTOPUS_INVADER );
 		}
 
 		private function evaluateSpawnInvader( typeIndex:uint ):void {
-			if( Math.random() > 0.01 ) { // Causes eventual skips.
-			    var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
+				var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
 				if( elapsedSinceSpawn > _spawnTimes[ typeIndex ] * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
 					var invader:Invader = addItemOfType( typeIndex ) as Invader;
 					dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );
 					_lastSpawnTimes[ typeIndex ] = _time;
 				}
-			}
-			else {
-				_lastSpawnTimes[ typeIndex ] = _time;
-			}
 		}
 
 		private function addItemOfType( typeIndex:uint ):GameObject {
@@ -79,7 +71,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			var len:uint = _gameObjects.length;
 			for( var i:uint; i < len; i++ ) {
 				invader = _gameObjects[ i ] as Invader;
-				if( !invader.enabled && invader.typeIndex == _currentTypeIndex ) {
+				if( !invader.enabled && invader.typeIndex == typeIndex ) {
 					invader.reset();
 					return invader;
 				}

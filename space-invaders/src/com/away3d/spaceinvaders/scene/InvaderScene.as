@@ -2,6 +2,7 @@ package com.away3d.spaceinvaders.scene
 {
 
 	import away3d.core.base.Geometry;
+	import away3d.lights.DirectionalLight;
 	import away3d.materials.methods.EnvMapAmbientMethod;
 	import away3d.materials.methods.EnvMapMethod;
 	import away3d.primitives.SkyBox;
@@ -109,7 +110,10 @@ package com.away3d.spaceinvaders.scene
 		private function initScene():void {
 
 			// Init Lights.
-			_cameraLight = new PointLight();
+			_cameraLight = new DirectionalLight();
+			_cameraLight.specular = 1;
+			_cameraLight.diffuse = 1;
+			_cameraLight.ambient = 0.2;
 			_lightPicker = new StaticLightPicker( [ _cameraLight ] );
 
 			// Stats.
@@ -142,7 +146,7 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		public function reset():void {
-			// Update all game object pools.
+			// Reset all game object pools.
 			for( var i:uint; i < _gameObjectPools.length; ++i ) {
 				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
 				gameObjectPool.reset();
@@ -150,6 +154,7 @@ package com.away3d.spaceinvaders.scene
 			_currentLevel = 0;
 			_currentLevelKills = 0;
 			_totalKills = 0;
+			_invaderPool.spawnTimeFactor = 1;
 			loadLevel();
 		}
 
@@ -161,7 +166,7 @@ package com.away3d.spaceinvaders.scene
 		private function createPlayer():void {
 
 			// Reusable projectile mesh.
-			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FF00 );
+			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF );
 			var playerProjectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial );
 
 			// Crete pool.
@@ -174,7 +179,6 @@ package com.away3d.spaceinvaders.scene
 			_player.position = new Vector3D( 0, 0, -1000 );
 			_player.enabled = true;
 			_player.addEventListener( GameObjectEvent.HIT, onPlayerHit );
-			_cameraLight.position = new Vector3D( 0, 0, -2000 );
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
 		}
@@ -182,13 +186,12 @@ package com.away3d.spaceinvaders.scene
 		private function createInvaders():void {
 
 			// Same material for all invaders.
-			var invaderMaterial:ColorMaterial = new ColorMaterial( 0x666666 );
+			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
 			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
 
 			// Reusable projectile mesh.
-//			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
-			var invaderProjectileGeometry:Geometry = new SphereGeometry( 25 );
+			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200/*, 1, 1, 4*/ ); // TODO: bug on cube primitive with non-default segmentations
 			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
 			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
 			// Slant vertices a little.
@@ -224,12 +227,15 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _cellPool );
 		}
 
+		private var _active:Boolean;
+
 		public function resume():void {
 			_invaderPool.resetSpawnTimes();
+			_active = true;
 		}
 
 		public function stop():void {
-
+			_active = false;
 		}
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
@@ -240,12 +246,11 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		private function onInvaderFire( event:GameObjectEvent ):void {
-			SoundManager.playSound( Sounds.BOING );
+			SoundManager.playSound( Sounds.INVADER_FIRE, 0.5 );
 			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
 		}
 
 		private function loadLevel():void {
-			_invaderPool.targetNumInvaders += GameSettings.invaderCountIncreasePerLevel;
 			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
 			if( _invaderPool.spawnTimeFactor < GameSettings.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameSettings.minimumSpawnTime;
 		}
@@ -277,16 +282,18 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		private function createInvaderDeathAnimation( invader:Invader, hitter:Projectile ):void {
-			var intensity:Number = GameSettings.deathExplosionIntensity;
+			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 0.5, 3 );
 			var positions:Vector.<Point> = invader.cellPositions;
 			var len:uint = positions.length;
+			var sc:Number = invader.scaleX;
 			for( var i:uint; i < len; ++i ) {
 				var cell:InvaderCell = _cellPool.addItem() as InvaderCell;
+				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
 				// Set cell position according to dummy child position.
 				var pos:Point = positions[ i ];
 				cell.position = invader.position;
-				cell.x += pos.x;
-				cell.y += pos.y;
+				cell.x += sc * pos.x;
+				cell.y += sc * pos.y;
 				// Determine explosion velocity of cell.
 				var dx:Number = cell.x - hitter.x;
 				var dy:Number = cell.y - hitter.y;
@@ -323,11 +330,13 @@ package com.away3d.spaceinvaders.scene
 			_player.update();
 
 			// Render scene.
+			_cameraLight.position = _player.position;
 			_view.render();
 		}
 
 		public function firePlayer():void {
-			SoundManager.playSound( Sounds.PLAYER_FIRE );
+			if( !_active ) return;
+			SoundManager.playSound( Sounds.PLAYER_FIRE, 0.5 );
 			fireProjectile( _player.position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
 		}
 

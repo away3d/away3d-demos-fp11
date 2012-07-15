@@ -2,21 +2,13 @@
 - TODO: implement high score persistence on mobile
 - TODO: handle stage resizing in 3D view -> in all views!
 - TODO: projectiles wonder too far
-- TODO: UI buttons too small for mobile
 
 // BUGS.
-- TODO: for some reason invader projectiles aren't visible, using spheres for now
+- TODO: invader projectiles slanting is disabled cause of cube geom bug
 - TODO: fucked up GO screen in mobile
-- TODO: invader projectiles are no longer visible and weird line on player projectiles :: 736c52e584b2ea575903869730b60dd696569a05 is damaging commit by Richard on July 12
 - TODO: sorting artifact on android
-- TODO: invaders accumulate while in splash screen
-- TODO: do not fire right after pressing pop up buttons
+- TODO: you can hear invader fire sounds on pause
 - TODO: render a frame before dismissing the splash pop up
-
-// Gameplay improvement.
-- TODO: add bomb objects ( which explode on click or something like that )
-- TODO: fire on and fire off cycles on invaders?
-- TODO: invaders cause damage on player?
 
 // Performance improvement.
 - TODO: star objects are very inefficient
@@ -36,3 +28,6 @@
 - TODO: do not allow invaders to wonder too close?
 - TODO: implement invader spawn sound?
 - TODO: implement UI with starling? ----> http://www.geepers.co.uk/?page_id=587, pass "badoing" - its overkill to implement for the poor UI we've got, additional starling effects?
+- TODO: add bomb objects ( which explode on click or something like that )
+- TODO: fire on and fire off cycles on invaders?
+- TODO: invaders cause damage on player?

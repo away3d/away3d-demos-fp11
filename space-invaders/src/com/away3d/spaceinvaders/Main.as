@@ -7,7 +7,6 @@ package com.away3d.spaceinvaders
 	import com.away3d.spaceinvaders.save.StateSaveManager;
 	import com.away3d.spaceinvaders.scene.InvaderScene;
 	import com.away3d.spaceinvaders.sound.SoundManager;
-	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.ui.UIView;
 	import com.away3d.spaceinvaders.utils.ScoreManager;
 
@@ -28,7 +27,7 @@ package com.away3d.spaceinvaders
 			initConsistency();
 			initStage();
 			initScene();
-			initSound();
+			SoundManager.registerSounds();
 			initInput();
 			initUi();
 		}
@@ -52,19 +51,10 @@ package com.away3d.spaceinvaders
 			addChild( _input );
 		}
 
-		private function initSound():void {
-			SoundManager.registerSound( Sounds.PLAYER_FIRE, new SoundPlayerFire() );
-			SoundManager.registerSound( Sounds.INVADER_DEATH, new SoundInvaderDeath() );
-			SoundManager.registerSound( Sounds.EXPLOSION_SOFT, new SoundExplosionSoft() );
-			SoundManager.registerSound( Sounds.EXPLOSION_STRONG, new SoundExplosionStrong() );
-			SoundManager.registerSound( Sounds.MOTHERSHIP, new SoundMothership() );
-			SoundManager.registerSound( Sounds.BOING, new SoundFast() );
-		}
-
 		private function initStage():void {
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-			stage.frameRate = 30;
+			stage.frameRate = 60;
 		}
 
 		private function initScene():void {
@@ -113,6 +103,7 @@ package com.away3d.spaceinvaders
 		}
 
 		private function startGame():void {
+			_scene.reset();
 			_scene.resume();
 			ScoreManager.instance.reset();
 			addEventListener( Event.ENTER_FRAME, enterframeHandler );

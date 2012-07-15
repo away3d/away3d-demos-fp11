@@ -2,11 +2,24 @@ package com.away3d.spaceinvaders.sound
 {
 
 	import flash.media.Sound;
+	import flash.media.SoundChannel;
+	import flash.media.SoundTransform;
 
 	public class SoundManager
 	{
 		private static var _initialized:Boolean;
 		private static var _sounds:Object;
+
+		public static function registerSounds():void {
+			registerSound( Sounds.PLAYER_FIRE, new SoundShoot() );
+			registerSound( Sounds.INVADER_DEATH, new SoundInvaderDeath() );
+			registerSound( Sounds.EXPLOSION_SOFT, new SoundExplosionSoft() );
+			registerSound( Sounds.EXPLOSION_STRONG, new SoundExplosionStrong() );
+			registerSound( Sounds.MOTHERSHIP, new SoundMothership() );
+			registerSound( Sounds.INVADER_FIRE, new SoundPlayerFire() );
+			registerSound( Sounds.THUCK, new SoundThuck() );
+			registerSound( Sounds.UFO, new SoundUfo() );
+		}
 
 		private static function init():void {
 			if( !_initialized ) {
@@ -15,18 +28,15 @@ package com.away3d.spaceinvaders.sound
 			}
 		}
 
-		public static function registerSound( id:String, sound:Sound ):void {
+		private static function registerSound( id:String, sound:Sound ):void {
 			init();
 			_sounds[ id ] = sound;
 		}
 
-		public static function playSound( id:String, loop:Boolean = false ):void {
+		public static function playSound( id:String, volume:Number = 1 ):void {
 			var sound:Sound = _sounds[ id ];
-			sound.play();
-		}
-
-		public static function stopSound( id:String ):void {
-
+			var channel:SoundChannel = sound.play();
+			channel.soundTransform = new SoundTransform( volume );
 		}
 	}
 }
