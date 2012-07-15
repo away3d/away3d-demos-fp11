@@ -5,6 +5,7 @@
 - TODO: UI buttons too small for mobile
 
 // BUGS.
+- TODO: for some reason invader projectiles aren't visible, using spheres for now
 - TODO: fucked up GO screen in mobile
 - TODO: invader projectiles are no longer visible and weird line on player projectiles :: 736c52e584b2ea575903869730b60dd696569a05 is damaging commit by Richard on July 12
 - TODO: sorting artifact on android

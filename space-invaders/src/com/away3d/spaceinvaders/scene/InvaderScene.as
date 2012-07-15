@@ -187,11 +187,12 @@ package com.away3d.spaceinvaders.scene
 			invaderMaterial.lightPicker = _lightPicker;
 
 			// Reusable projectile mesh.
-			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
+//			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
+			var invaderProjectileGeometry:Geometry = new SphereGeometry( 25 );
 			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
 			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
 			// Slant vertices a little.
-			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
+			/*var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
 			var index:uint;
 			var pz:Number;
 			for( var i:uint; i < vertices.length / 3; i++ ) {
@@ -201,7 +202,7 @@ package com.away3d.spaceinvaders.scene
 					vertices[ index + 0 ] += pz > 0 ? 25 : pz == 0 ? 0 : -25;
 				}
 			}
-			invaderProjectileGeometry.subGeometries[ 0 ].updateVertexData( vertices );
+			invaderProjectileGeometry.subGeometries[ 0 ].updateVertexData( vertices );*/
 
 			// Crete pool.
 			_invaderProjectilePool = new ProjectilePool( invaderProjectileMesh );
