@@ -8,146 +8,18 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	import com.away3d.spaceinvaders.GameSettings;
 
 	import flash.geom.Point;
+	import flash.utils.Dictionary;
 
 	public class InvaderFactory
 	{
-		public static const ROUNDED_OCTOPUS_INVADER:uint = 2;
-		public static const BUG_INVADER:uint = 0;
-		public static const OCTOPUS_INVADER:uint = 1;
-		public static const MOTHERSHIP:uint = 3;
-
-		// Invader 1.
-		private const _invaderDefinition0:Array = [
-			[
-				0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
-				0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,
-				0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-				0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1,
-				1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1,
-				0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0
-			],
-			[
-				0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
-				1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1,
-				1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1,
-				1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-				0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
-				0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0
-			]
-		];
-		private const _invaderDefinitionDimensions0:Point = new Point( 11, 8 );
-
-		// Invader 2.
-		private const _invaderDefinition1:Array = [
-			[
-				0, 0, 0, 1, 1, 0, 0, 0,
-				0, 0, 1, 1, 1, 1, 0, 0,
-				0, 1, 1, 1, 1, 1, 1, 0,
-				1, 1, 0, 1, 1, 0, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 1, 0, 0, 1, 0, 0,
-				0, 1, 0, 1, 1, 0, 1, 0,
-				1, 0, 1, 0, 0, 1, 0, 1
-			],
-			[
-				0, 0, 0, 1, 1, 0, 0, 0,
-				0, 0, 1, 1, 1, 1, 0, 0,
-				0, 1, 1, 1, 1, 1, 1, 0,
-				1, 1, 0, 1, 1, 0, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 1, 0, 0, 1, 0, 0,
-				0, 1, 0, 0, 0, 0, 1, 0,
-				0, 0, 1, 0, 0, 1, 0, 0
-			]
-		];
-		private const _invaderDefinitionDimensions1:Point = new Point( 8, 8 );
-
-		// Invader 3.
-		private const _invaderDefinition2:Array = [
-			[
-				0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-				0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
-				0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0,
-				1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
-			],
-			[
-				0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-				0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
-				0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0,
-				0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0
-			]
-		];
-		private const _invaderDefinitionDimensions2:Point = new Point( 12, 8 );
-
-		// Invader 4.
-		private const _invaderDefinition3:Array = [
-			[
-				0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-				0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
-				0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-				0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
-				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0
-			],
-			[
-				0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-				0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
-				0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-				0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0
-			]
-		];
-		private const _invaderDefinitionDimensions3:Point = new Point( 16, 7 );
-
-		private const _invadersDefinitions:Array = [
-			_invaderDefinition0,
-			_invaderDefinition1,
-			_invaderDefinition2,
-			_invaderDefinition3
-		];
-		private const _invaderDefinitionDimensions:Array = [
-			_invaderDefinitionDimensions0,
-			_invaderDefinitionDimensions1,
-			_invaderDefinitionDimensions2,
-			_invaderDefinitionDimensions3
-		];
-
-		private var _invaderVOs:Vector.<InvaderVO>;
+		private var _invaders:Dictionary;
+		private var _invaderMaterial:MaterialBase;
+		private var _definitions:InvaderDefinitions;
 
 		public function InvaderFactory( invaderMaterial:MaterialBase ) {
-
-			// Create value objects that each invader type.
-			_invaderVOs = new Vector.<InvaderVO>();
-			for( var i:uint; i < _invadersDefinitions.length; ++i ) {
-				var invaderVO:InvaderVO = new InvaderVO();
-				invaderVO.typeIndex = i;
-				var definition:Array = _invadersDefinitions[ i ];
-				invaderVO.definitionFrame0 = definition[ 0 ];
-				invaderVO.definitionFrame1 = definition[ 1 ];
-				var invaderGeometry0:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definition[ 0 ], _invaderDefinitionDimensions[ i ] );
-				var invaderGeometry1:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definition[ 1 ], _invaderDefinitionDimensions[ i ] );
-				invaderVO.meshFrame0 = new Mesh( invaderGeometry0, invaderMaterial );
-				invaderVO.meshFrame1 = new Mesh( invaderGeometry1, invaderMaterial );
-				invaderVO.cellsFrame0 = createInvaderCells( definition[ 0 ], _invaderDefinitionDimensions[ i ] );
-				invaderVO.cellsFrame1 = createInvaderCells( definition[ 1 ], _invaderDefinitionDimensions[ i ] );
-				_invaderVOs.push( invaderVO );
-			}
-
+			_invaderMaterial = invaderMaterial;
+			_definitions = new InvaderDefinitions();
+			_invaders = new Dictionary();
 		}
 
 		private function createInvaderCells( definition:Array, gridDimensions:Point ):Vector.<Point> {
@@ -182,8 +54,24 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		public function createInvaderOfType( typeIndex:uint ):Invader {
-			var invaderVO:InvaderVO = _invaderVOs[ typeIndex ];
-			return new Invader( invaderVO );
+			var invader:Invader = _invaders[ typeIndex ];
+			if( !invader ) {
+				var definition:Array = _definitions.getDefinitionForInvaderType( typeIndex );
+				var dimensions:Point = _definitions.getDefinitionDimensionsForInvaderType( typeIndex );
+				var definitionFrame0:Array = definition[ 0 ];
+				var definitionFrame1:Array = definition[ 1 ];
+				var invaderGeometry0:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definition[ 0 ], dimensions );
+				var invaderGeometry1:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definition[ 1 ], dimensions );
+				var meshFrame0:Mesh = new Mesh( invaderGeometry0, _invaderMaterial );
+				var meshFrame1:Mesh = new Mesh( invaderGeometry1, _invaderMaterial );
+				var cellsFrame0:Vector.<Point> = createInvaderCells( definition[ 0 ], dimensions );
+				var cellsFrame1:Vector.<Point> = createInvaderCells( definition[ 1 ], dimensions );
+				invader = new Invader( typeIndex, meshFrame0, meshFrame1, cellsFrame0, cellsFrame1 );
+			}
+			else {
+				invader = invader.getInvaderClone();
+			}
+			return invader;
 		}
 	}
 }

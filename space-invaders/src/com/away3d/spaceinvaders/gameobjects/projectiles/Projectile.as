@@ -56,11 +56,6 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 		}
 
-		override public function destroy():void {
-			super.destroy();
-			_targets = null;
-		}
-
 		public function set targets( value:Vector.<GameObject> ):void {
 			_targets = value;
 		}

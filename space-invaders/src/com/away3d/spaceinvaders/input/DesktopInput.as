@@ -5,14 +5,16 @@ package com.away3d.spaceinvaders.input
 	import com.away3d.spaceinvaders.scene.InvaderScene;
 
 	import flash.events.Event;
+	import flash.events.KeyboardEvent;
 
 	import flash.events.MouseEvent;
+	import flash.ui.Keyboard;
 
-	public class MouseInput extends InputBase
+	public class DesktopInput extends InputBase
 	{
 		private var _mouseIsOnStage:Boolean = true;
 
-		public function MouseInput( scene:InvaderScene ) {
+		public function DesktopInput( scene:InvaderScene ) {
 			super( scene );
 			_scene.cameraMotionEase = GameSettings.mouseCameraMotionEase;
 		}
@@ -21,6 +23,15 @@ package com.away3d.spaceinvaders.input
 			stage.addEventListener( MouseEvent.MOUSE_DOWN, onStageMouseDown );
 			stage.addEventListener( MouseEvent.MOUSE_MOVE, onStageMouseMove );
 			stage.addEventListener( Event.MOUSE_LEAVE, onStageMouseLeave );
+			stage.addEventListener( KeyboardEvent.KEY_DOWN, onStageKeyDown );
+		}
+
+		private function onStageKeyDown( event:KeyboardEvent ):void {
+			switch( event.keyCode ) {
+				case Keyboard.SPACE:
+					_scene.firePlayer();
+					break;
+			}
 		}
 
 		private function onStageMouseMove( event:MouseEvent ):void {

@@ -31,18 +31,18 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_lastSpawnTimes = new Dictionary();
 
 			_spawnTimes = new Dictionary();
-			_spawnTimes[ InvaderFactory.MOTHERSHIP				] = 60000;
-			_spawnTimes[ InvaderFactory.BUG_INVADER 			] = 5000;
-			_spawnTimes[ InvaderFactory.OCTOPUS_INVADER 		] = 10000;
-			_spawnTimes[ InvaderFactory.ROUNDED_OCTOPUS_INVADER ] = 3000;
+			_spawnTimes[ InvaderDefinitions.MOTHERSHIP				] = 60000;
+			_spawnTimes[ InvaderDefinitions.BUG_INVADER 			] = 5000;
+			_spawnTimes[ InvaderDefinitions.OCTOPUS_INVADER 		] = 10000;
+			_spawnTimes[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = 3000;
 		}
 
 		public function resetSpawnTimes():void {
 			_time = getTimer();
-			_lastSpawnTimes[ InvaderFactory.MOTHERSHIP 				] = _time;
-			_lastSpawnTimes[ InvaderFactory.BUG_INVADER 			] = _time;
-			_lastSpawnTimes[ InvaderFactory.OCTOPUS_INVADER			] = _time;
-			_lastSpawnTimes[ InvaderFactory.ROUNDED_OCTOPUS_INVADER ] = _time;
+			_lastSpawnTimes[ InvaderDefinitions.MOTHERSHIP 				] = _time;
+			_lastSpawnTimes[ InvaderDefinitions.BUG_INVADER 			] = _time;
+			_lastSpawnTimes[ InvaderDefinitions.OCTOPUS_INVADER			] = _time;
+			_lastSpawnTimes[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = _time;
 		}
 
 		override public function update():void {
@@ -50,10 +50,10 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 			_time = getTimer();
 
-			evaluateSpawnInvader( InvaderFactory.MOTHERSHIP );
-			evaluateSpawnInvader( InvaderFactory.BUG_INVADER );
-			evaluateSpawnInvader( InvaderFactory.OCTOPUS_INVADER );
-			evaluateSpawnInvader( InvaderFactory.ROUNDED_OCTOPUS_INVADER );
+			evaluateSpawnInvader( InvaderDefinitions.MOTHERSHIP );
+			evaluateSpawnInvader( InvaderDefinitions.BUG_INVADER );
+			evaluateSpawnInvader( InvaderDefinitions.OCTOPUS_INVADER );
+			evaluateSpawnInvader( InvaderDefinitions.ROUNDED_OCTOPUS_INVADER );
 		}
 
 		private function evaluateSpawnInvader( typeIndex:uint ):void {
@@ -71,7 +71,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			var len:uint = _gameObjects.length;
 			for( var i:uint; i < len; i++ ) {
 				invader = _gameObjects[ i ] as Invader;
-				if( !invader.enabled && invader.typeIndex == typeIndex ) {
+				if( !invader.enabled && invader.invaderType == typeIndex ) {
 					invader.reset();
 					return invader;
 				}

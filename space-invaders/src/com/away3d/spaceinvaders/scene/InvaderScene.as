@@ -240,7 +240,7 @@ package com.away3d.spaceinvaders.scene
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
 			var invader:Invader = event.objectA as Invader;
-			if( invader.typeIndex == InvaderFactory.MOTHERSHIP ) {
+			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP ) {
 				SoundManager.playSound( Sounds.MOTHERSHIP );
 			}
 		}
@@ -262,7 +262,7 @@ package com.away3d.spaceinvaders.scene
 			// Check level update and update UI.
 			_currentLevelKills++;
 			_totalKills++;
-			ScoreManager.instance.registerKill( invader.typeIndex );
+			ScoreManager.instance.registerKill( invader.invaderType );
 			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
 				_currentLevelKills = 0;
 				_currentLevel++;
@@ -270,7 +270,7 @@ package com.away3d.spaceinvaders.scene
 			}
 
 			// Play sounds.
-			if( invader.typeIndex == InvaderFactory.MOTHERSHIP ) {
+			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP ) {
 				SoundManager.playSound( Sounds.EXPLOSION_STRONG );
 			}
 			else {

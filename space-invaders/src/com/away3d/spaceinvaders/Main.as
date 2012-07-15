@@ -3,7 +3,7 @@ package com.away3d.spaceinvaders
 
 	import com.away3d.spaceinvaders.events.GameEvent;
 	import com.away3d.spaceinvaders.input.InputBase;
-	import com.away3d.spaceinvaders.input.MouseInput;
+	import com.away3d.spaceinvaders.input.DesktopInput;
 	import com.away3d.spaceinvaders.save.StateSaveManager;
 	import com.away3d.spaceinvaders.scene.InvaderScene;
 	import com.away3d.spaceinvaders.sound.SoundManager;
@@ -47,7 +47,7 @@ package com.away3d.spaceinvaders
 		}
 
 		protected function initInput():void {
-			_input = new MouseInput( _scene );
+			_input = new DesktopInput( _scene );
 			addChild( _input );
 		}
 
