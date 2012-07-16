@@ -4,9 +4,7 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 	import away3d.entities.Mesh;
 
 	import com.away3d.spaceinvaders.GameVariables;
-
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
-	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	public class Projectile extends GameObject
 	{
@@ -19,7 +17,6 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 		override public function reset():void {
 			super.reset();
-			rotationalVelocity.z = MathUtils.rand( -5, 5 );
 		}
 
 		override public function update():void {
@@ -43,7 +40,7 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 						dx = target.x - x;
 						dy = target.y - y;
 						distance = Math.sqrt( dx * dx + dy * dy );
-						if( distance < 150 * target.scaleX ) {
+						if( distance < GameVariables.impactHitSize * target.scaleX ) {
 							target.impact( this );
 							if( GameVariables.projectilesDieOnImpact ) enabled = false;
 						}

@@ -1,36 +1,28 @@
 package com.away3d.spaceinvaders.scene
 {
 
-	import away3d.core.base.Geometry;
-	import away3d.core.base.Object3D;
-	import away3d.lights.DirectionalLight;
-	import away3d.materials.methods.EnvMapAmbientMethod;
-	import away3d.materials.methods.EnvMapMethod;
-	import away3d.primitives.SkyBox;
-	import away3d.primitives.SphereGeometry;
-	import away3d.textures.BitmapCubeTexture;
-	import away3d.textures.CubeTextureBase;
-
-	import com.away3d.spaceinvaders.*;
-
-	import com.away3d.spaceinvaders.gameobjects.invaders.*;
-
 	import away3d.arcane;
 	import away3d.containers.View3D;
+	import away3d.core.base.Geometry;
+	import away3d.core.base.Object3D;
 	import away3d.debug.AwayStats;
+	import away3d.debug.Trident;
 	import away3d.entities.Mesh;
-	import away3d.events.MouseEvent3D;
+	import away3d.lights.DirectionalLight;
 	import away3d.lights.LightBase;
 	import away3d.lights.PointLight;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.primitives.CubeGeometry;
-	import away3d.primitives.PlaneGeometry;
+	import away3d.primitives.SkyBox;
+	import away3d.textures.BitmapCubeTexture;
 
 	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
+	import com.away3d.spaceinvaders.gameobjects.invaders.*;
 	import com.away3d.spaceinvaders.gameobjects.player.Player;
 	import com.away3d.spaceinvaders.gameobjects.projectiles.Projectile;
 	import com.away3d.spaceinvaders.gameobjects.projectiles.ProjectilePool;
@@ -40,14 +32,10 @@ package com.away3d.spaceinvaders.scene
 	import com.away3d.spaceinvaders.utils.MathUtils;
 	import com.away3d.spaceinvaders.utils.ScoreManager;
 
-	import flash.display.BitmapData;
-
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.geom.Vector3D;
-	import flash.utils.setTimeout;
 
 	use namespace arcane; // TODO: Ugly, used to get the camera's aspect ratio
 
@@ -67,7 +55,6 @@ package com.away3d.spaceinvaders.scene
 		private var SkyboxImageNegZ:Class;
 
 		private var _view:View3D;
-		private var _cameraLight:LightBase;
 		private var _lightPicker:StaticLightPicker;
 		private var _playerPosition:Point = new Point();
 
@@ -117,16 +104,20 @@ package com.away3d.spaceinvaders.scene
 		private function initScene():void {
 
 			// Init Lights.
-			_cameraLight = new DirectionalLight();
-			_cameraLight.specular = 1;
-			_cameraLight.diffuse = 1;
-			_cameraLight.ambient = 0.2;
-			_lightPicker = new StaticLightPicker( [ _cameraLight ] );
+			var frontLight:DirectionalLight = new DirectionalLight();
+			frontLight.direction = new Vector3D( 0.5, 0, 1 );
+			frontLight.color = 0xFFFFFF;
+			frontLight.ambient = 0.2;
+			frontLight.ambientColor = 0xFF00FF;
+			_view.scene.addChild( frontLight );
+			_lightPicker = new StaticLightPicker( [ frontLight ] );
 
 			// Stats.
 			if( GameVariables.debugMode ) {
 				var stats:AwayStats = new AwayStats( _view );
 				addChild( stats );
+				var tri:Trident = new Trident();
+				_view.scene.addChild( tri );
 			}
 
 			// Skybox.
@@ -156,17 +147,20 @@ package com.away3d.spaceinvaders.scene
 		public function update():void {
 
 			// Update all game object pools.
-			for( var i:uint; i < _gameObjectPools.length; ++i ) {
-				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
-				gameObjectPool.update();
+			if( _active ) {
+				for( var i:uint; i < _gameObjectPools.length; ++i ) {
+					var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
+					gameObjectPool.update();
+				}
 			}
 
 			// Update player.
-			_player.update();
+			if( _active ) {
+				_player.update();
+			}
 
 			// Render scene.
-			_cameraLight.position = _player.position;
-			_view.render();
+			_view.render(); // Always render scene ( so 2D content updates properly on mobile with render mode = direct ).
 		}
 
 		// -----------------------
@@ -221,6 +215,7 @@ package com.away3d.spaceinvaders.scene
 			_player.position = new Vector3D( 0, 0, -1000 );
 			_player.enabled = true;
 			_player.addEventListener( GameObjectEvent.HIT, onPlayerHit );
+			_player.targets = _invaderPool.gameObjects;
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
 		}
@@ -232,7 +227,7 @@ package com.away3d.spaceinvaders.scene
 		private function createInvaders():void {
 
 			// Same material for all invaders.
-			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
+			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF, 1 );
 			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
 
@@ -285,7 +280,7 @@ package com.away3d.spaceinvaders.scene
 		// -----------------------
 
 		private function createInvaderDeathAnimation( invader:Invader, hitter:Projectile ):void {
-			var intensity:Number = GameVariables.deathExplosionIntensity * MathUtils.rand( 0.5, 3 );
+			var intensity:Number = GameVariables.deathExplosionIntensity * MathUtils.rand( 1, 4 );
 			var positions:Vector.<Point> = invader.cellPositions;
 			var len:uint = positions.length;
 			var sc:Number = invader.scaleX;
@@ -348,19 +343,21 @@ package com.away3d.spaceinvaders.scene
 
 		private function onInvaderFire( event:GameObjectEvent ):void {
 			SoundManager.playSound( Sounds.INVADER_FIRE, 0.5 );
-			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
+			fireProjectile( event.objectA, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
 		}
 
 		public function firePlayer():void {
 			if( !_active ) return;
 			SoundManager.playSound( Sounds.PLAYER_FIRE, 0.5 );
-			fireProjectile( _player.position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
+			var velocity:Vector3D = new Vector3D( 0, 0, 200 );
+			velocity = _player.transform.deltaTransformVector( velocity );
+			fireProjectile( _player, velocity, _invaderPool.gameObjects, _playerProjectilePool );
 		}
 
-		public function fireProjectile( position:Vector3D, velocity:Vector3D, targets:Vector.<GameObject>, pool:GameObjectPool ):void {
-	   		var projectile:Projectile = pool.addItem() as Projectile;
+		public function fireProjectile( source:Object3D, velocity:Vector3D, targets:Vector.<GameObject>, pool:GameObjectPool ):void {
+			var projectile:Projectile = pool.addItem() as Projectile;
 			projectile.targets = targets;
-			projectile.position = position;
+			projectile.transform = source.transform.clone();
 			projectile.velocity = velocity;
 		}
 
@@ -373,6 +370,8 @@ package com.away3d.spaceinvaders.scene
 			var dy:Number = y - _playerPosition.y;
 			_player.x += dx * cameraMotionEase;
 			_player.y += dy * cameraMotionEase;
+			_player.rotationY = -GameVariables.panTiltFactor * _player.x;
+			_player.rotationX =  GameVariables.panTiltFactor * _player.y;
 			_playerPosition.x = _player.x;
 			_playerPosition.y = _player.y;
 		}

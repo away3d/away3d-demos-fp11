@@ -59,8 +59,8 @@ package com.away3d.spaceinvaders.input
 
 			var hw:Number = GameVariables.windowWidth / 2;
 			var hh:Number = GameVariables.windowHeight / 2;
-			var targetX:Number =  GameVariables.cameraPanRange * ( _currentPosition.x - hw ) / hw;
-			var targetY:Number = -GameVariables.cameraPanRange * ( _currentPosition.y - hh ) / hh;
+			var targetX:Number =  GameVariables.mouseMotionFactor * ( _currentPosition.x - hw ) / hw;
+			var targetY:Number = -GameVariables.mouseMotionFactor * ( _currentPosition.y - hh ) / hh;
 
 			_scene.movePlayerTowards( targetX, targetY );
 		}

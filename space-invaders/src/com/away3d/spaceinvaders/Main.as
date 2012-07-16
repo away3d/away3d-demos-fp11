@@ -108,11 +108,13 @@ package com.away3d.spaceinvaders
 		// -----------------------------
 
 		private function onUiResume( event:GameEvent ):void {
+			_ui.hidePausePopUp();
 			_scene.resume();
 		}
 
 		private function onUiPause( event:GameEvent ):void {
 			stopGame();
+			_ui.showPausePopUp();
 		}
 
 		private function onUiRestart( event:GameEvent ):void {

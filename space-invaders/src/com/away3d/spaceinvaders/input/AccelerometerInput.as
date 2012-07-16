@@ -26,6 +26,7 @@ package com.away3d.spaceinvaders.input
 		}
 
 		private function onAccelerometerUpdate( event:AccelerometerEvent ):void {
+//			trace( "accelerometer: " + event.accelerationX + ", " + event.accelerationY + ", " + event.accelerationZ );
 			_currentPosition.x = -GameVariables.accelerometerMotionFactorX * event.accelerationX * GameVariables.cameraPanRange;
 			_currentPosition.y =  GameVariables.accelerometerMotionFactorY * ( GameVariables.accelerometerCenterY - event.accelerationY ) * GameVariables.cameraPanRange;
 			if( _currentPosition.x < -GameVariables.cameraPanRange ) _currentPosition.x = -GameVariables.cameraPanRange;

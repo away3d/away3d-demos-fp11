@@ -12,15 +12,12 @@ package com.away3d.spaceinvaders.ui
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
-	import flash.utils.setTimeout;
 
 	public class UIView extends Sprite
 	{
 		private var _scoreText:TextField;
 		private var _livesText:TextField;
 		private var _popUp:MovieClip;
-		private var _pauseButton:SimpleButton;
-		private var _resumeButton:SimpleButton;
 
 		public function UIView() {
 			addEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
@@ -42,32 +39,41 @@ package com.away3d.spaceinvaders.ui
 
 			// Lives text.
 			_livesText = getTextField();
-			_livesText.y = GameVariables.windowHeight - 20;
+			_livesText.y = GameVariables.windowHeight - 35;
 			addChild( _livesText );
 
 			// Buttons.
 			var restartButton:SimpleButton = new RestartButton();
-			restartButton.x = GameVariables.windowWidth - restartButton.width;
-			restartButton.y = GameVariables.windowHeight - restartButton.height;
 			restartButton.addEventListener( MouseEvent.MOUSE_UP, onRestart );
 			initializeButton( restartButton );
 			addChild( restartButton );
-			_pauseButton = new PauseButton();
-			_pauseButton.x = GameVariables.windowWidth - _pauseButton.width;
-			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
-			initializeButton( _pauseButton );
-			addChild( _pauseButton );
-			_resumeButton = new PlayButton();
-			_resumeButton.visible = false;
-			_resumeButton.x = GameVariables.windowWidth - _resumeButton.width;
-			_resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume );
-			initializeButton( _resumeButton );
-			addChild( _resumeButton );
+			var pauseButton:SimpleButton = new PauseButton();
+			pauseButton.x = GameVariables.windowWidth - pauseButton.width;
+			pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
+			initializeButton( pauseButton );
+			addChild( pauseButton );
 		}
 
 		// -----------------------
 		// Pop ups.
 		// -----------------------
+
+		public function showPausePopUp():void {
+			var popUp:MovieClip = new PausePopUp();
+			var resumeButton:SimpleButton = popUp.resumeButton;
+			resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume, false, 0, true );
+			initializeButton( resumeButton );
+			initializePopUp( popUp );
+		}
+
+		public function hidePausePopUp():void {
+			if( !_popUp || !( _popUp is PausePopUp ) ) return;
+			var resumeButton:SimpleButton = _popUp.resumeButton;
+			resumeButton.removeEventListener( MouseEvent.MOUSE_UP, onResume );
+			destroyButton( resumeButton );
+			removeChild( _popUp );
+			_popUp = null;
+		}
 
 		public function showGameOverPopUp( score:uint, highScore:uint ):void {
 			var popUp:MovieClip = new GameOverPopUp();
@@ -144,14 +150,10 @@ package com.away3d.spaceinvaders.ui
 		}
 
 		private function onResume( event:MouseEvent ):void {
-			_pauseButton.visible = true;
-			_resumeButton.visible = false;
 			dispatchEvent( new GameEvent( GameEvent.RESUME ) );
 		}
 
 		private function onPause( event:MouseEvent ):void {
-			_pauseButton.visible = false;
-			_resumeButton.visible = true;
 			dispatchEvent( new GameEvent( GameEvent.PAUSE ) );
 		}
 
@@ -164,14 +166,14 @@ package com.away3d.spaceinvaders.ui
 		// -----------------------
 
 		public function updateLivesText( lives:uint ):void {
-			_livesText.text = "< LIVES " + lives + " >";
+			_livesText.text = "LIVES " + lives + "";
 			_livesText.width = _livesText.textWidth * 1.05;
 			_livesText.x = GameVariables.windowWidth / 2 - _livesText.width / 2;
 		}
 
 		public function updateScoreText( score:uint, highScore:uint ):void {
-			_scoreText.text = "< SCORE " + uintToString( score ) + " >   < ";
-			_scoreText.text += "HIGH-SCORE " + uintToString( highScore ) + " >"; // TODO
+			_scoreText.text = "SCORE " + uintToString( score ) + "   ";
+			_scoreText.text += "HIGH-SCORE " + uintToString( highScore );
 			_scoreText.width = _scoreText.textWidth * 1.05;
 			_scoreText.x = GameVariables.windowWidth / 2 - _scoreText.width / 2;
 		}
