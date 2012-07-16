@@ -9,11 +9,10 @@ package com.away3d.spaceinvaders.scene
 	import away3d.debug.Trident;
 	import away3d.entities.Mesh;
 	import away3d.lights.DirectionalLight;
-	import away3d.lights.LightBase;
-	import away3d.lights.PointLight;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.EnvMapMethod;
+	import away3d.materials.methods.FogMethod;
 	import away3d.primitives.CubeGeometry;
 	import away3d.primitives.SkyBox;
 	import away3d.textures.BitmapCubeTexture;
@@ -32,6 +31,7 @@ package com.away3d.spaceinvaders.scene
 	import com.away3d.spaceinvaders.utils.MathUtils;
 	import com.away3d.spaceinvaders.utils.ScoreManager;
 
+	import flash.display.BlendMode;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.geom.Point;
@@ -195,6 +195,10 @@ package com.away3d.spaceinvaders.scene
 			loadLevel();
 		}
 
+		public function get active():Boolean {
+			return _active;
+		}
+
 		// -----------------------
 		// Player creation.
 		// -----------------------
@@ -203,6 +207,7 @@ package com.away3d.spaceinvaders.scene
 
 			// Reusable projectile mesh.
 			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF );
+			playerProjectileMaterial.blendMode = BlendMode.ADD;
 			var playerProjectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial );
 
 			// Crete pool.
@@ -226,14 +231,19 @@ package com.away3d.spaceinvaders.scene
 
 		private function createInvaders():void {
 
+			var fogMethod:FogMethod = new FogMethod( 0, 50000, 0xFFFFFF );
+			var envMethod:EnvMapMethod = new EnvMapMethod( _cubeMap, 0.5 );
+
 			// Same material for all invaders.
-			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF, 1 );
-			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
+			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF, 0.9 );
+			invaderMaterial.addMethod( envMethod );
+			invaderMaterial.addMethod( fogMethod );
 			invaderMaterial.lightPicker = _lightPicker;
 
 			// Reusable projectile mesh.
 			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
 			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+			invaderProjectileMaterial.blendMode = BlendMode.ADD;
 			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
 			// Slant vertices a little.
 			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
@@ -262,7 +272,9 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _invaderPool );
 
 			// Create cells ( used for invader death explosions ).
-			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), invaderMaterial );
+			var cellMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.5 );
+			cellMaterial.blendMode = BlendMode.ADD;
+			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), cellMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );

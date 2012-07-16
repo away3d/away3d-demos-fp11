@@ -25,7 +25,7 @@ package com.away3d.spaceinvaders
 		// Invaders.
 		public static const invaderSizeXY:Number = 50;
 		public static const invaderSizeZ:Number = 200;
-		public static const deathExplosionIntensity:Number = 2;
+		public static const deathExplosionIntensity:Number = 5;
 		public static const invaderFireRateMS:Number = 4000;
 		public static const invaderAnimationTimeMS:uint = 250;
 		public static const impactHitSize:Number = 300;
@@ -43,8 +43,8 @@ package com.away3d.spaceinvaders
 		// Accelerometer control settings.
 		public static const useAccelerometer:Boolean = true;
 		public static const accelerometerCameraMotionEase:Number = 0.02;
-		public static const accelerometerMotionFactorX:Number = 6;
-		public static const accelerometerMotionFactorY:Number = 10;
+		public static const accelerometerMotionFactorX:Number = 10;
+		public static const accelerometerMotionFactorY:Number = 20;
 		public static const accelerometerCenterY:Number = 0.6;
 
 		// Touch control settings.
