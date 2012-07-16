@@ -47,7 +47,7 @@ package
 		private var breatheState:SkeletonAnimationState;
 		private var walkState:SkeletonAnimationState;
 		private var runState:SkeletonAnimationState;
-		private var crossFadeTransition:CrossfadeStateTransition;
+		private var crossfadeTransition:CrossfadeStateTransition;
 		private var isRunning:Boolean;
 		private var isMoving:Boolean;
 		private var movementDirection:Number;
@@ -279,7 +279,7 @@ package
 			hero.animator = animator;
 			
 			//create our crossfade transition object
-			crossFadeTransition = new CrossfadeStateTransition(XFADE_TIME);
+			crossfadeTransition = new CrossfadeStateTransition(XFADE_TIME);
 			
 			if (animationSet.hasState("Breathe") && animationSet.hasState("Walk") && animationSet.hasState("Run")) {
 				hoverController.lookAtObject = hero; // point the camera at the hero
@@ -372,7 +372,7 @@ package
 			
 			currentAnim = anim;
 			
-			animator.play(currentAnim, crossFadeTransition);
+			animator.play(currentAnim, crossfadeTransition);
 		}
 		
 		private function goToPauseState():void
@@ -388,7 +388,7 @@ package
 			
 			currentAnim = ANIM_BREATHE;
 			
-			animator.play(currentAnim, crossFadeTransition);
+			animator.play(currentAnim, crossfadeTransition);
 		}
 		
 		/**
