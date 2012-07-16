@@ -1,37 +1,13 @@
-// IMPORTANT.
-- TODO: implement high score persistence on mobile
-- TODO: handle stage resizing in 3D view -> in all views!
-- TODO: projectiles wonder too far
-- TODO: UI buttons too small for mobile
-
-// BUGS.
-- TODO: fucked up GO screen in mobile
-- TODO: invader projectiles are no longer visible and weird line on player projectiles :: 736c52e584b2ea575903869730b60dd696569a05 is damaging commit by Richard on July 12
-- TODO: sorting artifact on android
-- TODO: invaders accumulate while in splash screen
-- TODO: do not fire right after pressing pop up buttons
-- TODO: render a frame before dismissing the splash pop up
-
-// Gameplay improvement.
-- TODO: add bomb objects ( which explode on click or something like that )
-- TODO: fire on and fire off cycles on invaders?
-- TODO: invaders cause damage on player?
-
-// Performance improvement.
-- TODO: star objects are very inefficient
-
-// Code improvement.
-- TODO: projectile and star pools look almost the same, generalize classes
-- TODO: move warp in to lower class? invader and stars use it
-- TODO: remove not needed picking from invaders
-- TODO: tidy up InvaderScene.as
-- TODO: remove InvaderVO, it's confusing
-- TODO: remove tweening lib dependency
-- TODO: move invader definitions out of InvaderFactory
-- TODO: move web and mobile launches to the repo
+// Performance improvements.
+- TODO: star objects are very inefficient, implement with fragment shader on a plane?
+- TODO: skybox is overkill since you can only see 1 image?
 
 // To consider.
+- TODO: camera rotates with accelerometer?
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
 - TODO: do not allow invaders to wonder too close?
 - TODO: implement invader spawn sound?
-- TODO: implement UI with starling? ----> http://www.geepers.co.uk/?page_id=587, pass "badoing" - its overkill to implement for the poor UI we've got, additional starling effects?
+- TODO: implement UI with starling?
+- TODO: add bomb objects ( which explode on click or something like that )
+- TODO: fire on and fire off cycles on invaders?
+- TODO: invaders cause damage on player?

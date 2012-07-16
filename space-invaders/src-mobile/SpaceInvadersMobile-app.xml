@@ -12,18 +12,18 @@
 
     <!-- A universally unique application identifier. Must be unique across all AIR applications.
          Using a reverse DNS-style name as the id is recommended. (Eg. com.example.ExampleApplication.) Required. -->
-    <id>Spaceinvadersmobile</id>
+    <id>com.away3d.spaceinvaders</id>
 
     <!-- Used as the filename for the application. Required. -->
-    <filename>Spaceinvadersmobile</filename>
+    <filename>Space Invaders</filename>
 
     <!-- The name that is displayed in the AIR application installer. May have multiple values for each language. See samples or xsd schema file. Optional. -->
-    <name>Spaceinvadersmobile</name>
+    <name>Space Invaders</name>
 
     <!-- A string value of the format <0-999>.<0-999>.<0-999> that represents application version which can be used to check for application upgrade.
          Values can also be 1-part or 2-part. It is not necessary to have a 3-part value.
          An updated version of application must have a versionNumber value higher than the previous version. Required for namespace >= 2.5. -->
-    <versionNumber>0.0.0</versionNumber>
+    <versionNumber>1.0.0</versionNumber>
 
     <!-- A string value (such as "v1", "2.5", or "Alpha 1") that represents the version of the application, as it should be shown to users. Optional. -->
     <!--<versionLabel></versionLabel>-->
@@ -67,10 +67,10 @@
         <!--<resizable></resizable>-->
 
         <!-- The window's initial width in pixels. Optional. -->
-        <!--<width></width>-->
+        <width>1024</width>
 
         <!-- The window's initial height in pixels. Optional. -->
-        <!--<height></height>-->
+        <height>768</height>
 
         <!-- The window's initial x position. Optional. -->
         <!--<x></x>-->
@@ -85,7 +85,7 @@
         <!--<maxSize></maxSize>-->
 
         <!-- The initial aspect ratio of the app when launched (either "portrait" or "landscape"). Optional. Mobile only. Default is the natural orientation of the device -->
-        <!--<aspectRatio></aspectRatio>-->
+        <aspectRatio>landscape</aspectRatio>
 
         <!-- Whether the app will begin auto-orienting on launch. Optional. Mobile only. Default false -->
         <autoOrients>false</autoOrients>
@@ -95,6 +95,9 @@
 
         <!-- The render mode for the app (either auto, cpu, gpu, or direct). Optional. Default auto -->
         <renderMode>direct</renderMode>
+
+		<!-- Allows Stage3D depth and stencil buffer usages. -->
+		<depthAndStencil>true</depthAndStencil>
 
         <!-- Whether or not to pan when a soft keyboard is raised or lowered (either "pan" or "none").  Optional.  Defaults "pan." -->
         <!--<softKeyboardBehavior></softKeyboardBehavior>-->
@@ -111,16 +114,14 @@
     <!--<programMenuFolder></programMenuFolder>-->
 
     <!-- The icon the system uses for the application. For at least one resolution, specify the path to a PNG file included in the AIR package. Optional. -->
-    <!--<icon>
-        <image16x16></image16x16>
-        <image32x32></image32x32>
-        <image36x36></image36x36>
-        <image48x48></image48x48>
-        <image57x57></image57x57>
-        <image72x72></image72x72>
-        <image114x114></image114x114>
-        <image128x128></image128x128>
-    </icon>-->
+    <icon>
+        <image16x16>assets/imgs/icon/icon16x16.png</image16x16>
+        <image32x32>assets/imgs/icon/icon32x32.png</image32x32>
+        <image36x36>assets/imgs/icon/icon36x36.png</image36x36>
+        <image48x48>assets/imgs/icon/icon48x48.png</image48x48>
+        <image57x57>assets/imgs/icon/icon57x57.png</image57x57>
+        <image72x72>assets/imgs/icon/icon72x72.png</image72x72>
+    </icon>
 
     <!-- Whether the application handles the update when a user double-clicks an update versionof the AIR file (true),
          or the default AIR application installer handles the update (false). Optional. Default false. -->
@@ -152,23 +153,26 @@
     <!--</fileTypes>-->
 
     <!-- iOS specific capabilities -->
-    <!--<iPhone>-->
+    <iPhone>
         <!-- A list of plist key/value pairs to be added to the application Info.plist -->
-        <!--<InfoAdditions>-->
-            <!--<![CDATA[-->
-            <!--<key>UIDeviceFamily</key>-->
-            <!--<array>-->
+        <InfoAdditions>
+            <![CDATA[
+            <key>UIDeviceFamily</key>
+            <array>
                 <!-- iPhone and iPod touch devices -->
-                <!--<string>1</string>-->
+                <string>1</string>
                 <!-- iPad devices -->
-                <!--<string>2</string>-->
-            <!--</array>-->
+                <string>2</string>
+            </array>
             <!--<key>UIStatusBarStyle</key>-->
             <!--<string>UIStatusBarStyleBlackOpaque</string>-->
             <!--<key>UIRequiresPersistentWiFi</key>-->
             <!--<string>YES</string>-->
-            <!--]]>-->
-        <!--</InfoAdditions>-->
+            ]]>
+        </InfoAdditions>
+
+		<!-- Display Resolution for the app (either "standard" or "high"). Optional. Default "standard" -->
+		<requestedDisplayResolution>high</requestedDisplayResolution>
 
         <!-- A list of plist key/value pairs to be added to the application Entitlements.plist -->
         <!--<Entitlements>
@@ -181,9 +185,7 @@
             ]]>
         </Entitlements>-->
 
-        <!-- Display Resolution for the app (either "standard" or "high"). Optional. Default "standard" -->
-        <!--<requestedDisplayResolution>high</requestedDisplayResolution>-->
-    <!--</iPhone>-->
+    </iPhone>
 
     <!-- Android specific tags that get passed to AndroidManifest.xml file. -->
     <android>
@@ -191,7 +193,7 @@
             <![CDATA[
             <manifest android:installLocation="auto">
                 <uses-permission android:name="android.permission.INTERNET"/>
-                <!--<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>-->
+                <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
                 <!--<uses-permission android:name="android.permission.READ_PHONE_STATE"/>-->
                 <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>-->
                 <!--<uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>-->

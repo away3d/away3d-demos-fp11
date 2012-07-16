@@ -1,7 +1,10 @@
 package com.away3d.spaceinvaders.ui
 {
 
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.events.GameEvent;
+	import com.away3d.spaceinvaders.sound.SoundManager;
+	import com.away3d.spaceinvaders.sound.Sounds;
 
 	import flash.display.MovieClip;
 	import flash.display.SimpleButton;
@@ -9,6 +12,7 @@ package com.away3d.spaceinvaders.ui
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
+	import flash.utils.setTimeout;
 
 	public class UIView extends Sprite
 	{
@@ -27,37 +31,37 @@ package com.away3d.spaceinvaders.ui
 			removeEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
 
 			// Cross hair.
-			var crossHair:Sprite = new Sprite();
-			crossHair.graphics.lineStyle( 1, 0xFFFFFF, 1 );
-			crossHair.graphics.moveTo( stage.stageWidth / 2 - 15, stage.stageHeight / 2 );
-			crossHair.graphics.lineTo( stage.stageWidth / 2 + 15, stage.stageHeight / 2 );
-			crossHair.graphics.moveTo( stage.stageWidth / 2, stage.stageHeight / 2 - 15 );
-			crossHair.graphics.lineTo( stage.stageWidth / 2, stage.stageHeight / 2 + 15 );
+			var crossHair:Sprite = new Crosshair();
+			crossHair.x = GameVariables.windowWidth / 2;
+			crossHair.y = GameVariables.windowHeight / 2;
 			addChild( crossHair );
 
 			// Score text.
-			_scoreText = createTextField();
+			_scoreText = getTextField();
 			addChild( _scoreText );
 
 			// Lives text.
-			_livesText = createTextField();
-			_livesText.y = stage.stageHeight - 20;
+			_livesText = getTextField();
+			_livesText.y = GameVariables.windowHeight - 20;
 			addChild( _livesText );
 
 			// Buttons.
 			var restartButton:SimpleButton = new RestartButton();
-			restartButton.x = stage.stageWidth - restartButton.width;
-			restartButton.y = stage.stageHeight - restartButton.height;
+			restartButton.x = GameVariables.windowWidth - restartButton.width;
+			restartButton.y = GameVariables.windowHeight - restartButton.height;
 			restartButton.addEventListener( MouseEvent.MOUSE_UP, onRestart );
+			initializeButton( restartButton );
 			addChild( restartButton );
 			_pauseButton = new PauseButton();
-			_pauseButton.x = stage.stageWidth - _pauseButton.width;
+			_pauseButton.x = GameVariables.windowWidth - _pauseButton.width;
 			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
+			initializeButton( _pauseButton );
 			addChild( _pauseButton );
 			_resumeButton = new PlayButton();
 			_resumeButton.visible = false;
-			_resumeButton.x = stage.stageWidth - _resumeButton.width;
+			_resumeButton.x = GameVariables.windowWidth - _resumeButton.width;
 			_resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume );
+			initializeButton( _resumeButton );
 			addChild( _resumeButton );
 		}
 
@@ -69,6 +73,7 @@ package com.away3d.spaceinvaders.ui
 			var popUp:MovieClip = new GameOverPopUp();
 			var playAgainButton:SimpleButton = popUp.playAgainButton;
 			playAgainButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
+			initializeButton( playAgainButton );
 			var scoreText:TextField = popUp.scoreText;
 			scoreText.text =     "SCORE................................... " + uintToString( score );
 			var highScoreText:TextField = popUp.highScoreText;
@@ -84,6 +89,7 @@ package com.away3d.spaceinvaders.ui
 			if( !_popUp || !( _popUp is GameOverPopUp ) ) return;
 			var playAgainButton:SimpleButton = _popUp.playAgainButton;
 			playAgainButton.removeEventListener( MouseEvent.MOUSE_UP, onPlay );
+			destroyButton( playAgainButton );
 			removeChild( _popUp );
 			_popUp = null;
 		}
@@ -92,6 +98,7 @@ package com.away3d.spaceinvaders.ui
 			var popUp:SplashPopUp = new SplashPopUp();
 			var playButton:SimpleButton = popUp.playButton;
 			playButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
+			initializeButton( playButton );
 			initializePopUp( popUp );
 		}
 
@@ -99,25 +106,38 @@ package com.away3d.spaceinvaders.ui
 			if( !_popUp || !( _popUp is SplashPopUp ) ) return;
 			var playButton:SimpleButton = _popUp.playButton;
 			playButton.removeEventListener( MouseEvent.MOUSE_UP, onPlay );
+			destroyButton( playButton );
 			removeChild( _popUp );
 			_popUp = null;
 		}
 
 		private function initializePopUp( popUp:MovieClip ):void {
-			popUp.x = stage.stageWidth / 2;
-			popUp.y = stage.stageHeight / 2;
+			popUp.x = GameVariables.windowWidth / 2;
+			popUp.y = GameVariables.windowHeight / 2;
 			var bg:Sprite = popUp.bg;
-			bg.width = stage.stageWidth;
-			bg.height = stage.stageHeight;
-			bg.x = -stage.stageWidth / 2;
-			bg.y = -stage.stageHeight / 2;
+			bg.width = GameVariables.windowWidth;
+			bg.height = GameVariables.windowHeight;
+			bg.x = -GameVariables.windowWidth / 2;
+			bg.y = -GameVariables.windowHeight / 2;
 			_popUp = popUp;
 			addChild( popUp );
+		}
+
+		private function initializeButton( button:SimpleButton ):void {
+			button.addEventListener( MouseEvent.MOUSE_DOWN, onBtnMouseDown, false, 0, true );
+		}
+
+		private function destroyButton( button:SimpleButton ):void {
+			button.removeEventListener( MouseEvent.MOUSE_DOWN, onBtnMouseDown );
 		}
 
 		// -----------------------
 		// Event handlers.
 		// -----------------------
+
+		private function onBtnMouseDown( event:MouseEvent ):void {
+			SoundManager.playSound( Sounds.UFO );
+		}
 
 		private function onPlay( event:MouseEvent ):void {
 			dispatchEvent( new GameEvent( GameEvent.PLAY ) );
@@ -146,17 +166,17 @@ package com.away3d.spaceinvaders.ui
 		public function updateLivesText( lives:uint ):void {
 			_livesText.text = "< LIVES " + lives + " >";
 			_livesText.width = _livesText.textWidth * 1.05;
-			_livesText.x = stage.stageWidth / 2 - _livesText.width / 2;
+			_livesText.x = GameVariables.windowWidth / 2 - _livesText.width / 2;
 		}
 
 		public function updateScoreText( score:uint, highScore:uint ):void {
 			_scoreText.text = "< SCORE " + uintToString( score ) + " >   < ";
 			_scoreText.text += "HIGH-SCORE " + uintToString( highScore ) + " >"; // TODO
 			_scoreText.width = _scoreText.textWidth * 1.05;
-			_scoreText.x = stage.stageWidth / 2 - _scoreText.width / 2;
+			_scoreText.x = GameVariables.windowWidth / 2 - _scoreText.width / 2;
 		}
 
-		private function createTextField():TextField {
+		private function getTextField():TextField {
 			var clip:CustomTextField = new CustomTextField();
 			return clip.tf;
 		}

@@ -1,7 +1,7 @@
 package com.away3d.spaceinvaders.input
 {
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.scene.InvaderScene;
 
 	import flash.events.AccelerometerEvent;
@@ -10,17 +10,15 @@ package com.away3d.spaceinvaders.input
 
 	public class AccelerometerInput extends InputBase
 	{
-		private var _accelerometer:Accelerometer;
-
 		public function AccelerometerInput( scene:InvaderScene ) {
 			super( scene );
-			_scene.cameraMotionEase = GameSettings.accelerometerCameraMotionEase;
+			_scene.cameraMotionEase = GameVariables.accelerometerCameraMotionEase;
 		}
 
 		override public function init():void {
 			stage.addEventListener( MouseEvent.MOUSE_DOWN, onStageMouseDown );
-			_accelerometer = new Accelerometer();
-			_accelerometer.addEventListener( AccelerometerEvent.UPDATE, onAccelerometerUpdate );
+			var accelerometer:Accelerometer = new Accelerometer();
+			accelerometer.addEventListener( AccelerometerEvent.UPDATE, onAccelerometerUpdate );
 		}
 
 		override public function update():void {
@@ -28,13 +26,12 @@ package com.away3d.spaceinvaders.input
 		}
 
 		private function onAccelerometerUpdate( event:AccelerometerEvent ):void {
-//			trace( "accelerometer: " + event.accelerationX + ", " + event.accelerationY + ", " + event.accelerationZ );
-			_currentPosition.x = -GameSettings.accelerometerMotionFactorX * event.accelerationX * GameSettings.cameraPanRange;
-			_currentPosition.y =  GameSettings.accelerometerMotionFactorY * ( GameSettings.accelerometerCenterY - event.accelerationY ) * GameSettings.cameraPanRange;
-			if( _currentPosition.x < -GameSettings.cameraPanRange ) _currentPosition.x = -GameSettings.cameraPanRange;
-			if( _currentPosition.x >  GameSettings.cameraPanRange ) _currentPosition.x =  GameSettings.cameraPanRange;
-			if( _currentPosition.y < -GameSettings.cameraPanRange ) _currentPosition.y = -GameSettings.cameraPanRange;
-			if( _currentPosition.y >  GameSettings.cameraPanRange ) _currentPosition.y =  GameSettings.cameraPanRange;
+			_currentPosition.x = -GameVariables.accelerometerMotionFactorX * event.accelerationX * GameVariables.cameraPanRange;
+			_currentPosition.y =  GameVariables.accelerometerMotionFactorY * ( GameVariables.accelerometerCenterY - event.accelerationY ) * GameVariables.cameraPanRange;
+			if( _currentPosition.x < -GameVariables.cameraPanRange ) _currentPosition.x = -GameVariables.cameraPanRange;
+			if( _currentPosition.x >  GameVariables.cameraPanRange ) _currentPosition.x =  GameVariables.cameraPanRange;
+			if( _currentPosition.y < -GameVariables.cameraPanRange ) _currentPosition.y = -GameVariables.cameraPanRange;
+			if( _currentPosition.y >  GameVariables.cameraPanRange ) _currentPosition.y =  GameVariables.cameraPanRange;
 		}
 
 		private function onStageMouseDown( event:MouseEvent ):void {

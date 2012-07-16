@@ -4,6 +4,8 @@ package com.away3d.spaceinvaders.gameobjects
 	import away3d.containers.ObjectContainer3D;
 	import away3d.errors.AbstractMethodError;
 
+	import com.away3d.spaceinvaders.GameVariables;
+
 	public class GameObjectPool extends ObjectContainer3D
 	{
 		protected var _gameObjects:Vector.<GameObject>;
@@ -28,7 +30,7 @@ package com.away3d.spaceinvaders.gameobjects
 				if( gameObject.enabled ) {
 					gameObject.update();
 					// Disable objects that have gone outside of the scene range.
-					if( gameObject.z < -1000 || gameObject.z > 100000 ) {
+					if( gameObject.z < GameVariables.minZ || gameObject.z > GameVariables.maxZ ) {
 						gameObject.enabled = false;
 					}
 					// Make sure item is added to view.

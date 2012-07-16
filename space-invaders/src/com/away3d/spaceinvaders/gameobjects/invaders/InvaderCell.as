@@ -36,11 +36,5 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 				_deathTimer.start();
 			}
 		}
-
-		override public function destroy():void {
-			super.destroy();
-			_deathTimer.removeEventListener( TimerEvent.TIMER, onDeathTimerTick );
-			_deathTimer = null;
-		}
 	}
 }

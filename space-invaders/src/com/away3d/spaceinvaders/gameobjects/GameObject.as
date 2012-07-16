@@ -44,11 +44,6 @@ package com.away3d.spaceinvaders.gameobjects
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.HIT ) );
 		}
 
-		public function destroy():void {
-//			_velocity = null;
-//			_zSceneRange = null;
-		}
-
 		public function reset():void {
 			enabled = true;
 			transform = new Matrix3D();

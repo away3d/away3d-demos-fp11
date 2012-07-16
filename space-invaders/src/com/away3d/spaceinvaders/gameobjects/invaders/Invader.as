@@ -3,7 +3,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	import away3d.entities.Mesh;
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
@@ -16,33 +16,50 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	{
 		private var _meshFrame0:Mesh;
 		private var _meshFrame1:Mesh;
-
-		private var _animationTimer:Timer;
 		private var _fireTimer:Timer;
-
+		private var _invaderType:uint;
+		private var _targetSpawnZ:Number;
+		private var _animationTimer:Timer;
+		private var _cellsFrame0:Vector.<Point>;
+		private var _cellsFrame1:Vector.<Point>;
 		private var _currentDefinitionIndex:uint;
 
-		private var _invaderVO:InvaderVO;
-
-		private var _targetSpawnZ:Number;
-
-		public function Invader( invaderVO:InvaderVO ) {
+		public function Invader( invaderType:uint, meshFrame0:Mesh, meshFrame1:Mesh, cellsFrame0:Vector.<Point>, cellsFrame1:Vector.<Point> ) {
 
 			super();
 
-			_invaderVO = invaderVO;
+			_invaderType = invaderType;
 
-			_meshFrame0 = invaderVO.meshFrame0.clone() as Mesh;
-			_meshFrame1 = invaderVO.meshFrame1.clone() as Mesh;
+			_meshFrame0 = meshFrame0.clone() as Mesh;
+			_meshFrame1 = meshFrame1.clone() as Mesh;
 			addChild( _meshFrame0 );
 			addChild( _meshFrame1 );
 			toggleFrame();
 
-			_animationTimer = new Timer( MathUtils.rand( 250, 500 ) );
+			_cellsFrame0 = cellsFrame0;
+			_cellsFrame1 = cellsFrame1;
+
+			_animationTimer = new Timer( MathUtils.rand( GameVariables.invaderAnimationTimeMS, GameVariables.invaderAnimationTimeMS * 1.5 ) );
 			_animationTimer.addEventListener( TimerEvent.TIMER, onAnimationTimerTick );
 
-			_fireTimer = new Timer( MathUtils.rand( 2000, 3000 ) );
+			_fireTimer = new Timer( MathUtils.rand( GameVariables.invaderFireRateMS, GameVariables.invaderFireRateMS * 1.5 ) );
 			_fireTimer.addEventListener( TimerEvent.TIMER, onFireTimerTick );
+		}
+
+		public function getInvaderClone():Invader {
+			return new Invader( _invaderType, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh, _cellsFrame0, _cellsFrame1 );
+		}
+
+		public function stopTimers():void {
+			_animationTimer.stop();
+			_fireTimer.stop();
+		}
+
+		public function resumeTimers():void {
+			if( enabled ) {
+				_animationTimer.start();
+				_fireTimer.start();
+			}
 		}
 
 		override public function set enabled( value:Boolean ):void {
@@ -58,7 +75,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		private function onFireTimerTick( event:TimerEvent ):void {
-			_fireTimer.delay = MathUtils.rand( 2000, 3000 );
+			_fireTimer.delay = MathUtils.rand( GameVariables.invaderFireRateMS, GameVariables.invaderFireRateMS * 1.5 );
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.FIRE, this ) );
 		}
 
@@ -83,32 +100,24 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			if( z < _targetSpawnZ && velocity.z < -50 ) { // Slow down warping in
 				velocity.z *= 0.75;
 			}
-//			trace( velocity.z );
 		}
 
 		override public function reset():void {
 			super.reset();
-			x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
-			y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
-			z = 100000; // Warp in...
+			x = MathUtils.rand( -GameVariables.xyRange, GameVariables.xyRange );
+			y = MathUtils.rand( -GameVariables.xyRange, GameVariables.xyRange );
+			z = GameVariables.maxZ; // Warp in...
 			velocity.z = MathUtils.rand( -2500, -1500 );
-			_targetSpawnZ = MathUtils.rand( 10000, 15000 );
+			_targetSpawnZ = MathUtils.rand( 15000, 20000 );
+			scaleX = scaleY = scaleZ = invaderType == InvaderDefinitions.MOTHERSHIP ? 3 : 1;
 		}
 
 		public function get cellPositions():Vector.<Point> {
-			return _currentDefinitionIndex == 0 ? _invaderVO.cellsFrame0 : _invaderVO.cellsFrame1;
+			return _currentDefinitionIndex == 0 ? _cellsFrame0 : _cellsFrame1;
 		}
 
-		public function get meshFrame1():Mesh {
-			return _meshFrame1;
-		}
-
-		public function get meshFrame0():Mesh {
-			return _meshFrame0;
-		}
-
-		public function get typeIndex():uint {
-			return _invaderVO.typeIndex;
+		public function get invaderType():uint {
+			return _invaderType;
 		}
 	}
 }

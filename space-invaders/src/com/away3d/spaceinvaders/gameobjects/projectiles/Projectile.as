@@ -3,6 +3,8 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 	import away3d.entities.Mesh;
 
+	import com.away3d.spaceinvaders.GameVariables;
+
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 
@@ -17,8 +19,6 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 		override public function reset():void {
 			super.reset();
-//			rotationalVelocity.x = MathUtils.rand( -5, 5 );
-//			rotationalVelocity.y = MathUtils.rand( -5, 5 );
 			rotationalVelocity.z = MathUtils.rand( -5, 5 );
 		}
 
@@ -43,20 +43,15 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 						dx = target.x - x;
 						dy = target.y - y;
 						distance = Math.sqrt( dx * dx + dy * dy );
-						if( distance < 150 ) {
+						if( distance < 150 * target.scaleX ) {
 							target.impact( this );
-							enabled = false;
+							if( GameVariables.projectilesDieOnImpact ) enabled = false;
 						}
 					}
 				}
 
 			}
 
-		}
-
-		override public function destroy():void {
-			super.destroy();
-			_targets = null;
 		}
 
 		public function set targets( value:Vector.<GameObject> ):void {

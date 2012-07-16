@@ -2,6 +2,8 @@ package com.away3d.spaceinvaders.scene
 {
 
 	import away3d.core.base.Geometry;
+	import away3d.core.base.Object3D;
+	import away3d.lights.DirectionalLight;
 	import away3d.materials.methods.EnvMapAmbientMethod;
 	import away3d.materials.methods.EnvMapMethod;
 	import away3d.primitives.SkyBox;
@@ -25,7 +27,7 @@ package com.away3d.spaceinvaders.scene
 	import away3d.primitives.CubeGeometry;
 	import away3d.primitives.PlaneGeometry;
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
@@ -82,8 +84,11 @@ package com.away3d.spaceinvaders.scene
 		private var _gameObjectPools:Vector.<GameObjectPool>;
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
+		private var _skyBox:SkyBox;
 
 		private var _currentLevel:uint;
+
+		private var _active:Boolean;
 
 		public var cameraMotionEase:Number;
 
@@ -95,6 +100,7 @@ package com.away3d.spaceinvaders.scene
 			removeEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
 			initEngine();
 			initScene();
+			update();
 		}
 
 		private function initEngine():void {
@@ -103,18 +109,25 @@ package com.away3d.spaceinvaders.scene
 			_view.backgroundColor = 0x000000;
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
+			_view.width = GameVariables.windowWidth;
+			_view.height = GameVariables.windowHeight;
 			addChild( _view );
 		}
 
 		private function initScene():void {
 
 			// Init Lights.
-			_cameraLight = new PointLight();
+			_cameraLight = new DirectionalLight();
+			_cameraLight.specular = 1;
+			_cameraLight.diffuse = 1;
+			_cameraLight.ambient = 0.2;
 			_lightPicker = new StaticLightPicker( [ _cameraLight ] );
 
 			// Stats.
-			var stats:AwayStats = new AwayStats( _view );
-			addChild( stats );
+			if( GameVariables.debugMode ) {
+				var stats:AwayStats = new AwayStats( _view );
+				addChild( stats );
+			}
 
 			// Skybox.
 			_cubeMap = new BitmapCubeTexture(
@@ -122,8 +135,8 @@ package com.away3d.spaceinvaders.scene
 				new SkyboxImagePosY().bitmapData, new SkyboxImageNegY().bitmapData,
 				new SkyboxImagePosZ().bitmapData, new SkyboxImageNegZ().bitmapData
 			);
-			var skyBox:SkyBox = new SkyBox( _cubeMap );
-			_view.scene.addChild( skyBox );
+			_skyBox = new SkyBox( _cubeMap );
+			_view.scene.addChild( _skyBox );
 
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
@@ -135,14 +148,48 @@ package com.away3d.spaceinvaders.scene
 			_gameObjectPools.push( _starPool );
 			_view.scene.addChild( _starPool );
 
-			// Player.
 			createPlayer();
 
 			loadLevel();
 		}
 
-		public function reset():void {
+		public function update():void {
+
 			// Update all game object pools.
+			for( var i:uint; i < _gameObjectPools.length; ++i ) {
+				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
+				gameObjectPool.update();
+			}
+
+			// Update player.
+			_player.update();
+
+			// Render scene.
+			_cameraLight.position = _player.position;
+			_view.render();
+		}
+
+		// -----------------------
+		// Game control.
+		// -----------------------
+
+		public function resume():void {
+			_invaderPool.resume();
+			_active = true;
+		}
+
+		public function stop():void {
+			_invaderPool.stop();
+			_active = false;
+		}
+
+		private function loadLevel():void {
+			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameVariables.spawnTimeDecreasePerLevel;
+			if( _invaderPool.spawnTimeFactor < GameVariables.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameVariables.minimumSpawnTime;
+		}
+
+		public function reset():void {
+			// Reset all game object pools.
 			for( var i:uint; i < _gameObjectPools.length; ++i ) {
 				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
 				gameObjectPool.reset();
@@ -150,18 +197,18 @@ package com.away3d.spaceinvaders.scene
 			_currentLevel = 0;
 			_currentLevelKills = 0;
 			_totalKills = 0;
+			_invaderPool.spawnTimeFactor = 1;
 			loadLevel();
 		}
 
-		private function onPlayerHit( event:GameObjectEvent ):void {
-			SoundManager.playSound( Sounds.EXPLOSION_SOFT );
-			ScoreManager.instance.registerPlayerHit();
-		}
+		// -----------------------
+		// Player creation.
+		// -----------------------
 
 		private function createPlayer():void {
 
 			// Reusable projectile mesh.
-			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FF00 );
+			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF );
 			var playerProjectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial );
 
 			// Crete pool.
@@ -174,15 +221,18 @@ package com.away3d.spaceinvaders.scene
 			_player.position = new Vector3D( 0, 0, -1000 );
 			_player.enabled = true;
 			_player.addEventListener( GameObjectEvent.HIT, onPlayerHit );
-			_cameraLight.position = new Vector3D( 0, 0, -2000 );
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
 		}
 
+		// -----------------------
+		// Invader creation.
+		// -----------------------
+
 		private function createInvaders():void {
 
 			// Same material for all invaders.
-			var invaderMaterial:ColorMaterial = new ColorMaterial( 0x666666 );
+			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
 			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
 
@@ -217,75 +267,36 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _invaderPool );
 
 			// Create cells ( used for invader death explosions ).
-			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), invaderMaterial );
+			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), invaderMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
 		}
 
-		public function resume():void {
-			_invaderPool.resetSpawnTimes();
-		}
-
-		public function stop():void {
-
-		}
-
 		private function onInvaderCreated( event:GameObjectEvent ):void {
 			var invader:Invader = event.objectA as Invader;
-			if( invader.typeIndex == InvaderFactory.MOTHERSHIP ) {
+			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP ) {
 				SoundManager.playSound( Sounds.MOTHERSHIP );
 			}
 		}
 
-		private function onInvaderFire( event:GameObjectEvent ):void {
-			SoundManager.playSound( Sounds.BOING );
-			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
-		}
-
-		private function loadLevel():void {
-			_invaderPool.targetNumInvaders += GameSettings.invaderCountIncreasePerLevel;
-			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
-			if( _invaderPool.spawnTimeFactor < GameSettings.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameSettings.minimumSpawnTime;
-		}
-
-		private function onInvaderDead( event:GameObjectEvent ):void {
-
-			var invader:Invader = event.objectA as Invader;
-
-			// Check level update and update UI.
-			_currentLevelKills++;
-			_totalKills++;
-			ScoreManager.instance.registerKill( invader.typeIndex );
-			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
-				_currentLevelKills = 0;
-				_currentLevel++;
-				loadLevel();
-			}
-
-			// Play sounds.
-			if( invader.typeIndex == InvaderFactory.MOTHERSHIP ) {
-				SoundManager.playSound( Sounds.EXPLOSION_STRONG );
-			}
-			else {
-				SoundManager.playSound( Sounds.INVADER_DEATH );
-			}
-
-			// Show invader destruction.
-			createInvaderDeathAnimation( event.objectA as Invader, event.objectB as Projectile );
-		}
+		// -----------------------
+		// Invader deaths.
+		// -----------------------
 
 		private function createInvaderDeathAnimation( invader:Invader, hitter:Projectile ):void {
-			var intensity:Number = GameSettings.deathExplosionIntensity;
+			var intensity:Number = GameVariables.deathExplosionIntensity * MathUtils.rand( 0.5, 3 );
 			var positions:Vector.<Point> = invader.cellPositions;
 			var len:uint = positions.length;
+			var sc:Number = invader.scaleX;
 			for( var i:uint; i < len; ++i ) {
 				var cell:InvaderCell = _cellPool.addItem() as InvaderCell;
+				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
 				// Set cell position according to dummy child position.
 				var pos:Point = positions[ i ];
 				cell.position = invader.position;
-				cell.x += pos.x;
-				cell.y += pos.y;
+				cell.x += sc * pos.x;
+				cell.y += sc * pos.y;
 				// Determine explosion velocity of cell.
 				var dx:Number = cell.x - hitter.x;
 				var dy:Number = cell.y - hitter.y;
@@ -300,33 +311,49 @@ package com.away3d.spaceinvaders.scene
 			}
 		}
 
-		public function movePlayerTowards( x:Number, y:Number ):void {
-			// Ease camera towards target position.
-			var dx:Number = x - _playerPosition.x;
-			var dy:Number = y - _playerPosition.y;
-			_player.x += dx * cameraMotionEase;
-			_player.y += dy * cameraMotionEase;
-			_playerPosition.x = _player.x;
-			_playerPosition.y = _player.y;
-		}
+		private function onInvaderDead( event:GameObjectEvent ):void {
 
-		public function update():void {
+			var invader:Invader = event.objectA as Invader;
 
-			// Update all game object pools.
-			for( var i:uint; i < _gameObjectPools.length; ++i ) {
-				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
-				gameObjectPool.update();
+			// Check level update and update UI.
+			_currentLevelKills++;
+			_totalKills++;
+			ScoreManager.instance.registerKill( invader.invaderType );
+			if( _currentLevelKills > GameVariables.killsToAdvanceDifficulty ) {
+				_currentLevelKills = 0;
+				_currentLevel++;
+				loadLevel();
 			}
 
-			// Update player.
-			_player.update();
+			// Play sounds.
+			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP ) {
+				SoundManager.playSound( Sounds.EXPLOSION_STRONG );
+			}
+			else {
+				SoundManager.playSound( Sounds.INVADER_DEATH );
+			}
 
-			// Render scene.
-			_view.render();
+			// Show invader destruction.
+			createInvaderDeathAnimation( event.objectA as Invader, event.objectB as Projectile );
+		}
+
+		// -----------------------
+		// Projectiles.
+		// -----------------------
+
+		private function onPlayerHit( event:GameObjectEvent ):void {
+			SoundManager.playSound( Sounds.EXPLOSION_SOFT );
+			ScoreManager.instance.registerPlayerHit();
+		}
+
+		private function onInvaderFire( event:GameObjectEvent ):void {
+			SoundManager.playSound( Sounds.INVADER_FIRE, 0.5 );
+			fireProjectile( event.objectA.position, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
 		}
 
 		public function firePlayer():void {
-			SoundManager.playSound( Sounds.PLAYER_FIRE );
+			if( !_active ) return;
+			SoundManager.playSound( Sounds.PLAYER_FIRE, 0.5 );
 			fireProjectile( _player.position, new Vector3D( 0, 0, 200 ), _invaderPool.gameObjects, _playerProjectilePool );
 		}
 
@@ -335,6 +362,19 @@ package com.away3d.spaceinvaders.scene
 			projectile.targets = targets;
 			projectile.position = position;
 			projectile.velocity = velocity;
+		}
+
+		// -----------------------
+		// Player motion.
+		// -----------------------
+
+		public function movePlayerTowards( x:Number, y:Number ):void {
+			var dx:Number = x - _playerPosition.x;
+			var dy:Number = y - _playerPosition.y;
+			_player.x += dx * cameraMotionEase;
+			_player.y += dy * cameraMotionEase;
+			_playerPosition.x = _player.x;
+			_playerPosition.y = _player.y;
 		}
 
 		public function get playerPosition():Point {
