@@ -5,7 +5,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	import away3d.entities.Mesh;
 	import away3d.materials.MaterialBase;
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
@@ -33,7 +33,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			var posX:Number, posY:Number;
 			var offX:Number, offY:Number;
 
-			cellSize = GameSettings.invaderSizeXY;
+			cellSize = GameVariables.invaderSizeXY;
 			lenX = gridDimensions.x;
 			lenY = gridDimensions.y;
 			offX = cellSize / 2 - ( lenX / 2 ) * cellSize;
@@ -60,8 +60,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 				var dimensions:Point = _definitions.getDefinitionDimensionsForInvaderType( typeIndex );
 				var definitionFrame0:Array = definition[ 0 ];
 				var definitionFrame1:Array = definition[ 1 ];
-				var invaderGeometry0:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame0, dimensions );
-				var invaderGeometry1:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame1, dimensions );
+				var invaderGeometry0:Geometry = new InvaderGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeZ, definitionFrame0, dimensions );
+				var invaderGeometry1:Geometry = new InvaderGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeZ, definitionFrame1, dimensions );
 				var meshFrame0:Mesh = new Mesh( invaderGeometry0, _invaderMaterial );
 				var meshFrame1:Mesh = new Mesh( invaderGeometry1, _invaderMaterial );
 				var cellsFrame0:Vector.<Point> = createInvaderCells( definition[ 0 ], dimensions );

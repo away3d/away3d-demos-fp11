@@ -26,10 +26,17 @@ package com.away3d.spaceinvaders
 			initScoreManager();
 			initConsistency();
 			initStage();
+			initStageDims();
 			initScene();
 			SoundManager.registerSounds();
 			initInput();
 			initUi();
+			addEventListener( Event.ENTER_FRAME, enterframeHandler );
+		}
+
+		protected function initStageDims():void {
+			GameVariables.windowWidth = stage.stageWidth;
+			GameVariables.windowHeight = stage.stageHeight;
 		}
 
 		protected function initConsistency():void {
@@ -83,14 +90,12 @@ package com.away3d.spaceinvaders
 
 		private function stopGame():void {
 			_scene.stop();
-			removeEventListener( Event.ENTER_FRAME, enterframeHandler );
 		}
 
 		private function startGame():void {
 			_scene.reset();
 			_scene.resume();
 			ScoreManager.instance.reset();
-			addEventListener( Event.ENTER_FRAME, enterframeHandler );
 		}
 
 		private function enterframeHandler( event:Event ):void {
@@ -104,7 +109,6 @@ package com.away3d.spaceinvaders
 
 		private function onUiResume( event:GameEvent ):void {
 			_scene.resume();
-			addEventListener( Event.ENTER_FRAME, enterframeHandler );
 		}
 
 		private function onUiPause( event:GameEvent ):void {

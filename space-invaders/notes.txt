@@ -1,12 +1,9 @@
-// BUGS.
-- TODO: game over screen is not visible on android ( although you can click the invisible replay button )
-- TODO: high-score save/restore is not working on mobile
-
-// Performance improvement.
-- TODO: star objects are very inefficient
+// Performance improvements.
+- TODO: star objects are very inefficient, implement with fragment shader on a plane?
 - TODO: skybox is overkill since you can only see 1 image?
 
 // To consider.
+- TODO: camera rotates with accelerometer?
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
 - TODO: do not allow invaders to wonder too close?
 - TODO: implement invader spawn sound?

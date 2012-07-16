@@ -27,7 +27,7 @@ package com.away3d.spaceinvaders.scene
 	import away3d.primitives.CubeGeometry;
 	import away3d.primitives.PlaneGeometry;
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
@@ -109,6 +109,8 @@ package com.away3d.spaceinvaders.scene
 			_view.backgroundColor = 0x000000;
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
+			_view.width = GameVariables.windowWidth;
+			_view.height = GameVariables.windowHeight;
 			addChild( _view );
 		}
 
@@ -122,7 +124,7 @@ package com.away3d.spaceinvaders.scene
 			_lightPicker = new StaticLightPicker( [ _cameraLight ] );
 
 			// Stats.
-			if( GameSettings.debugMode ) {
+			if( GameVariables.debugMode ) {
 				var stats:AwayStats = new AwayStats( _view );
 				addChild( stats );
 			}
@@ -182,8 +184,8 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		private function loadLevel():void {
-			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
-			if( _invaderPool.spawnTimeFactor < GameSettings.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameSettings.minimumSpawnTime;
+			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameVariables.spawnTimeDecreasePerLevel;
+			if( _invaderPool.spawnTimeFactor < GameVariables.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameVariables.minimumSpawnTime;
 		}
 
 		public function reset():void {
@@ -265,7 +267,7 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _invaderPool );
 
 			// Create cells ( used for invader death explosions ).
-			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), invaderMaterial );
+			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), invaderMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
@@ -283,7 +285,7 @@ package com.away3d.spaceinvaders.scene
 		// -----------------------
 
 		private function createInvaderDeathAnimation( invader:Invader, hitter:Projectile ):void {
-			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 0.5, 3 );
+			var intensity:Number = GameVariables.deathExplosionIntensity * MathUtils.rand( 0.5, 3 );
 			var positions:Vector.<Point> = invader.cellPositions;
 			var len:uint = positions.length;
 			var sc:Number = invader.scaleX;
@@ -317,7 +319,7 @@ package com.away3d.spaceinvaders.scene
 			_currentLevelKills++;
 			_totalKills++;
 			ScoreManager.instance.registerKill( invader.invaderType );
-			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
+			if( _currentLevelKills > GameVariables.killsToAdvanceDifficulty ) {
 				_currentLevelKills = 0;
 				_currentLevel++;
 				loadLevel();

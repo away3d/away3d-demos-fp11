@@ -14,7 +14,6 @@ package com.away3d.spaceinvaders.save
 		}
 
 		override public function saveHighScore( score:uint ):void {
-			trace( "saving score: " + score );
 			var file:File = File.applicationStorageDirectory.resolvePath( FILE_PATH );
 			var str:FileStream = new FileStream();
 			str.open( file, FileMode.WRITE );
@@ -24,7 +23,6 @@ package com.away3d.spaceinvaders.save
 
 		override public function loadHighScore():uint {
 			var file:File = File.applicationStorageDirectory.resolvePath( FILE_PATH );
-			trace( "loading score - file exists: " + file.exists );
 			if( file.exists ) {
 				var str:FileStream = new FileStream();
 				str.open( file, FileMode.READ );

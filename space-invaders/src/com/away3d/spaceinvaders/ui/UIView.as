@@ -1,6 +1,7 @@
 package com.away3d.spaceinvaders.ui
 {
 
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.events.GameEvent;
 	import com.away3d.spaceinvaders.sound.SoundManager;
 	import com.away3d.spaceinvaders.sound.Sounds;
@@ -11,6 +12,7 @@ package com.away3d.spaceinvaders.ui
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
+	import flash.utils.setTimeout;
 
 	public class UIView extends Sprite
 	{
@@ -30,8 +32,8 @@ package com.away3d.spaceinvaders.ui
 
 			// Cross hair.
 			var crossHair:Sprite = new Crosshair();
-			crossHair.x = stage.stageWidth / 2;
-			crossHair.y = stage.stageHeight / 2;
+			crossHair.x = GameVariables.windowWidth / 2;
+			crossHair.y = GameVariables.windowHeight / 2;
 			addChild( crossHair );
 
 			// Score text.
@@ -40,24 +42,24 @@ package com.away3d.spaceinvaders.ui
 
 			// Lives text.
 			_livesText = getTextField();
-			_livesText.y = stage.stageHeight - 20;
+			_livesText.y = GameVariables.windowHeight - 20;
 			addChild( _livesText );
 
 			// Buttons.
 			var restartButton:SimpleButton = new RestartButton();
-			restartButton.x = stage.stageWidth - restartButton.width;
-			restartButton.y = stage.stageHeight - restartButton.height;
+			restartButton.x = GameVariables.windowWidth - restartButton.width;
+			restartButton.y = GameVariables.windowHeight - restartButton.height;
 			restartButton.addEventListener( MouseEvent.MOUSE_UP, onRestart );
 			initializeButton( restartButton );
 			addChild( restartButton );
 			_pauseButton = new PauseButton();
-			_pauseButton.x = stage.stageWidth - _pauseButton.width;
+			_pauseButton.x = GameVariables.windowWidth - _pauseButton.width;
 			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
 			initializeButton( _pauseButton );
 			addChild( _pauseButton );
 			_resumeButton = new PlayButton();
 			_resumeButton.visible = false;
-			_resumeButton.x = stage.stageWidth - _resumeButton.width;
+			_resumeButton.x = GameVariables.windowWidth - _resumeButton.width;
 			_resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume );
 			initializeButton( _resumeButton );
 			addChild( _resumeButton );
@@ -110,13 +112,13 @@ package com.away3d.spaceinvaders.ui
 		}
 
 		private function initializePopUp( popUp:MovieClip ):void {
-			popUp.x = stage.stageWidth / 2;
-			popUp.y = stage.stageHeight / 2;
+			popUp.x = GameVariables.windowWidth / 2;
+			popUp.y = GameVariables.windowHeight / 2;
 			var bg:Sprite = popUp.bg;
-			bg.width = stage.stageWidth;
-			bg.height = stage.stageHeight;
-			bg.x = -stage.stageWidth / 2;
-			bg.y = -stage.stageHeight / 2;
+			bg.width = GameVariables.windowWidth;
+			bg.height = GameVariables.windowHeight;
+			bg.x = -GameVariables.windowWidth / 2;
+			bg.y = -GameVariables.windowHeight / 2;
 			_popUp = popUp;
 			addChild( popUp );
 		}
@@ -164,14 +166,14 @@ package com.away3d.spaceinvaders.ui
 		public function updateLivesText( lives:uint ):void {
 			_livesText.text = "< LIVES " + lives + " >";
 			_livesText.width = _livesText.textWidth * 1.05;
-			_livesText.x = stage.stageWidth / 2 - _livesText.width / 2;
+			_livesText.x = GameVariables.windowWidth / 2 - _livesText.width / 2;
 		}
 
 		public function updateScoreText( score:uint, highScore:uint ):void {
 			_scoreText.text = "< SCORE " + uintToString( score ) + " >   < ";
 			_scoreText.text += "HIGH-SCORE " + uintToString( highScore ) + " >"; // TODO
 			_scoreText.width = _scoreText.textWidth * 1.05;
-			_scoreText.x = stage.stageWidth / 2 - _scoreText.width / 2;
+			_scoreText.x = GameVariables.windowWidth / 2 - _scoreText.width / 2;
 		}
 
 		private function getTextField():TextField {

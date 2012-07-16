@@ -2,8 +2,12 @@ package com.away3d.spaceinvaders
 {
 
 
-	public class GameSettings
+	public class GameVariables
 	{
+		// -----------------------
+		// Settings
+		// -----------------------
+
 		// General.
 		public static const debugMode:Boolean = false;
 
@@ -34,11 +38,11 @@ package com.away3d.spaceinvaders
 		public static const mouseCameraMotionEase:Number = 0.25;
 
 		// Accelerometer control settings.
-		public static const useAccelerometer:Boolean = false;
+		public static const useAccelerometer:Boolean = true;
 		public static const accelerometerCameraMotionEase:Number = 0.1;
-		public static const accelerometerMotionFactorX:Number = 2;
-		public static const accelerometerMotionFactorY:Number = 4;
-		public static const accelerometerCenterY:Number = 0.7;
+		public static const accelerometerMotionFactorX:Number = 3;
+		public static const accelerometerMotionFactorY:Number = 5;
+		public static const accelerometerCenterY:Number = 0.5;
 
 		// Touch control settings.
 		public static const touchMotionFactor:Number = 2;
@@ -50,5 +54,12 @@ package com.away3d.spaceinvaders
 		// Scene range.
 		public static const minZ:Number = -1000;
 		public static const maxZ:Number = 50000;
+
+		// -----------------------
+		// Variables
+		// -----------------------
+
+		public static var windowWidth:Number = 0;
+		public static var windowHeight:Number = 0;
 	}
 }

@@ -1,7 +1,7 @@
 package
 {
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.Main;
 	import com.away3d.spaceinvaders.input.AccelerometerInput;
 	import com.away3d.spaceinvaders.input.TouchInput;
@@ -14,8 +14,13 @@ package
 			super();
 		}
 
+		override protected function initStageDims():void {
+			GameVariables.windowWidth = stage.fullScreenWidth;
+			GameVariables.windowHeight = stage.fullScreenHeight;
+		}
+
 		override protected function initInput():void {
-			_input = GameSettings.useAccelerometer ? new AccelerometerInput( _scene ) : new TouchInput( _scene );
+			_input = GameVariables.useAccelerometer ? new AccelerometerInput( _scene ) : new TouchInput( _scene );
 			addChild( _input );
 		}
 

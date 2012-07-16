@@ -1,7 +1,7 @@
 package com.away3d.spaceinvaders.input
 {
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.scene.InvaderScene;
 
 	import flash.events.Event;
@@ -16,7 +16,7 @@ package com.away3d.spaceinvaders.input
 
 		public function DesktopInput( scene:InvaderScene ) {
 			super( scene );
-			_scene.cameraMotionEase = GameSettings.mouseCameraMotionEase;
+			_scene.cameraMotionEase = GameVariables.mouseCameraMotionEase;
 		}
 
 		override public function init():void {
@@ -57,8 +57,10 @@ package com.away3d.spaceinvaders.input
 				}
 			}
 
-			var targetX:Number =  GameSettings.cameraPanRange * ( _currentPosition.x - stage.stageWidth  / 2 ) / ( stage.stageWidth  / 2 );
-			var targetY:Number = -GameSettings.cameraPanRange * ( _currentPosition.y - stage.stageHeight / 2 ) / ( stage.stageHeight / 2 );
+			var hw:Number = GameVariables.windowWidth / 2;
+			var hh:Number = GameVariables.windowHeight / 2;
+			var targetX:Number =  GameVariables.cameraPanRange * ( _currentPosition.x - hw ) / hw;
+			var targetY:Number = -GameVariables.cameraPanRange * ( _currentPosition.y - hh ) / hh;
 
 			_scene.movePlayerTowards( targetX, targetY );
 		}

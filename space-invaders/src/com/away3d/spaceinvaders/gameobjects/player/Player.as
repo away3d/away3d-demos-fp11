@@ -3,7 +3,7 @@ package com.away3d.spaceinvaders.gameobjects.player
 
 	import away3d.cameras.Camera3D;
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 
@@ -30,7 +30,7 @@ package com.away3d.spaceinvaders.gameobjects.player
 		}
 
 		private function onShakeTimerTick( event:TimerEvent ):void {
-			var shakeRange:Number = GameSettings.playerHitShake * _shakeT;
+			var shakeRange:Number = GameVariables.playerHitShake * _shakeT;
 			_camera.x = MathUtils.rand( -shakeRange, shakeRange );
 			_camera.y = MathUtils.rand( -shakeRange, shakeRange );
 			_shakeT = 1 - _shakeTimer.currentCount / _shakeTimerCount;

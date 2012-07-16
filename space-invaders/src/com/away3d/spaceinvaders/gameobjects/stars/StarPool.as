@@ -3,7 +3,7 @@ package com.away3d.spaceinvaders.gameobjects.stars
 
 	import away3d.entities.Mesh;
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import com.away3d.spaceinvaders.GameVariables;
 
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
@@ -18,7 +18,7 @@ package com.away3d.spaceinvaders.gameobjects.stars
 		}
 
 		override public function update():void {
-			if( numChildren < GameSettings.maxStarNum ) {
+			if( numChildren < GameVariables.maxStarNum ) {
 				var len:uint = Math.floor( 1 + 4 * Math.random() );
 				for( var i:uint; i < len; ++i ) {
 					addItem();
