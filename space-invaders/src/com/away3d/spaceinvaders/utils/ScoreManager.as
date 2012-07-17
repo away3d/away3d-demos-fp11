@@ -44,8 +44,8 @@ package com.away3d.spaceinvaders.utils
 		public function reset():void {
 			_score = 0;
 			_lives = GameVariables.playerLives;
-			_ui.updateScoreText( _score, _highScore );
-			_ui.updateLivesText( _lives );
+			_ui.updateScore( _score, _highScore );
+			_ui.updateLives( _lives );
 		}
 
 		public function set ui( value:UIView ):void {
@@ -58,12 +58,12 @@ package com.away3d.spaceinvaders.utils
 				_highScore = _score;
 				_saveManager.saveHighScore( _highScore );
 			}
-			_ui.updateScoreText( _score, _highScore );
+			_ui.updateScore( _score, _highScore );
 		}
 
 		public function registerPlayerHit():void {
 			_lives--;
-			_ui.updateLivesText( _lives );
+			_ui.updateLives( _lives );
 			if( _lives == 0 ) {
 				dispatchEvent( new GameEvent( GameEvent.GAME_OVER ) );
 			}

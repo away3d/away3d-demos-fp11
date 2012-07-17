@@ -107,7 +107,7 @@ package com.away3d.spaceinvaders.scene
 			var frontLight:DirectionalLight = new DirectionalLight();
 			frontLight.direction = new Vector3D( 0.5, 0, 1 );
 			frontLight.color = 0xFFFFFF;
-			frontLight.ambient = 0.2;
+			frontLight.ambient = 0.1;
 			frontLight.ambientColor = 0xFF00FF;
 			_view.scene.addChild( frontLight );
 			_lightPicker = new StaticLightPicker( [ frontLight ] );
@@ -231,19 +231,14 @@ package com.away3d.spaceinvaders.scene
 
 		private function createInvaders():void {
 
-			var fogMethod:FogMethod = new FogMethod( 0, 50000, 0xFFFFFF );
-			var envMethod:EnvMapMethod = new EnvMapMethod( _cubeMap, 0.5 );
-
 			// Same material for all invaders.
-			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF, 0.9 );
-			invaderMaterial.addMethod( envMethod );
-			invaderMaterial.addMethod( fogMethod );
+			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF, 1 );
+			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
 
 			// Reusable projectile mesh.
 			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
 			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
-			invaderProjectileMaterial.blendMode = BlendMode.ADD;
 			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
 			// Slant vertices a little.
 			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
@@ -272,7 +267,7 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _invaderPool );
 
 			// Create cells ( used for invader death explosions ).
-			var cellMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.5 );
+			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.5 );
 			cellMaterial.blendMode = BlendMode.ADD;
 			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), cellMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );

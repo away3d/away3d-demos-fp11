@@ -18,7 +18,7 @@ package com.away3d.spaceinvaders.gameobjects.stars
 		}
 
 		override public function update():void {
-			if( numChildren < GameVariables.maxStarNum ) {
+			if( Math.random() > 0.75 && numChildren < GameVariables.maxStarNum ) {
 				var len:uint = Math.floor( 1 + 4 * Math.random() );
 				for( var i:uint; i < len; ++i ) {
 					addItem();

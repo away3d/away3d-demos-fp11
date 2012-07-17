@@ -1,16 +1,14 @@
 // Bugs.
-- TODO: pause/play not working with continuous rendering.
+- TODO: bg on mobile is white, shows for an instant when app loads
 
 // Performance improvements.
 - TODO: star objects are very inefficient, implement with fragment shader on a plane?
 - TODO: skybox is overkill since you can only see 1 image?
 
 // To consider.
-- TODO: camera rotates with accelerometer?
+- TODO: projectiles hit projectiles?
+- TODO: Greg could you help me make some sort of portal where the invaders come from in my demo?
+and perhaps also a similar particle animation for invader or player hits
+[7/16/12 8:44:40 PM] Alejandro Santander: should be simple and add a lot to it!
 - TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
-- TODO: do not allow invaders to wonder too close?
 - TODO: implement invader spawn sound?
-- TODO: implement UI with starling?
-- TODO: add bomb objects ( which explode on click or something like that )
-- TODO: fire on and fire off cycles on invaders?
-- TODO: invaders cause damage on player?
