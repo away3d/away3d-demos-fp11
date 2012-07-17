@@ -11,7 +11,6 @@ package
 	import away3d.events.*;
 	import away3d.library.*;
 	import away3d.lights.*;
-	import away3d.loaders.*;
 	import away3d.loaders.parsers.*;
 	import away3d.materials.*;
 	import away3d.materials.lightpickers.*;
@@ -276,6 +275,7 @@ package
 			
 			//couple our animation set with our skeleton and wrap in an animator object and apply to our mesh object
 			animator = new SkeletonAnimator(animationSet, skeleton);
+			animator.updateRootPosition = false;
 			hero.animator = animator;
 			
 			//create our crossfade transition object
