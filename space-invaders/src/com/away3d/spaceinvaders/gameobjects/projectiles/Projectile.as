@@ -23,6 +23,11 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 			super.update();
 
+			if( z > 10000 ) {
+				enabled = false;
+				return;
+			}
+
 			var i:uint, len:uint;
 			var target:GameObject;
 			var dx:Number, dy:Number, dz:Number, distance:Number;

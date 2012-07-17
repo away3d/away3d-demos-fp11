@@ -230,7 +230,7 @@ package com.away3d.spaceinvaders.scene
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
 
-			_fireReleaseTimer = new Timer( 50, 1 );
+			_fireReleaseTimer = new Timer( 100, 1 );
 			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
 		}
 
@@ -280,7 +280,7 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _invaderPool );
 
 			// Create cells ( used for invader death explosions ).
-			var cellMaterial:ColorMaterial = new ColorMaterial( 0x0000FF, 0.5 );
+			var cellMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.5 );
 			cellMaterial.blendMode = BlendMode.ADD;
 			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), cellMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );

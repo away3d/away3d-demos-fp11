@@ -32,7 +32,7 @@ package com.away3d.spaceinvaders
 
 		// Player.
 		public static const cameraPanRange:Number = 1500;
-		public static const panTiltFactor:Number = 0.0025;
+		public static const panTiltFactor:Number = 0.005;
 		public static const playerHitShake:Number = 200;
 		public static const playerLives:uint = 3;
 
@@ -43,8 +43,8 @@ package com.away3d.spaceinvaders
 		// Accelerometer control settings.
 		public static const useAccelerometer:Boolean = true;
 		public static const accelerometerCameraMotionEase:Number = 0.05;
-		public static const accelerometerMotionFactorX:Number = 10;
-		public static const accelerometerMotionFactorY:Number = 20;
+		public static const accelerometerMotionFactorX:Number = 5;
+		public static const accelerometerMotionFactorY:Number = 10;
 		public static const accelerometerCenterY:Number = 0.6;
 
 		// Touch control settings.
