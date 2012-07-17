@@ -12,6 +12,7 @@ package com.away3d.spaceinvaders.input
 
 	public class DesktopInput extends InputBase
 	{
+		private var _mouseIsDown:Boolean;
 		private var _mouseIsOnStage:Boolean = true;
 
 		public function DesktopInput( scene:InvaderScene ) {
@@ -21,6 +22,7 @@ package com.away3d.spaceinvaders.input
 
 		override public function init():void {
 			stage.addEventListener( MouseEvent.MOUSE_DOWN, onStageMouseDown );
+			stage.addEventListener( MouseEvent.MOUSE_UP, onStageMouseUp );
 			stage.addEventListener( MouseEvent.MOUSE_MOVE, onStageMouseMove );
 			stage.addEventListener( Event.MOUSE_LEAVE, onStageMouseLeave );
 			stage.addEventListener( KeyboardEvent.KEY_DOWN, onStageKeyDown );
@@ -43,10 +45,16 @@ package com.away3d.spaceinvaders.input
 		}
 
 		private function onStageMouseDown( event:MouseEvent ):void {
-			_scene.firePlayer();
+			_mouseIsDown = true;
+		}
+
+		private function onStageMouseUp( event:MouseEvent ):void {
+			_mouseIsDown = false;
 		}
 
 		override public function update():void {
+
+			if( _mouseIsDown ) _scene.firePlayer();
 
 			if( _mouseIsOnStage ) {
 				if( stage.mouseX > 0 && stage.mouseX < 100000 ) {

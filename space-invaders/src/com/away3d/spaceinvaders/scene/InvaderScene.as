@@ -34,8 +34,11 @@ package com.away3d.spaceinvaders.scene
 	import flash.display.BlendMode;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.TimerEvent;
 	import flash.geom.Point;
 	import flash.geom.Vector3D;
+	import flash.utils.Timer;
+	import flash.utils.setTimeout;
 
 	use namespace arcane; // TODO: Ugly, used to get the camera's aspect ratio
 
@@ -72,6 +75,9 @@ package com.away3d.spaceinvaders.scene
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
 		private var _skyBox:SkyBox;
+
+		private var _fireReleased:Boolean = true;
+		private var _fireReleaseTimer:Timer;
 
 		private var _currentLevel:uint;
 
@@ -223,6 +229,13 @@ package com.away3d.spaceinvaders.scene
 			_player.targets = _invaderPool.gameObjects;
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
+
+			_fireReleaseTimer = new Timer( 50, 1 );
+			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
+		}
+
+		private function onFireReleaseTimerComplete( event:TimerEvent ):void {
+			_fireReleased = true;
 		}
 
 		// -----------------------
@@ -267,7 +280,7 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _invaderPool );
 
 			// Create cells ( used for invader death explosions ).
-			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.5 );
+			var cellMaterial:ColorMaterial = new ColorMaterial( 0x0000FF, 0.5 );
 			cellMaterial.blendMode = BlendMode.ADD;
 			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), cellMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
@@ -354,11 +367,15 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		public function firePlayer():void {
+			if( !_fireReleased ) return;
 			if( !_active ) return;
 			SoundManager.playSound( Sounds.PLAYER_FIRE, 0.5 );
 			var velocity:Vector3D = new Vector3D( 0, 0, 200 );
 			velocity = _player.transform.deltaTransformVector( velocity );
 			fireProjectile( _player, velocity, _invaderPool.gameObjects, _playerProjectilePool );
+			_fireReleased = false;
+			_fireReleaseTimer.reset();
+			_fireReleaseTimer.start();
 		}
 
 		public function fireProjectile( source:Object3D, velocity:Vector3D, targets:Vector.<GameObject>, pool:GameObjectPool ):void {

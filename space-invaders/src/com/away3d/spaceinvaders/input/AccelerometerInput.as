@@ -10,6 +10,8 @@ package com.away3d.spaceinvaders.input
 
 	public class AccelerometerInput extends InputBase
 	{
+		private var _mouseIsDown:Boolean;
+
 		public function AccelerometerInput( scene:InvaderScene ) {
 			super( scene );
 			_scene.cameraMotionEase = GameVariables.accelerometerCameraMotionEase;
@@ -17,11 +19,13 @@ package com.away3d.spaceinvaders.input
 
 		override public function init():void {
 			stage.addEventListener( MouseEvent.MOUSE_DOWN, onStageMouseDown );
+			stage.addEventListener( MouseEvent.MOUSE_UP, onStageMouseUp );
 			var accelerometer:Accelerometer = new Accelerometer();
 			accelerometer.addEventListener( AccelerometerEvent.UPDATE, onAccelerometerUpdate );
 		}
 
 		override public function update():void {
+			if( _mouseIsDown ) _scene.firePlayer();
 			_scene.movePlayerTowards( _currentPosition.x, _currentPosition.y );
 		}
 
@@ -36,7 +40,11 @@ package com.away3d.spaceinvaders.input
 		}
 
 		private function onStageMouseDown( event:MouseEvent ):void {
-			_scene.firePlayer();
+			_mouseIsDown = true;
+		}
+
+		private function onStageMouseUp( event:MouseEvent ):void {
+			_mouseIsDown = false;
 		}
 	}
 }

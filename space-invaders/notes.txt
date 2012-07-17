@@ -1,5 +1,7 @@
 // Bugs.
 - TODO: bg on mobile is white, shows for an instant when app loads
+- TODO: forgotten projectiles can kill warping invaders, kill projectiles on some z
+- TODO: need more intelligent gaussian accelerometer input
 
 // Performance improvements.
 - TODO: star objects are very inefficient, implement with fragment shader on a plane?
