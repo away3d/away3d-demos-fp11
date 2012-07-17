@@ -32,7 +32,7 @@ package com.away3d.spaceinvaders
 
 		// Player.
 		public static const cameraPanRange:Number = 1500;
-		public static const panTiltFactor:Number = 0.005;
+		public static const panTiltFactor:Number = 0.0035;
 		public static const playerHitShake:Number = 200;
 		public static const playerLives:uint = 3;
 

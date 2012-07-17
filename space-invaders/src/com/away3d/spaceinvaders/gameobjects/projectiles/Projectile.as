@@ -23,7 +23,7 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 			super.update();
 
-			if( z > 10000 ) {
+			if( z > 30000 ) {
 				enabled = false;
 				return;
 			}
