@@ -14,12 +14,14 @@ package com.away3d.spaceinvaders
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
+	import flash.ui.Mouse;
 
 	public class Main extends Sprite
 	{
 		protected var _input:InputBase;
 		protected var _scene:InvaderScene;
 
+		private var _showingMouse:Boolean = true;
 		private var _ui:UIView;
 
 		public function Main() {
@@ -89,10 +91,12 @@ package com.away3d.spaceinvaders
 		// -----------------------
 
 		private function stopGame():void {
+			showMouse();
 			_scene.stop();
 		}
 
 		private function startGame():void {
+			hideMouse();
 			_scene.reset();
 			_scene.resume();
 			ScoreManager.instance.reset();
@@ -101,18 +105,39 @@ package com.away3d.spaceinvaders
 		private function enterframeHandler( event:Event ):void {
 			_input.update();
 			_scene.update();
+
+			if( _scene.active ) {
+				if( mouseY < 50 ) showMouse();
+				else hideMouse();
+			}
 		}
 
 		// -----------------------------
 		// User interface interaction.
 		// -----------------------------
 
+		private function showMouse():void {
+			if( _showingMouse ) return;
+			Mouse.show();
+			_showingMouse = true;
+		}
+
+		private function hideMouse():void {
+			if( !_showingMouse ) return;
+			Mouse.hide();
+			_showingMouse = false;
+		}
+
 		private function onUiResume( event:GameEvent ):void {
+			hideMouse();
+			_ui.hidePausePopUp();
 			_scene.resume();
 		}
 
 		private function onUiPause( event:GameEvent ):void {
+			showMouse();
 			stopGame();
+			_ui.showPausePopUp();
 		}
 
 		private function onUiRestart( event:GameEvent ):void {

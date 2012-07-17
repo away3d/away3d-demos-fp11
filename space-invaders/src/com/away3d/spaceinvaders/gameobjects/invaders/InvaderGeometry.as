@@ -2,8 +2,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 {
 
 	import away3d.core.base.SubGeometry;
-	import away3d.entities.Mesh;
-	import away3d.materials.MaterialBase;
 	import away3d.primitives.PrimitiveBase;
 
 	import flash.geom.Point;
@@ -69,36 +67,31 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 						if( neighbors.x == 0 ) { // LEFT
 							addFace(
 								p4, p0, p6, p2,
-								new Vector3D( -1, 0, 0 ),
-								new Vector3D( 0, 0, 0 )
+								new Vector3D( -1, 0, 0 )
 							);
 						}
 						if( neighbors.y == 0 ) { // RIGHT
 							addFace(
 								p1, p5, p3, p7,
-								new Vector3D( 1, 0, 0 ),
-								new Vector3D( 0, 0, 0 )
+								new Vector3D( 1, 0, 0 )
 							);
 						}
 						if( neighbors.z == 0 ) { // TOP
 							addFace(
 								p1, p0, p5, p4,
-								new Vector3D( -1, 0, 0 ),
-								new Vector3D( 0, 0, 0 )
+								new Vector3D( -1, 0, 0 )
 							);
 						}
 						if( neighbors.w == 0 ) { // BOTTOM
 							addFace(
 								p7, p6, p3, p2,
-								new Vector3D( -1, 0, 0 ),
-								new Vector3D( 0, 0, 0 )
+								new Vector3D( -1, 0, 0 )
 							);
 						}
 						// FRONT (always).
 						addFace(
 							p0, p1, p2, p3,
-							new Vector3D( 0, 0, -1 ),
-							new Vector3D( 0, 0, 0 )
+							new Vector3D( 0, 0, -1 )
 						);
 						// BACK (never).
 					}
@@ -119,7 +112,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		}
 
-		private function addFace( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D, tangent:Vector3D ):void {
+		private function addFace( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D ):void {
 			_rawVertices.push( p0.x, p0.y, p0.z );
 			_rawVertices.push( p1.x, p1.y, p1.z );
 			_rawVertices.push( p2.x, p2.y, p2.z );
@@ -128,15 +121,14 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_rawNormals.push( normal.x, normal.y, normal.z );
 			_rawNormals.push( normal.x, normal.y, normal.z );
 			_rawNormals.push( normal.x, normal.y, normal.z );
-			_rawTangents.push( tangent.x, tangent.y, tangent.z );
-			_rawTangents.push( tangent.x, tangent.y, tangent.z );
-			_rawTangents.push( tangent.x, tangent.y, tangent.z );
-			_rawTangents.push( tangent.x, tangent.y, tangent.z );
+			_rawTangents.push( 0, 0, 0 ); // Ignoring tangents ( ok as long as color materials are used ).
+			_rawTangents.push( 0, 0, 0 );
+			_rawTangents.push( 0, 0, 0 );
+			_rawTangents.push( 0, 0, 0 );
+			_rawUvs.push( 0, 0, 0 ); // Ignoring UVs ( ok as long as color materials are used ).
 			_rawUvs.push( 0, 0, 0 );
 			_rawUvs.push( 0, 0, 0 );
 			_rawUvs.push( 0, 0, 0 );
-			_rawUvs.push( 0, 0, 0 );
-			// TODO: set proper uvs and tangents
 			_rawIndices.push( _currentIndex + 0, _currentIndex + 1, _currentIndex + 2 );
 			_rawIndices.push( _currentIndex + 1, _currentIndex + 3, _currentIndex + 2 );
 			_currentIndex += 4;

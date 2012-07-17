@@ -1,3 +1,6 @@
+// Bugs.
+- TODO: pause/play not working with continuous rendering.
+
 // Performance improvements.
 - TODO: star objects are very inefficient, implement with fragment shader on a plane?
 - TODO: skybox is overkill since you can only see 1 image?

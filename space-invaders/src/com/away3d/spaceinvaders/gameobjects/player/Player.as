@@ -16,6 +16,7 @@ package com.away3d.spaceinvaders.gameobjects.player
 		private var _shakeTimer:Timer;
 		private var _shakeT:Number = 0;
 		private var _shakeTimerCount:uint = 10;
+		private var _targets:Vector.<GameObject>;
 
 		public function Player( camera:Camera3D ) {
 
@@ -27,6 +28,37 @@ package com.away3d.spaceinvaders.gameobjects.player
 			_shakeTimer = new Timer( 25, _shakeTimerCount );
 			_shakeTimer.addEventListener( TimerEvent.TIMER, onShakeTimerTick );
 			_shakeTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onShakeTimerComplete );
+		}
+
+
+		override public function update():void {
+
+			var i:uint, len:uint;
+			var target:GameObject;
+			var dx:Number, dy:Number, dz:Number, distance:Number;
+
+			// Check for collisions with invaders.
+			len = _targets.length;
+			for( i = 0; i < len; ++i ) {
+
+				target = _targets[ i ];
+				if( target.enabled ) {
+
+					dz = target.z - z;
+
+					if( Math.abs( dz ) < Math.abs( target.velocity.z ) ) {
+						dx = target.x - x;
+						dy = target.y - y;
+						distance = Math.sqrt( dx * dx + dy * dy );
+						if( distance < GameVariables.impactHitSize ) {
+							impact( target );
+						}
+					}
+				}
+
+			}
+
+			super.update();
 		}
 
 		private function onShakeTimerTick( event:TimerEvent ):void {
@@ -50,6 +82,10 @@ package com.away3d.spaceinvaders.gameobjects.player
 			_shakeT = 1;
 			_shakeTimer.reset();
 			_shakeTimer.start();
+		}
+
+		public function set targets( value:Vector.<GameObject> ):void {
+			_targets = value;
 		}
 	}
 }
