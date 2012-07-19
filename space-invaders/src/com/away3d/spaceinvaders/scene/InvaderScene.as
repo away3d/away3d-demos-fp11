@@ -1,21 +1,24 @@
 package com.away3d.spaceinvaders.scene
 {
-
 	import away3d.arcane;
 	import away3d.containers.View3D;
 	import away3d.core.base.Geometry;
 	import away3d.core.base.Object3D;
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
 	import away3d.debug.AwayStats;
 	import away3d.debug.Trident;
 	import away3d.entities.Mesh;
+	import away3d.events.Stage3DEvent;
 	import away3d.lights.DirectionalLight;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.EnvMapMethod;
-	import away3d.materials.methods.FogMethod;
 	import away3d.primitives.CubeGeometry;
 	import away3d.primitives.SkyBox;
 	import away3d.textures.BitmapCubeTexture;
+
+	import starling.core.Starling;
 
 	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
@@ -30,6 +33,7 @@ package com.away3d.spaceinvaders.scene
 	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 	import com.away3d.spaceinvaders.utils.ScoreManager;
+	import com.starling.rootsprites.StarlingVortexSprite;
 
 	import flash.display.BlendMode;
 	import flash.display.Sprite;
@@ -38,7 +42,6 @@ package com.away3d.spaceinvaders.scene
 	import flash.geom.Point;
 	import flash.geom.Vector3D;
 	import flash.utils.Timer;
-	import flash.utils.setTimeout;
 
 	use namespace arcane; // TODO: Ugly, used to get the camera's aspect ratio
 
@@ -57,6 +60,7 @@ package com.away3d.spaceinvaders.scene
 		[Embed(source="../../../../assets/skybox/space_negZ.jpg")]
 		private var SkyboxImageNegZ:Class;
 
+		private var _stage3DProxy:Stage3DProxy;
 		private var _view:View3D;
 		private var _lightPicker:StaticLightPicker;
 		private var _playerPosition:Point = new Point();
@@ -78,6 +82,8 @@ package com.away3d.spaceinvaders.scene
 
 		private var _fireReleased:Boolean = true;
 		private var _fireReleaseTimer:Timer;
+		private var _starlingVortexScene : Starling;
+		private var _starlingVortexSprite : StarlingVortexSprite;
 
 		private var _currentLevel:uint;
 
@@ -91,19 +97,35 @@ package com.away3d.spaceinvaders.scene
 
 		private function stageInitHandler( event:Event ):void {
 			removeEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
+			_stage3DProxy = Stage3DManager.getInstance(stage).getFreeStage3DProxy();
+			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, gameInitHandler);
+			_stage3DProxy.antiAlias = 4;
+			_stage3DProxy.color = 0x000000;
+			_stage3DProxy.width = GameVariables.windowWidth;
+			_stage3DProxy.height = GameVariables.windowHeight;
+		}
+		
+		private function gameInitHandler( event:Stage3DEvent ):void {
+			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, gameInitHandler);
+			initStarling();
 			initEngine();
 			initScene();
 			update();
 		}
 
+		private function initStarling() : void {
+			//Create the Starling scene to add the background wall/fireplace. This is positioned on top of the floor scene starting at the top of the screen. It slightly covers the wooden floor layer to avoid any gaps appearing.
+			_starlingVortexScene = new Starling(StarlingVortexSprite, stage, _stage3DProxy.viewPort, _stage3DProxy.stage3D);
+			_starlingVortexSprite = StarlingVortexSprite.getInstance();
+			_starlingVortexSprite.touchable = false;
+		}
+
 		private function initEngine():void {
 			_view = new View3D();
-			_view.antiAlias = 4;
-			_view.backgroundColor = 0x000000;
+			_view.stage3DProxy = _stage3DProxy;
+			_view.shareContext = true;
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
-			_view.width = GameVariables.windowWidth;
-			_view.height = GameVariables.windowHeight;
 			addChild( _view );
 		}
 
@@ -165,8 +187,24 @@ package com.away3d.spaceinvaders.scene
 				_player.update();
 			}
 
+			// Update the vortext location
+			var distancePoint:Vector3D = _view.project(new Vector3D(0, 0, -100000));
+			_starlingVortexSprite.updateVortex(distancePoint.x, distancePoint.y);
+			
 			// Render scene.
-			_view.render(); // Always render scene ( so 2D content updates properly on mobile with render mode = direct ).
+			//_view.render(); // Always render scene ( so 2D content updates properly on mobile with render mode = direct ).
+			
+			// Clear the stage3D instance
+			_stage3DProxy.clear();
+			
+			// Render the Starling particle vortex
+			_starlingVortexScene.nextFrame();
+			
+			// Render the main scene
+			_view.render();
+			
+			// Present the stage3D for display
+			_stage3DProxy.present();
 		}
 
 		// -----------------------
