@@ -14,7 +14,7 @@ package com.away3d.spaceinvaders.gameobjects.blast
 
 		override public function update():void {
 			scaleX = scaleY = scaleZ += 0.1;
-			if( scaleX >= 2 ) {
+			if( scaleX >= 4 ) {
 				enabled = false;
 			}
 		}

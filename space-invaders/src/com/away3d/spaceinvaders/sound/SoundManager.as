@@ -1,6 +1,8 @@
 package com.away3d.spaceinvaders.sound
 {
 
+	import com.away3d.spaceinvaders.GameSettings;
+
 	import flash.media.Sound;
 	import flash.media.SoundChannel;
 	import flash.media.SoundTransform;
@@ -35,6 +37,7 @@ package com.away3d.spaceinvaders.sound
 		}
 
 		public static function playSound( id:String, volume:Number = 1 ):void {
+			if( !GameSettings.useSound ) return;
 			var sound:Sound = _sounds[ id ];
 			var channel:SoundChannel = sound.play();
 			channel.soundTransform = new SoundTransform( volume );

@@ -1,5 +1,6 @@
 package com.away3d.spaceinvaders.scene
 {
+
 	import away3d.arcane;
 	import away3d.containers.View3D;
 	import away3d.core.base.Geometry;
@@ -20,9 +21,6 @@ package com.away3d.spaceinvaders.scene
 	import away3d.primitives.SphereGeometry;
 	import away3d.textures.BitmapCubeTexture;
 
-	import starling.core.Starling;
-
-	import com.away3d.spaceinvaders.GameVariables;
 	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
@@ -47,6 +45,8 @@ package com.away3d.spaceinvaders.scene
 	import flash.geom.Point;
 	import flash.geom.Vector3D;
 	import flash.utils.Timer;
+
+	import starling.core.Starling;
 
 	use namespace arcane; // TODO: Ugly, used to get the camera's aspect ratio
 
@@ -107,8 +107,8 @@ package com.away3d.spaceinvaders.scene
 			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, gameInitHandler);
 			_stage3DProxy.antiAlias = 4;
 			_stage3DProxy.color = 0x000000;
-			_stage3DProxy.width = GameVariables.windowWidth;
-			_stage3DProxy.height = GameVariables.windowHeight;
+			_stage3DProxy.width = GameSettings.windowWidth;
+			_stage3DProxy.height = GameSettings.windowHeight;
 		}
 		
 		private function gameInitHandler( event:Stage3DEvent ):void {
@@ -138,6 +138,7 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		private var _cameraLight:PointLight;
+		private var _cameraLightPicker:StaticLightPicker;
 		private function initScene():void {
 
 			// Init Lights.
@@ -149,7 +150,8 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( frontLight );
 			_cameraLight = new PointLight();
 			_view.scene.addChild( _cameraLight );
-			_lightPicker = new StaticLightPicker( [ frontLight, _cameraLight ] );
+			_cameraLightPicker = new StaticLightPicker( [ _cameraLight ] );
+			_lightPicker = new StaticLightPicker( [ frontLight ] );
 
 			// Stats.
 			if( GameSettings.debugMode ) {
@@ -167,6 +169,11 @@ package com.away3d.spaceinvaders.scene
 			);
 			_skyBox = new SkyBox( _cubeMap );
 			_view.scene.addChild( _skyBox );
+
+			// Vortex black area.
+			var vortexHole:Mesh = new Mesh( new SphereGeometry( 2500 ), new ColorMaterial( 0x000000 ) );
+			vortexHole.position = new Vector3D( 0, 0, 90000 );
+			_view.scene.addChild( vortexHole );
 
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
@@ -198,9 +205,11 @@ package com.away3d.spaceinvaders.scene
 				_player.update();
 			}
 
-			// Update the vortext location
-			var distancePoint:Vector3D = _view.project(new Vector3D(0, 0, -100000));
-			_starlingVortexSprite.updateVortex(distancePoint.x, distancePoint.y);
+			// Update the vortex location
+			var vortexScreenPosition:Vector3D = _view.project( new Vector3D( 0, 0, 90000 ) );
+			vortexScreenPosition.x -= GameSettings.windowWidth / 2;
+			vortexScreenPosition.y -= GameSettings.windowHeight / 2;
+			_starlingVortexSprite.updatePosition( vortexScreenPosition.x, vortexScreenPosition.y );
 			
 			// Restore blasters from recoil.
 			restoreBlaster( _leftBlaster );
@@ -208,6 +217,7 @@ package com.away3d.spaceinvaders.scene
 
 			// Camera light follows player's position.
 			_cameraLight.transform = _player.transform;
+			_cameraLight.y += 500;
 
 			// Render scene.
 			//_view.render(); // Always render scene ( so 2D content updates properly on mobile with render mode = direct ).
@@ -276,8 +286,8 @@ package com.away3d.spaceinvaders.scene
 		private function createPlayer():void {
 
 			// Reusable projectile mesh.
-			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF );
-			playerProjectileMaterial.blendMode = BlendMode.ADD;
+			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.75 );
+			playerProjectileMaterial.lightPicker = _lightPicker;
 			var playerProjectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial );
 
 			// Crete pool.
@@ -297,8 +307,8 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _player );
 
 			// Blasters.
-			var playerMaterial:ColorMaterial = new ColorMaterial( 0x00FF00 );
-			playerMaterial.lightPicker = _lightPicker;
+			var playerMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
+			playerMaterial.lightPicker = _cameraLightPicker;
 			_leftBlaster = new Mesh( new CubeGeometry( 25, 25, 500 ), playerMaterial );
 			_rightBlaster = _leftBlaster.clone() as Mesh;
 			_leftBlaster.position = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
@@ -323,9 +333,10 @@ package com.away3d.spaceinvaders.scene
 
 		private function createInvaders():void {
 
+			// TODO: review and unify materials of the same color
+
 			// Blasts.
-			var blastMaterial:ColorMaterial = new ColorMaterial( 0xFFFF00, 0.5 );
-			blastMaterial.blendMode = BlendMode.ADD;
+			var blastMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.5 );
 			var blastMesh:Mesh = new Mesh( new SphereGeometry(), blastMaterial );
 			_blastPool = new BlastPool( blastMesh );
 			_gameObjectPools.push( _blastPool );
@@ -338,7 +349,7 @@ package com.away3d.spaceinvaders.scene
 
 			// Reusable projectile mesh.
 			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
-			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
 			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
 			// Slant vertices a little.
 			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
@@ -368,9 +379,10 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _invaderPool );
 
 			// Create cells ( used for invader death explosions ).
-			var cellMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.5 );
-			cellMaterial.blendMode = BlendMode.ADD;
-			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), cellMaterial );
+//			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
+//			cellMaterial.lightPicker = _lightPicker;
+//			cellMaterial.blendMode = BlendMode.ADD;
+			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), invaderMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
@@ -380,6 +392,8 @@ package com.away3d.spaceinvaders.scene
 			SoundManager.playSound( Sounds.BOING );
 			var blast:Blast = _blastPool.addItem() as Blast;
 			blast.position = event.objectB.position;
+			blast.velocity.z = event.objectA.velocity.z;
+			blast.z -= GameSettings.invaderSizeZ;
 		}
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
@@ -456,8 +470,17 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		private function onInvaderFire( event:GameObjectEvent ):void {
-			SoundManager.playSound( Sounds.INVADER_FIRE, 0.5 );
-			fireProjectile( event.objectA, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
+			var invader:Invader = event.objectA as Invader;
+			if( invader.invaderType != InvaderDefinitions.MOTHERSHIP ) {
+				SoundManager.playSound( Sounds.INVADER_FIRE, 0.5 );
+				fireProjectile( event.objectA, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool );
+			}
+			else {
+				var offset:Vector3D = new Vector3D();
+				offset.x = MathUtils.rand( -700, 700 );
+				offset.y = MathUtils.rand( -150, 150 );
+				fireProjectile( event.objectA, new Vector3D( 0, 0, -100 ), _playerVector, _invaderProjectilePool, offset );
+			}
 		}
 
 		public function firePlayer():void {

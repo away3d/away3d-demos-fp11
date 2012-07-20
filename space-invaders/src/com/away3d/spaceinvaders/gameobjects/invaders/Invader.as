@@ -104,17 +104,34 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			super.impact( hitter );
 		}
 
+		private var _panAmplitude:Number;
+		private var _panXFreq:Number;
+		private var _panYFreq:Number;
+		private var _updateCounter:uint;
+
 		override public function update():void {
+			_updateCounter++;
+			x = _spawnX + _panAmplitude * Math.sin( _panXFreq * _updateCounter );
+			y = _spawnY + _panAmplitude * Math.sin( _panYFreq * _updateCounter );
 			super.update();
-			if( z < _targetSpawnZ && velocity.z < -50 ) { // Slow down warping in
+			if( z < _targetSpawnZ && velocity.z < _targetSpeed ) { // Slow down warping in
 				velocity.z *= 0.75;
 			}
 		}
 
+		private var _spawnX:Number = 0;
+		private var _spawnY:Number = 0;
+		private var _targetSpeed:Number = 0;
 		override public function reset():void {
 			super.reset();
-			x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
-			y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
+			_updateCounter = 0;
+			_panAmplitude = InvaderDefinitions.getPanAmplitudeForInvaderType( _invaderType );
+			_panXFreq = 0.1 * Math.random();
+			_panYFreq = 0.1 * Math.random();
+			_spawnX = x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
+			_spawnY = y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
+			var speed:Number = InvaderDefinitions.getSpeedForInvaderType( _invaderType );
+			_targetSpeed = -MathUtils.rand( speed * 0.75, speed * 1.25 );
 			z = GameSettings.maxZ; // Warp in...
 			velocity.z = MathUtils.rand( -2500, -1500 );
 			_targetSpawnZ = MathUtils.rand( 15000, 20000 );

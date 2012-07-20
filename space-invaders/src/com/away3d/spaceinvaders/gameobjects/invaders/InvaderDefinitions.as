@@ -153,13 +153,55 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		public static function getFireRateMSForInvaderType( type:uint ):uint {
 			switch( type ) {
 				case MOTHERSHIP:
-					return 100;
+					return 200;
+				case OCTOPUS_INVADER:
+					return 1000;
+				case BUG_INVADER:
+					return 1500;
+				case ROUNDED_OCTOPUS_INVADER:
+					return 2000;
+			}
+			return 0;
+		}
+
+		public static function getPanAmplitudeForInvaderType( type:uint ):uint {
+			switch( type ) {
+				case MOTHERSHIP:
+					return 0;
 				case OCTOPUS_INVADER:
 					return 500;
 				case BUG_INVADER:
-					return 1000;
+					return 250;
 				case ROUNDED_OCTOPUS_INVADER:
-					return 2000;
+					return 0;
+			}
+			return 0;
+		}
+
+		public static function getSpeedForInvaderType( type:uint ):uint {
+			switch( type ) {
+				case MOTHERSHIP:
+					return 10;
+				case OCTOPUS_INVADER:
+					return 25;
+				case BUG_INVADER:
+					return 50;
+				case ROUNDED_OCTOPUS_INVADER:
+					return 100;
+			}
+			return 0;
+		}
+
+		public static function getScoreForInvaderType( type:uint ):uint {
+			switch( type ) {
+				case MOTHERSHIP:
+					return 200;
+				case OCTOPUS_INVADER:
+					return 100;
+				case BUG_INVADER:
+					return 30;
+				case ROUNDED_OCTOPUS_INVADER:
+					return 10;
 			}
 			return 0;
 		}

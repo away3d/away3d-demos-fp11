@@ -31,8 +31,9 @@ THE SOFTWARE.
 
  */
 package com.starling.rootsprites {
-	import starling.extensions.ColorArgb;
-	import com.away3d.spaceinvaders.GameVariables;
+
+	import com.away3d.spaceinvaders.GameSettings;
+
 	import starling.core.Starling;
 	import starling.extensions.PDParticleSystem;
 	import starling.textures.Texture;
@@ -68,13 +69,8 @@ package com.starling.rootsprites {
 			this.addChild(particleContainer);
 			
 			mParticleSystem = new PDParticleSystem(psConfig, psTexture);
-			mParticleSystem.emitterX = GameVariables.windowWidth >> 1;
-			mParticleSystem.emitterY = GameVariables.windowHeight >> 1;
-			//mParticleSystem.maxCapacity = 400;
-			//mParticleSystem.emissionRate = 50;
-			//mParticleSystem.lifespan = 1;
-			//mParticleSystem.startColor = new ColorArgb(1, 0.2, 0, 1);
-			//mParticleSystem.endColor = new ColorArgb(1, 0.2, 0, 0);
+			mParticleSystem.emitterX = GameSettings.windowWidth >> 1;
+			mParticleSystem.emitterY = GameSettings.windowHeight >> 1;
 			particleContainer.addChild(mParticleSystem);
 
 			Starling.juggler.add(mParticleSystem);
@@ -82,10 +78,10 @@ package com.starling.rootsprites {
 			mParticleSystem.start();
 		}
 		
-		public function updateVortex(oX:Number, oY:Number) : void {
-			particleContainer.x = (oX - (GameVariables.windowWidth >> 1)) * 0.75;
-			particleContainer.y = (oY - (GameVariables.windowHeight >> 1)) * 0.75;
-			
+		public function updatePosition(oX:Number, oY:Number) : void {
+			particleContainer.x = oX;
+			particleContainer.y = oY;
+
 		}
 	}
 }

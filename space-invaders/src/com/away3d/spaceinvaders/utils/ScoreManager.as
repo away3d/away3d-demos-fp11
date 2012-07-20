@@ -20,15 +20,9 @@ package com.away3d.spaceinvaders.utils
 		private var _highScore:uint;
 		private var _lives:uint;
 
-		private var _invaderScores:Dictionary;
 		private var _saveManager:StateSaveManager;
 
 		public function ScoreManager() {
-			_invaderScores = new Dictionary();
-			_invaderScores[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = 10;
-			_invaderScores[ InvaderDefinitions.BUG_INVADER ] = 20;
-			_invaderScores[ InvaderDefinitions.OCTOPUS_INVADER ] = 30;
-			_invaderScores[ InvaderDefinitions.MOTHERSHIP ] = 100;
 		}
 
 		public function set saveManager( value:StateSaveManager ):void {
@@ -53,7 +47,7 @@ package com.away3d.spaceinvaders.utils
 		}
 
 		public function registerKill( invaderType:uint ):void {
-			_score += _invaderScores[ invaderType ];
+			_score += InvaderDefinitions.getScoreForInvaderType( invaderType );
 			if( _score > _highScore ) {
 				_highScore = _score;
 				_saveManager.saveHighScore( _highScore );

@@ -9,13 +9,14 @@
 - skybox is overkill since you can only see 1 image?
 
 // Code improvements.
+- remove text += warnings
 - some pools for simple objects look to much alike, use inheritance and remove some classes
 - transfer player motion code to Player?
 - tidy up invader scene again
 
 // To consider.
 - change invader materials as they get hit, there is no way to change the materials of clones tho without changing the base material
-- cross hair color is too similar to projectile color, sometimes its hard to see
+- cross hair color is too similar to projectile color, sometimes its hard to see - change cell color to white?
 - change ui button down sound, feels weird
 - move all invader constants stuff ( per type ) to invader definitions class
 - stabilize ( average ) accelerometer input

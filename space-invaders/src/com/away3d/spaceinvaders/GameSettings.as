@@ -9,7 +9,8 @@ package com.away3d.spaceinvaders
 		// -----------------------
 
 		// General.
-		public static const debugMode:Boolean = false;
+		public static const debugMode:Boolean = false; // Shows stats
+		public static const useSound:Boolean = true;
 
 		// Scene.
 		public static const xyRange:Number = 1000;
