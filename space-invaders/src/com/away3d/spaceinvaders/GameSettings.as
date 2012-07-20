@@ -26,7 +26,6 @@ package com.away3d.spaceinvaders
 		public static const invaderSizeXY:Number = 50;
 		public static const invaderSizeZ:Number = 200;
 		public static const deathExplosionIntensity:Number = 3;
-		public static const invaderFireRateMS:Number = 4000;
 		public static const invaderAnimationTimeMS:uint = 250;
 		public static const impactHitSize:Number = 300;
 

@@ -84,7 +84,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		private function evaluateSpawnInvader( typeIndex:uint ):void {
 				var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
-				if( elapsedSinceSpawn > InvaderDefinitions.getSpawnRateForInvaderType( typeIndex ) * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
+				if( elapsedSinceSpawn > InvaderDefinitions.getSpawnRateMSForInvaderType( typeIndex ) * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
 					var invader:Invader = addItemOfType( typeIndex ) as Invader;
 					dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );
 					_lastSpawnTimes[ typeIndex ] = _time;

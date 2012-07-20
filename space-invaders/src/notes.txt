@@ -14,6 +14,7 @@
 - tidy up invader scene again
 
 // To consider.
+- change invader materials as they get hit, there is no way to change the materials of clones tho without changing the base material
 - cross hair color is too similar to projectile color, sometimes its hard to see
 - change ui button down sound, feels weird
 - move all invader constants stuff ( per type ) to invader definitions class

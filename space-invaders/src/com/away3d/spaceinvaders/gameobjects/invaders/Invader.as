@@ -43,8 +43,13 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_animationTimer = new Timer( MathUtils.rand( GameSettings.invaderAnimationTimeMS, GameSettings.invaderAnimationTimeMS * 1.5 ) );
 			_animationTimer.addEventListener( TimerEvent.TIMER, onAnimationTimerTick );
 
-			_fireTimer = new Timer( MathUtils.rand( GameSettings.invaderFireRateMS, GameSettings.invaderFireRateMS * 1.5 ) );
+			_fireTimer = new Timer( getFireRate() );
 			_fireTimer.addEventListener( TimerEvent.TIMER, onFireTimerTick );
+		}
+
+		private function getFireRate():uint {
+			var rate:uint = InvaderDefinitions.getFireRateMSForInvaderType( _invaderType )
+			return Math.floor( MathUtils.rand( rate, rate * 1.5 ) );
 		}
 
 		public function getInvaderClone():Invader {
@@ -52,8 +57,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		public function stopTimers():void {
-			_animationTimer.stop();
-			_fireTimer.stop();
+			_animationTimer.reset();
+			_fireTimer.reset();
 		}
 
 		public function resumeTimers():void {
@@ -66,8 +71,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		override public function set enabled( value:Boolean ):void {
 			super.enabled = value;
 			if( !enabled ) {
-				_animationTimer.stop();
-				_fireTimer.stop();
+				_animationTimer.reset();
+				_fireTimer.reset();
 			}
 			else {
 				_animationTimer.start();
@@ -76,7 +81,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		private function onFireTimerTick( event:TimerEvent ):void {
-			_fireTimer.delay = MathUtils.rand( GameSettings.invaderFireRateMS, GameSettings.invaderFireRateMS * 1.5 );
+			_fireTimer.delay = getFireRate();
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.FIRE, this ) );
 		}
 

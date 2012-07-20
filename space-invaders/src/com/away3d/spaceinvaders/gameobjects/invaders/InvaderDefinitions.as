@@ -136,7 +136,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			return 0;
 		}
 
-		public static function getSpawnRateForInvaderType( type:uint ):uint {
+		public static function getSpawnRateMSForInvaderType( type:uint ):uint {
 			switch( type ) {
 				case MOTHERSHIP:
 					return 120000;
@@ -146,6 +146,20 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 					return 10000;
 				case ROUNDED_OCTOPUS_INVADER:
 					return 6000;
+			}
+			return 0;
+		}
+
+		public static function getFireRateMSForInvaderType( type:uint ):uint {
+			switch( type ) {
+				case MOTHERSHIP:
+					return 100;
+				case OCTOPUS_INVADER:
+					return 500;
+				case BUG_INVADER:
+					return 1000;
+				case ROUNDED_OCTOPUS_INVADER:
+					return 2000;
 			}
 			return 0;
 		}
