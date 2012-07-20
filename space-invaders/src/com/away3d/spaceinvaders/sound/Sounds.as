@@ -11,5 +11,6 @@ package com.away3d.spaceinvaders.sound
 		public static const INVADER_FIRE:String = "sounds/boing";
 		public static const THUCK:String = "sounds/thuck";
 		public static const UFO:String = "sound/thuck1";
+		public static const BOING:String = "sound/boing";
 	}
 }

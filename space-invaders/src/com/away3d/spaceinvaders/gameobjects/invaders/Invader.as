@@ -6,6 +6,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
+	import com.away3d.spaceinvaders.sound.SoundManager;
+	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	import flash.events.TimerEvent;
@@ -23,6 +25,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		private var _cellsFrame0:Vector.<Point>;
 		private var _cellsFrame1:Vector.<Point>;
 		private var _currentDefinitionIndex:uint;
+		private var _life:uint;
 
 		public function Invader( invaderType:uint, meshFrame0:Mesh, meshFrame1:Mesh, cellsFrame0:Vector.<Point>, cellsFrame1:Vector.<Point> ) {
 
@@ -90,9 +93,13 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		override public function impact( hitter:GameObject ):void {
-			enabled = false;
-			dispatchEvent( new GameObjectEvent( GameObjectEvent.DEAD, this, hitter ) );
-			super.impact( hitter );
+			_life -= GameSettings.blasterStrength;
+			SoundManager.playSound( Sounds.BOING );
+			if( _life <= 0 ) {
+				enabled = false;
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.DEAD, this, hitter ) );
+				super.impact( hitter );
+			}
 		}
 
 		override public function update():void {
@@ -110,6 +117,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			velocity.z = MathUtils.rand( -2500, -1500 );
 			_targetSpawnZ = MathUtils.rand( 15000, 20000 );
 			scaleX = scaleY = scaleZ = invaderType == InvaderDefinitions.MOTHERSHIP ? 3 : 1;
+			_life = InvaderDefinitions.getLifeForInvaderType( _invaderType );
 		}
 
 		public function get cellPositions():Vector.<Point> {

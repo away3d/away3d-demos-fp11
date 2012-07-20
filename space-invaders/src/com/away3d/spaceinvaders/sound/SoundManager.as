@@ -19,6 +19,7 @@ package com.away3d.spaceinvaders.sound
 			registerSound( Sounds.INVADER_FIRE, new SoundPlayerFire() );
 			registerSound( Sounds.THUCK, new SoundThuck() );
 			registerSound( Sounds.UFO, new SoundUfo() );
+			registerSound( Sounds.BOING, new SoundBoing() );
 		}
 
 		private static function init():void {

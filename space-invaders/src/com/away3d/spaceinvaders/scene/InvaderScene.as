@@ -233,11 +233,13 @@ package com.away3d.spaceinvaders.scene
 		public function resume():void {
 			_invaderPool.resume();
 			_active = true;
+			_player.visible = true;
 		}
 
 		public function stop():void {
 			_invaderPool.stop();
 			_active = false;
+			_player.visible = false;
 		}
 
 		private function loadLevel():void {
@@ -256,6 +258,7 @@ package com.away3d.spaceinvaders.scene
 			_totalKills = 0;
 			_invaderPool.spawnTimeFactor = 1;
 			loadLevel();
+			_player.visible = false;
 		}
 
 		public function get active():Boolean {
@@ -286,6 +289,7 @@ package com.away3d.spaceinvaders.scene
 			_player.targets = _invaderPool.gameObjects;
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
+			_player.visible = false;
 			_view.scene.addChild( _player );
 
 			// Blasters.
@@ -299,7 +303,7 @@ package com.away3d.spaceinvaders.scene
 			_player.addChild( _rightBlaster );
 
 			// Used for rapid fire.
-			_fireReleaseTimer = new Timer( 100, 1 );
+			_fireReleaseTimer = new Timer( GameSettings.blasterFireRateMS, 1 );
 			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
 		}
 		private var _leftBlaster:Mesh;

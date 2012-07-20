@@ -21,19 +21,12 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		private var _time:uint;
 		private var _lastSpawnTimes:Dictionary;
-		private var _spawnTimes:Dictionary;
 
 		public function InvaderPool( invaderMaterial:MaterialBase ) {
 			super();
 
 			_invaderFactory = new InvaderFactory( invaderMaterial );
 			_lastSpawnTimes = new Dictionary();
-
-			_spawnTimes = new Dictionary();
-			_spawnTimes[ InvaderDefinitions.MOTHERSHIP				] = 60000;
-			_spawnTimes[ InvaderDefinitions.BUG_INVADER 			] = 5000;
-			_spawnTimes[ InvaderDefinitions.OCTOPUS_INVADER 		] = 10000;
-			_spawnTimes[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = 3000;
 		}
 
 		private function resetSpawnTimes():void {
@@ -90,7 +83,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		private function evaluateSpawnInvader( typeIndex:uint ):void {
 				var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
-				if( elapsedSinceSpawn > _spawnTimes[ typeIndex ] * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
+				if( elapsedSinceSpawn > InvaderDefinitions.getSpawnRateForInvaderType( typeIndex ) * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
 					var invader:Invader = addItemOfType( typeIndex ) as Invader;
 					dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );
 					_lastSpawnTimes[ typeIndex ] = _time;

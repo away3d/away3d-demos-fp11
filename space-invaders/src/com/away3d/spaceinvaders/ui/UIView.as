@@ -35,7 +35,7 @@ package com.away3d.spaceinvaders.ui
 			// Cross hair.
 			_crossHair = new Crosshair();
 			_crossHair.x = GameSettings.windowWidth / 2;
-			_crossHair.y = GameSettings.windowHeight / 2;
+			_crossHair.y = GameSettings.windowHeight / 2 + 25;
 			addChild( _crossHair );
 
 			// Score text.

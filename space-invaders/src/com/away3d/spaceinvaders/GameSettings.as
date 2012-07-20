@@ -34,6 +34,8 @@ package com.away3d.spaceinvaders
 		public static const blasterOffsetH:Number = 100;
 		public static const blasterOffsetV:Number = -100;
 		public static const blasterOffsetD:Number = -1000;
+		public static const blasterStrength:Number = 25;
+		public static const blasterFireRateMS:Number = 50;
 		public static const cameraPanRange:Number = 1750;
 		public static const panTiltFactor:Number = 0.0035;
 		public static const playerHitShake:Number = 200;
@@ -41,7 +43,7 @@ package com.away3d.spaceinvaders
 
 		// Mouse control settings.
 		public static const mouseCameraMotionEase:Number = 0.25;
-		public static const mouseMotionFactor:Number = 2500;
+		public static const mouseMotionFactor:Number = 3000;
 
 		// Accelerometer control settings.
 		public static const useAccelerometer:Boolean = true;

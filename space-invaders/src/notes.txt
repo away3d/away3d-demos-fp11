@@ -1,5 +1,5 @@
 // TODO.
-- motherships take more than 1 hit to die, they are heavy and shoot very fast
+- display hit sprite, mesh or animation where invaders are hit
 
 // Bugs.
 - bg on mobile is white, shows for an instant when app loads
@@ -9,6 +9,7 @@
 - skybox is overkill since you can only see 1 image?
 
 // To consider.
+- move all invader constants stuff ( per type ) to invader definitions class
 - transfer player motion code to Player?
 - stabilize ( average ) accelerometer input
 - invaders fire at player, not straight forward

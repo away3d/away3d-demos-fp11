@@ -14,11 +14,9 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	{
 		private var _invaders:Dictionary;
 		private var _invaderMaterial:MaterialBase;
-		private var _definitions:InvaderDefinitions;
 
 		public function InvaderFactory( invaderMaterial:MaterialBase ) {
 			_invaderMaterial = invaderMaterial;
-			_definitions = new InvaderDefinitions();
 			_invaders = new Dictionary();
 		}
 
@@ -56,8 +54,8 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		public function createInvaderOfType( typeIndex:uint ):Invader {
 			var invader:Invader = _invaders[ typeIndex ];
 			if( !invader ) {
-				var definition:Array = _definitions.getDefinitionForInvaderType( typeIndex );
-				var dimensions:Point = _definitions.getDefinitionDimensionsForInvaderType( typeIndex );
+				var definition:Array = InvaderDefinitions.getDefinitionForInvaderType( typeIndex );
+				var dimensions:Point = InvaderDefinitions.getDefinitionDimensionsForInvaderType( typeIndex );
 				var definitionFrame0:Array = definition[ 0 ];
 				var definitionFrame1:Array = definition[ 1 ];
 				var invaderGeometry0:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame0, dimensions );
