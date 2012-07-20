@@ -1,7 +1,7 @@
 package com.away3d.spaceinvaders.input
 {
 
-	import com.away3d.spaceinvaders.GameVariables;
+	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.scene.InvaderScene;
 
 	import flash.events.TouchEvent;
@@ -19,7 +19,7 @@ package com.away3d.spaceinvaders.input
 		public function TouchInput( scene:InvaderScene ) {
 			super( scene );
 			_firstTouchPosition = new Point();
-			_scene.cameraMotionEase = GameVariables.touchCameraMotionEase;
+			_scene.cameraMotionEase = GameSettings.touchCameraMotionEase;
 		}
 
 		override public function init():void {
@@ -37,8 +37,8 @@ package com.away3d.spaceinvaders.input
 			if( event.touchPointID == _firstTouchId ) {
 				var dx:Number = event.stageX - _firstTouchPosition.x;
 				var dy:Number = event.stageY - _firstTouchPosition.y;
-				if( Math.abs( dx ) > 5 ) _currentPosition.x = _playerTouchPosition.x + GameVariables.touchMotionFactor * dx;
-				if( Math.abs( dy ) > 5 ) _currentPosition.y = _playerTouchPosition.y - GameVariables.touchMotionFactor * dy;
+				if( Math.abs( dx ) > 5 ) _currentPosition.x = _playerTouchPosition.x + GameSettings.touchMotionFactor * dx;
+				if( Math.abs( dy ) > 5 ) _currentPosition.y = _playerTouchPosition.y - GameSettings.touchMotionFactor * dy;
 			}
 		}
 

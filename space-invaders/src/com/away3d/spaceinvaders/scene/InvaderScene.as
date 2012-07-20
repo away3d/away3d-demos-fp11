@@ -11,6 +11,7 @@ package com.away3d.spaceinvaders.scene
 	import away3d.entities.Mesh;
 	import away3d.events.Stage3DEvent;
 	import away3d.lights.DirectionalLight;
+	import away3d.lights.PointLight;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.EnvMapMethod;
@@ -21,6 +22,7 @@ package com.away3d.spaceinvaders.scene
 	import starling.core.Starling;
 
 	import com.away3d.spaceinvaders.GameVariables;
+	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
@@ -79,7 +81,7 @@ package com.away3d.spaceinvaders.scene
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
 		private var _skyBox:SkyBox;
-
+		private var _playerFireCounter:uint;
 		private var _fireReleased:Boolean = true;
 		private var _fireReleaseTimer:Timer;
 		private var _starlingVortexScene : Starling;
@@ -126,9 +128,12 @@ package com.away3d.spaceinvaders.scene
 			_view.shareContext = true;
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
+			_view.width = GameSettings.windowWidth;
+			_view.height = GameSettings.windowHeight;
 			addChild( _view );
 		}
 
+		private var _cameraLight:PointLight;
 		private function initScene():void {
 
 			// Init Lights.
@@ -136,12 +141,14 @@ package com.away3d.spaceinvaders.scene
 			frontLight.direction = new Vector3D( 0.5, 0, 1 );
 			frontLight.color = 0xFFFFFF;
 			frontLight.ambient = 0.1;
-			frontLight.ambientColor = 0xFF00FF;
+			frontLight.ambientColor = 0xFFFFFF;
 			_view.scene.addChild( frontLight );
-			_lightPicker = new StaticLightPicker( [ frontLight ] );
+			_cameraLight = new PointLight();
+			_view.scene.addChild( _cameraLight );
+			_lightPicker = new StaticLightPicker( [ frontLight, _cameraLight ] );
 
 			// Stats.
-			if( GameVariables.debugMode ) {
+			if( GameSettings.debugMode ) {
 				var stats:AwayStats = new AwayStats( _view );
 				addChild( stats );
 				var tri:Trident = new Trident();
@@ -191,6 +198,13 @@ package com.away3d.spaceinvaders.scene
 			var distancePoint:Vector3D = _view.project(new Vector3D(0, 0, -100000));
 			_starlingVortexSprite.updateVortex(distancePoint.x, distancePoint.y);
 			
+			// Restore blasters from recoil.
+			restoreBlaster( _leftBlaster );
+			restoreBlaster( _rightBlaster );
+
+			// Camera light follows player's position.
+			_cameraLight.transform = _player.transform;
+
 			// Render scene.
 			//_view.render(); // Always render scene ( so 2D content updates properly on mobile with render mode = direct ).
 			
@@ -205,6 +219,11 @@ package com.away3d.spaceinvaders.scene
 			
 			// Present the stage3D for display
 			_stage3DProxy.present();
+		}
+
+		private function restoreBlaster( blaster:Mesh ):void {
+			var dz:Number = GameSettings.blasterOffsetD - blaster.z;
+			blaster.z += 0.25 * dz;
 		}
 
 		// -----------------------
@@ -222,8 +241,8 @@ package com.away3d.spaceinvaders.scene
 		}
 
 		private function loadLevel():void {
-			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameVariables.spawnTimeDecreasePerLevel;
-			if( _invaderPool.spawnTimeFactor < GameVariables.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameVariables.minimumSpawnTime;
+			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
+			if( _invaderPool.spawnTimeFactor < GameSettings.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameSettings.minimumSpawnTime;
 		}
 
 		public function reset():void {
@@ -267,10 +286,24 @@ package com.away3d.spaceinvaders.scene
 			_player.targets = _invaderPool.gameObjects;
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
+			_view.scene.addChild( _player );
 
+			// Blasters.
+			var playerMaterial:ColorMaterial = new ColorMaterial( 0x00FF00 );
+			playerMaterial.lightPicker = _lightPicker;
+			_leftBlaster = new Mesh( new CubeGeometry( 25, 25, 500 ), playerMaterial );
+			_rightBlaster = _leftBlaster.clone() as Mesh;
+			_leftBlaster.position = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
+			_rightBlaster.position = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
+			_player.addChild( _leftBlaster );
+			_player.addChild( _rightBlaster );
+
+			// Used for rapid fire.
 			_fireReleaseTimer = new Timer( 100, 1 );
 			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
 		}
+		private var _leftBlaster:Mesh;
+		private var _rightBlaster:Mesh;
 
 		private function onFireReleaseTimerComplete( event:TimerEvent ):void {
 			_fireReleased = true;
@@ -320,7 +353,7 @@ package com.away3d.spaceinvaders.scene
 			// Create cells ( used for invader death explosions ).
 			var cellMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.5 );
 			cellMaterial.blendMode = BlendMode.ADD;
-			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameVariables.invaderSizeXY, GameVariables.invaderSizeXY, GameVariables.invaderSizeZ ), cellMaterial );
+			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), cellMaterial );
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
@@ -338,7 +371,7 @@ package com.away3d.spaceinvaders.scene
 		// -----------------------
 
 		private function createInvaderDeathAnimation( invader:Invader, hitter:Projectile ):void {
-			var intensity:Number = GameVariables.deathExplosionIntensity * MathUtils.rand( 1, 4 );
+			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
 			var positions:Vector.<Point> = invader.cellPositions;
 			var len:uint = positions.length;
 			var sc:Number = invader.scaleX;
@@ -372,7 +405,7 @@ package com.away3d.spaceinvaders.scene
 			_currentLevelKills++;
 			_totalKills++;
 			ScoreManager.instance.registerKill( invader.invaderType );
-			if( _currentLevelKills > GameVariables.killsToAdvanceDifficulty ) {
+			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
 				_currentLevelKills = 0;
 				_currentLevel++;
 				loadLevel();
@@ -410,17 +443,30 @@ package com.away3d.spaceinvaders.scene
 			SoundManager.playSound( Sounds.PLAYER_FIRE, 0.5 );
 			var velocity:Vector3D = new Vector3D( 0, 0, 200 );
 			velocity = _player.transform.deltaTransformVector( velocity );
-			fireProjectile( _player, velocity, _invaderPool.gameObjects, _playerProjectilePool );
+			_playerFireCounter++;
+			var offset:Vector3D;
+			var blaster:Mesh = _playerFireCounter % 2 ? _rightBlaster : _leftBlaster;
+			if( blaster == _rightBlaster ) {
+				offset = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, 0 );
+			}
+			else {
+				offset = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, 0 );
+			}
+			blaster.z -= 500;
+			fireProjectile( _player, velocity, _invaderPool.gameObjects, _playerProjectilePool, offset );
 			_fireReleased = false;
 			_fireReleaseTimer.reset();
 			_fireReleaseTimer.start();
 		}
 
-		public function fireProjectile( source:Object3D, velocity:Vector3D, targets:Vector.<GameObject>, pool:GameObjectPool ):void {
+		public function fireProjectile( source:Object3D, velocity:Vector3D, targets:Vector.<GameObject>, pool:GameObjectPool, offset:Vector3D = null ):void {
 			var projectile:Projectile = pool.addItem() as Projectile;
 			projectile.targets = targets;
 			projectile.transform = source.transform.clone();
 			projectile.velocity = velocity;
+			if( offset ) {
+				projectile.position = projectile.position.add( offset );
+			}
 		}
 
 		// -----------------------
@@ -432,8 +478,8 @@ package com.away3d.spaceinvaders.scene
 			var dy:Number = y - _playerPosition.y;
 			_player.x += dx * cameraMotionEase;
 			_player.y += dy * cameraMotionEase;
-			_player.rotationY = -GameVariables.panTiltFactor * _player.x;
-			_player.rotationX =  GameVariables.panTiltFactor * _player.y;
+			_player.rotationY = -GameSettings.panTiltFactor * _player.x;
+			_player.rotationX =  GameSettings.panTiltFactor * _player.y;
 			_playerPosition.x = _player.x;
 			_playerPosition.y = _player.y;
 		}

@@ -37,8 +37,8 @@ package com.away3d.spaceinvaders
 		}
 
 		protected function initStageDims():void {
-			GameVariables.windowWidth = stage.stageWidth;
-			GameVariables.windowHeight = stage.stageHeight;
+			GameSettings.windowWidth = stage.stageWidth;
+			GameSettings.windowHeight = stage.stageHeight;
 		}
 
 		protected function initConsistency():void {

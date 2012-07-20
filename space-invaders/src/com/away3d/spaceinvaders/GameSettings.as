@@ -2,7 +2,7 @@ package com.away3d.spaceinvaders
 {
 
 
-	public class GameVariables
+	public class GameSettings
 	{
 		// -----------------------
 		// Settings
@@ -31,7 +31,10 @@ package com.away3d.spaceinvaders
 		public static const impactHitSize:Number = 300;
 
 		// Player.
-		public static const cameraPanRange:Number = 1500;
+		public static const blasterOffsetH:Number = 100;
+		public static const blasterOffsetV:Number = -100;
+		public static const blasterOffsetD:Number = -1000;
+		public static const cameraPanRange:Number = 1750;
 		public static const panTiltFactor:Number = 0.0035;
 		public static const playerHitShake:Number = 200;
 		public static const playerLives:uint = 3;

@@ -3,7 +3,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 	import away3d.entities.Mesh;
 
-	import com.away3d.spaceinvaders.GameVariables;
+	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.utils.MathUtils;
@@ -39,10 +39,10 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			_cellsFrame0 = cellsFrame0;
 			_cellsFrame1 = cellsFrame1;
 
-			_animationTimer = new Timer( MathUtils.rand( GameVariables.invaderAnimationTimeMS, GameVariables.invaderAnimationTimeMS * 1.5 ) );
+			_animationTimer = new Timer( MathUtils.rand( GameSettings.invaderAnimationTimeMS, GameSettings.invaderAnimationTimeMS * 1.5 ) );
 			_animationTimer.addEventListener( TimerEvent.TIMER, onAnimationTimerTick );
 
-			_fireTimer = new Timer( MathUtils.rand( GameVariables.invaderFireRateMS, GameVariables.invaderFireRateMS * 1.5 ) );
+			_fireTimer = new Timer( MathUtils.rand( GameSettings.invaderFireRateMS, GameSettings.invaderFireRateMS * 1.5 ) );
 			_fireTimer.addEventListener( TimerEvent.TIMER, onFireTimerTick );
 		}
 
@@ -75,7 +75,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		}
 
 		private function onFireTimerTick( event:TimerEvent ):void {
-			_fireTimer.delay = MathUtils.rand( GameVariables.invaderFireRateMS, GameVariables.invaderFireRateMS * 1.5 );
+			_fireTimer.delay = MathUtils.rand( GameSettings.invaderFireRateMS, GameSettings.invaderFireRateMS * 1.5 );
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.FIRE, this ) );
 		}
 
@@ -104,9 +104,9 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		override public function reset():void {
 			super.reset();
-			x = MathUtils.rand( -GameVariables.xyRange, GameVariables.xyRange );
-			y = MathUtils.rand( -GameVariables.xyRange, GameVariables.xyRange );
-			z = GameVariables.maxZ; // Warp in...
+			x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
+			y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
+			z = GameSettings.maxZ; // Warp in...
 			velocity.z = MathUtils.rand( -2500, -1500 );
 			_targetSpawnZ = MathUtils.rand( 15000, 20000 );
 			scaleX = scaleY = scaleZ = invaderType == InvaderDefinitions.MOTHERSHIP ? 3 : 1;

@@ -1,7 +1,7 @@
 package com.away3d.spaceinvaders.ui
 {
 
-	import com.away3d.spaceinvaders.GameVariables;
+	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameEvent;
 	import com.away3d.spaceinvaders.sound.SoundManager;
 	import com.away3d.spaceinvaders.sound.Sounds;
@@ -34,8 +34,8 @@ package com.away3d.spaceinvaders.ui
 
 			// Cross hair.
 			_crossHair = new Crosshair();
-			_crossHair.x = GameVariables.windowWidth / 2;
-			_crossHair.y = GameVariables.windowHeight / 2;
+			_crossHair.x = GameSettings.windowWidth / 2;
+			_crossHair.y = GameSettings.windowHeight / 2;
 			addChild( _crossHair );
 
 			// Score text.
@@ -44,14 +44,14 @@ package com.away3d.spaceinvaders.ui
 
 			// Lives text.
 			_livesText = getTextField();
-			_livesText.y = GameVariables.windowHeight - 35;
+			_livesText.y = GameSettings.windowHeight - 35;
 			fitClip( _livesText );
 			addChild( _livesText );
 
 			// Lives icons.
 			_liveIconsContainer = new Sprite();
 			addChild( _liveIconsContainer );
-			for( var i:uint; i < GameVariables.playerLives; i++ ) {
+			for( var i:uint; i < GameSettings.playerLives; i++ ) {
 				var live:Sprite = new InvaderLive();
 				live.x = i * ( live.width + 5 );
 				_liveIconsContainer.addChild( live );
@@ -65,7 +65,7 @@ package com.away3d.spaceinvaders.ui
 			initializeButton( _restartButton );
 			addChild( _restartButton );
 			_pauseButton = new PauseButton();
-			_pauseButton.x = GameVariables.windowWidth - _pauseButton.width;
+			_pauseButton.x = GameSettings.windowWidth - _pauseButton.width;
 			fitClip( _pauseButton );
 			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
 			initializeButton( _pauseButton );
@@ -146,13 +146,13 @@ package com.away3d.spaceinvaders.ui
 		}
 
 		private function initializePopUp( popUp:MovieClip ):void {
-			popUp.x = GameVariables.windowWidth / 2;
-			popUp.y = GameVariables.windowHeight / 2;
+			popUp.x = GameSettings.windowWidth / 2;
+			popUp.y = GameSettings.windowHeight / 2;
 			var bg:Sprite = popUp.bg;
-			bg.width = GameVariables.windowWidth;
-			bg.height = GameVariables.windowHeight;
-			bg.x = -GameVariables.windowWidth / 2;
-			bg.y = -GameVariables.windowHeight / 2;
+			bg.width = GameSettings.windowWidth;
+			bg.height = GameSettings.windowHeight;
+			bg.x = -GameSettings.windowWidth / 2;
+			bg.y = -GameSettings.windowHeight / 2;
 			_popUp = popUp;
 			addChild( popUp );
 			_scoreText.visible = false;
@@ -201,14 +201,14 @@ package com.away3d.spaceinvaders.ui
 
 		public function updateLives( lives:uint ):void {
 			// Update icons.
-			for( var i:uint; i < GameVariables.playerLives; i++ ) {
+			for( var i:uint; i < GameSettings.playerLives; i++ ) {
 				var child:Sprite = _liveIconsContainer.getChildAt( i ) as Sprite;
 				child.visible = lives >= i + 1;
 			}
 			// Update text.
 			_livesText.text = "LIVES " + lives + "";
 			_livesText.width = _livesText.textWidth * 1.05;
-			_livesText.x = GameVariables.windowWidth / 2 - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5;
+			_livesText.x = GameSettings.windowWidth / 2 - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5;
 			_liveIconsContainer.x = _livesText.x + _livesText.width + 10;
 			fitClip( _livesText );
 			fitClip( _liveIconsContainer );
@@ -218,7 +218,7 @@ package com.away3d.spaceinvaders.ui
 			_scoreText.text = "SCORE " + uintToString( score ) + "   ";
 			_scoreText.text += "HIGH-SCORE " + uintToString( highScore );
 			_scoreText.width = _scoreText.textWidth * 1.05;
-			_scoreText.x = GameVariables.windowWidth / 2 - _scoreText.width / 2;
+			_scoreText.x = GameSettings.windowWidth / 2 - _scoreText.width / 2;
 			fitClip( _scoreText );
 		}
 

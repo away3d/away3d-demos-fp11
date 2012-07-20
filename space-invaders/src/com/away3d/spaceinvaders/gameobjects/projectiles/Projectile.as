@@ -3,7 +3,7 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 
 	import away3d.entities.Mesh;
 
-	import com.away3d.spaceinvaders.GameVariables;
+	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 
 	public class Projectile extends GameObject
@@ -45,9 +45,9 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 						dx = target.x - x;
 						dy = target.y - y;
 						distance = Math.sqrt( dx * dx + dy * dy );
-						if( distance < GameVariables.impactHitSize * target.scaleX ) {
+						if( distance < GameSettings.impactHitSize * target.scaleX ) {
 							target.impact( this );
-							if( GameVariables.projectilesDieOnImpact ) enabled = false;
+							if( GameSettings.projectilesDieOnImpact ) enabled = false;
 						}
 					}
 				}

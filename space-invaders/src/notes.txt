@@ -1,20 +1,22 @@
+// TODO.
+- motherships take more than 1 hit to die, they are heavy and shoot very fast
+
 // Bugs.
-- TODO: bg on mobile is white, shows for an instant when app loads
+- bg on mobile is white, shows for an instant when app loads
 
 // Performance improvements.
-- TODO: star objects are very inefficient, implement with fragment shader on a plane?
-- TODO: skybox is overkill since you can only see 1 image?
+- star objects are very inefficient, implement with fragment shader on a plane?
+- skybox is overkill since you can only see 1 image?
 
 // To consider.
-- use a counter with %2 to fire each time from a right or left cannon
+- transfer player motion code to Player?
+- stabilize ( average ) accelerometer input
 - invaders fire at player, not straight forward
-- player has 2 blasters, with visible geometries, enhancing sense of self
-- motherships take more than 1 hit to die, they are heavy and shoot very fast
 - rate of fire of invaders increases with level
-- TODO: --------> started: ( realistic tilt ) player motion yaws when moving sideways and tilts when moving vertically
-- TODO: projectiles hit projectiles?
-- TODO: Greg could you help me make some sort of portal where the invaders come from in my demo?
+- tested: ( realistic tilt ) player motion yaws when moving sideways and tilts when moving vertically - results a bit confusing
+- projectiles hit projectiles?
+- Greg could you help me make some sort of portal where the invaders come from in my demo?
 and perhaps also a similar particle animation for invader or player hits
 [7/16/12 8:44:40 PM] Alejandro Santander: should be simple and add a lot to it!
-- TODO: introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
-- TODO: implement invader spawn sound?
+- introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
+- implement invader spawn sound?

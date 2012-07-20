@@ -1,7 +1,7 @@
 package com.away3d.spaceinvaders.utils
 {
 
-	import com.away3d.spaceinvaders.GameVariables;
+	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameEvent;
 	import com.away3d.spaceinvaders.gameobjects.invaders.InvaderDefinitions;
 	import com.away3d.spaceinvaders.save.StateSaveManager;
@@ -43,7 +43,7 @@ package com.away3d.spaceinvaders.utils
 
 		public function reset():void {
 			_score = 0;
-			_lives = GameVariables.playerLives;
+			_lives = GameSettings.playerLives;
 			_ui.updateScore( _score, _highScore );
 			_ui.updateLives( _lives );
 		}
