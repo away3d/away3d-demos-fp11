@@ -6,6 +6,12 @@
 - TODO: skybox is overkill since you can only see 1 image?
 
 // To consider.
+- use a counter with %2 to fire each time from a right or left cannon
+- invaders fire at player, not straight forward
+- player has 2 blasters, with visible geometries, enhancing sense of self
+- motherships take more than 1 hit to die, they are heavy and shoot very fast
+- rate of fire of invaders increases with level
+- TODO: --------> started: ( realistic tilt ) player motion yaws when moving sideways and tilts when moving vertically
 - TODO: projectiles hit projectiles?
 - TODO: Greg could you help me make some sort of portal where the invaders come from in my demo?
 and perhaps also a similar particle animation for invader or player hits
