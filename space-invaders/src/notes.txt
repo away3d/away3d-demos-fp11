@@ -1,5 +1,5 @@
 // TODO.
-- display hit sprite, mesh or animation where invaders are hit
+
 
 // Bugs.
 - bg on mobile is white, shows for an instant when app loads
@@ -8,9 +8,15 @@
 - star objects are very inefficient, implement with fragment shader on a plane?
 - skybox is overkill since you can only see 1 image?
 
-// To consider.
-- move all invader constants stuff ( per type ) to invader definitions class
+// Code improvements.
+- some pools for simple objects look to much alike, use inheritance and remove some classes
 - transfer player motion code to Player?
+- tidy up invader scene again
+
+// To consider.
+- cross hair color is too similar to projectile color, sometimes its hard to see
+- change ui button down sound, feels weird
+- move all invader constants stuff ( per type ) to invader definitions class
 - stabilize ( average ) accelerometer input
 - invaders fire at player, not straight forward
 - rate of fire of invaders increases with level

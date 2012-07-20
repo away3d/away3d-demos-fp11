@@ -15,7 +15,7 @@ package com.away3d.spaceinvaders.events
 		public var objectA:GameObject;
 		public var objectB:GameObject;
 
-		public function GameObjectEvent( type:String, objectA:GameObject = null, objectB:GameObject = null, bubblesBoolean = false, cancelable:Boolean = false ) {
+		public function GameObjectEvent( type:String, objectA:GameObject = null, objectB:GameObject = null, bubbles:Boolean = false, cancelable:Boolean = false ) {
 			super( type, bubbles, cancelable );
 			this.objectA = objectA;
 			this.objectB = objectB;

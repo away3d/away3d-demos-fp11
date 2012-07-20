@@ -41,7 +41,7 @@ package com.away3d.spaceinvaders.gameobjects
 		}
 
 		public function impact( hitter:GameObject ):void {
-			dispatchEvent( new GameObjectEvent( GameObjectEvent.HIT ) );
+			dispatchEvent( new GameObjectEvent( GameObjectEvent.HIT, this, hitter ) );
 		}
 
 		public function reset():void {

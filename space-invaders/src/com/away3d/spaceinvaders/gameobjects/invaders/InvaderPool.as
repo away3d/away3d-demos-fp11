@@ -54,6 +54,7 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 			// Listen for when the invader is dead.
 			invader.addEventListener( GameObjectEvent.DEAD, forwardEvent );
 			invader.addEventListener( GameObjectEvent.FIRE, forwardEvent );
+			invader.addEventListener( GameObjectEvent.HIT, forwardEvent );
 
 			return invader;
 		}

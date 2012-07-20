@@ -17,6 +17,7 @@ package com.away3d.spaceinvaders.scene
 	import away3d.materials.methods.EnvMapMethod;
 	import away3d.primitives.CubeGeometry;
 	import away3d.primitives.SkyBox;
+	import away3d.primitives.SphereGeometry;
 	import away3d.textures.BitmapCubeTexture;
 
 	import starling.core.Starling;
@@ -26,6 +27,8 @@ package com.away3d.spaceinvaders.scene
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
 	import com.away3d.spaceinvaders.gameobjects.GameObjectPool;
+	import com.away3d.spaceinvaders.gameobjects.blast.Blast;
+	import com.away3d.spaceinvaders.gameobjects.blast.BlastPool;
 	import com.away3d.spaceinvaders.gameobjects.invaders.*;
 	import com.away3d.spaceinvaders.gameobjects.player.Player;
 	import com.away3d.spaceinvaders.gameobjects.projectiles.Projectile;
@@ -76,6 +79,7 @@ package com.away3d.spaceinvaders.scene
 		private var _starPool:StarPool;
 		private var _playerProjectilePool:ProjectilePool;
 		private var _invaderProjectilePool:ProjectilePool;
+		private var _blastPool:BlastPool;
 		private var _cellPool:InvaderCellPool;
 		private var _gameObjectPools:Vector.<GameObjectPool>;
 		private var _totalKills:uint;
@@ -319,6 +323,14 @@ package com.away3d.spaceinvaders.scene
 
 		private function createInvaders():void {
 
+			// Blasts.
+			var blastMaterial:ColorMaterial = new ColorMaterial( 0xFFFF00, 0.5 );
+			blastMaterial.blendMode = BlendMode.ADD;
+			var blastMesh:Mesh = new Mesh( new SphereGeometry(), blastMaterial );
+			_blastPool = new BlastPool( blastMesh );
+			_gameObjectPools.push( _blastPool );
+			_view.scene.addChild( _blastPool );
+
 			// Same material for all invaders.
 			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF, 1 );
 			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
@@ -351,6 +363,7 @@ package com.away3d.spaceinvaders.scene
 			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
 			_invaderPool.addEventListener( GameObjectEvent.DEAD, onInvaderDead );
 			_invaderPool.addEventListener( GameObjectEvent.FIRE, onInvaderFire );
+			_invaderPool.addEventListener( GameObjectEvent.HIT, onInvaderHit );
 			_gameObjectPools.push( _invaderPool );
 			_view.scene.addChild( _invaderPool );
 
@@ -361,6 +374,12 @@ package com.away3d.spaceinvaders.scene
 			_cellPool = new InvaderCellPool( cellMesh as Mesh );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
+		}
+
+		private function onInvaderHit( event:GameObjectEvent ):void {
+			SoundManager.playSound( Sounds.BOING );
+			var blast:Blast = _blastPool.addItem() as Blast;
+			blast.position = event.objectB.position;
 		}
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
@@ -482,8 +501,10 @@ package com.away3d.spaceinvaders.scene
 			var dy:Number = y - _playerPosition.y;
 			_player.x += dx * cameraMotionEase;
 			_player.y += dy * cameraMotionEase;
-			_player.rotationY = -GameSettings.panTiltFactor * _player.x;
-			_player.rotationX =  GameSettings.panTiltFactor * _player.y;
+			if( GameSettings.panTiltFactor != 0 ) {
+				_player.rotationY = -GameSettings.panTiltFactor * _player.x;
+				_player.rotationX =  GameSettings.panTiltFactor * _player.y;
+			}
 			_playerPosition.x = _player.x;
 			_playerPosition.y = _player.y;
 		}

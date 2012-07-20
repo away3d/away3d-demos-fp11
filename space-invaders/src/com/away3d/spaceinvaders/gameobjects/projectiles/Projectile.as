@@ -15,10 +15,6 @@ package com.away3d.spaceinvaders.gameobjects.projectiles
 			addChild( mesh );
 		}
 
-		override public function reset():void {
-			super.reset();
-		}
-
 		override public function update():void {
 
 			super.update();

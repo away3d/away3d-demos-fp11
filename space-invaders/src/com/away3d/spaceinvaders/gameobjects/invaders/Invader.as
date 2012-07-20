@@ -6,8 +6,6 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 	import com.away3d.spaceinvaders.GameSettings;
 	import com.away3d.spaceinvaders.events.GameObjectEvent;
 	import com.away3d.spaceinvaders.gameobjects.GameObject;
-	import com.away3d.spaceinvaders.sound.SoundManager;
-	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 
 	import flash.events.TimerEvent;
@@ -94,12 +92,11 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 
 		override public function impact( hitter:GameObject ):void {
 			_life -= GameSettings.blasterStrength;
-			SoundManager.playSound( Sounds.BOING );
 			if( _life <= 0 ) {
 				enabled = false;
 				dispatchEvent( new GameObjectEvent( GameObjectEvent.DEAD, this, hitter ) );
-				super.impact( hitter );
 			}
+			super.impact( hitter );
 		}
 
 		override public function update():void {

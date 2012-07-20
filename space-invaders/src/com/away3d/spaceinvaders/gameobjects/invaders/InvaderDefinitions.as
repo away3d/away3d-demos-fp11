@@ -125,13 +125,13 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 		public static function getLifeForInvaderType( type:uint ):uint {
 			switch( type ) {
 				case MOTHERSHIP:
-					return 1000;
+					return 20;
 				case OCTOPUS_INVADER:
-					return 100;
+					return 4;
 				case BUG_INVADER:
-					return 50;
+					return 2;
 				case ROUNDED_OCTOPUS_INVADER:
-					return 25;
+					return 1;
 			}
 			return 0;
 		}

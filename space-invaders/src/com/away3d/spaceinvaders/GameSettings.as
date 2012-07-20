@@ -34,10 +34,10 @@ package com.away3d.spaceinvaders
 		public static const blasterOffsetH:Number = 100;
 		public static const blasterOffsetV:Number = -100;
 		public static const blasterOffsetD:Number = -1000;
-		public static const blasterStrength:Number = 25;
+		public static const blasterStrength:Number = 1;
 		public static const blasterFireRateMS:Number = 50;
 		public static const cameraPanRange:Number = 1750;
-		public static const panTiltFactor:Number = 0.0035;
+		public static const panTiltFactor:Number = 0;
 		public static const playerHitShake:Number = 200;
 		public static const playerLives:uint = 3;
 
