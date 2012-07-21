@@ -17,16 +17,7 @@
 
 // To consider.
 - change invader materials as they get hit, there is no way to change the materials of clones tho without changing the base material
-- cross hair color is too similar to projectile color, sometimes its hard to see - change cell color to white?
 - change ui button down sound, feels weird
 - move all invader constants stuff ( per type ) to invader definitions class
 - stabilize ( average ) accelerometer input
-- invaders fire at player, not straight forward
-- rate of fire of invaders increases with level
-- tested: ( realistic tilt ) player motion yaws when moving sideways and tilts when moving vertically - results a bit confusing
-- projectiles hit projectiles?
-- Greg could you help me make some sort of portal where the invaders come from in my demo?
-and perhaps also a similar particle animation for invader or player hits
-[7/16/12 8:44:40 PM] Alejandro Santander: should be simple and add a lot to it!
-- introduce side motion on invaders :: could make hitting invaders quite annoying _____ BUT! perhaps different invaders could move more or less, attaching this diff to score
 - implement invader spawn sound?
