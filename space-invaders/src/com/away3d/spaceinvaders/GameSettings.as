@@ -50,14 +50,14 @@ package com.away3d.spaceinvaders
 		public static const accelerometerCameraMotionEase:Number = 0.05;
 		public static const accelerometerMotionFactorX:Number = 5;
 		public static const accelerometerMotionFactorY:Number = 10;
-		public static const accelerometerCenterY:Number = 0.6;
 
 		// Touch control settings.
 		public static const touchMotionFactor:Number = 2;
 		public static const touchCameraMotionEase:Number = 0.25;
 
 		// Stars.
-		public static const maxStarNum:uint = 50;
+		public static const maxStarNum:uint = 250;
+		public static const starSpawnProbability:Number = 0.5;
 
 		// Scene range.
 		public static const minZ:Number = -1000;

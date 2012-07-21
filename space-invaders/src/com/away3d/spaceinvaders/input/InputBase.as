@@ -30,5 +30,9 @@ package com.away3d.spaceinvaders.input
 		public function update():void {
 			// override
 		}
+
+		public function reset():void {
+			// override
+		}
 	}
 }

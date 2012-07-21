@@ -9,6 +9,7 @@
 - skybox is overkill since you can only see 1 image?
 
 // Code improvements.
+- move creation stuff from invader scene to pools?
 - remove text += warnings
 - some pools for simple objects look to much alike, use inheritance and remove some classes
 - transfer player motion code to Player?

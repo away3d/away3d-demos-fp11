@@ -131,6 +131,7 @@ package com.away3d.spaceinvaders
 			hideMouse();
 			_ui.hidePausePopUp();
 			_scene.resume();
+			_input.reset();
 		}
 
 		private function onUiPause( event:GameEvent ):void {
@@ -148,6 +149,7 @@ package com.away3d.spaceinvaders
 			_ui.hideSplashPopUp();
 			_ui.hideGameOverPopUp();
 			startGame();
+			_input.reset();
 		}
 	}
 }

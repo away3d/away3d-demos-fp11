@@ -272,7 +272,6 @@ package com.away3d.spaceinvaders.scene
 			_totalKills = 0;
 			_invaderPool.spawnTimeFactor = 1;
 			loadLevel();
-			_player.visible = false;
 		}
 
 		public function get active():Boolean {
@@ -350,6 +349,7 @@ package com.away3d.spaceinvaders.scene
 			// Reusable projectile mesh.
 			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
 			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
+			invaderProjectileMaterial.lightPicker = _lightPicker;
 			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
 			// Slant vertices a little.
 			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;

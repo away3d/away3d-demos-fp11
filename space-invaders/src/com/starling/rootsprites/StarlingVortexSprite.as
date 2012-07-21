@@ -35,6 +35,7 @@ package com.starling.rootsprites {
 	import com.away3d.spaceinvaders.GameSettings;
 
 	import starling.core.Starling;
+	import starling.extensions.ColorArgb;
 	import starling.extensions.PDParticleSystem;
 	import starling.textures.Texture;
 	import starling.display.Sprite;
@@ -85,7 +86,7 @@ package com.starling.rootsprites {
 		}
 
 		public function doSomething():void {
-			// TODO: something...
+			mParticleSystem.endColor = new ColorArgb( Math.random(), Math.random(), Math.random() );
 		}
 	}
 }
