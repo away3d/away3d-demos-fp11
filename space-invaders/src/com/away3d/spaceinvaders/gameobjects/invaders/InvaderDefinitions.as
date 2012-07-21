@@ -127,11 +127,11 @@ package com.away3d.spaceinvaders.gameobjects.invaders
 				case MOTHERSHIP:
 					return 20;
 				case OCTOPUS_INVADER:
-					return 4;
+					return 1;
 				case BUG_INVADER:
 					return 2;
 				case ROUNDED_OCTOPUS_INVADER:
-					return 1;
+					return 4;
 			}
 			return 0;
 		}

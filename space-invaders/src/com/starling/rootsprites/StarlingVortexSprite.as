@@ -83,5 +83,9 @@ package com.starling.rootsprites {
 			particleContainer.y = oY;
 
 		}
+
+		public function doSomething():void {
+			// TODO: something...
+		}
 	}
 }

@@ -13,10 +13,11 @@ package com.away3d.spaceinvaders.gameobjects.blast
 		}
 
 		override public function update():void {
-			scaleX = scaleY = scaleZ += 0.1;
-			if( scaleX >= 4 ) {
+			scaleX = scaleY = scaleZ += 0.15;
+			if( scaleX >= 5 ) {
 				enabled = false;
 			}
+			super.update();
 		}
 
 		override public function reset():void {

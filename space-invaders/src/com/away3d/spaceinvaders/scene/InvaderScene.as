@@ -336,7 +336,7 @@ package com.away3d.spaceinvaders.scene
 			// TODO: review and unify materials of the same color
 
 			// Blasts.
-			var blastMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.5 );
+			var blastMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.5 );
 			var blastMesh:Mesh = new Mesh( new SphereGeometry(), blastMaterial );
 			_blastPool = new BlastPool( blastMesh );
 			_gameObjectPools.push( _blastPool );
@@ -394,6 +394,7 @@ package com.away3d.spaceinvaders.scene
 			blast.position = event.objectB.position;
 			blast.velocity.z = event.objectA.velocity.z;
 			blast.z -= GameSettings.invaderSizeZ;
+			_starlingVortexSprite.doSomething();
 		}
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
