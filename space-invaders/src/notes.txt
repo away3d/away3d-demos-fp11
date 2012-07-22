@@ -1,5 +1,5 @@
 // TODO.
-
+- player is static, star field shouldn't' move!
 
 // Bugs.
 - bg on mobile is white, shows for an instant when app loads
