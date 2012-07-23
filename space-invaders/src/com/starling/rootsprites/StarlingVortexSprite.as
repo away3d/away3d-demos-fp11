@@ -32,7 +32,8 @@ THE SOFTWARE.
  */
 package com.starling.rootsprites {
 
-	import com.away3d.spaceinvaders.GameSettings;
+	import starling.animation.Transitions;
+	import starling.animation.Tween;
 
 	import starling.core.Starling;
 	import starling.extensions.ColorArgb;
@@ -49,10 +50,18 @@ package com.starling.rootsprites {
 		[Embed(source = "../../../assets/particles/Vortex1.png")]
 		private static const StarsParticle:Class;
 		
+		[Embed(source="../../../assets/particles/Spawn.pex", mimeType="application/octet-stream")]
+		private static const SpawnConfig:Class;
+		
+		[Embed(source = "../../../assets/particles/Spawn.png")]
+		private static const SpawnParticle:Class;
+		
 		private static var _instance:StarlingVortexSprite;
 		
 		private var mParticleSystem : PDParticleSystem;
 		private var particleContainer : Sprite;
+		private var scaleTween : Tween;
+		private var spawnParticles : PDParticleSystem;
 		
 		public static function getInstance():StarlingVortexSprite
 		{
@@ -70,23 +79,42 @@ package com.starling.rootsprites {
 			this.addChild(particleContainer);
 			
 			mParticleSystem = new PDParticleSystem(psConfig, psTexture);
-			mParticleSystem.emitterX = GameSettings.windowWidth >> 1;
-			mParticleSystem.emitterY = GameSettings.windowHeight >> 1;
+			mParticleSystem.emitterX = 0;
+			mParticleSystem.emitterY = 0;
 			particleContainer.addChild(mParticleSystem);
 
 			Starling.juggler.add(mParticleSystem);
 			
 			mParticleSystem.start();
+			
+			psConfig = XML(new SpawnConfig());
+			psTexture = Texture.fromBitmap(new SpawnParticle());
+
+			spawnParticles = new PDParticleSystem(psConfig, psTexture);
+			spawnParticles.emitterX = 0;
+			spawnParticles.emitterY = 0;
+			spawnParticles.emissionRate = 5000;
+			particleContainer.addChild(spawnParticles);
+
+			Starling.juggler.add(spawnParticles);
 		}
 		
 		public function updatePosition(oX:Number, oY:Number) : void {
 			particleContainer.x = oX;
 			particleContainer.y = oY;
-
 		}
 
-		public function doSomething():void {
+		public function spawn():void {
 			mParticleSystem.endColor = new ColorArgb( Math.random(), Math.random(), Math.random() );
+							
+//			particleContainer.scaleX = particleContainer.scaleY = 1.5;
+//			
+//			scaleTween = new Tween(particleContainer, 0.5, Transitions.EASE_IN);			
+//			scaleTween.scaleTo(1);
+//			
+//			Starling.juggler.add(scaleTween);
+
+			spawnParticles.start(0.1);
 		}
 	}
 }

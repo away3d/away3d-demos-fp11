@@ -36,9 +36,9 @@ package com.away3d.spaceinvaders.scene
 	import com.away3d.spaceinvaders.sound.Sounds;
 	import com.away3d.spaceinvaders.utils.MathUtils;
 	import com.away3d.spaceinvaders.utils.ScoreManager;
+	import com.starling.rootsprites.StarlingExplosionSprite;
 	import com.starling.rootsprites.StarlingVortexSprite;
 
-	import flash.display.BlendMode;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
@@ -90,12 +90,14 @@ package com.away3d.spaceinvaders.scene
 		private var _fireReleaseTimer:Timer;
 		private var _starlingVortexScene : Starling;
 		private var _starlingVortexSprite : StarlingVortexSprite;
+		private var _starlingExplosionScene : Starling;
+		private var _starlingExplosionSprite : StarlingExplosionSprite;
 
 		private var _currentLevel:uint;
 
 		private var _active:Boolean;
 
-		public var cameraMotionEase:Number;
+		public var cameraMotionEase : Number;
 
 		public function InvaderScene() {
 			addEventListener( Event.ADDED_TO_STAGE, stageInitHandler );
@@ -124,6 +126,10 @@ package com.away3d.spaceinvaders.scene
 			_starlingVortexScene = new Starling(StarlingVortexSprite, stage, _stage3DProxy.viewPort, _stage3DProxy.stage3D);
 			_starlingVortexSprite = StarlingVortexSprite.getInstance();
 			_starlingVortexSprite.touchable = false;
+			
+			_starlingExplosionScene = new Starling(StarlingExplosionSprite, stage, _stage3DProxy.viewPort, _stage3DProxy.stage3D);
+			_starlingExplosionSprite = StarlingExplosionSprite.getInstance();
+			_starlingExplosionSprite.touchable = false;
 		}
 
 		private function initEngine():void {
@@ -207,8 +213,6 @@ package com.away3d.spaceinvaders.scene
 
 			// Update the vortex location
 			var vortexScreenPosition:Vector3D = _view.project( new Vector3D( 0, 0, 90000 ) );
-			vortexScreenPosition.x -= GameSettings.windowWidth / 2;
-			vortexScreenPosition.y -= GameSettings.windowHeight / 2;
 			_starlingVortexSprite.updatePosition( vortexScreenPosition.x, vortexScreenPosition.y );
 			
 			// Restore blasters from recoil.
@@ -230,6 +234,9 @@ package com.away3d.spaceinvaders.scene
 			
 			// Render the main scene
 			_view.render();
+
+			// Render the Starling particle vortex
+			_starlingExplosionScene.nextFrame();
 			
 			// Present the stage3D for display
 			_stage3DProxy.present();
@@ -394,7 +401,9 @@ package com.away3d.spaceinvaders.scene
 			blast.position = event.objectB.position;
 			blast.velocity.z = event.objectA.velocity.z;
 			blast.z -= GameSettings.invaderSizeZ;
-			_starlingVortexSprite.doSomething();
+			
+			var blastXY:Vector3D = _view.project(blast.scenePosition);
+			_starlingExplosionSprite.explode(blastXY.x, blastXY.y, ((15000 - blast.z) / 7500) - 0.25);
 		}
 
 		private function onInvaderCreated( event:GameObjectEvent ):void {
@@ -402,6 +411,7 @@ package com.away3d.spaceinvaders.scene
 			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP ) {
 				SoundManager.playSound( Sounds.MOTHERSHIP );
 			}
+			_starlingVortexSprite.spawn();
 		}
 
 		// -----------------------
