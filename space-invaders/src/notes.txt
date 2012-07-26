@@ -1,12 +1,13 @@
 // TODO.
-- player is static, star field shouldn't' move!
+- remove 3d star objects ( replaced by starling starfield )
+- remove 3d skybox ( replaced by starling image )
+- remove 3d hit explosions ( replaced by starling explosions )
 
 // Bugs.
 - bg on mobile is white, shows for an instant when app loads
 
 // Performance improvements.
-- star objects are very inefficient, implement with fragment shader on a plane?
-- skybox is overkill since you can only see 1 image?
+
 
 // Code improvements.
 - move creation stuff from invader scene to pools?
