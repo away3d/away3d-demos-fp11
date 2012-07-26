@@ -32,7 +32,8 @@ THE SOFTWARE.
  */
 package com.starling.rootsprites {
 
-	import starling.animation.Transitions;
+	import flash.display.Bitmap;
+	import starling.display.Image;
 	import starling.animation.Tween;
 
 	import starling.core.Starling;
@@ -43,12 +44,16 @@ package com.starling.rootsprites {
 
 	public class StarlingVortexSprite extends Sprite
 	{
+		// Space scene
+		[Embed(source="../../../assets/skybox/space_posZ.jpg")]
+		private var SpaceImage:Class;
+
 		// Starling Particle assets
 		[Embed(source="../../../assets/particles/Vortex1.pex", mimeType="application/octet-stream")]
-		private static const StarsConfig:Class;
+		private static const VortexConfig:Class;
 		
 		[Embed(source = "../../../assets/particles/Vortex1.png")]
-		private static const StarsParticle:Class;
+		private static const VortexParticle:Class;
 		
 		[Embed(source="../../../assets/particles/Spawn.pex", mimeType="application/octet-stream")]
 		private static const SpawnConfig:Class;
@@ -56,12 +61,23 @@ package com.starling.rootsprites {
 		[Embed(source = "../../../assets/particles/Spawn.png")]
 		private static const SpawnParticle:Class;
 		
+		[Embed(source="../../../assets/particles/Starfield.pex", mimeType="application/octet-stream")]
+		private static const StarfieldConfig:Class;
+		
+		[Embed(source = "../../../assets/particles/Starfield.png")]
+		private static const StarfieldParticle:Class;
+		
 		private static var _instance:StarlingVortexSprite;
 		
-		private var mParticleSystem : PDParticleSystem;
-		private var particleContainer : Sprite;
-		private var scaleTween : Tween;
-		private var spawnParticles : PDParticleSystem;
+		private var _starfieldParticles : PDParticleSystem;
+		private var _vortexParticles : PDParticleSystem;
+		private var _vortexContainer : Sprite;
+		private var _spawnParticles : PDParticleSystem;
+		private var _space : Image;
+		private var _spaceScale : Number;
+		private var _spaceContainer : Sprite;
+		private var _lastOX : Number;
+		private var _lastOY : Number;
 		
 		public static function getInstance():StarlingVortexSprite
 		{
@@ -72,49 +88,80 @@ package com.starling.rootsprites {
 		{
 			_instance = this;
 			
-			var psConfig:XML = XML(new StarsConfig());
-			var psTexture:Texture = Texture.fromBitmap(new StarsParticle());
-
-			particleContainer = new Sprite();
-			this.addChild(particleContainer);
+			var spaceBmp:Bitmap = new SpaceImage();
+			_space = new Image(Texture.fromBitmap(spaceBmp));
 			
-			mParticleSystem = new PDParticleSystem(psConfig, psTexture);
-			mParticleSystem.emitterX = 0;
-			mParticleSystem.emitterY = 0;
-			particleContainer.addChild(mParticleSystem);
-
-			Starling.juggler.add(mParticleSystem);
+			_spaceContainer = new Sprite();
+			_spaceContainer.pivotX = spaceBmp.width >> 1;
+			_spaceContainer.pivotY = spaceBmp.height >> 1;
+			this.addChild(_spaceContainer);
 			
-			mParticleSystem.start();
+			_spaceScale = getScaling();
+			_spaceContainer.scaleX = _spaceContainer.scaleY = _spaceScale;
+			_spaceContainer.addChild(_space);
+			
+			var psConfig:XML;
+			var psTexture:Texture;
+
+			_vortexContainer = new Sprite();
+			this.addChild(_vortexContainer);
+
+			// Add the star field particles
+			psConfig = XML(new StarfieldConfig());
+			psTexture = Texture.fromBitmap(new StarfieldParticle());
+			_starfieldParticles = new PDParticleSystem(psConfig, psTexture);
+			_starfieldParticles.emitterX = 0;
+			_starfieldParticles.emitterY = 0;
+			_vortexContainer.addChild(_starfieldParticles);
+			
+			Starling.juggler.add(_starfieldParticles);
+			
+			_starfieldParticles.start();
+			
+			psConfig = XML(new VortexConfig());
+			psTexture = Texture.fromBitmap(new VortexParticle());
+			_vortexParticles = new PDParticleSystem(psConfig, psTexture);
+			_vortexParticles.emitterX = 0;
+			_vortexParticles.emitterY = 0;
+			_vortexContainer.addChild(_vortexParticles);
+
+			Starling.juggler.add(_vortexParticles);
+			
+			_vortexParticles.start();
 			
 			psConfig = XML(new SpawnConfig());
 			psTexture = Texture.fromBitmap(new SpawnParticle());
 
-			spawnParticles = new PDParticleSystem(psConfig, psTexture);
-			spawnParticles.emitterX = 0;
-			spawnParticles.emitterY = 0;
-			spawnParticles.emissionRate = 5000;
-			particleContainer.addChild(spawnParticles);
+			_spawnParticles = new PDParticleSystem(psConfig, psTexture);
+			_spawnParticles.emitterX = 0;
+			_spawnParticles.emitterY = 0;
+			_spawnParticles.emissionRate = 5000;
+			_vortexContainer.addChild(_spawnParticles);
 
-			Starling.juggler.add(spawnParticles);
+			Starling.juggler.add(_spawnParticles);
+		}
+
+		private function getScaling() : Number {
+			var sW:Number = Starling.current.nativeStage.stageWidth / 1024;
+			var sH:Number = Starling.current.nativeStage.stageHeight / 1024;
+			return ((sW > sH) ? sW : sH) * 1.3;
 		}
 		
 		public function updatePosition(oX:Number, oY:Number) : void {
-			particleContainer.x = oX;
-			particleContainer.y = oY;
+			_vortexContainer.x = oX;
+			_vortexContainer.y = oY;
+			_spaceContainer.x = ((oX - _spaceContainer.pivotX) * 3) + _spaceContainer.pivotX; 
+			_spaceContainer.y = ((oY - _spaceContainer.pivotY) * 3) + _spaceContainer.pivotY; 
+			_starfieldParticles.gravityX = ((oX - _lastOX) * 150); 
+			_starfieldParticles.gravityY = ((oY - _lastOY) * 150); 
+			_lastOX = oX;
+			_lastOY = oY;
 		}
 
 		public function spawn():void {
-			mParticleSystem.endColor = new ColorArgb( Math.random(), Math.random(), Math.random() );
+			_vortexParticles.endColor = new ColorArgb( Math.random(), Math.random(), Math.random() );
 							
-//			particleContainer.scaleX = particleContainer.scaleY = 1.5;
-//			
-//			scaleTween = new Tween(particleContainer, 0.5, Transitions.EASE_IN);			
-//			scaleTween.scaleTo(1);
-//			
-//			Starling.juggler.add(scaleTween);
-
-			spawnParticles.start(0.1);
+			_spawnParticles.start(0.1);
 		}
 	}
 }

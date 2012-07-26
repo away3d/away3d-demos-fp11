@@ -52,31 +52,31 @@ package com.away3d.spaceinvaders.scene
 
 	public class InvaderScene extends Sprite
 	{
-		[Embed(source="../../../../assets/skybox/space_posX.jpg")]
-		private var SkyboxImagePosX:Class;
-		[Embed(source="../../../../assets/skybox/space_negX.jpg")]
-		private var SkyboxImageNegX:Class;
-		[Embed(source="../../../../assets/skybox/space_posY.jpg")]
-		private var SkyboxImagePosY:Class;
-		[Embed(source="../../../../assets/skybox/space_negY.jpg")]
-		private var SkyboxImageNegY:Class;
-		[Embed(source="../../../../assets/skybox/space_posZ.jpg")]
-		private var SkyboxImagePosZ:Class;
-		[Embed(source="../../../../assets/skybox/space_negZ.jpg")]
-		private var SkyboxImageNegZ:Class;
+//		[Embed(source="../../../../assets/skybox/space_posX.jpg")]
+//		private var SkyboxImagePosX:Class;
+//		[Embed(source="../../../../assets/skybox/space_negX.jpg")]
+//		private var SkyboxImageNegX:Class;
+//		[Embed(source="../../../../assets/skybox/space_posY.jpg")]
+//		private var SkyboxImagePosY:Class;
+//		[Embed(source="../../../../assets/skybox/space_negY.jpg")]
+//		private var SkyboxImageNegY:Class;
+//		[Embed(source="../../../../assets/skybox/space_posZ.jpg")]
+//		private var SkyboxImagePosZ:Class;
+//		[Embed(source="../../../../assets/skybox/space_negZ.jpg")]
+//		private var SkyboxImageNegZ:Class;
 
 		private var _stage3DProxy:Stage3DProxy;
 		private var _view:View3D;
 		private var _lightPicker:StaticLightPicker;
 		private var _playerPosition:Point = new Point();
 
-		private var _cubeMap:BitmapCubeTexture;
+//		private var _cubeMap:BitmapCubeTexture;
 
 		private var _player:Player;
 		private var _playerVector:Vector.<GameObject>;
 
 		private var _invaderPool:InvaderPool;
-		private var _starPool:StarPool;
+		//private var _starPool:StarPool;
 		private var _playerProjectilePool:ProjectilePool;
 		private var _invaderProjectilePool:ProjectilePool;
 		private var _blastPool:BlastPool;
@@ -84,7 +84,7 @@ package com.away3d.spaceinvaders.scene
 		private var _gameObjectPools:Vector.<GameObjectPool>;
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
-		private var _skyBox:SkyBox;
+		//private var _skyBox:SkyBox;
 		private var _playerFireCounter:uint;
 		private var _fireReleased:Boolean = true;
 		private var _fireReleaseTimer:Timer;
@@ -168,13 +168,13 @@ package com.away3d.spaceinvaders.scene
 			}
 
 			// Skybox.
-			_cubeMap = new BitmapCubeTexture(
-				new SkyboxImagePosX().bitmapData, new SkyboxImageNegX().bitmapData,
-				new SkyboxImagePosY().bitmapData, new SkyboxImageNegY().bitmapData,
-				new SkyboxImagePosZ().bitmapData, new SkyboxImageNegZ().bitmapData
-			);
-			_skyBox = new SkyBox( _cubeMap );
-			_view.scene.addChild( _skyBox );
+//			_cubeMap = new BitmapCubeTexture(
+//				new SkyboxImagePosX().bitmapData, new SkyboxImageNegX().bitmapData,
+//				new SkyboxImagePosY().bitmapData, new SkyboxImageNegY().bitmapData,
+//				new SkyboxImagePosZ().bitmapData, new SkyboxImageNegZ().bitmapData
+//			);
+//			_skyBox = new SkyBox( _cubeMap );
+//			_view.scene.addChild( _skyBox );
 
 			// Vortex black area.
 			var vortexHole:Mesh = new Mesh( new SphereGeometry( 2500 ), new ColorMaterial( 0x000000 ) );
@@ -186,10 +186,10 @@ package com.away3d.spaceinvaders.scene
 			createInvaders();
 
 			// Stars.
-			var starMesh:Mesh = new Mesh( new CubeGeometry( 10, 10, 10 ), new ColorMaterial( 0xFFFFFF ) );
-			_starPool = new StarPool( starMesh );
-			_gameObjectPools.push( _starPool );
-			_view.scene.addChild( _starPool );
+			//var starMesh:Mesh = new Mesh( new CubeGeometry( 10, 10, 10 ), new ColorMaterial( 0xFFFFFF ) );
+			//_starPool = new StarPool( starMesh );
+			//_gameObjectPools.push( _starPool );
+			//_view.scene.addChild( _starPool );
 
 			createPlayer();
 
@@ -349,8 +349,8 @@ package com.away3d.spaceinvaders.scene
 			_view.scene.addChild( _blastPool );
 
 			// Same material for all invaders.
-			var invaderMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF, 1 );
-			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
+			var invaderMaterial:ColorMaterial = new ColorMaterial( 0x777780, 1 );
+//			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
 
 			// Reusable projectile mesh.
