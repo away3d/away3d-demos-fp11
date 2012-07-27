@@ -1,4 +1,6 @@
 // TODO.
+- review accelerometer sensitivity and limits, kinda sucks
+- review space image edges visible at extreme tilts
 - remove 3d star objects ( replaced by starling starfield )
 - remove 3d skybox ( replaced by starling image )
 - remove 3d hit explosions ( replaced by starling explosions )
