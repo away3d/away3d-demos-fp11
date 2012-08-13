@@ -1,9 +1,9 @@
-package invaders.gameobjects.blast
+package invaders.pools
 {
 
 	import away3d.entities.Mesh;
-	import invaders.gameobjects.GameObject;
-	import invaders.gameobjects.GameObjectPool;
+	import invaders.objects.Blast;
+	import invaders.objects.GameObject;
 
 
 	public class BlastPool extends GameObjectPool

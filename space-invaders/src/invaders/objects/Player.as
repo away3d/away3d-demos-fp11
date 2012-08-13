@@ -1,10 +1,9 @@
-package invaders.gameobjects.player
+package invaders.objects
 {
 
 	import away3d.cameras.Camera3D;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
-	import invaders.gameobjects.GameObject;
 	import invaders.utils.MathUtils;
 
 

@@ -1,8 +1,9 @@
-package invaders.gameobjects
+package invaders.pools
 {
 
 	import away3d.containers.ObjectContainer3D;
 	import away3d.errors.AbstractMethodError;
+	import invaders.objects.GameObject;
 
 
 	public class GameObjectPool extends ObjectContainer3D

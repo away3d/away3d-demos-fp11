@@ -1,8 +1,7 @@
-package invaders.gameobjects.stars
+package invaders.objects
 {
 
 	import away3d.entities.Entity;
-	import invaders.gameobjects.GameObject;
 	import invaders.utils.MathUtils;
 
 

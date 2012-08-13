@@ -1,4 +1,4 @@
-package invaders.gameobjects.invaders
+package invaders.objects.invaders
 {
 
 	import away3d.core.base.Geometry;
@@ -6,6 +6,7 @@ package invaders.gameobjects.invaders
 	import away3d.materials.MaterialBase;
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
+	import invaders.objects.Invader;
 
 
 

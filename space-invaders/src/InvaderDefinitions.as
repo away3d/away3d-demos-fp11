@@ -1,4 +1,4 @@
-package invaders.gameobjects.invaders
+package 
 {
 
 	import flash.geom.Point;

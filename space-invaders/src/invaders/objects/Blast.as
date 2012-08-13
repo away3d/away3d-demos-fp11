@@ -1,8 +1,7 @@
-package invaders.gameobjects.blast
+package invaders.objects
 {
 
 	import away3d.entities.Mesh;
-	import invaders.gameobjects.GameObject;
 
 
 	public class Blast extends GameObject

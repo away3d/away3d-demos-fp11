@@ -1,34 +1,12 @@
 package 
 {
-
-	import flash.net.SharedObject;
-	import flash.display.SimpleButton;
-	import flash.display.MovieClip;
-	import flash.text.TextField;
-	import flash.display.DisplayObject;
-	import flash.sensors.Accelerometer;
-	import flash.events.AccelerometerEvent;
-	import invaders.sound.SoundLibrary;
-	import flash.ui.Keyboard;
-	import flash.events.KeyboardEvent;
-	import flash.events.MouseEvent;
-	import invaders.gameobjects.invaders.InvaderCell;
-	import invaders.utils.MathUtils;
-	import invaders.gameobjects.projectiles.Projectile;
-	import invaders.gameobjects.blast.Blast;
-	import invaders.gameobjects.invaders.InvaderDefinitions;
-	import invaders.gameobjects.invaders.Invader;
-	import invaders.gameobjects.player.Player;
-	import invaders.gameobjects.GameObject;
-	import flash.events.TimerEvent;
-	import flash.utils.Timer;
-	import invaders.gameobjects.projectiles.ProjectilePool;
-	import invaders.gameobjects.invaders.InvaderCellPool;
-	import invaders.events.GameObjectEvent;
-	import invaders.gameobjects.invaders.InvaderPool;
-	import away3d.core.base.Geometry;
-	import invaders.gameobjects.blast.BlastPool;
-	import invaders.gameobjects.GameObjectPool;
+	import invaders.events.*;
+	import invaders.objects.*;
+	import invaders.pools.*;
+	import invaders.sounds.*;
+	import invaders.utils.*;
+	import invaders.pools.InvaderCellPool;
+	
 	import away3d.containers.*;
 	import away3d.materials.lightpickers.*;
 	import away3d.materials.*;
@@ -37,13 +15,15 @@ package
 	import away3d.debug.*;
 	import away3d.lights.*;
 	
+	import flash.net.*;
+	import flash.text.*;
+	import flash.display.*;
+	import flash.sensors.*;
+	import flash.ui.*;
+	import flash.events.*;
 	import flash.geom.*;
+	import flash.utils.*;
 	
-	import flash.display.Sprite;
-	import flash.display.StageAlign;
-	import flash.display.StageScaleMode;
-	import flash.events.Event;
-	import flash.ui.Mouse;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Main extends Sprite
@@ -86,18 +66,32 @@ package
 		private var _mouseIsOnStage:Boolean = true;
 		private var _firstAccY:Number;
 		
+		
+		//hud variables
+		private var _hudContainer:Sprite;
 		private var _scoreText:TextField;
 		private var _livesText:TextField;
-		private var _popUp:MovieClip;
 		private var _restartButton:SimpleButton;
 		private var _pauseButton:SimpleButton;
+		
+		//popup variables
+		private var _activePopUp:MovieClip;
+		private var _popUpContainer:Sprite;
+		private var _splashPopUp:MovieClip;
+		private var _playButton:SimpleButton;
+		private var _pausePopUp:MovieClip;
+		private var _resumeButton:SimpleButton;
+		private var _gameOverPopUp:MovieClip;
+		private var _goScoreText:TextField;
+		private var _goHighScoreText:TextField;
+		private var _playAgainButton:SimpleButton;
 		private var _liveIconsContainer:Sprite;
 		private var _crossHair:Sprite;
 		
+		//score variables
 		private var _score:uint;
 		private var _highScore:uint;
 		private var _lives:uint;
-		
 		private const SO_NAME:String = "away3dSpaceInvadersUserData";
 		
 		/**
@@ -119,7 +113,7 @@ package
 			initInvaders();
 			initPlayer();
 			initUI();
-			initInput();
+			initListeners();
 		}
 		
 		/**
@@ -134,10 +128,6 @@ package
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			
-			//update game settings
-			GameSettings.windowWidth = stage.stageWidth;
-			GameSettings.windowHeight = stage.stageHeight;
-			
 			//initialise sound manager
 			_soundLibrary = SoundLibrary.getInstance();
 		}
@@ -150,8 +140,6 @@ package
 			_view = new View3D();
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
-			_view.width = GameSettings.windowWidth;
-			_view.height = GameSettings.windowHeight;
 			addChild( _view );
 			
 			// Stats.
@@ -196,43 +184,23 @@ package
 		 */
 		private function initInvaders():void
 		{
-			// TODO: review and unify materials of the same color
-
-			// Blasts.
-			var blastMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.5 );
-			var blastMesh:Mesh = new Mesh( new SphereGeometry(), blastMaterial );
-			_blastPool = new BlastPool( blastMesh );
+			// Reusable blasts.
+			_blastPool = new BlastPool( new Mesh( new SphereGeometry(), new ColorMaterial( 0x00FFFF, 0.5 ) ) );
 			_gameObjectPools.push( _blastPool );
 			_view.scene.addChild( _blastPool );
-
+			
+			// Reusable invader projectiles.
+			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+			invaderProjectileMaterial.lightPicker = _lightPicker;
+			_invaderProjectilePool = new ProjectilePool(  new Mesh( new CubeGeometry( 25, 25, 200, 1, 1, 4 ), invaderProjectileMaterial ) );
+			_gameObjectPools.push( _invaderProjectilePool );
+			_view.scene.addChild( _invaderProjectilePool );
+			
 			// Same material for all invaders.
 			var invaderMaterial:ColorMaterial = new ColorMaterial( 0x777780, 1 );
 //			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
-
-			// Reusable projectile mesh.
-			var invaderProjectileGeometry:Geometry = new CubeGeometry( 25, 25, 200, 1, 1, 4 );
-			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
-			invaderProjectileMaterial.lightPicker = _lightPicker;
-			var invaderProjectileMesh:Mesh = new Mesh( invaderProjectileGeometry, invaderProjectileMaterial );
-			// Slant vertices a little.
-			var vertices:Vector.<Number> = invaderProjectileGeometry.subGeometries[ 0 ].vertexData;
-			var index:uint;
-			var pz:Number;
-			for( var i:uint; i < vertices.length / 3; i++ ) {
-				index = i * 3;
-				pz = vertices[ index + 2 ];
-				if( pz > -75 && pz < 75 ) {
-					vertices[ index + 0 ] += pz > 0 ? 25 : pz == 0 ? 0 : -25;
-				}
-			}
-			invaderProjectileGeometry.subGeometries[ 0 ].updateVertexData( vertices );
-
-			// Crete pool.
-			_invaderProjectilePool = new ProjectilePool( invaderProjectileMesh );
-			_gameObjectPools.push( _invaderProjectilePool );
-			_view.scene.addChild( _invaderProjectilePool );
-
+			
 			// Create invaders.
 			_invaderPool = new InvaderPool( invaderMaterial );
 			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
@@ -246,8 +214,7 @@ package
 //			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
 //			cellMaterial.lightPicker = _lightPicker;
 //			cellMaterial.blendMode = BlendMode.ADD;
-			var cellMesh:Mesh = new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), invaderMaterial );
-			_cellPool = new InvaderCellPool( cellMesh as Mesh );
+			_cellPool = new InvaderCellPool( new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), invaderMaterial ) );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
 		}
@@ -257,13 +224,10 @@ package
 		 */
 		private function initPlayer():void
 		{
-			// Reusable projectile mesh.
+			// Reusable player projectiles.
 			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.75 );
 			playerProjectileMaterial.lightPicker = _lightPicker;
-			var playerProjectileMesh:Mesh = new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial );
-
-			// Crete pool.
-			_playerProjectilePool = new ProjectilePool( playerProjectileMesh );
+			_playerProjectilePool = new ProjectilePool( new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial ) );
 			_gameObjectPools.push( _playerProjectilePool );
 			_view.scene.addChild( _playerProjectilePool );
 
@@ -287,7 +251,7 @@ package
 			_rightBlaster.position = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
 			_player.addChild( _leftBlaster );
 			_player.addChild( _rightBlaster );
-
+			
 			// Used for rapid fire.
 			_fireReleaseTimer = new Timer( GameSettings.blasterFireRateMS, 1 );
 			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
@@ -298,72 +262,86 @@ package
 		 */		
 		private function initUI():void
 		{
-			//initialise UI
+			// Initialise the HUD
+			_hudContainer = new Sprite();
+			addChild(_hudContainer);
+			
 			// Cross hair.
 			_crossHair = new Crosshair();
-			_crossHair.x = GameSettings.windowWidth / 2;
-			_crossHair.y = GameSettings.windowHeight / 2;
-			addChild( _crossHair );
-
+			_hudContainer.addChild( _crossHair );
+			
 			// Score text.
 			_scoreText = getTextField();
-			addChild( _scoreText );
-
+			_hudContainer.addChild( _scoreText );
+			
 			// Lives text.
 			_livesText = getTextField();
-			_livesText.y = GameSettings.windowHeight - 35;
-			fitClip( _livesText );
-			addChild( _livesText );
-
+			_hudContainer.addChild( _livesText );
+			
 			// Lives icons.
 			_liveIconsContainer = new Sprite();
-			addChild( _liveIconsContainer );
+			_hudContainer.addChild( _liveIconsContainer );
 			for( var i:uint; i < GameSettings.playerLives; i++ ) {
 				var live:Sprite = new InvaderLive();
 				live.x = i * ( live.width + 5 );
 				_liveIconsContainer.addChild( live );
 			}
-			_liveIconsContainer.y = _livesText.y + 12;
-			fitClip( _liveIconsContainer );
-
-			// Buttons.
+			
+			// Restart button
 			_restartButton = new RestartButton();
 			_restartButton.addEventListener( MouseEvent.MOUSE_UP, onRestart );
-			initializeButton( _restartButton );
-			addChild( _restartButton );
-			_pauseButton = new PauseButton();
-			_pauseButton.x = GameSettings.windowWidth - _pauseButton.width;
-			fitClip( _pauseButton );
-			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
-			initializeButton( _pauseButton );
-			addChild( _pauseButton );
-
-			showSplashPopUp();
+			_hudContainer.addChild( _restartButton );
 			
-			addEventListener( Event.ENTER_FRAME, onEnterFrame );
+			// Pause button
+			_pauseButton = new PauseButton();
+			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
+			_hudContainer.addChild( _pauseButton );
+			
+			// Initialise the popups
+			_popUpContainer = new Sprite();
+			addChild(_popUpContainer);
+			
+			// Splash popup
+			_splashPopUp = new SplashPopUp();
+			_splashPopUp.visible = false;
+			_popUpContainer.addChild(_splashPopUp);
+			_playButton = _splashPopUp.playButton;
+			_playButton.addEventListener( MouseEvent.MOUSE_UP, onPlay );
+			
+			// Pause popup
+			_pausePopUp = new PausePopUp();
+			_pausePopUp.visible = false;
+			_popUpContainer.addChild(_pausePopUp);
+			_resumeButton = _pausePopUp.resumeButton;
+			_resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume );
+			
+			// Game over popup
+			_gameOverPopUp = new GameOverPopUp();
+			_gameOverPopUp.visible = false;
+			_popUpContainer.addChild(_gameOverPopUp);
+			_playAgainButton = _gameOverPopUp.playAgainButton;
+			_playAgainButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
+			_goScoreText = _gameOverPopUp.scoreText;
+			
+			showPopUp( _splashPopUp );
+			
 		}
 		
 		/**
-		 * 
+		 * Initialise the listeners
 		 */
-		private function initInput():void
+		private function initListeners():void
 		{
+			addEventListener( Event.ENTER_FRAME, onEnterFrame );
 			stage.addEventListener( MouseEvent.MOUSE_DOWN, onMouseDown );
 			stage.addEventListener( MouseEvent.MOUSE_UP, onMouseUp );
 			stage.addEventListener( MouseEvent.MOUSE_MOVE, onMouseMove );
 			stage.addEventListener( Event.MOUSE_LEAVE, onMouseLeave );
 			stage.addEventListener( KeyboardEvent.KEY_DOWN, onKeyDown );
 			stage.addEventListener( KeyboardEvent.KEY_UP, onKeyUp );
+			stage.addEventListener( Event.RESIZE, onResize);
 			_accelerometer.addEventListener(AccelerometerEvent.UPDATE, onAccelerometerUpdate);
-		}
-		
-		/**
-		 * 
-		 */
-		private function setLevel():void
-		{
-			if( _currentLevel > 0 ) _invaderPool.spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
-			if( _invaderPool.spawnTimeFactor < GameSettings.minimumSpawnTime ) _invaderPool.spawnTimeFactor = GameSettings.minimumSpawnTime;
+			onResize();
 		}
 		
 		// -----------------------
@@ -383,138 +361,45 @@ package
 			_firstAccY = 0;
 			
 			// Reset all game object pools.
-			for( var i:uint; i < _gameObjectPools.length; ++i ) {
-				var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
-				gameObjectPool.reset();
-			}
+			for( var i:uint; i < _gameObjectPools.length; ++i )
+				_gameObjectPools[ i ].reset();
+			
+			//reset level data
 			_currentLevel = 0;
 			_currentLevelKills = 0;
 			_totalKills = 0;
 			_invaderPool.spawnTimeFactor = 1;
 			
-			setLevel();
-			
 			_invaderPool.resume();
 			_active = true;
 			_player.visible = true;
 			
-			_score = 0;
-			_lives = GameSettings.playerLives;
-			updateScore();
-			updateLives();
+			updateScore(0);
+			updateLives(GameSettings.playerLives);
+			onResize();
 		}
 		
 		// -----------------------
 		// Pop ups.
 		// -----------------------
 
-		public function showPausePopUp():void
+		private function hidePopUp():void
 		{
-			var popUp:MovieClip = new PausePopUp();
-			var resumeButton:SimpleButton = popUp.resumeButton;
-			resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume, false, 0, true );
-			initializeButton( resumeButton );
-			initializePopUp( popUp );
+			_hudContainer.visible = true;
+			_activePopUp.visible = false;
 		}
 
-		public function hidePausePopUp():void
+		private function showPopUp( popUp:MovieClip ):void
 		{
-			if( !_popUp || !( _popUp is PausePopUp ) ) return;
-			var resumeButton:SimpleButton = _popUp.resumeButton;
-			resumeButton.removeEventListener( MouseEvent.MOUSE_UP, onResume );
-			destroyButton( resumeButton );
-			destroyPopUp();
-		}
-
-		public function showGameOverPopUp():void
-		{
-			var popUp:MovieClip = new GameOverPopUp();
-			var playAgainButton:SimpleButton = popUp.playAgainButton;
-			playAgainButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
-			initializeButton( playAgainButton );
-			var scoreText:TextField = popUp.scoreText;
-			scoreText.text =     "SCORE................................... " + uintToString( _score );
-			var highScoreText:TextField = popUp.highScoreText;
-			highScoreText.text = "HIGH-SCORE.............................. " + uintToString( _highScore );
-			scoreText.width = scoreText.textWidth * 1.05;
-			scoreText.x = -scoreText.width / 2;
-			fitClip( scoreText );
-			highScoreText.width = highScoreText.textWidth * 1.05;
-			highScoreText.x = -highScoreText.width / 2;
-			fitClip( highScoreText );
-			initializePopUp( popUp );
-		}
-
-		public function hideGameOverPopUp():void
-		{
-			if( !_popUp || !( _popUp is GameOverPopUp ) ) return;
-			var playAgainButton:SimpleButton = _popUp.playAgainButton;
-			playAgainButton.removeEventListener( MouseEvent.MOUSE_UP, onPlay );
-			destroyButton( playAgainButton );
-			destroyPopUp();
-		}
-
-		public function showSplashPopUp():void
-		{
-			var popUp:SplashPopUp = new SplashPopUp();
-			var playButton:SimpleButton = popUp.playButton;
-			playButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
-			initializeButton( playButton );
-			initializePopUp( popUp );
-		}
-
-		public function hideSplashPopUp():void
-		{
-			if( !_popUp || !( _popUp is SplashPopUp ) ) return;
-			var playButton:SimpleButton = _popUp.playButton;
-			playButton.removeEventListener( MouseEvent.MOUSE_UP, onPlay );
-			destroyButton( playButton );
-			destroyPopUp();
-		}
-
-		private function destroyPopUp():void
-		{
-			removeChild( _popUp );
-			_popUp = null;
-			_scoreText.visible = true;
-			_livesText.visible = true;
-			_restartButton.visible = true;
-			_pauseButton.visible = true;
-			_liveIconsContainer.visible = true;
-			_crossHair.visible = true;
-		}
-
-		private function initializePopUp( popUp:MovieClip ):void
-		{
-			popUp.x = GameSettings.windowWidth / 2;
-			popUp.y = GameSettings.windowHeight / 2;
-			var bg:Sprite = popUp.bg;
-			bg.width = GameSettings.windowWidth;
-			bg.height = GameSettings.windowHeight;
-			bg.x = -GameSettings.windowWidth / 2;
-			bg.y = -GameSettings.windowHeight / 2;
-			_popUp = popUp;
-			addChild( popUp );
-			_scoreText.visible = false;
-			_livesText.visible = false;
-			_restartButton.visible = false;
-			_pauseButton.visible = false;
-			_liveIconsContainer.visible = false;
-			_crossHair.visible = false;
-		}
-
-		private function initializeButton( button:SimpleButton ):void
-		{
-			button.addEventListener( MouseEvent.MOUSE_DOWN, onBtnMouseDown, false, 0, true );
-		}
-
-		private function destroyButton( button:SimpleButton ):void
-		{
-			button.removeEventListener( MouseEvent.MOUSE_DOWN, onBtnMouseDown );
+			_activePopUp = popUp;
+			_hudContainer.visible = false;
+			_activePopUp.visible = true;
 		}
 		
-		public function updateLives():void
+		private function updateLives(lives:uint):void
 		{
+			_lives = lives;
+			
 			// Update icons.
 			for( var i:uint; i < GameSettings.playerLives; i++ ) {
 				var child:Sprite = _liveIconsContainer.getChildAt( i ) as Sprite;
@@ -523,29 +408,19 @@ package
 			// Update text.
 			_livesText.text = "LIVES " + _lives + "";
 			_livesText.width = _livesText.textWidth * 1.05;
-			_livesText.x = GameSettings.windowWidth / 2 - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5;
-			_liveIconsContainer.x = _livesText.x + _livesText.width + 10;
-			fitClip( _livesText );
-			fitClip( _liveIconsContainer );
 		}
-
-		public function updateScore():void
+		
+		private function updateScore(score:uint):void
 		{
+			_score = score;
 			_scoreText.text = "SCORE " + uintToString( _score ) + "   ";
 			_scoreText.text += "HIGH-SCORE " + uintToString( _highScore );
-			_scoreText.width = _scoreText.textWidth * 1.05;
-			_scoreText.x = GameSettings.windowWidth / 2 - _scoreText.width / 2;
-			fitClip( _scoreText );
+			_scoreText.width = int(_scoreText.textWidth * 1.05);
 		}
 
 		private function getTextField():TextField {
 			var clip:CustomTextField = new CustomTextField();
 			return clip.tf;
-		}
-
-		private function fitClip( clip:DisplayObject ):void {
-			clip.x = Math.floor( clip.x );
-			clip.y = Math.floor( clip.y );
 		}
 
 		private function uintToString( value:uint ):String {
@@ -618,8 +493,8 @@ package
 				}
 			}
 
-			var hw:Number = GameSettings.windowWidth / 2;
-			var hh:Number = GameSettings.windowHeight / 2;
+			var hw:Number = stage.stageWidth / 2;
+			var hh:Number = stage.stageHeight / 2;
 			
 			var dx:Number = GameSettings.mouseMotionFactor * ( _currentPosition.x - hw ) / hw - _playerPosition.x;
 			var dy:Number = -GameSettings.mouseMotionFactor * ( _currentPosition.y - hh ) / hh - _playerPosition.y;
@@ -662,38 +537,68 @@ package
 			}
 		}
 		
+		private function onResize(event:Event = null):void
+		{
+			var w:int = stage.stageWidth;
+			var h:int = stage.stageHeight;
+			var hw:int = w/2;
+			var hh:int = h/2;
+			
+			//update view size
+			_view.width = w;
+			_view.height = h;
+			
+			//update crosshair & popup position
+			_popUpContainer.x = _crossHair.x = hw;
+			_popUpContainer.y = _crossHair.y = hh;
+			
+			//update lives text position
+			_livesText.x = hw - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5;
+			_livesText.y = h - 35;
+			_liveIconsContainer.x = _livesText.x + _livesText.width + 10;
+			_liveIconsContainer.y = _livesText.y + 12;
+			
+			_pauseButton.x = w - _pauseButton.width;
+			_scoreText.x = hw - _scoreText.width / 2;
+		}
+		
 		// -----------------------------
 		// Game event handlers.
 		// -----------------------------
 		
-		private function onFireReleaseTimerComplete( event:TimerEvent ):void {
+		private function onFireReleaseTimerComplete( event:TimerEvent ):void
+		{
 			_fireReleased = true;
 		}
 		
-		private function onInvaderHit( event:GameObjectEvent ):void {
+		private function onInvaderHit( event:GameObjectEvent ):void
+		{
 			_soundLibrary.playSound( SoundLibrary.BOING );
 			var blast:Blast = _blastPool.addItem() as Blast;
 			blast.position = event.objectB.position;
 			blast.velocity.z = event.objectA.velocity.z;
 			blast.z -= GameSettings.invaderSizeZ;
 		}
-
-		private function onInvaderCreated( event:GameObjectEvent ):void {
+		
+		private function onInvaderCreated( event:GameObjectEvent ):void
+		{
 			var invader:Invader = event.objectA as Invader;
-			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP ) {
+			
+			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP )
 				_soundLibrary.playSound( SoundLibrary.MOTHERSHIP );
-			}
 		}
 		
-		private function onInvaderDead( event:GameObjectEvent ):void {
-
+		private function onInvaderDead( event:GameObjectEvent ):void
+		{
 			var invader:Invader = event.objectA as Invader;
-
+			
 			// Check level update and update UI.
 			_currentLevelKills++;
 			_totalKills++;
 			
-			_score += InvaderDefinitions.getScoreForInvaderType( invader.invaderType );
+			updateScore(_score + InvaderDefinitions.getScoreForInvaderType( invader.invaderType ));
+			
+			// Update highscore
 			if( _score > _highScore ) {
 				_highScore = _score;
 				var sharedObject:SharedObject = SharedObject.getLocal( SO_NAME );
@@ -701,23 +606,23 @@ package
 				sharedObject.flush();
 			}
 			
-			updateScore();
-			
+			// Update level
 			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
 				_currentLevelKills = 0;
 				_currentLevel++;
-				setLevel();
+				_invaderPool.spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
+				
+				if( _invaderPool.spawnTimeFactor < GameSettings.minimumSpawnTime )
+					_invaderPool.spawnTimeFactor = GameSettings.minimumSpawnTime;
 			}
 
-			// Play sounds.
-			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP ) {
+			// Play sound
+			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP )
 				_soundLibrary.playSound( SoundLibrary.EXPLOSION_STRONG );
-			}
-			else {
+			else
 				_soundLibrary.playSound( SoundLibrary.INVADER_DEATH );
-			}
 
-			// Show invader destruction.
+			// Show invader destruction
 			var hitter:Projectile = event.objectB as Projectile;
 			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
 			var positions:Vector.<Point> = invader.cellPositions;
@@ -748,17 +653,25 @@ package
 		private function onPlayerHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.EXPLOSION_SOFT );
-			_lives--;
-			updateLives();
+			
+			updateLives(_lives - 1);
 			
 			//game over
-			if( _lives == 0 ) {
-				showGameOverPopUp();
+			if( _lives <= 0 ) {
+				_goScoreText.text =     "SCORE................................... " + uintToString( _score );
+				_goHighScoreText = _gameOverPopUp.highScoreText;
+				_goHighScoreText.text = "HIGH-SCORE.............................. " + uintToString( _highScore );
+				_goScoreText.width = int(_goScoreText.textWidth * 1.05);
+				_goScoreText.x = -int(_goScoreText.width / 2);
+				_goHighScoreText.width = int(_goHighScoreText.textWidth * 1.05);
+				_goHighScoreText.x = -int(_goHighScoreText.width / 2);
+				showPopUp( _gameOverPopUp );
 				stopGame();
 			}
 		}
 		
-		private function onInvaderFire( event:GameObjectEvent ):void {
+		private function onInvaderFire( event:GameObjectEvent ):void
+		{
 			var invader:Invader = event.objectA as Invader;
 			var projectile:Projectile = _invaderProjectilePool.addItem() as Projectile;
 			projectile.targets = _playerVector;
@@ -783,52 +696,55 @@ package
 		// -----------------------------
 		// User interface interaction.
 		// -----------------------------
-
-		private function showMouse():void {
-			if( _showingMouse ) return;
+		
+		private function showMouse():void
+		{
+			if( _showingMouse )
+				return;
+			
 			Mouse.show();
+			
 			_showingMouse = true;
 		}
-
-		private function hideMouse():void {
-			if( !_showingMouse ) return;
+		
+		private function hideMouse():void
+		{
+			if( !_showingMouse )
+				return;
+			
 			Mouse.hide();
+			
 			_showingMouse = false;
 		}
-
-		private function onResume( event:MouseEvent ):void {
+		
+		private function onResume( event:MouseEvent ):void
+		{
 			_firstAccY = 0;
 			hideMouse();
-			hidePausePopUp();
+			hidePopUp();
 			
 			_invaderPool.resume();
 			_active = true;
 			_player.visible = true;
 		}
-
-		private function onPause( event:MouseEvent ):void {
+		
+		private function onPause( event:MouseEvent ):void
+		{
 			stopGame();
-			showPausePopUp();
-		}
-
-		private function onRestart( event:MouseEvent ):void {
-			_score = 0;
-			_lives = GameSettings.playerLives;
-			startGame();
-			updateScore();
-			updateLives();
-		}
-
-		private function onPlay( event:MouseEvent ):void {
-			startGame();
-			hideSplashPopUp();
-			hideGameOverPopUp();
+			showPopUp( _pausePopUp );
 		}
 		
-		private function onBtnMouseDown( event:MouseEvent ):void {
-			SoundLibrary.getInstance().playSound( SoundLibrary.UFO );
+		private function onRestart( event:MouseEvent ):void
+		{
+			startGame();
 		}
-				
+		
+		private function onPlay( event:MouseEvent ):void
+		{
+			startGame();
+			hidePopUp();
+		}
+		
 		// -----------------------------
 		// Input event handlers.
 		// -----------------------------
@@ -836,16 +752,29 @@ package
 		private function onMouseMove( event:MouseEvent ):void {
 			_mouseIsOnStage = true;
 		}
-
+		
 		private function onMouseLeave( event:Event ):void {
 			_mouseIsOnStage = false;
 		}
-
-		private function onMouseDown( event:MouseEvent ):void {
-			_isFiring = true;
+		
+		private function onMouseDown( event:MouseEvent ):void
+		{
+			switch(event.target){
+				case _playButton:
+				case _restartButton:
+				case _pauseButton:
+				case _playAgainButton:
+				case _resumeButton:
+					SoundLibrary.getInstance().playSound( SoundLibrary.UFO );
+					break;
+				default:
+					_isFiring = true;
+					break;
+			}
 		}
 
-		private function onMouseUp( event:MouseEvent ):void {
+		private function onMouseUp( event:MouseEvent ):void
+		{
 			_isFiring = false;
 		}
 		

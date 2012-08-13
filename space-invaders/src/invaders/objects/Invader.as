@@ -1,4 +1,4 @@
-package invaders.gameobjects.invaders
+package invaders.objects
 {
 
 	import away3d.entities.Mesh;
@@ -6,7 +6,6 @@ package invaders.gameobjects.invaders
 	import flash.geom.Point;
 	import flash.utils.Timer;
 	import invaders.events.GameObjectEvent;
-	import invaders.gameobjects.GameObject;
 	import invaders.utils.MathUtils;
 
 
@@ -47,7 +46,7 @@ package invaders.gameobjects.invaders
 		}
 
 		private function getFireRate():uint {
-			var rate:uint = InvaderDefinitions.getFireRateMSForInvaderType( _invaderType )
+			var rate:uint = InvaderDefinitions.getFireRateMSForInvaderType( _invaderType );
 			return Math.floor( MathUtils.rand( rate, rate * 1.5 ) );
 		}
 

@@ -1,4 +1,4 @@
-package invaders.gameobjects.invaders
+package invaders.pools
 {
 
 	import away3d.materials.MaterialBase;
@@ -6,8 +6,9 @@ package invaders.gameobjects.invaders
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	import invaders.events.GameObjectEvent;
-	import invaders.gameobjects.GameObject;
-	import invaders.gameobjects.GameObjectPool;
+	import invaders.objects.GameObject;
+	import invaders.objects.Invader;
+	import invaders.objects.invaders.InvaderFactory;
 	import invaders.utils.MathUtils;
 
 

@@ -62,12 +62,5 @@ package
 		// Scene range.
 		public static const minZ:Number = -1000;
 		public static const maxZ:Number = 50000;
-
-		// -----------------------
-		// Variables
-		// -----------------------
-
-		public static var windowWidth:Number = 0;
-		public static var windowHeight:Number = 0;
 	}
 }

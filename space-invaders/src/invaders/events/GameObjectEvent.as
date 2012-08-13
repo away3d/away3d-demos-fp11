@@ -2,7 +2,7 @@ package invaders.events
 {
 
 	import flash.events.Event;
-	import invaders.gameobjects.GameObject;
+	import invaders.objects.GameObject;
 
 
 	public class GameObjectEvent extends Event

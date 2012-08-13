@@ -1,9 +1,9 @@
-package invaders.gameobjects.stars
+package invaders.pools
 {
 
 	import away3d.entities.Mesh;
-	import invaders.gameobjects.GameObject;
-	import invaders.gameobjects.GameObjectPool;
+	import invaders.objects.GameObject;
+	import invaders.objects.Star;
 
 
 

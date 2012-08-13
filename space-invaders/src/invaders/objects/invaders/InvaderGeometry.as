@@ -1,4 +1,4 @@
-package invaders.gameobjects.invaders
+package invaders.objects.invaders
 {
 
 	import away3d.core.base.SubGeometry;

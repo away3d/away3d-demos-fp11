@@ -1,4 +1,4 @@
-package invaders.sound
+package invaders.sounds
 {
 
 	import flash.utils.Dictionary;

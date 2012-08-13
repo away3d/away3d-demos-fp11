@@ -1,4 +1,4 @@
-package invaders.gameobjects
+package invaders.objects
 {
 
 	import away3d.containers.ObjectContainer3D;
