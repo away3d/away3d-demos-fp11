@@ -1,6 +1,7 @@
 package invaders.ui
 {
 
+	import invaders.sound.SoundLibrary;
 	import flash.display.DisplayObject;
 	import flash.display.MovieClip;
 	import flash.display.SimpleButton;
@@ -9,8 +10,6 @@ package invaders.ui
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	import invaders.events.GameEvent;
-	import invaders.sound.SoundManager;
-	import invaders.sound.Sounds;
 
 
 	public class UIView extends Sprite
@@ -175,7 +174,7 @@ package invaders.ui
 		// -----------------------
 
 		private function onBtnMouseDown( event:MouseEvent ):void {
-			SoundManager.playSound( Sounds.UFO );
+			SoundLibrary.getInstance().playSound( SoundLibrary.UFO );
 		}
 
 		private function onPlay( event:MouseEvent ):void {
