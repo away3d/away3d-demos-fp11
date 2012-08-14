@@ -33,11 +33,8 @@ package invaders.pools
 		override public function update():void
 		{
 			super.update();
+			
 			_time = getTimer();
-			evaluateSpawnInvader( InvaderDefinitions.MOTHERSHIP );
-			evaluateSpawnInvader( InvaderDefinitions.BUG_INVADER );
-			evaluateSpawnInvader( InvaderDefinitions.OCTOPUS_INVADER );
-			evaluateSpawnInvader( InvaderDefinitions.ROUNDED_OCTOPUS_INVADER );
 		}
 		
 		public function stop():void
@@ -53,7 +50,12 @@ package invaders.pools
 			for each ( invader in _gameObjects)
 				invader.resumeTimers();
 			
-			resetSpawnTimes();
+			//reset spawn times
+			_time = getTimer();
+			_lastSpawnTimes[ InvaderDefinitions.MOTHERSHIP 				] = _time;
+			_lastSpawnTimes[ InvaderDefinitions.BUG_INVADER 			] = _time;
+			_lastSpawnTimes[ InvaderDefinitions.OCTOPUS_INVADER			] = _time;
+			_lastSpawnTimes[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = _time;
 		}
 		
 		override protected function createItem():GameObject
@@ -90,7 +92,7 @@ package invaders.pools
 			dispatchEvent( event );
 		}
 		
-		private function evaluateSpawnInvader( typeIndex:uint ):void
+		public function evaluateSpawnInvader( typeIndex:uint ):void
 		{
 			var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
 			if( elapsedSinceSpawn > InvaderDefinitions.getSpawnRateMSForInvaderType( typeIndex ) * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
@@ -119,15 +121,6 @@ package invaders.pools
 			return invader;
 		}
 		
-		private function resetSpawnTimes():void
-		{
-			_time = getTimer();
-			_lastSpawnTimes[ InvaderDefinitions.MOTHERSHIP 				] = _time;
-			_lastSpawnTimes[ InvaderDefinitions.BUG_INVADER 			] = _time;
-			_lastSpawnTimes[ InvaderDefinitions.OCTOPUS_INVADER			] = _time;
-			_lastSpawnTimes[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = _time;
-		}
-		
 		private function createInvaderCells( definition:Array, gridDimensions:Point ):Vector.<Point>
 		{
 			var positions:Vector.<Point> = new Vector.<Point>();
@@ -142,8 +135,8 @@ package invaders.pools
 			cellSize = GameSettings.invaderSizeXY;
 			lenX = gridDimensions.x;
 			lenY = gridDimensions.y;
-			offX = cellSize / 2 - ( lenX / 2 ) * cellSize;
-			offY = -cellSize / 2 + ( lenY / 2 ) * cellSize;
+			offX = -( lenX - 1 ) * cellSize / 2;
+			offY = (lenY - 1 ) * cellSize / 2;
 			
 			for( j = 0; j < lenY; j++ ) {
 				for( i = 0; i < lenX; i++ ) {

@@ -1,5 +1,6 @@
 package invaders.objects
 {
+	import invaders.utils.MathUtils;
 	import invaders.pools.*;
 	
 	import away3d.entities.*;
@@ -18,12 +19,11 @@ package invaders.objects
 			
 			addChild( cellMesh );
 			
-			var flashCount:uint = 5 + Math.floor( 20 * Math.random() );
-			_startFlashingOnCount = Math.floor( flashCount * 0.75 );
+			var flashCount:uint = MathUtils.rand(15, 25);
 			
-			var flashSpeed:uint = 25 + Math.floor( 50 * Math.random() );
+			_startFlashingOnCount = flashCount * 0.75;
 			
-			_deathTimer = new Timer( flashSpeed, flashCount );
+			_deathTimer = new Timer( MathUtils.rand(30, 50), flashCount );
 			_deathTimer.addEventListener( TimerEvent.TIMER, onDeathTimerTick );
 			_deathTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onDeathTimerComplete );
 		}

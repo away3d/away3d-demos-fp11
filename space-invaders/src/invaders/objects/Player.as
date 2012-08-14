@@ -17,8 +17,8 @@ package invaders.objects
 		
 		public function Player( camera:Camera3D )
 		{
-
 			super();
+			
 			addChild( camera );
 
 			_camera = camera;
@@ -30,10 +30,12 @@ package invaders.objects
 		
 		override public function update():void
 		{
-			var target:GameObject;
+			super.update();
+			
 			var dx:Number, dy:Number, dz:Number;
-
+			
 			// Check for collisions with invaders.
+			var target:GameObject;
 			for each ( target in _targets ) {
 				if( target.enabled ) {
 
@@ -42,14 +44,20 @@ package invaders.objects
 					if( Math.abs( dz ) < Math.abs( target.velocity.z ) ) {
 						dx = target.x - x;
 						dy = target.y - y;
-						if( Math.sqrt( dx * dx + dy * dy ) < GameSettings.impactHitSize )
+						if( Math.sqrt( dx * dx + dy * dy ) < GameSettings.impactHitSize ) {
 							impact( target );
+							target.impact(this);
+						}
 					}
 				}
 
 			}
-
-			super.update();
+		}
+		
+		override public function impact( hitter:GameObject ):void
+		{
+			super.impact( hitter );
+			shake();
 		}
 		
 		private function onShakeTimerTick( event:TimerEvent ):void
@@ -64,12 +72,6 @@ package invaders.objects
 		{
 			_camera.x = 0;
 			_camera.y = 0;
-		}
-		
-		override public function impact( hitter:GameObject ):void
-		{
-			shake();
-			super.impact( hitter );
 		}
 		
 		private function shake():void

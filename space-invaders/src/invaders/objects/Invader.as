@@ -100,7 +100,7 @@ package invaders.objects
 			super.impact( hitter );
 			
 			_life -= GameSettings.blasterStrength;
-			if( _life <= 0 ) {
+			if( _life <= 0 || hitter is Player ) {
 				removeItem();
 				dispatchEvent( new GameObjectEvent( GameObjectEvent.DEAD, this, hitter ) );
 			}
@@ -114,9 +114,9 @@ package invaders.objects
 			x = _spawnX + _panAmplitude * Math.sin( _panXFreq * _updateCounter );
 			y = _spawnY + _panAmplitude * Math.sin( _panYFreq * _updateCounter );
 			
-			if( z < _targetSpawnZ && velocity.z < _targetSpeed ) { // Slow down warping in
+			// Slow down warping in
+			if( z < _targetSpawnZ && velocity.z < _targetSpeed )
 				velocity.z *= 0.75;
-			}
 		}
 		
 		override public function addItem(parent:GameObjectPool):void

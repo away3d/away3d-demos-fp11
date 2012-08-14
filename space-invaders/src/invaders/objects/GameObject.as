@@ -9,18 +9,15 @@ package invaders.objects
 	
 	public class GameObject extends ObjectContainer3D
 	{
-		public var velocity:Vector3D;
+		public var velocity:Vector3D = new Vector3D();
 		
-		public var rotationalVelocity:Vector3D;
+		public var rotationalVelocity:Vector3D = new Vector3D();
 		
 		public var enabled:Boolean;
 		
 		public function GameObject()
 		{
 			super();
-			
-			velocity = new Vector3D();
-			rotationalVelocity = new Vector3D();
 		}
 		
 		public function update():void

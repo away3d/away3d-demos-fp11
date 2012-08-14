@@ -29,7 +29,6 @@ package
 	{
 		private var _view:View3D;
 		private var _lightPicker:StaticLightPicker;
-		private var _playerPosition:Point = new Point();
 		
 		private var _cameraLight:PointLight;
 		private var _cameraLightPicker:StaticLightPicker;
@@ -43,7 +42,8 @@ package
 		
 		private var _playerProjectilePool:ProjectilePool;
 		private var _invaderProjectilePool:ProjectilePool;
-		private var _blastPool:BlastPool;
+		private var _playerBlastPool:BlastPool;
+		private var _invaderBlastPool:BlastPool;
 		private var _cellPool:InvaderCellPool;
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
@@ -89,7 +89,7 @@ package
 		
 		//score variables
 		private var _score:uint;
-		private var _highScore:uint;
+		private var _highScore:uint = 0;
 		private var _lives:uint;
 		private const SO_NAME:String = "away3dSpaceInvadersUserData";
 		
@@ -121,7 +121,9 @@ package
 		private function initGame():void
 		{
 			//initialise the highscore
-			_highScore = loadHighScore();
+			var sharedObject:SharedObject = SharedObject.getLocal( SO_NAME );
+			if( sharedObject )
+				_highScore = sharedObject.data.highScore;
 			
 			//set stage properties
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -143,10 +145,8 @@ package
 			
 			// Stats.
 			if( GameSettings.debugMode ) {
-				var stats:AwayStats = new AwayStats( _view );
-				addChild( stats );
-				var tri:Trident = new Trident();
-				_view.scene.addChild( tri );
+				addChild( new AwayStats( _view ) );
+				_view.scene.addChild( new Trident() );
 			}
 		}
 		
@@ -183,10 +183,10 @@ package
 		 */
 		private function initInvaders():void
 		{
-			// Reusable blasts.
-			_blastPool = new BlastPool( new Mesh( new SphereGeometry(), new ColorMaterial( 0x00FFFF, 0.5 ) ) );
-			_gameObjectPools.push( _blastPool );
-			_view.scene.addChild( _blastPool );
+			// Reusable invader blasts.
+			_invaderBlastPool = new BlastPool( new Mesh( new SphereGeometry(), new ColorMaterial( 0x00FFFF, 0.5 ) ) );
+			_gameObjectPools.push( _invaderBlastPool );
+			_view.scene.addChild( _invaderBlastPool );
 			
 			// Reusable invader projectiles.
 			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
@@ -221,13 +221,18 @@ package
 		 */
 		private function initPlayer():void
 		{
+			// Reusable player blasts.
+			_playerBlastPool = new BlastPool( new Mesh( new SphereGeometry(), new ColorMaterial( 0xFF0000, 0.5 ) ) );
+			_gameObjectPools.push( _playerBlastPool );
+			_view.scene.addChild( _playerBlastPool );
+			
 			// Reusable player projectiles.
 			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.75 );
 			playerProjectileMaterial.lightPicker = _lightPicker;
 			_playerProjectilePool = new ProjectilePool( new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial ) );
 			_gameObjectPools.push( _playerProjectilePool );
 			_view.scene.addChild( _playerProjectilePool );
-
+			
 			// Player.
 			_player = new Player( _view.camera );
 			_player.position = new Vector3D( 0, 0, -1000 );
@@ -238,7 +243,7 @@ package
 			_playerVector.push( _player );
 			_player.visible = false;
 			_view.scene.addChild( _player );
-
+			
 			// Blasters.
 			var playerMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
 			playerMaterial.lightPicker = _cameraLightPicker;
@@ -345,21 +350,24 @@ package
 		// App flow.
 		// -----------------------
 
-		private function stopGame():void {
+		private function stopGame():void
+		{
 			showMouse();
 			_invaderPool.stop();
 			_active = false;
 			_player.visible = false;
 		}
 
-		private function startGame():void {
+		private function startGame():void
+		{
 			hideMouse();
 			
 			_firstAccY = 0;
 			
 			// Reset all game object pools.
-			for( var i:uint; i < _gameObjectPools.length; ++i )
-				_gameObjectPools[ i ].reset();
+			var gameObjectPool:GameObjectPool;
+			for each ( gameObjectPool in _gameObjectPools)
+				gameObjectPool.reset();
 			
 			//reset level data
 			_currentLevel = 0;
@@ -376,10 +384,6 @@ package
 			onResize();
 		}
 		
-		// -----------------------
-		// Pop ups.
-		// -----------------------
-
 		private function hidePopUp():void
 		{
 			_hudContainer.visible = true;
@@ -393,6 +397,26 @@ package
 			_activePopUp.visible = true;
 		}
 		
+		private function showMouse():void
+		{
+			if( _showingMouse )
+				return;
+			
+			Mouse.show();
+			
+			_showingMouse = true;
+		}
+		
+		private function hideMouse():void
+		{
+			if( !_showingMouse )
+				return;
+			
+			Mouse.hide();
+			
+			_showingMouse = false;
+		}
+		
 		private function updateLives(lives:uint):void
 		{
 			_lives = lives;
@@ -402,6 +426,7 @@ package
 				var child:Sprite = _liveIconsContainer.getChildAt( i ) as Sprite;
 				child.visible = _lives >= i + 1;
 			}
+			
 			// Update text.
 			_livesText.text = "LIVES " + _lives + "";
 			_livesText.width = _livesText.textWidth * 1.05;
@@ -414,38 +439,20 @@ package
 			_scoreText.width = int(_scoreText.textWidth * 1.05);
 		}
 
-		private function getTextField():TextField {
+		private function getTextField():TextField
+		{
 			var clip:CustomTextField = new CustomTextField();
 			return clip.tf;
 		}
 
-		private function uintToString( value:uint ):String {
-			if( value == 0 ) return "00000";
-			var str:String = "";
-			var compare:Number = 10000;
-			while( compare > value ) {
-				str += "0";
-				compare /= 10;
-			}
-			str += value;
+		private function uintToString( value:uint ):String
+		{
+			var str:String = value.toString();
+			
+			while( str.length < 5 )
+				str = "0" + str;
+			
 			return str;
-		}
-		
-		public function saveHighScore( score:uint ):void {
-			var sharedObject:SharedObject = SharedObject.getLocal( SO_NAME );
-			sharedObject.data.highScore = score;
-			sharedObject.flush();
-		}
-
-		public function loadHighScore():uint {
-			var sharedObject:SharedObject = SharedObject.getLocal( SO_NAME );
-			if( sharedObject ) {
-				var score:uint = sharedObject.data.highScore;
-				if( score ) {
-					return score;
-				}
-			}
-			return 0;
 		}
 		
 		/**
@@ -482,31 +489,42 @@ package
 					_currentPosition.y = stage.mouseY;
 			}
 
-			var hw:Number = stage.stageWidth / 2;
-			var hh:Number = stage.stageHeight / 2;
-			
-			var dx:Number = GameSettings.mouseMotionFactor * ( _currentPosition.x - hw ) / hw - _playerPosition.x;
-			var dy:Number = -GameSettings.mouseMotionFactor * ( _currentPosition.y - hh ) / hh - _playerPosition.y;
-			_player.x += dx * GameSettings.mouseCameraMotionEase;
-			_player.y += dy * GameSettings.mouseCameraMotionEase;
-			if( GameSettings.panTiltFactor != 0 ) {
-				_player.rotationY = -GameSettings.panTiltFactor * _player.x;
-				_player.rotationX =  GameSettings.panTiltFactor * _player.y;
-			}
-			_playerPosition.x = _player.x;
-			_playerPosition.y = _player.y;
-			
-			// Update all game object pools.
-			if( _active ) {
-				for( var i:uint; i < _gameObjectPools.length; ++i ) {
-					var gameObjectPool:GameObjectPool = _gameObjectPools[ i ];
-					gameObjectPool.update();
-				}
-			}
-
 			// Update player.
 			if( _active ) {
+				var hw:Number = stage.stageWidth / 2;
+				var hh:Number = stage.stageHeight / 2;
+				
+				var dx:Number = GameSettings.mouseMotionFactor * ( _currentPosition.x - hw ) / hw - _player.x;
+				var dy:Number = -GameSettings.mouseMotionFactor * ( _currentPosition.y - hh ) / hh - _player.y;
+				
+				_player.velocity.x = dx * GameSettings.mouseCameraMotionEase;
+				_player.velocity.y = dy * GameSettings.mouseCameraMotionEase;
+				
+				if( GameSettings.panTiltFactor != 0 ) {
+					_player.rotationY = -GameSettings.panTiltFactor * _player.x;
+					_player.rotationX =  GameSettings.panTiltFactor * _player.y;
+				}
+			
 				_player.update();
+			} else {
+				_player.velocity.x = 0;
+				_player.velocity.y = 0;
+			}
+			
+			
+			// Update all game object pools.
+			if( _active || _lives <= 0) {
+				var gameObjectPool:GameObjectPool;
+				for each ( gameObjectPool  in _gameObjectPools)
+					gameObjectPool.update();
+			}
+			
+			//spawn new invaders
+			if( _active ) {
+				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.MOTHERSHIP );
+				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.BUG_INVADER );
+				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.OCTOPUS_INVADER );
+				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.ROUNDED_OCTOPUS_INVADER );
 			}
 			
 			// Restore blasters from recoil.
@@ -521,11 +539,16 @@ package
 			_view.render();
 			
 			if( _active ) {
-				if( mouseY < 50 ) showMouse();
-				else hideMouse();
+				if( mouseY < 50 )
+					showMouse();
+				else
+					hideMouse();
 			}
 		}
 		
+		/**
+		 * stage listener for resize events
+		 */
 		private function onResize(event:Event = null):void
 		{
 			var w:int = stage.stageWidth;
@@ -563,9 +586,9 @@ package
 		private function onInvaderHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.BOING );
-			var blast:Blast = _blastPool.getGameObject() as Blast;
+			var blast:Blast = _invaderBlastPool.getGameObject() as Blast;
+			blast.velocity = event.objectA.velocity;
 			blast.position = event.objectB.position;
-			blast.velocity.z = event.objectA.velocity.z;
 			blast.z -= GameSettings.invaderSizeZ;
 		}
 		
@@ -612,16 +635,15 @@ package
 				_soundLibrary.playSound( SoundLibrary.INVADER_DEATH );
 
 			// Show invader destruction
-			var hitter:Projectile = event.objectB as Projectile;
+			var hitter:GameObject = event.objectB;
 			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
 			var positions:Vector.<Point> = invader.cellPositions;
-			var len:uint = positions.length;
+			var pos:Point;
 			var sc:Number = invader.scaleX;
-			for( var i:uint; i < len; ++i ) {
+			for each ( pos in positions) {
 				var cell:InvaderCell = _cellPool.getGameObject() as InvaderCell;
 				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
 				// Set cell position according to dummy child position.
-				var pos:Point = positions[ i ];
 				cell.position = invader.position;
 				cell.x += sc * pos.x;
 				cell.y += sc * pos.y;
@@ -642,6 +664,9 @@ package
 		private function onPlayerHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.EXPLOSION_SOFT );
+			var blast:Blast = _playerBlastPool.getGameObject() as Blast;
+			blast.velocity = event.objectA.velocity;
+			blast.position = event.objectB.position.clone();
 			
 			updateLives(_lives - 1);
 			
@@ -669,42 +694,17 @@ package
 			
 			if( invader.invaderType != InvaderDefinitions.MOTHERSHIP ) {
 				_soundLibrary.playSound( SoundLibrary.INVADER_FIRE, 0.5 );
-			}
-			else {
+			} else {
 				var offset:Vector3D = new Vector3D();
 				offset.x = MathUtils.rand( -700, 700 );
 				offset.y = MathUtils.rand( -150, 150 );
 				projectile.position = projectile.position.add( offset );
 			}
-			
-			if( offset ) {
-				projectile.position = projectile.position.add( offset );
-			}
 		}
 		
 		// -----------------------------
-		// User interface interaction.
+		// User interface event handlers.
 		// -----------------------------
-		
-		private function showMouse():void
-		{
-			if( _showingMouse )
-				return;
-			
-			Mouse.show();
-			
-			_showingMouse = true;
-		}
-		
-		private function hideMouse():void
-		{
-			if( !_showingMouse )
-				return;
-			
-			Mouse.hide();
-			
-			_showingMouse = false;
-		}
 		
 		private function onResume( event:MouseEvent ):void
 		{
@@ -782,7 +782,6 @@ package
 					break;
 			}
 		}
-		
 		
 		private function onAccelerometerUpdate( event:AccelerometerEvent ):void {
 //			trace( "accelerometer: " + event.accelerationX + ", " + event.accelerationY + ", " + event.accelerationZ );
