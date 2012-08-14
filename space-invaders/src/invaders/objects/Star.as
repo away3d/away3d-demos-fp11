@@ -1,19 +1,21 @@
 package invaders.objects
 {
-
-	import away3d.entities.Entity;
-	import invaders.utils.MathUtils;
-
-
+	import invaders.pools.*;
+	import invaders.utils.*;
+	
+	import away3d.entities.*;
+	
 	public class Star extends GameObject
 	{
-		public function Star( entity:Entity ) {
+		public function Star( entity:Entity )
+		{
 			super();
 			addChild( entity );
 		}
-
-		override public function reset():void {
-			super.reset();
+		
+		override public function addItem(parent:GameObjectPool):void
+		{
+			super.addItem(parent);
 			var angle:Number = MathUtils.rand( 0, 2 * Math.PI );
 			var radius:Number = 2000 + 5000 * Math.random();
 			x = radius * Math.cos( angle );

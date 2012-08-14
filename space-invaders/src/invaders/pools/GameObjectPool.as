@@ -1,72 +1,67 @@
 package invaders.pools
 {
-
-	import away3d.containers.ObjectContainer3D;
-	import away3d.errors.AbstractMethodError;
-	import invaders.objects.GameObject;
+	import invaders.objects.*;
+	
+	import away3d.containers.*;
+	import away3d.errors.*;
 
 
 	public class GameObjectPool extends ObjectContainer3D
 	{
-		protected var _gameObjects:Vector.<GameObject>;
+		protected var _gameObjects:Vector.<GameObject>  = new Vector.<GameObject>();
 
-		public function GameObjectPool() {
+		public function GameObjectPool()
+		{
 			super();
-			_gameObjects = new Vector.<GameObject>();
 		}
 
-		public function reset():void {
-			var len:uint = _gameObjects.length;
-			for( var i:uint; i < len; i++ ) {
-				var gameObject:GameObject = _gameObjects[ i ];
-				gameObject.enabled = false;
-			}
+		public function reset():void
+		{
+			var gameObject:GameObject;
+			for each ( gameObject in _gameObjects)
+				if( gameObject.enabled )
+					gameObject.removeItem();
 		}
 
-		public function update():void {
-			var len:uint = _gameObjects.length;
-			for( var i:uint; i < len; i++ ) {
-				var gameObject:GameObject = _gameObjects[ i ];
+		public function update():void
+		{
+			var gameObject:GameObject;
+			for each ( gameObject in _gameObjects) {
 				if( gameObject.enabled ) {
 					gameObject.update();
+					
 					// Disable objects that have gone outside of the scene range.
-					if( gameObject.z < GameSettings.minZ || gameObject.z > GameSettings.maxZ ) {
-						gameObject.enabled = false;
-					}
-					// Make sure item is added to view.
-					if( !gameObject.parent && gameObject.enabled ) {
-						addChild( gameObject );
-					}
-				}
-				// Remove all disabled objects from view.
-				else if( gameObject.parent ) {
-					removeChild( gameObject );
+					if( gameObject.z < GameSettings.minZ || gameObject.z > GameSettings.maxZ )
+						gameObject.removeItem();
 				}
 			}
 		}
 
-		public function addItem():GameObject {
-			// Adds an unused item or creates a new item if none is found.
+		public function getGameObject():GameObject
+		{
+			// Adds an unused game object or creates a new game object if none is found.
 			var gameObject:GameObject;
-			var len:uint = _gameObjects.length;
-			for( var i:uint; i < len; i++ ) {
-				gameObject = _gameObjects[ i ];
+			for each ( gameObject in _gameObjects ) {
 				if( !gameObject.enabled ) {
-					gameObject.reset();
+					gameObject.addItem(this);
 					return gameObject;
 				}
 			}
+			
 			gameObject = createItem();
-			gameObject.reset();
+			gameObject.addItem(this);
 			_gameObjects.push( gameObject );
+			
 			return gameObject;
 		}
-
-		protected function createItem():GameObject {
+		
+		protected function createItem():GameObject
+		{
 			throw new AbstractMethodError();
 		}
 
-		public function get gameObjects():Vector.<GameObject> {
+		public function get gameObjects():Vector.<GameObject>
+		{
 			return _gameObjects;
 		}
 	}

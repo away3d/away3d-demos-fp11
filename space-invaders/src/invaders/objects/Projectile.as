@@ -1,36 +1,32 @@
 package invaders.objects
 {
-
-	import away3d.entities.Mesh;
-
-
+	import away3d.entities.*;
+	
 	public class Projectile extends GameObject
 	{
 		private var _targets:Vector.<GameObject>;
-
-		public function Projectile( mesh:Mesh ) {
+		
+		public function Projectile( mesh:Mesh )
+		{
 			super();
+			
 			addChild( mesh );
 		}
-
-		override public function update():void {
-
+		
+		override public function update():void
+		{
 			super.update();
-
+			
 			if( z > 30000 ) {
-				enabled = false;
+				removeItem();
 				return;
 			}
-
-			var i:uint, len:uint;
+			
 			var target:GameObject;
 			var dx:Number, dy:Number, dz:Number, distance:Number;
 
 			// Check for collisions.
-			len = _targets.length;
-			for( i = 0; i < len; ++i ) {
-
-				target = _targets[ i ];
+			for each ( target in _targets) {
 				if( target.enabled ) {
 
 					dz = target.z - z;
@@ -41,7 +37,7 @@ package invaders.objects
 						distance = Math.sqrt( dx * dx + dy * dy );
 						if( distance < GameSettings.impactHitSize * target.scaleX ) {
 							target.impact( this );
-							if( GameSettings.projectilesDieOnImpact ) enabled = false;
+							removeItem();
 						}
 					}
 				}
@@ -50,7 +46,8 @@ package invaders.objects
 
 		}
 
-		public function set targets( value:Vector.<GameObject> ):void {
+		public function set targets( value:Vector.<GameObject> ):void
+		{
 			_targets = value;
 		}
 	}

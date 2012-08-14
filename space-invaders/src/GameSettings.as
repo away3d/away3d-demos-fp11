@@ -13,9 +13,6 @@ package
 		// Scene.
 		public static const xyRange:Number = 1000;
 
-		// Projectiles.
-		public static const projectilesDieOnImpact:Boolean = true;
-
 		// Level progress.
 		public static const killsToAdvanceDifficulty:uint = 10;
 		public static const minimumSpawnTime:Number = 0.25;
@@ -44,21 +41,16 @@ package
 		public static const mouseMotionFactor:Number = 3000;
 
 		// Accelerometer control settings.
-		public static const useAccelerometer:Boolean = true;
 		public static const accelerometerCameraMotionEase:Number = 0.05;
 		public static const accelerometerMotionFactorX:Number = 5;
 		public static const accelerometerMotionFactorY:Number = 10;
-
-		// Touch control settings.
-		public static const touchMotionFactor:Number = 2;
-		public static const touchCameraMotionEase:Number = 0.25;
 
 		// Stars.
 		public static const maxStarNum:uint = 250;
 		public static const starSpawnProbability:Number = 0.5;
 
 		// Scene range.
-		public static const minZ:Number = -1000;
+		public static const minZ:Number = -2000;
 		public static const maxZ:Number = 50000;
 	}
 }

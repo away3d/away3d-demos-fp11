@@ -58,7 +58,6 @@ package invaders.pools
 		
 		override protected function createItem():GameObject
 		{
-
 			// Get an invader clone from the factory.
 			var invader:Invader = _invaders[ _currentTypeIndex ];
 			if( !invader ) {
@@ -107,14 +106,16 @@ package invaders.pools
 			var invader:Invader;
 			for each ( invader in _gameObjects) {
 				if( !invader.enabled && invader.invaderType == typeIndex ) {
-					invader.reset();
+					invader.addItem(this);
 					return invader;
 				}
 			}
+			
 			_currentTypeIndex = typeIndex;
 			invader = createItem() as Invader;
-			invader.reset();
+			invader.addItem(this);
 			_gameObjects.push( invader );
+			
 			return invader;
 		}
 		

@@ -20,7 +20,7 @@ package invaders.pools
 			{
 				var len:uint = Math.floor( 1 + 4 * Math.random() );
 				for( var i:uint; i < len; ++i ) {
-					addItem();
+					getGameObject();
 				}
 			}
 			super.update();

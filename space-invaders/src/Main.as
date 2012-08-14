@@ -195,12 +195,10 @@ package
 			_gameObjectPools.push( _invaderProjectilePool );
 			_view.scene.addChild( _invaderProjectilePool );
 			
-			// Same material for all invaders.
+			// Reusable invaders.
 			var invaderMaterial:ColorMaterial = new ColorMaterial( 0x777780, 1 );
 //			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
-			
-			// Create invaders.
 			_invaderPool = new InvaderPool( invaderMaterial );
 			_invaderPool.addEventListener( GameObjectEvent.CREATED, onInvaderCreated );
 			_invaderPool.addEventListener( GameObjectEvent.DEAD, onInvaderDead );
@@ -412,8 +410,7 @@ package
 		private function updateScore(score:uint):void
 		{
 			_score = score;
-			_scoreText.text = "SCORE " + uintToString( _score ) + "   ";
-			_scoreText.text += "HIGH-SCORE " + uintToString( _highScore );
+			_scoreText.text = "SCORE " + uintToString( _score ) + "   HIGH-SCORE " + uintToString( _highScore );
 			_scoreText.width = int(_scoreText.textWidth * 1.05);
 		}
 
@@ -457,39 +454,32 @@ package
 		private function onEnterFrame( event:Event ):void
 		{
 			if( _isFiring && _fireReleased && _active) {
-				_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.5 );
-				var velocity:Vector3D = new Vector3D( 0, 0, 200 );
-				velocity = _player.transform.deltaTransformVector( velocity );
 				_playerFireCounter++;
-				var offset:Vector3D;
+				
+				_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.5 );
+				
+				//kick bacl on the right blaster
 				var blaster:Mesh = _playerFireCounter % 2 ? _rightBlaster : _leftBlaster;
-				if( blaster == _rightBlaster ) {
-					offset = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, 0 );
-				}
-				else {
-					offset = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, 0 );
-				}
 				blaster.z -= 500;
 				
-				var projectile:Projectile = _playerProjectilePool.addItem() as Projectile;
+				//create a new projectile
+				var projectile:Projectile = _playerProjectilePool.getGameObject() as Projectile;
 				projectile.targets = _invaderPool.gameObjects;
 				projectile.transform = _player.transform.clone();
-				projectile.velocity = velocity;
-				if( offset ) {
-					projectile.position = projectile.position.add( offset );
-				}
+				projectile.velocity = _player.transform.deltaTransformVector( new Vector3D( 0, 0, 200 ) );
+				projectile.position = projectile.position.add( new Vector3D( _playerFireCounter % 2 ? GameSettings.blasterOffsetH : -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, -750 ) );
+				
 				_fireReleased = false;
 				_fireReleaseTimer.reset();
 				_fireReleaseTimer.start();
 			}
 
 			if( _mouseIsOnStage ) {
-				if( stage.mouseX > 0 && stage.mouseX < 100000 ) {
+				if( stage.mouseX > 0 && stage.mouseX < 100000 )
 					_currentPosition.x = stage.mouseX;
-				}
-				if( stage.mouseY > 0 && stage.mouseY < 100000 ) {
+				
+				if( stage.mouseY > 0 && stage.mouseY < 100000 )
 					_currentPosition.y = stage.mouseY;
-				}
 			}
 
 			var hw:Number = stage.stageWidth / 2;
@@ -573,7 +563,7 @@ package
 		private function onInvaderHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.BOING );
-			var blast:Blast = _blastPool.addItem() as Blast;
+			var blast:Blast = _blastPool.getGameObject() as Blast;
 			blast.position = event.objectB.position;
 			blast.velocity.z = event.objectA.velocity.z;
 			blast.z -= GameSettings.invaderSizeZ;
@@ -628,7 +618,7 @@ package
 			var len:uint = positions.length;
 			var sc:Number = invader.scaleX;
 			for( var i:uint; i < len; ++i ) {
-				var cell:InvaderCell = _cellPool.addItem() as InvaderCell;
+				var cell:InvaderCell = _cellPool.getGameObject() as InvaderCell;
 				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
 				// Set cell position according to dummy child position.
 				var pos:Point = positions[ i ];
@@ -672,7 +662,7 @@ package
 		private function onInvaderFire( event:GameObjectEvent ):void
 		{
 			var invader:Invader = event.objectA as Invader;
-			var projectile:Projectile = _invaderProjectilePool.addItem() as Projectile;
+			var projectile:Projectile = _invaderProjectilePool.getGameObject() as Projectile;
 			projectile.targets = _playerVector;
 			projectile.transform = invader.transform.clone();
 			projectile.velocity = new Vector3D( 0, 0, -100 );

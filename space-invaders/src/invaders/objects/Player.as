@@ -1,13 +1,12 @@
 package invaders.objects
 {
-
-	import away3d.cameras.Camera3D;
-	import flash.events.TimerEvent;
-	import flash.utils.Timer;
-	import invaders.utils.MathUtils;
-
-
-
+	import invaders.utils.*;
+	
+	import away3d.cameras.*;
+	
+	import flash.events.*;
+	import flash.utils.*;
+	
 	public class Player extends GameObject
 	{
 		private var _camera:Camera3D;
@@ -15,8 +14,9 @@ package invaders.objects
 		private var _shakeT:Number = 0;
 		private var _shakeTimerCount:uint = 10;
 		private var _targets:Vector.<GameObject>;
-
-		public function Player( camera:Camera3D ) {
+		
+		public function Player( camera:Camera3D )
+		{
 
 			super();
 			addChild( camera );
@@ -27,19 +27,14 @@ package invaders.objects
 			_shakeTimer.addEventListener( TimerEvent.TIMER, onShakeTimerTick );
 			_shakeTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onShakeTimerComplete );
 		}
-
-
-		override public function update():void {
-
-			var i:uint, len:uint;
+		
+		override public function update():void
+		{
 			var target:GameObject;
-			var dx:Number, dy:Number, dz:Number, distance:Number;
+			var dx:Number, dy:Number, dz:Number;
 
 			// Check for collisions with invaders.
-			len = _targets.length;
-			for( i = 0; i < len; ++i ) {
-
-				target = _targets[ i ];
+			for each ( target in _targets ) {
 				if( target.enabled ) {
 
 					dz = target.z - z;
@@ -47,10 +42,8 @@ package invaders.objects
 					if( Math.abs( dz ) < Math.abs( target.velocity.z ) ) {
 						dx = target.x - x;
 						dy = target.y - y;
-						distance = Math.sqrt( dx * dx + dy * dy );
-						if( distance < GameSettings.impactHitSize ) {
+						if( Math.sqrt( dx * dx + dy * dy ) < GameSettings.impactHitSize )
 							impact( target );
-						}
 					}
 				}
 
@@ -58,31 +51,36 @@ package invaders.objects
 
 			super.update();
 		}
-
-		private function onShakeTimerTick( event:TimerEvent ):void {
+		
+		private function onShakeTimerTick( event:TimerEvent ):void
+		{
 			var shakeRange:Number = GameSettings.playerHitShake * _shakeT;
 			_camera.x = MathUtils.rand( -shakeRange, shakeRange );
 			_camera.y = MathUtils.rand( -shakeRange, shakeRange );
 			_shakeT = 1 - _shakeTimer.currentCount / _shakeTimerCount;
 		}
-
-		private function onShakeTimerComplete( event:TimerEvent ):void {
+		
+		private function onShakeTimerComplete( event:TimerEvent ):void
+		{
 			_camera.x = 0;
 			_camera.y = 0;
 		}
-
-		override public function impact( hitter:GameObject ):void {
+		
+		override public function impact( hitter:GameObject ):void
+		{
 			shake();
 			super.impact( hitter );
 		}
-
-		private function shake():void {
+		
+		private function shake():void
+		{
 			_shakeT = 1;
 			_shakeTimer.reset();
 			_shakeTimer.start();
 		}
-
-		public function set targets( value:Vector.<GameObject> ):void {
+		
+		public function set targets( value:Vector.<GameObject> ):void
+		{
 			_targets = value;
 		}
 	}
