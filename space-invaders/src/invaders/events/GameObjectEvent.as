@@ -1,28 +1,29 @@
 package invaders.events
 {
-
-	import flash.events.Event;
-	import invaders.objects.GameObject;
-
-
+	import invaders.objects.*;
+	
+	import flash.events.*;
+	
 	public class GameObjectEvent extends Event
 	{
-		public static const DEAD:String = "gameObjectEvent/dead";
-		public static const HIT:String = "gameObjectEvent/hit";
-		public static const FIRE:String = "gameObjectEvent/fire";
-		public static const CREATED:String = "gameObjectEvent/created";
-
-		public var objectA:GameObject;
-		public var objectB:GameObject;
-
-		public function GameObjectEvent( type:String, objectA:GameObject = null, objectB:GameObject = null, bubbles:Boolean = false, cancelable:Boolean = false ) {
+		public static const GAME_OBJECT_DEAD:String = "gameObjectDead";
+		public static const GAME_OBJECT_HIT:String = "gameObjectHit";
+		public static const GAME_OBJECT_FIRE:String = "gameObjectFire";
+		public static const GAME_OBJECT_CREATED:String = "gameObjectCreated";
+		
+		public var gameTarget:GameObject;
+		public var gameTrigger:GameObject;
+		
+		public function GameObjectEvent( type:String, gameTarget:GameObject = null, gameTrigger:GameObject = null, bubbles:Boolean = false, cancelable:Boolean = false )
+		{
 			super( type, bubbles, cancelable );
-			this.objectA = objectA;
-			this.objectB = objectB;
+			this.gameTarget = gameTarget;
+			this.gameTrigger = gameTrigger;
 		}
-
-		override public function clone():Event {
-			return new GameObjectEvent( type, objectA, objectB, bubbles, cancelable );
+		
+		override public function clone():Event
+		{
+			return new GameObjectEvent( type, gameTarget, gameTrigger, bubbles, cancelable );
 		}
 	}
 }

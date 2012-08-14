@@ -4,7 +4,7 @@ package invaders.objects
 	
 	public class Projectile extends GameObject
 	{
-		private var _targets:Vector.<GameObject>;
+		public var targets:Vector.<GameObject>;
 		
 		public function Projectile( mesh:Mesh )
 		{
@@ -26,7 +26,7 @@ package invaders.objects
 			var dx:Number, dy:Number, dz:Number, distance:Number;
 
 			// Check for collisions.
-			for each ( target in _targets) {
+			for each ( target in targets) {
 				if( target.enabled ) {
 
 					dz = target.z - z;
@@ -44,11 +44,6 @@ package invaders.objects
 
 			}
 
-		}
-
-		public function set targets( value:Vector.<GameObject> ):void
-		{
-			_targets = value;
 		}
 	}
 }

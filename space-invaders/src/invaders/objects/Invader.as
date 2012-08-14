@@ -80,7 +80,7 @@ package invaders.objects
 		private function onFireTimerTick( event:TimerEvent ):void
 		{
 			_fireTimer.delay = getFireRate();
-			dispatchEvent( new GameObjectEvent( GameObjectEvent.FIRE, this ) );
+			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_FIRE, this ) );
 		}
 
 		private function onAnimationTimerTick( event:TimerEvent ):void
@@ -102,7 +102,7 @@ package invaders.objects
 			_life -= GameSettings.blasterStrength;
 			if( _life <= 0 || hitter is Player ) {
 				removeItem();
-				dispatchEvent( new GameObjectEvent( GameObjectEvent.DEAD, this, hitter ) );
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DEAD, this, hitter ) );
 			}
 		}
 

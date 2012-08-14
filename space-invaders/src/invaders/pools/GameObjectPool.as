@@ -3,18 +3,22 @@ package invaders.pools
 	import invaders.objects.*;
 	
 	import away3d.containers.*;
-	import away3d.errors.*;
-
-
+	import away3d.entities.*;
+	
 	public class GameObjectPool extends ObjectContainer3D
 	{
+		protected var _mesh : Mesh;
+		protected var _gameObjectClass : Class;
 		protected var _gameObjects:Vector.<GameObject>  = new Vector.<GameObject>();
-
-		public function GameObjectPool()
+		
+		public function GameObjectPool( mesh:Mesh, gameObjectClass:Class)
 		{
 			super();
+			
+			_mesh = mesh;
+			_gameObjectClass = gameObjectClass;
 		}
-
+		
 		public function reset():void
 		{
 			var gameObject:GameObject;
@@ -22,7 +26,7 @@ package invaders.pools
 				if( gameObject.enabled )
 					gameObject.removeItem();
 		}
-
+		
 		public function update():void
 		{
 			var gameObject:GameObject;
@@ -36,7 +40,7 @@ package invaders.pools
 				}
 			}
 		}
-
+		
 		public function getGameObject():GameObject
 		{
 			// Adds an unused game object or creates a new game object if none is found.
@@ -57,9 +61,9 @@ package invaders.pools
 		
 		protected function createItem():GameObject
 		{
-			throw new AbstractMethodError();
+			return new _gameObjectClass( _mesh.clone() as Mesh );
 		}
-
+		
 		public function get gameObjects():Vector.<GameObject>
 		{
 			return _gameObjects;

@@ -25,7 +25,7 @@ package invaders.pools
 		
 		public function InvaderPool( invaderMaterial:MaterialBase )
 		{
-			super();
+			super(null, null);
 			
 			_invaderMaterial = invaderMaterial;
 		}
@@ -80,9 +80,9 @@ package invaders.pools
 			}
 			
 			// Listen for when the invader is dead.
-			invader.addEventListener( GameObjectEvent.DEAD, forwardEvent );
-			invader.addEventListener( GameObjectEvent.FIRE, forwardEvent );
-			invader.addEventListener( GameObjectEvent.HIT, forwardEvent );
+			invader.addEventListener( GameObjectEvent.GAME_OBJECT_DEAD, forwardEvent );
+			invader.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, forwardEvent );
+			invader.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, forwardEvent );
 
 			return invader;
 		}
@@ -97,7 +97,7 @@ package invaders.pools
 			var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
 			if( elapsedSinceSpawn > InvaderDefinitions.getSpawnRateMSForInvaderType( typeIndex ) * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
 				var invader:Invader = addItemOfType( typeIndex ) as Invader;
-				dispatchEvent( new GameObjectEvent( GameObjectEvent.CREATED, invader ) );
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_CREATED, invader ) );
 				_lastSpawnTimes[ typeIndex ] = _time;
 			}
 		}

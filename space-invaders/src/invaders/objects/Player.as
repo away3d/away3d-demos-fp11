@@ -13,7 +13,8 @@ package invaders.objects
 		private var _shakeTimer:Timer;
 		private var _shakeT:Number = 0;
 		private var _shakeTimerCount:uint = 10;
-		private var _targets:Vector.<GameObject>;
+		
+		public var targets:Vector.<GameObject>;
 		
 		public function Player( camera:Camera3D )
 		{
@@ -36,7 +37,7 @@ package invaders.objects
 			
 			// Check for collisions with invaders.
 			var target:GameObject;
-			for each ( target in _targets ) {
+			for each ( target in targets ) {
 				if( target.enabled ) {
 
 					dz = target.z - z;
@@ -54,9 +55,9 @@ package invaders.objects
 			}
 		}
 		
-		override public function impact( hitter:GameObject ):void
+		override public function impact( trigger:GameObject ):void
 		{
-			super.impact( hitter );
+			super.impact( trigger );
 			shake();
 		}
 		
@@ -79,11 +80,6 @@ package invaders.objects
 			_shakeT = 1;
 			_shakeTimer.reset();
 			_shakeTimer.start();
-		}
-		
-		public function set targets( value:Vector.<GameObject> ):void
-		{
-			_targets = value;
 		}
 	}
 }

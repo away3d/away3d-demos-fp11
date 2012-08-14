@@ -33,9 +33,9 @@ package invaders.objects
 			rotationZ += rotationalVelocity.z;
 		}
 		
-		public function impact( hitter:GameObject ):void 
+		public function impact( trigger:GameObject ):void 
 		{
-			dispatchEvent( new GameObjectEvent( GameObjectEvent.HIT, this, hitter ) );
+			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_HIT, this, trigger ) );
 		}
 		
 		public function addItem(parent:GameObjectPool):void

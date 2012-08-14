@@ -1,7 +1,7 @@
 package invaders.objects
 {
-	import invaders.utils.MathUtils;
 	import invaders.pools.*;
+	import invaders.utils.*;
 	
 	import away3d.entities.*;
 	
@@ -43,6 +43,8 @@ package invaders.objects
 		{
 			super.addItem(parent);
 			
+			visible = true;
+			
 			_deathTimer.start();
 		}
 		
@@ -50,8 +52,6 @@ package invaders.objects
 		{
 			super.removeItem();
 			
-			visible = true;
-			enabled = false;
 			_deathTimer.reset();
 		}
 	}
