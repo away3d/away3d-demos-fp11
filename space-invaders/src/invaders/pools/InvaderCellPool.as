@@ -4,7 +4,7 @@ package invaders.pools
 	
 	import invaders.objects.*;
 	
-	class InvaderCellPool extends GameObjectPool
+	public class InvaderCellPool extends GameObjectPool
 	{
 		private var _cellMesh:Mesh;
 

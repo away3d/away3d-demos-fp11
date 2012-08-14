@@ -1,7 +1,5 @@
 package 
 {
-
-
 	public class GameSettings
 	{
 		// -----------------------

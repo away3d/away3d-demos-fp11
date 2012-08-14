@@ -1,4 +1,4 @@
-package invaders.objects.invaders
+package invaders.primitives
 {
 
 	import away3d.core.base.SubGeometry;
@@ -21,7 +21,8 @@ package invaders.objects.invaders
 		private var _rawUvs:Vector.<Number>;
 		private var _currentIndex:uint;
 
-		public function InvaderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Array, gridDimensions:Point ) {
+		public function InvaderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Array, gridDimensions:Point )
+		{
 			super();
 			_cellSizeXY = cellSizeXY;
 			_cellSizeZ = cellSizeZ;
@@ -29,7 +30,8 @@ package invaders.objects.invaders
 			_gridDimensions = gridDimensions;
 		}
 
-		protected override function buildGeometry( target:SubGeometry ):void {
+		protected override function buildGeometry( target:SubGeometry ):void
+		{
 
 			_rawVertices = new Vector.<Number>();
 			_rawNormals = new Vector.<Number>();
@@ -112,7 +114,8 @@ package invaders.objects.invaders
 
 		}
 
-		private function addFace( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D ):void {
+		private function addFace( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D ):void
+		{
 			_rawVertices.push( p0.x, p0.y, p0.z );
 			_rawVertices.push( p1.x, p1.y, p1.z );
 			_rawVertices.push( p2.x, p2.y, p2.z );
@@ -142,7 +145,8 @@ package invaders.objects.invaders
 			with n being the cell at the current coordinates
 			and each x, y, z, w value being 1 if the neighbor is active or 0 otherwise.
 		 */
-		private function areNeighborsActiveAtCoordinates( i:uint, j:uint ):Vector3D {
+		private function areNeighborsActiveAtCoordinates( i:uint, j:uint ):Vector3D
+		{
 			var reply:Vector3D = new Vector3D();
 			reply.x = i == 					   0 ? 0 : isCellActiveAtCoordinates( i - 1, j     );
 			reply.y = i == _gridDimensions.x - 1 ? 0 : isCellActiveAtCoordinates( i + 1, j     );
@@ -151,12 +155,14 @@ package invaders.objects.invaders
 			return reply;
 		}
 
-		private function isCellActiveAtCoordinates( i:uint, j:uint ):uint {
+		private function isCellActiveAtCoordinates( i:uint, j:uint ):uint
+		{
 			var cellIndex:uint = j * _gridDimensions.x + i;
 			return _definitionMatrix[ cellIndex ];
 		}
 
-		override protected function buildUVs( target:SubGeometry ) : void {
+		override protected function buildUVs( target:SubGeometry ) : void
+		{
 			target.updateUVData( _rawUvs );
 		}
 	}

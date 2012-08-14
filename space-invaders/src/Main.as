@@ -5,23 +5,22 @@ package
 	import invaders.pools.*;
 	import invaders.sounds.*;
 	import invaders.utils.*;
-	import invaders.pools.InvaderCellPool;
 	
 	import away3d.containers.*;
+	import away3d.debug.*;
+	import away3d.entities.*;
+	import away3d.lights.*;
 	import away3d.materials.lightpickers.*;
 	import away3d.materials.*;
 	import away3d.primitives.*;
-	import away3d.entities.*;
-	import away3d.debug.*;
-	import away3d.lights.*;
 	
-	import flash.net.*;
-	import flash.text.*;
 	import flash.display.*;
-	import flash.sensors.*;
-	import flash.ui.*;
 	import flash.events.*;
 	import flash.geom.*;
+	import flash.net.*;
+	import flash.sensors.*;
+	import flash.text.*;
+	import flash.ui.*;
 	import flash.utils.*;
 	
 	

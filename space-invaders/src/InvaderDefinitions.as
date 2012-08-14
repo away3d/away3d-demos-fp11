@@ -1,7 +1,6 @@
 package 
 {
-
-	import flash.geom.Point;
+	import flash.geom.*;
 
 	public class InvaderDefinitions
 	{
@@ -33,6 +32,7 @@ package
 				0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0
 			]
 		];
+		
 		private static const _invaderDefinitionDimensions0:Point = new Point( 11, 8 );
 
 		// Invader 2.
@@ -58,6 +58,7 @@ package
 				0, 0, 1, 0, 0, 1, 0, 0
 			]
 		];
+		
 		private static const _invaderDefinitionDimensions1:Point = new Point( 8, 8 );
 
 		// Invader 3.
@@ -83,6 +84,7 @@ package
 				0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0
 			]
 		];
+		
 		private static const _invaderDefinitionDimensions2:Point = new Point( 12, 8 );
 
 		// Invader 4.
@@ -106,6 +108,7 @@ package
 				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0
 			]
 		];
+		
 		private static const _invaderDefinitionDimensions3:Point = new Point( 16, 7 );
 
 		private static const _invadersDefinitions:Array = [
