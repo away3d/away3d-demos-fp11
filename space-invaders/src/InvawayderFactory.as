@@ -15,16 +15,16 @@ package
 	{
 		private static var _instance:InvawayderFactory;
 		
-		public static const BUG_INVADER:uint = 0;
-		public static const OCTOPUS_INVADER:uint = 1;
-		public static const ROUNDED_OCTOPUS_INVADER:uint = 2;
-		public static const MOTHERSHIP:uint = 3;
+		public static const BUG_INVAWAYDER:uint = 0;
+		public static const OCTOPUS_INVAWAYDER:uint = 1;
+		public static const ROUNDED_OCTOPUS_INVAWAYDER:uint = 2;
+		public static const MOTHERSHIP_INVAWAYDER:uint = 3;
 		
-		private var _invaders:Vector.<InvawayderData> = Vector.<InvawayderData>([
-			new BugInvawayderData(BUG_INVADER),
-			new OctopusInvawayderData(OCTOPUS_INVADER),
-			new RoundedOctopusInvawayderData(ROUNDED_OCTOPUS_INVADER),
-			new MothershipInvawayderData(MOTHERSHIP)
+		private var _invawayders:Vector.<InvawayderData> = Vector.<InvawayderData>([
+			new BugInvawayderData(BUG_INVAWAYDER),
+			new OctopusInvawayderData(OCTOPUS_INVAWAYDER),
+			new RoundedOctopusInvawayderData(ROUNDED_OCTOPUS_INVAWAYDER),
+			new MothershipInvawayderData(MOTHERSHIP_INVAWAYDER)
 		]);
 		
 		public static function getInstance():InvawayderFactory
@@ -37,44 +37,44 @@ package
 			return _instance;
 		}
 		
-		public function get invaders():Vector.<InvawayderData>
+		public function get invawayders():Vector.<InvawayderData>
 		{
-			return _invaders;
+			return _invawayders;
 		}
 		
-		public function getInvader( id:uint, material:MaterialBase ):Invawayder
+		public function getInvawayder( id:uint, material:MaterialBase ):Invawayder
 		{
-			var invaderData:InvawayderData = _invaders[id];
+			var invawayderData:InvawayderData = _invawayders[id];
 			
-			if (invaderData.invader)
-				return invaderData.invader.cloneGameObject() as Invawayder;
+			if (invawayderData.invawayder)
+				return invawayderData.invawayder.cloneGameObject() as Invawayder;
 			
-			var definition:Vector.<Vector.<uint>> = invaderData.cellDefinition;
-			var dimensions:Point = invaderData.dimensions;
+			var definition:Vector.<Vector.<uint>> = invawayderData.cellDefinition;
+			var dimensions:Point = invawayderData.dimensions;
 			
 			var definitionFrame0:Vector.<uint> = definition[ 0 ];
 			var definitionFrame1:Vector.<uint> = definition[ 1 ];
 			
-			var invaderGeometry0:Geometry = new InvawayderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame0, dimensions );
-			var invaderGeometry1:Geometry = new InvawayderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame1, dimensions );
+			var invawayderGeometry0:Geometry = new InvawayderGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ, definitionFrame0, dimensions );
+			var invawayderGeometry1:Geometry = new InvawayderGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ, definitionFrame1, dimensions );
 			
-			var meshFrame0:Mesh = new Mesh( invaderGeometry0, material );
-			var meshFrame1:Mesh = new Mesh( invaderGeometry1, material );
+			var meshFrame0:Mesh = new Mesh( invawayderGeometry0, material );
+			var meshFrame1:Mesh = new Mesh( invawayderGeometry1, material );
 			
-			invaderData.cellsFrame0 = createInvaderCells( definition[ 0 ], dimensions );
-			invaderData.cellsFrame1 = createInvaderCells( definition[ 1 ], dimensions );
+			invawayderData.cellsFrame0 = createInvawayderCells( definition[ 0 ], dimensions );
+			invawayderData.cellsFrame1 = createInvawayderCells( definition[ 1 ], dimensions );
 			
-			return invaderData.invader = new Invawayder( invaderData, meshFrame0, meshFrame1 );
+			return invawayderData.invawayder = new Invawayder( invawayderData, meshFrame0, meshFrame1 );
 		}
 		
 		public function resetLastSpawnTimes(time:uint):void
 		{
-			var invaderData:InvawayderData;
-			for each (invaderData in _invaders)
-				invaderData.lastSpawnTime = time;
+			var invawayderData:InvawayderData;
+			for each (invawayderData in _invawayders)
+				invawayderData.lastSpawnTime = time;
 		}
 		
-		private function createInvaderCells( definition:Vector.<uint>, gridDimensions:Point ):Vector.<Point>
+		private function createInvawayderCells( definition:Vector.<uint>, gridDimensions:Point ):Vector.<Point>
 		{
 			var positions:Vector.<Point> = new Vector.<Point>();
 			
@@ -85,7 +85,7 @@ package
 			var posX:Number, posY:Number;
 			var offX:Number, offY:Number;
 			
-			cellSize = GameSettings.invaderSizeXY;
+			cellSize = GameSettings.invawayderSizeXY;
 			lenX = gridDimensions.x;
 			lenY = gridDimensions.y;
 			offX = -( lenX - 1 ) * cellSize / 2;

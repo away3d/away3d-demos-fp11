@@ -18,11 +18,11 @@ package
 		public static const minimumSpawnTime:Number = 0.25;
 		public static const spawnTimeDecreasePerLevel:Number = 0.1;
 
-		// Invaders.
-		public static const invaderSizeXY:Number = 50;
-		public static const invaderSizeZ:Number = 200;
+		// Invawayders.
+		public static const invawayderSizeXY:Number = 50;
+		public static const invawayderSizeZ:Number = 200;
 		public static const deathExplosionIntensity:Number = 3;
-		public static const invaderAnimationTimeMS:uint = 250;
+		public static const invawayderAnimationTimeMS:uint = 250;
 		public static const impactHitSize:Number = 300;
 
 		// Player.

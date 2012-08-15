@@ -40,15 +40,15 @@ package
 		
 		private var _time:uint;
 		private var _spawnTimeFactor:Number = 1;
-		private var _invaderFactory:InvawayderFactory;
-		private var _invaderMaterial:ColorMaterial;
+		private var _invawayderFactory:InvawayderFactory;
+		private var _invawayderMaterial:ColorMaterial;
 		private var _soundLibrary:SoundLibrary;
 		
-		private var _invaderPool:InvawayderPool;
+		private var _invawayderPool:InvawayderPool;
 		private var _playerProjectilePool:GameObjectPool;
-		private var _invaderProjectilePool:GameObjectPool;
+		private var _invawayderProjectilePool:GameObjectPool;
 		private var _playerBlastPool:GameObjectPool;
-		private var _invaderBlastPool:GameObjectPool;
+		private var _invawayderBlastPool:GameObjectPool;
 		private var _cellPool:GameObjectPool;
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
@@ -90,7 +90,7 @@ package
 		private var _score:uint;
 		private var _highScore:uint = 0;
 		private var _lives:uint;
-		private const SO_NAME:String = "away3dSpaceInvadersUserData";
+		private const SO_NAME:String = "invawayderUserData";
 		
 		/**
 		 * Constructor
@@ -108,7 +108,7 @@ package
 			initGame();
 			initEngine();
 			initScene();
-			initInvaders();
+			initInvawayders();
 			initPlayer();
 			initUI();
 			initListeners();
@@ -131,8 +131,8 @@ package
 			//initialise sound manager
 			_soundLibrary = SoundLibrary.getInstance();
 			
-			//initialise invader manager
-			_invaderFactory = InvawayderFactory.getInstance();
+			//initialise invawayder manager
+			_invawayderFactory = InvawayderFactory.getInstance();
 		}
 		
 		/**
@@ -181,35 +181,35 @@ package
 		}
 		
 		/**
-		 * Initialise the invader objects
+		 * Initialise the invawayder objects
 		 */
-		private function initInvaders():void
+		private function initInvawayders():void
 		{
-			// Reusable invader blasts.
-			_invaderBlastPool = new GameObjectPool( new Blast(new Mesh( new SphereGeometry(), new ColorMaterial( 0x00FFFF, 0.5 ) )) );
-			_gameObjectPools.push( _invaderBlastPool );
-			_view.scene.addChild( _invaderBlastPool );
+			// Reusable invawayder blasts.
+			_invawayderBlastPool = new GameObjectPool( new Blast(new Mesh( new SphereGeometry(), new ColorMaterial( 0x00FFFF, 0.5 ) )) );
+			_gameObjectPools.push( _invawayderBlastPool );
+			_view.scene.addChild( _invawayderBlastPool );
 			
-			// Reusable invader projectiles.
-			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
-			invaderProjectileMaterial.lightPicker = _lightPicker;
-			_invaderProjectilePool = new GameObjectPool(  new Projectile(new Mesh( new CubeGeometry( 25, 25, 200, 1, 1, 4 ), invaderProjectileMaterial )) );
-			_gameObjectPools.push( _invaderProjectilePool );
-			_view.scene.addChild( _invaderProjectilePool );
+			// Reusable invawayder projectiles.
+			var invawayderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+			invawayderProjectileMaterial.lightPicker = _lightPicker;
+			_invawayderProjectilePool = new GameObjectPool(  new Projectile(new Mesh( new CubeGeometry( 25, 25, 200, 1, 1, 4 ), invawayderProjectileMaterial )) );
+			_gameObjectPools.push( _invawayderProjectilePool );
+			_view.scene.addChild( _invawayderProjectilePool );
 			
-			// Reusable invaders.
-			_invaderMaterial = new ColorMaterial( 0x777780, 1 );
-//			_invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
-			_invaderMaterial.lightPicker = _lightPicker;
-			_invaderPool = new InvawayderPool();
-			_gameObjectPools.push( _invaderPool );
-			_view.scene.addChild( _invaderPool );
+			// Reusable invawayders.
+			_invawayderMaterial = new ColorMaterial( 0x777780, 1 );
+//			_invawayderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
+			_invawayderMaterial.lightPicker = _lightPicker;
+			_invawayderPool = new InvawayderPool();
+			_gameObjectPools.push( _invawayderPool );
+			_view.scene.addChild( _invawayderPool );
 
-			// Create cells ( used for invader death explosions ).
+			// Create cells ( used for invawayder death explosions ).
 //			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
 //			cellMaterial.lightPicker = _lightPicker;
 //			cellMaterial.blendMode = BlendMode.ADD;
-			_cellPool = new GameObjectPool( new InvawayderCell(new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), _invaderMaterial )) );
+			_cellPool = new GameObjectPool( new InvawayderCell(new Mesh( new CubeGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ ), _invawayderMaterial )) );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
 		}
@@ -239,7 +239,7 @@ package
 			_player.enabled = true;
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onPlayerHit );
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onPlayerFire);
-			_player.targets = _invaderPool.gameObjects;
+			_player.targets = _invawayderPool.gameObjects;
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
 			_player.visible = false;
@@ -271,7 +271,7 @@ package
 			_liveIconsContainer = new Sprite();
 			_hudContainer.addChild( _liveIconsContainer );
 			for( var i:uint; i < GameSettings.playerLives; i++ ) {
-				var live:Sprite = new InvaderLive();
+				var live:Sprite = new InvawayderLive();
 				live.x = i * ( live.width + 5 );
 				_liveIconsContainer.addChild( live );
 			}
@@ -340,7 +340,7 @@ package
 		private function stopGame():void
 		{
 			showMouse();
-			_invaderPool.stop();
+			_invawayderPool.stop();
 			_active = false;
 			_player.visible = false;
 		}
@@ -372,38 +372,38 @@ package
 		private function resumeGame():void
 		{
 			_firstAccY = 0;
-			_invaderPool.resume();
+			_invawayderPool.resume();
 			_active = true;
 			_player.visible = true;
 			
 			//reset spawn times
-			_invaderFactory.resetLastSpawnTimes(_time = getTimer());
+			_invawayderFactory.resetLastSpawnTimes(_time = getTimer());
 		}
 		
-		public function spawnInvaders():void
+		public function spawnInvawayders():void
 		{
-			var invaderData:InvawayderData;
-			for each (invaderData in _invaderFactory.invaders) {
-				var elapsedSinceSpawn:int = _time - invaderData.lastSpawnTime;
-				if( elapsedSinceSpawn > invaderData.spawnRate * _spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
+			var invawayderData:InvawayderData;
+			for each (invawayderData in _invawayderFactory.invawayders) {
+				var elapsedSinceSpawn:int = _time - invawayderData.lastSpawnTime;
+				if( elapsedSinceSpawn > invawayderData.spawnRate * _spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
 					
-					//grab an unused invader from the invader pool
-					var invader:Invawayder = _invaderPool.getInvaderOfType( invaderData.id );
+					//grab an unused invawayder from the invawayder pool
+					var invawayder:Invawayder = _invawayderPool.getInvawayderOfType( invawayderData.id );
 					
-					//create a new invader if none are available and add it to the pool
-					if (!invader) {
-						invader = _invaderFactory.getInvader(invaderData.id, _invaderMaterial);
+					//create a new invawayder if none are available and add it to the pool
+					if (!invawayder) {
+						invawayder = _invawayderFactory.getInvawayder(invawayderData.id, _invawayderMaterial);
 						
-						// handle invader events
-						invader.addEventListener( GameObjectEvent.GAME_OBJECT_DEAD, onInvaderDead );
-						invader.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onInvaderFire );
-						invader.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onInvaderHit );
-						invader.addEventListener( GameObjectEvent.GAME_OBJECT_ADDED, onInvaderAdded );
+						// handle invawayder events
+						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_DEAD, onInvawayderDead );
+						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onInvawayderFire );
+						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onInvawayderHit );
+						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_ADDED, onInvawayderAdded );
 						
-						invader.addItem(_invaderPool);
-						_invaderPool.gameObjects.push( invader );
+						invawayder.addItem(_invawayderPool);
+						_invawayderPool.gameObjects.push( invawayder );
 					}
-					invaderData.lastSpawnTime = _time;
+					invawayderData.lastSpawnTime = _time;
 				}
 			}
 		}
@@ -526,9 +526,9 @@ package
 					gameObjectPool.update();
 			}
 			
-			//spawn new invaders
+			//spawn new invawayders
 			if( _active )
-				spawnInvaders();
+				spawnInvawayders();
 
 			// Camera light follows player's position.
 			_cameraLight.transform = _player.transform;
@@ -577,32 +577,32 @@ package
 		// Game event handlers.
 		// -----------------------------
 		
-		private function onInvaderHit( event:GameObjectEvent ):void
+		private function onInvawayderHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.BOING );
-			var blast:Blast = _invaderBlastPool.getGameObject() as Blast;
+			var blast:Blast = _invawayderBlastPool.getGameObject() as Blast;
 			blast.velocity = event.gameTarget.velocity;
 			blast.position = event.gameTrigger.position;
-			blast.z -= GameSettings.invaderSizeZ;
+			blast.z -= GameSettings.invawayderSizeZ;
 		}
 		
-		private function onInvaderAdded( event:GameObjectEvent ):void
+		private function onInvawayderAdded( event:GameObjectEvent ):void
 		{
-			var invader:Invawayder = event.gameTarget as Invawayder;
+			var invawayder:Invawayder = event.gameTarget as Invawayder;
 			
-			if( invader.invaderData.id == InvawayderFactory.MOTHERSHIP )
+			if( invawayder.invawayderData.id == InvawayderFactory.MOTHERSHIP_INVAWAYDER )
 				_soundLibrary.playSound( SoundLibrary.MOTHERSHIP );
 		}
 		
-		private function onInvaderDead( event:GameObjectEvent ):void
+		private function onInvawayderDead( event:GameObjectEvent ):void
 		{
-			var invader:Invawayder = event.gameTarget as Invawayder;
+			var invawayder:Invawayder = event.gameTarget as Invawayder;
 			
 			// Check level update and update UI.
 			_currentLevelKills++;
 			_totalKills++;
 			
-			updateScore(_score + invader.invaderData.score);
+			updateScore(_score + invawayder.invawayderData.score);
 			
 			// Update highscore
 			if( _score > _highScore ) {
@@ -623,23 +623,23 @@ package
 			}
 
 			// Play sound
-			if( invader.invaderData.id == InvawayderFactory.MOTHERSHIP )
+			if( invawayder.invawayderData.id == InvawayderFactory.MOTHERSHIP_INVAWAYDER )
 				_soundLibrary.playSound( SoundLibrary.EXPLOSION_STRONG );
 			else
-				_soundLibrary.playSound( SoundLibrary.INVADER_DEATH );
+				_soundLibrary.playSound( SoundLibrary.INVAWAYDER_DEATH );
 
-			// Show invader destruction
+			// Show invawayder destruction
 			var trigger:GameObject = event.gameTrigger;
 			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
-			var positions:Vector.<Point> = invader.cellPositions;
+			var positions:Vector.<Point> = invawayder.cellPositions;
 			var pos:Point;
-			var sc:Number = invader.scaleX;
+			var sc:Number = invawayder.scaleX;
 			for each ( pos in positions) {
 				var cell:InvawayderCell = _cellPool.getGameObject() as InvawayderCell;
 				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
 				
 				// Set cell position according to dummy child position.
-				cell.position = invader.position;
+				cell.position = invawayder.position;
 				cell.x += sc * pos.x;
 				cell.y += sc * pos.y;
 				
@@ -653,7 +653,7 @@ package
 				cell.rotationalVelocity.z = MathUtils.rand( -rotSpeed, rotSpeed );
 				cell.velocity.x = intensity * MathUtils.rand( 100, 500 ) * dx / distanceSq;
 				cell.velocity.y = intensity * MathUtils.rand( 100, 500 ) * dy / distanceSq;
-				cell.velocity.z = intensity * 50 * trigger.velocity.z / distanceSq + invader.velocity.z;
+				cell.velocity.z = intensity * 50 * trigger.velocity.z / distanceSq + invawayder.velocity.z;
 			}
 		}
 		
@@ -689,22 +689,22 @@ package
 			
 			//create a new projectile
 			var projectile:Projectile = _playerProjectilePool.getGameObject() as Projectile;
-			projectile.targets = _invaderPool.gameObjects;
+			projectile.targets = _invawayderPool.gameObjects;
 			projectile.transform = _player.transform.clone();
 			projectile.velocity = _player.transform.deltaTransformVector( new Vector3D( 0, 0, 200 ) );
 			projectile.position = projectile.position.add( new Vector3D( _player.playerFireCounter % 2 ? GameSettings.blasterOffsetH : -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, -750 ) );
 		}
 		
-		private function onInvaderFire( event:GameObjectEvent ):void
+		private function onInvawayderFire( event:GameObjectEvent ):void
 		{
-			var invader:Invawayder = event.gameTarget as Invawayder;
-			var projectile:Projectile = _invaderProjectilePool.getGameObject() as Projectile;
+			var invawayder:Invawayder = event.gameTarget as Invawayder;
+			var projectile:Projectile = _invawayderProjectilePool.getGameObject() as Projectile;
 			projectile.targets = _playerVector;
-			projectile.transform = invader.transform.clone();
+			projectile.transform = invawayder.transform.clone();
 			projectile.velocity = new Vector3D( 0, 0, -100 );
 			
-			if( invader.invaderData.id != InvawayderFactory.MOTHERSHIP ) {
-				_soundLibrary.playSound( SoundLibrary.INVADER_FIRE, 0.5 );
+			if( invawayder.invawayderData.id != InvawayderFactory.MOTHERSHIP_INVAWAYDER ) {
+				_soundLibrary.playSound( SoundLibrary.INVAWAYDER_FIRE, 0.5 );
 			} else {
 				var offset:Vector3D = new Vector3D();
 				offset.x = MathUtils.rand( -700, 700 );

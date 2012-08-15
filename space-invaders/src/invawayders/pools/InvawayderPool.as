@@ -11,28 +11,28 @@ package invawayders.pools
 		
 		public function stop():void
 		{
-			var invader:Invawayder;
-			for each ( invader in _gameObjects)
-				if( invader.enabled )
-					invader.stopTimers();
+			var invawayder:Invawayder;
+			for each ( invawayder in _gameObjects)
+				if( invawayder.enabled )
+					invawayder.stopTimers();
 		}
 		
 		public function resume():void
 		{
-			var invader:Invawayder;
-			for each ( invader in _gameObjects)
-				if( invader.enabled )
-					invader.resumeTimers();
+			var invawayder:Invawayder;
+			for each ( invawayder in _gameObjects)
+				if( invawayder.enabled )
+					invawayder.resumeTimers();
 		}
 		
-		public function getInvaderOfType( id:uint ):Invawayder
+		public function getInvawayderOfType( id:uint ):Invawayder
 		{
 			// Adds an unused item or creates a new item if none are found.
-			var invader:Invawayder;
-			for each ( invader in _gameObjects) {
-				if( !invader.enabled && invader.invaderData.id == id ) {
-					invader.addItem(this);
-					return invader;
+			var invawayder:Invawayder;
+			for each ( invawayder in _gameObjects) {
+				if( !invawayder.enabled && invawayder.invawayderData.id == id ) {
+					invawayder.addItem(this);
+					return invawayder;
 				}
 			}
 			

@@ -62,7 +62,7 @@ package invawayders.objects
 			
 			var dx:Number, dy:Number, dz:Number;
 			
-			// Check for collisions with invaders.
+			// Check for collisions with invawayders.
 			var target:GameObject;
 			for each ( target in targets ) {
 				if( target.enabled ) {

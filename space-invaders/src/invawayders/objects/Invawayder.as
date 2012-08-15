@@ -13,7 +13,7 @@ package invawayders.objects
 	
 	public class Invawayder extends GameObject
 	{
-		private var _invaderData:InvawayderData;
+		private var _invawayderData:InvawayderData;
 		private var _meshFrame0:Mesh;
 		private var _meshFrame1:Mesh;
 		private var _fireTimer:Timer;
@@ -29,23 +29,23 @@ package invawayders.objects
 		private var _spawnY:Number = 0;
 		private var _targetSpeed:Number = 0;
 		
-		public function get invaderData():InvawayderData
+		public function get invawayderData():InvawayderData
 		{
-			return _invaderData;
+			return _invawayderData;
 		}
 		
-		public function Invawayder( invaderData:InvawayderData, meshFrame0:Mesh, meshFrame1:Mesh )
+		public function Invawayder( invawayderData:InvawayderData, meshFrame0:Mesh, meshFrame1:Mesh )
 		{
 			super();
 			
-			_invaderData = invaderData;
+			_invawayderData = invawayderData;
 			_meshFrame0 = meshFrame0;
 			_meshFrame1 = meshFrame1;
 			
 			addChild( _meshFrame0 );
 			addChild( _meshFrame1 );
 			
-			_animationTimer = new Timer( MathUtils.rand( GameSettings.invaderAnimationTimeMS, GameSettings.invaderAnimationTimeMS * 1.5 ) );
+			_animationTimer = new Timer( MathUtils.rand( GameSettings.invawayderAnimationTimeMS, GameSettings.invawayderAnimationTimeMS * 1.5 ) );
 			_animationTimer.addEventListener( TimerEvent.TIMER, onAnimationTimerTick );
 			
 			_fireTimer = new Timer( getFireRate() );
@@ -56,13 +56,13 @@ package invawayders.objects
 
 		private function getFireRate():uint
 		{
-			var rate:uint = _invaderData.fireRate;
+			var rate:uint = _invawayderData.fireRate;
 			return Math.floor( MathUtils.rand( rate, rate * 1.5 ) );
 		}
 
 		override public function cloneGameObject():GameObject
 		{
-			return new Invawayder( _invaderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
+			return new Invawayder( _invawayderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
 		}
 
 		public function stopTimers():void
@@ -127,18 +127,18 @@ package invawayders.objects
 			_fireTimer.start();
 			
 			_updateCounter = 0;
-			_panAmplitude = _invaderData.panAmplitude;
+			_panAmplitude = _invawayderData.panAmplitude;
 			_panXFreq = 0.1 * Math.random();
 			_panYFreq = 0.1 * Math.random();
 			_spawnX = x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
 			_spawnY = y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
-			var speed:Number = _invaderData.speed;
+			var speed:Number = _invawayderData.speed;
 			_targetSpeed = -MathUtils.rand( speed * 0.75, speed * 1.25 );
 			z = GameSettings.maxZ; // Warp in...
 			velocity.z = MathUtils.rand( -2500, -1500 );
 			_targetSpawnZ = MathUtils.rand( 15000, 20000 );
-			scaleX = scaleY = scaleZ = _invaderData.scale;
-			_life = _invaderData.life;
+			scaleX = scaleY = scaleZ = _invawayderData.scale;
+			_life = _invawayderData.life;
 		}
 		
 		override public function removeItem():void
@@ -151,7 +151,7 @@ package invawayders.objects
 		
 		public function get cellPositions():Vector.<Point>
 		{
-			return _currentDefinitionIndex == 0 ? _invaderData.cellsFrame0 : _invaderData.cellsFrame1;
+			return _currentDefinitionIndex == 0 ? _invawayderData.cellsFrame0 : _invawayderData.cellsFrame1;
 		}
 	}
 }

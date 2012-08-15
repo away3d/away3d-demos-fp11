@@ -8,9 +8,9 @@ package invawayders.sounds
 		public static const PLAYER_FIRE:String = "sounds/player/fire";
 		public static const EXPLOSION_SOFT:String = "sounds/explosion/soft";
 		public static const EXPLOSION_STRONG:String = "sounds/explosion/strong";
-		public static const INVADER_DEATH:String = "sounds/invader/death";
+		public static const INVAWAYDER_DEATH:String = "sounds/invawayder/death";
 		public static const MOTHERSHIP:String = "sounds/mothership";
-		public static const INVADER_FIRE:String = "sounds/boing";
+		public static const INVAWAYDER_FIRE:String = "sounds/boing";
 		public static const THUCK:String = "sounds/thuck";
 		public static const UFO:String = "sound/thuck1";
 		public static const BOING:String = "sound/boing";
@@ -31,11 +31,11 @@ package invawayders.sounds
 			
 			_instance = new SoundLibrary();
 			_instance.registerSound( PLAYER_FIRE, new SoundShoot() );
-			_instance.registerSound( INVADER_DEATH, new SoundInvaderDeath() );
+			_instance.registerSound( INVAWAYDER_DEATH, new SoundInvawayderDeath() );
 			_instance.registerSound( EXPLOSION_SOFT, new SoundExplosionSoft() );
 			_instance.registerSound( EXPLOSION_STRONG, new SoundExplosionStrong() );
 			_instance.registerSound( MOTHERSHIP, new SoundMothership() );
-			_instance.registerSound( INVADER_FIRE, new SoundPlayerFire() );
+			_instance.registerSound( INVAWAYDER_FIRE, new SoundPlayerFire() );
 			_instance.registerSound( THUCK, new SoundThuck() );
 			_instance.registerSound( UFO, new SoundUfo() );
 			_instance.registerSound( BOING, new SoundBoing() );

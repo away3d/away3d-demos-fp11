@@ -31,7 +31,7 @@ package invawayders.data
 		
 		public var lastSpawnTime:uint;
 		
-		public var invader:Invawayder;
+		public var invawayder:Invawayder;
 		
 		public var cellsFrame0:Vector.<Point>;
 		
