@@ -1,23 +1,18 @@
 package invaders.pools
 {
+	import invaders.data.*;
 	import invaders.events.*;
 	import invaders.objects.*;
-	import invaders.primitives.*;
 	import invaders.utils.*;
 	
-	import away3d.core.base.*;
-	import away3d.entities.*;
 	import away3d.materials.*;
 	
 	import flash.events.*;
-	import flash.geom.*;
 	import flash.utils.*;
 	
 	public class InvaderPool extends GameObjectPool
 	{
 		private var _time:uint;
-		private var _invaders:Vector.<Invader> = new Vector.<Invader>(4);
-		private var _lastSpawnTimes:Vector.<uint> = new Vector.<uint>(4);
 		private var _invaderMaterial:MaterialBase;
 		private var _currentTypeIndex:uint;
 		
@@ -25,7 +20,7 @@ package invaders.pools
 		
 		public function InvaderPool( invaderMaterial:MaterialBase )
 		{
-			super(null, null);
+			super(null);
 			
 			_invaderMaterial = invaderMaterial;
 		}
@@ -41,50 +36,19 @@ package invaders.pools
 		{
 			var invader:Invader;
 			for each ( invader in _gameObjects)
-				invader.stopTimers();
+				if( invader.enabled )
+					invader.stopTimers();
 		}
 		
 		public function resume():void
 		{
 			var invader:Invader;
 			for each ( invader in _gameObjects)
-				invader.resumeTimers();
+				if( invader.enabled )
+					invader.resumeTimers();
 			
 			//reset spawn times
-			_time = getTimer();
-			_lastSpawnTimes[ InvaderDefinitions.MOTHERSHIP 				] = _time;
-			_lastSpawnTimes[ InvaderDefinitions.BUG_INVADER 			] = _time;
-			_lastSpawnTimes[ InvaderDefinitions.OCTOPUS_INVADER			] = _time;
-			_lastSpawnTimes[ InvaderDefinitions.ROUNDED_OCTOPUS_INVADER ] = _time;
-		}
-		
-		override protected function createItem():GameObject
-		{
-			// Get an invader clone from the factory.
-			var invader:Invader = _invaders[ _currentTypeIndex ];
-			if( !invader ) {
-				var definition:Array = InvaderDefinitions.getDefinitionForInvaderType( _currentTypeIndex );
-				var dimensions:Point = InvaderDefinitions.getDefinitionDimensionsForInvaderType( _currentTypeIndex );
-				var definitionFrame0:Array = definition[ 0 ];
-				var definitionFrame1:Array = definition[ 1 ];
-				var invaderGeometry0:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame0, dimensions );
-				var invaderGeometry1:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame1, dimensions );
-				var meshFrame0:Mesh = new Mesh( invaderGeometry0, _invaderMaterial );
-				var meshFrame1:Mesh = new Mesh( invaderGeometry1, _invaderMaterial );
-				var cellsFrame0:Vector.<Point> = createInvaderCells( definition[ 0 ], dimensions );
-				var cellsFrame1:Vector.<Point> = createInvaderCells( definition[ 1 ], dimensions );
-				invader = new Invader( _currentTypeIndex, meshFrame0, meshFrame1, cellsFrame0, cellsFrame1 );
-			}
-			else {
-				invader = invader.getInvaderClone();
-			}
-			
-			// Listen for when the invader is dead.
-			invader.addEventListener( GameObjectEvent.GAME_OBJECT_DEAD, forwardEvent );
-			invader.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, forwardEvent );
-			invader.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, forwardEvent );
-
-			return invader;
+			InvaderFactory.getInstance().resetLastSpawnTimes(_time = getTimer());
 		}
 		
 		private function forwardEvent( event:Event ):void
@@ -92,64 +56,40 @@ package invaders.pools
 			dispatchEvent( event );
 		}
 		
-		public function evaluateSpawnInvader( typeIndex:uint ):void
+		public function evaluateSpawnInvader( id:uint ):void
 		{
-			var elapsedSinceSpawn:int = _time - _lastSpawnTimes[ typeIndex ];
-			if( elapsedSinceSpawn > InvaderDefinitions.getSpawnRateMSForInvaderType( typeIndex ) * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
-				var invader:Invader = addItemOfType( typeIndex ) as Invader;
-				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_CREATED, invader ) );
-				_lastSpawnTimes[ typeIndex ] = _time;
+			var _invaderData:InvaderData = InvaderFactory.getInstance().getInvaderData(id);
+			var elapsedSinceSpawn:int = _time - _invaderData.lastSpawnTime;
+			if( elapsedSinceSpawn > _invaderData.spawnRate * spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
+				var invader:Invader = getInvaderOfType( id );
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_ADDED, invader ) );
+				_invaderData.lastSpawnTime = _time;
 			}
 		}
 		
-		private function addItemOfType( typeIndex:uint ):GameObject
+		private function getInvaderOfType( id:uint ):Invader
 		{
 			// Adds an unused item or creates a new item if none isfound.
 			var invader:Invader;
 			for each ( invader in _gameObjects) {
-				if( !invader.enabled && invader.invaderType == typeIndex ) {
+				if( !invader.enabled && invader.invaderType == id ) {
 					invader.addItem(this);
 					return invader;
 				}
 			}
 			
-			_currentTypeIndex = typeIndex;
-			invader = createItem() as Invader;
+			_currentTypeIndex = id;
+			invader = InvaderFactory.getInstance().getInvader(id, _invaderMaterial);
+			
+			// Listen for when the invader is dead.
+			invader.addEventListener( GameObjectEvent.GAME_OBJECT_DEAD, forwardEvent );
+			invader.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, forwardEvent );
+			invader.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, forwardEvent );
+			
 			invader.addItem(this);
 			_gameObjects.push( invader );
 			
 			return invader;
-		}
-		
-		private function createInvaderCells( definition:Array, gridDimensions:Point ):Vector.<Point>
-		{
-			var positions:Vector.<Point> = new Vector.<Point>();
-			
-			var i:uint, j:uint;
-			var cellIndex:uint;
-			var cellSize:Number;
-			var lenX:uint, lenY:uint;
-			var posX:Number, posY:Number;
-			var offX:Number, offY:Number;
-			
-			cellSize = GameSettings.invaderSizeXY;
-			lenX = gridDimensions.x;
-			lenY = gridDimensions.y;
-			offX = -( lenX - 1 ) * cellSize / 2;
-			offY = (lenY - 1 ) * cellSize / 2;
-			
-			for( j = 0; j < lenY; j++ ) {
-				for( i = 0; i < lenX; i++ ) {
-					cellIndex = j * lenX + i;
-					if( definition[ cellIndex ] == 1 ) {
-						posX = offX + i * cellSize;
-						posY = offY - j * cellSize;
-						positions.push( new Point( posX, posY ) );
-					}
-				}
-			}
-			
-			return positions;
 		}
 	}
 }

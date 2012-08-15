@@ -9,7 +9,7 @@ package invaders.primitives
 
 	public class InvaderGeometry extends PrimitiveBase
 	{
-		private var _definitionMatrix:Array;
+		private var _definitionMatrix:Vector.<uint>;
 		private var _gridDimensions:Point;
 		private var _cellSizeXY:Number;
 		private var _cellSizeZ:Number;
@@ -21,7 +21,7 @@ package invaders.primitives
 		private var _rawUvs:Vector.<Number>;
 		private var _currentIndex:uint;
 
-		public function InvaderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Array, gridDimensions:Point )
+		public function InvaderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Vector.<uint>, gridDimensions:Point )
 		{
 			super();
 			_cellSizeXY = cellSizeXY;

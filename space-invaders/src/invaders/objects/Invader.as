@@ -1,5 +1,6 @@
 package invaders.objects
 {
+	import invaders.data.*;
 	import invaders.events.*;
 	import invaders.pools.*;
 	import invaders.utils.*;
@@ -16,10 +17,9 @@ package invaders.objects
 		private var _meshFrame1:Mesh;
 		private var _fireTimer:Timer;
 		private var _invaderType:uint;
+		private var _invaderData:InvaderData;
 		private var _targetSpawnZ:Number;
 		private var _animationTimer:Timer;
-		private var _cellsFrame0:Vector.<Point>;
-		private var _cellsFrame1:Vector.<Point>;
 		private var _currentDefinitionIndex:uint;
 		private var _life:uint;
 		private var _panAmplitude:Number;
@@ -30,15 +30,24 @@ package invaders.objects
 		private var _spawnY:Number = 0;
 		private var _targetSpeed:Number = 0;
 		
-		public function Invader( invaderType:uint, meshFrame0:Mesh, meshFrame1:Mesh, cellsFrame0:Vector.<Point>, cellsFrame1:Vector.<Point> )
+		public function get invaderData():InvaderData
+		{
+			return _invaderData;
+		}
+		
+		public function get invaderType():uint
+		{
+			return _invaderType;
+		}
+		
+		public function Invader( invaderType:uint, invaderData:InvaderData, meshFrame0:Mesh, meshFrame1:Mesh )
 		{
 			super();
 			
 			_invaderType = invaderType;
-			_meshFrame0 = meshFrame0.clone() as Mesh;
-			_meshFrame1 = meshFrame1.clone() as Mesh;
-			_cellsFrame0 = cellsFrame0;
-			_cellsFrame1 = cellsFrame1;
+			_invaderData = invaderData;
+			_meshFrame0 = meshFrame0;
+			_meshFrame1 = meshFrame1;
 			
 			addChild( _meshFrame0 );
 			addChild( _meshFrame1 );
@@ -54,13 +63,13 @@ package invaders.objects
 
 		private function getFireRate():uint
 		{
-			var rate:uint = InvaderDefinitions.getFireRateMSForInvaderType( _invaderType );
+			var rate:uint = _invaderData.fireRate;
 			return Math.floor( MathUtils.rand( rate, rate * 1.5 ) );
 		}
 
-		public function getInvaderClone():Invader
+		override public function cloneGameObject():GameObject
 		{
-			return new Invader( _invaderType, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh, _cellsFrame0, _cellsFrame1 );
+			return new Invader( _invaderType, _invaderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
 		}
 
 		public function stopTimers():void
@@ -71,10 +80,8 @@ package invaders.objects
 
 		public function resumeTimers():void
 		{
-			if( enabled ) {
-				_animationTimer.start();
-				_fireTimer.start();
-			}
+			_animationTimer.start();
+			_fireTimer.start();
 		}
 
 		private function onFireTimerTick( event:TimerEvent ):void
@@ -95,14 +102,14 @@ package invaders.objects
 			_currentDefinitionIndex = _meshFrame0.visible ? 0 : 1;
 		}
 
-		override public function impact( hitter:GameObject ):void
+		override public function impact( trigger:GameObject ):void
 		{
-			super.impact( hitter );
+			super.impact( trigger );
 			
 			_life -= GameSettings.blasterStrength;
-			if( _life <= 0 || hitter is Player ) {
+			if( _life <= 0 || trigger is Player ) {
 				removeItem();
-				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DEAD, this, hitter ) );
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DEAD, this, trigger ) );
 			}
 		}
 
@@ -127,18 +134,18 @@ package invaders.objects
 			_fireTimer.start();
 			
 			_updateCounter = 0;
-			_panAmplitude = InvaderDefinitions.getPanAmplitudeForInvaderType( _invaderType );
+			_panAmplitude = _invaderData.panAmplitude;
 			_panXFreq = 0.1 * Math.random();
 			_panYFreq = 0.1 * Math.random();
 			_spawnX = x = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
 			_spawnY = y = MathUtils.rand( -GameSettings.xyRange, GameSettings.xyRange );
-			var speed:Number = InvaderDefinitions.getSpeedForInvaderType( _invaderType );
+			var speed:Number = _invaderData.speed;
 			_targetSpeed = -MathUtils.rand( speed * 0.75, speed * 1.25 );
 			z = GameSettings.maxZ; // Warp in...
 			velocity.z = MathUtils.rand( -2500, -1500 );
 			_targetSpawnZ = MathUtils.rand( 15000, 20000 );
-			scaleX = scaleY = scaleZ = invaderType == InvaderDefinitions.MOTHERSHIP ? 3 : 1;
-			_life = InvaderDefinitions.getLifeForInvaderType( _invaderType );
+			scaleX = scaleY = scaleZ = _invaderData.scale;
+			_life = _invaderData.life;
 		}
 		
 		override public function removeItem():void
@@ -151,12 +158,7 @@ package invaders.objects
 		
 		public function get cellPositions():Vector.<Point>
 		{
-			return _currentDefinitionIndex == 0 ? _cellsFrame0 : _cellsFrame1;
-		}
-
-		public function get invaderType():uint
-		{
-			return _invaderType;
+			return _currentDefinitionIndex == 0 ? _invaderData.cellsFrame0 : _invaderData.cellsFrame1;
 		}
 	}
 }

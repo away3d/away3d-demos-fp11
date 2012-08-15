@@ -10,14 +10,17 @@ package invaders.objects
 	
 	public class InvaderCell extends GameObject
 	{
+		private var _mesh:Mesh;
 		private var _deathTimer:Timer;
 		private var _startFlashingOnCount:uint;
 		
-		public function InvaderCell( cellMesh:Mesh )
+		public function InvaderCell( mesh:Mesh )
 		{
 			super();
 			
-			addChild( cellMesh );
+			_mesh = mesh;
+			
+			addChild( mesh );
 			
 			var flashCount:uint = MathUtils.rand(15, 25);
 			
@@ -37,6 +40,11 @@ package invaders.objects
 		{
 			if( _deathTimer.currentCount > _startFlashingOnCount )
 				visible = !visible;
+		}
+		
+		override public function cloneGameObject():GameObject
+		{
+			return new InvaderCell( _mesh.clone() as Mesh );
 		}
 		
 		override public function addItem(parent:GameObjectPool):void

@@ -6,9 +6,13 @@ package invaders.objects
 	
 	public class Blast extends GameObject
 	{
+		private var _mesh:Mesh;
+		
 		public function Blast( mesh:Mesh )
 		{
 			super();
+			
+			_mesh = mesh;
 			
 			addChild( mesh );
 		}
@@ -22,6 +26,11 @@ package invaders.objects
 			if( scaleX >= 5 )
 				removeItem();
 			
+		}
+		
+		override public function cloneGameObject():GameObject
+		{
+			return new Blast( _mesh.clone() as Mesh );
 		}
 		
 		override public function addItem(parent:GameObjectPool):void 

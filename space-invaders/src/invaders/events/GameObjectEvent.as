@@ -9,7 +9,7 @@ package invaders.events
 		public static const GAME_OBJECT_DEAD:String = "gameObjectDead";
 		public static const GAME_OBJECT_HIT:String = "gameObjectHit";
 		public static const GAME_OBJECT_FIRE:String = "gameObjectFire";
-		public static const GAME_OBJECT_CREATED:String = "gameObjectCreated";
+		public static const GAME_OBJECT_ADDED:String = "gameObjectAdded";
 		
 		public var gameTarget:GameObject;
 		public var gameTrigger:GameObject;

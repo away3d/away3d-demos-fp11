@@ -1,5 +1,6 @@
 package invaders.objects
 {
+	import away3d.errors.*;
 	import invaders.pools.GameObjectPool;
 	import invaders.events.*;
 	
@@ -33,6 +34,11 @@ package invaders.objects
 			rotationZ += rotationalVelocity.z;
 		}
 		
+		public function cloneGameObject():GameObject
+		{
+			throw new AbstractMethodError();
+		}
+		
 		public function impact( trigger:GameObject ):void 
 		{
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_HIT, this, trigger ) );
@@ -41,6 +47,7 @@ package invaders.objects
 		public function addItem(parent:GameObjectPool):void
 		{
 			enabled = true;
+			
 			transform = new Matrix3D();
 			velocity = new Vector3D();
 			rotationalVelocity = new Vector3D();

@@ -36,10 +36,11 @@ package
 		
 		private var _player:Player;
 		private var _playerVector:Vector.<GameObject>;
-
-		private var _invaderPool:InvaderPool;
+		
+		private var _invaderFactory:InvaderFactory;
 		private var _soundLibrary:SoundLibrary;
 		
+		private var _invaderPool:InvaderPool;
 		private var _playerProjectilePool:GameObjectPool;
 		private var _invaderProjectilePool:GameObjectPool;
 		private var _playerBlastPool:GameObjectPool;
@@ -131,6 +132,9 @@ package
 			
 			//initialise sound manager
 			_soundLibrary = SoundLibrary.getInstance();
+			
+			//initialise invader manager
+			_invaderFactory = InvaderFactory.getInstance();
 		}
 		
 		/**
@@ -184,14 +188,14 @@ package
 		private function initInvaders():void
 		{
 			// Reusable invader blasts.
-			_invaderBlastPool = new GameObjectPool( new Mesh( new SphereGeometry(), new ColorMaterial( 0x00FFFF, 0.5 ) ), Blast );
+			_invaderBlastPool = new GameObjectPool( new Blast(new Mesh( new SphereGeometry(), new ColorMaterial( 0x00FFFF, 0.5 ) )) );
 			_gameObjectPools.push( _invaderBlastPool );
 			_view.scene.addChild( _invaderBlastPool );
 			
 			// Reusable invader projectiles.
 			var invaderProjectileMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
 			invaderProjectileMaterial.lightPicker = _lightPicker;
-			_invaderProjectilePool = new GameObjectPool(  new Mesh( new CubeGeometry( 25, 25, 200, 1, 1, 4 ), invaderProjectileMaterial ), Projectile );
+			_invaderProjectilePool = new GameObjectPool(  new Projectile(new Mesh( new CubeGeometry( 25, 25, 200, 1, 1, 4 ), invaderProjectileMaterial )) );
 			_gameObjectPools.push( _invaderProjectilePool );
 			_view.scene.addChild( _invaderProjectilePool );
 			
@@ -200,7 +204,7 @@ package
 //			invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			invaderMaterial.lightPicker = _lightPicker;
 			_invaderPool = new InvaderPool( invaderMaterial );
-			_invaderPool.addEventListener( GameObjectEvent.GAME_OBJECT_CREATED, onInvaderCreated );
+			_invaderPool.addEventListener( GameObjectEvent.GAME_OBJECT_ADDED, onInvaderAdded );
 			_invaderPool.addEventListener( GameObjectEvent.GAME_OBJECT_DEAD, onInvaderDead );
 			_invaderPool.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onInvaderFire );
 			_invaderPool.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onInvaderHit );
@@ -211,7 +215,7 @@ package
 //			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
 //			cellMaterial.lightPicker = _lightPicker;
 //			cellMaterial.blendMode = BlendMode.ADD;
-			_cellPool = new GameObjectPool( new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), invaderMaterial ), InvaderCell );
+			_cellPool = new GameObjectPool( new InvaderCell(new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), invaderMaterial )) );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
 		}
@@ -222,14 +226,14 @@ package
 		private function initPlayer():void
 		{
 			// Reusable player blasts.
-			_playerBlastPool = new GameObjectPool( new Mesh( new SphereGeometry(), new ColorMaterial( 0xFF0000, 0.5 ) ), Blast );
+			_playerBlastPool = new GameObjectPool( new Blast(new Mesh( new SphereGeometry(), new ColorMaterial( 0xFF0000, 0.5 ) )) );
 			_gameObjectPools.push( _playerBlastPool );
 			_view.scene.addChild( _playerBlastPool );
 			
 			// Reusable player projectiles.
 			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.75 );
 			playerProjectileMaterial.lightPicker = _lightPicker;
-			_playerProjectilePool = new GameObjectPool( new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial ), Projectile );
+			_playerProjectilePool = new GameObjectPool( new Projectile(new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial )) );
 			_gameObjectPools.push( _playerProjectilePool );
 			_view.scene.addChild( _playerProjectilePool );
 			
@@ -362,8 +366,6 @@ package
 		{
 			hideMouse();
 			
-			_firstAccY = 0;
-			
 			// Reset all game object pools.
 			var gameObjectPool:GameObjectPool;
 			for each ( gameObjectPool in _gameObjectPools)
@@ -375,13 +377,21 @@ package
 			_totalKills = 0;
 			_invaderPool.spawnTimeFactor = 1;
 			
-			_invaderPool.resume();
-			_active = true;
-			_player.visible = true;
+			//resume play
+			resumeGame();
 			
+			//reset score
 			updateScore(0);
 			updateLives(GameSettings.playerLives);
 			onResize();
+		}
+		
+		private function resumeGame():void
+		{
+			_firstAccY = 0;
+			_invaderPool.resume();
+			_active = true;
+			_player.visible = true;
 		}
 		
 		private function hidePopUp():void
@@ -465,7 +475,7 @@ package
 				
 				_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.5 );
 				
-				//kick bacl on the right blaster
+				//kick back on the blasters
 				var blaster:Mesh = _playerFireCounter % 2 ? _rightBlaster : _leftBlaster;
 				blaster.z -= 500;
 				
@@ -521,10 +531,10 @@ package
 			
 			//spawn new invaders
 			if( _active ) {
-				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.MOTHERSHIP );
-				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.BUG_INVADER );
-				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.OCTOPUS_INVADER );
-				_invaderPool.evaluateSpawnInvader( InvaderDefinitions.ROUNDED_OCTOPUS_INVADER );
+				_invaderPool.evaluateSpawnInvader(InvaderFactory.BUG_INVADER);
+				_invaderPool.evaluateSpawnInvader(InvaderFactory.OCTOPUS_INVADER);
+				_invaderPool.evaluateSpawnInvader(InvaderFactory.MOTHERSHIP);
+				_invaderPool.evaluateSpawnInvader(InvaderFactory.ROUNDED_OCTOPUS_INVADER);
 			}
 			
 			// Restore blasters from recoil.
@@ -592,11 +602,11 @@ package
 			blast.z -= GameSettings.invaderSizeZ;
 		}
 		
-		private function onInvaderCreated( event:GameObjectEvent ):void
+		private function onInvaderAdded( event:GameObjectEvent ):void
 		{
 			var invader:Invader = event.gameTarget as Invader;
 			
-			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP )
+			if( invader.invaderType == InvaderFactory.MOTHERSHIP )
 				_soundLibrary.playSound( SoundLibrary.MOTHERSHIP );
 		}
 		
@@ -608,7 +618,7 @@ package
 			_currentLevelKills++;
 			_totalKills++;
 			
-			updateScore(_score + InvaderDefinitions.getScoreForInvaderType( invader.invaderType ));
+			updateScore(_score + invader.invaderData.score);
 			
 			// Update highscore
 			if( _score > _highScore ) {
@@ -629,13 +639,13 @@ package
 			}
 
 			// Play sound
-			if( invader.invaderType == InvaderDefinitions.MOTHERSHIP )
+			if( invader.invaderType == InvaderFactory.MOTHERSHIP )
 				_soundLibrary.playSound( SoundLibrary.EXPLOSION_STRONG );
 			else
 				_soundLibrary.playSound( SoundLibrary.INVADER_DEATH );
 
 			// Show invader destruction
-			var hitter:GameObject = event.gameTrigger;
+			var trigger:GameObject = event.gameTrigger;
 			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
 			var positions:Vector.<Point> = invader.cellPositions;
 			var pos:Point;
@@ -643,13 +653,15 @@ package
 			for each ( pos in positions) {
 				var cell:InvaderCell = _cellPool.getGameObject() as InvaderCell;
 				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
+				
 				// Set cell position according to dummy child position.
 				cell.position = invader.position;
 				cell.x += sc * pos.x;
 				cell.y += sc * pos.y;
+				
 				// Determine explosion velocity of cell.
-				var dx:Number = cell.x - hitter.x;
-				var dy:Number = cell.y - hitter.y;
+				var dx:Number = cell.x - trigger.x;
+				var dy:Number = cell.y - trigger.y;
 				var distanceSq:Number = dx * dx + dy * dy;
 				var rotSpeed:Number = intensity * 5000 / distanceSq;
 				cell.rotationalVelocity.x = MathUtils.rand( -rotSpeed, rotSpeed );
@@ -657,7 +669,7 @@ package
 				cell.rotationalVelocity.z = MathUtils.rand( -rotSpeed, rotSpeed );
 				cell.velocity.x = intensity * MathUtils.rand( 100, 500 ) * dx / distanceSq;
 				cell.velocity.y = intensity * MathUtils.rand( 100, 500 ) * dy / distanceSq;
-				cell.velocity.z = intensity * 50 * hitter.velocity.z / distanceSq + invader.velocity.z;
+				cell.velocity.z = intensity * 50 * trigger.velocity.z / distanceSq + invader.velocity.z;
 			}
 		}
 		
@@ -692,7 +704,7 @@ package
 			projectile.transform = invader.transform.clone();
 			projectile.velocity = new Vector3D( 0, 0, -100 );
 			
-			if( invader.invaderType != InvaderDefinitions.MOTHERSHIP ) {
+			if( invader.invaderType != InvaderFactory.MOTHERSHIP ) {
 				_soundLibrary.playSound( SoundLibrary.INVADER_FIRE, 0.5 );
 			} else {
 				var offset:Vector3D = new Vector3D();
@@ -708,19 +720,17 @@ package
 		
 		private function onResume( event:MouseEvent ):void
 		{
-			_firstAccY = 0;
 			hideMouse();
 			hidePopUp();
 			
-			_invaderPool.resume();
-			_active = true;
-			_player.visible = true;
+			resumeGame();
 		}
 		
 		private function onPause( event:MouseEvent ):void
 		{
-			stopGame();
 			showPopUp( _pausePopUp );
+			
+			stopGame();
 		}
 		
 		private function onRestart( event:MouseEvent ):void
@@ -730,8 +740,10 @@ package
 		
 		private function onPlay( event:MouseEvent ):void
 		{
-			startGame();
+			hideMouse();
 			hidePopUp();
+			
+			startGame();
 		}
 		
 		// -----------------------------

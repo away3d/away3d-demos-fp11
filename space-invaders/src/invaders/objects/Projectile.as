@@ -4,13 +4,22 @@ package invaders.objects
 	
 	public class Projectile extends GameObject
 	{
+		private var _mesh:Mesh;
+		
 		public var targets:Vector.<GameObject>;
 		
 		public function Projectile( mesh:Mesh )
 		{
 			super();
 			
+			_mesh = mesh;
+			
 			addChild( mesh );
+		}
+		
+		override public function cloneGameObject():GameObject
+		{
+			return new Projectile( _mesh.clone() as Mesh );
 		}
 		
 		override public function update():void

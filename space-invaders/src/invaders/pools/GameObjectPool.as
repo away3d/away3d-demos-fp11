@@ -7,16 +7,14 @@ package invaders.pools
 	
 	public class GameObjectPool extends ObjectContainer3D
 	{
-		protected var _mesh : Mesh;
-		protected var _gameObjectClass : Class;
+		protected var _gameObject : GameObject;
 		protected var _gameObjects:Vector.<GameObject>  = new Vector.<GameObject>();
 		
-		public function GameObjectPool( mesh:Mesh, gameObjectClass:Class)
+		public function GameObjectPool( gameObject:GameObject)
 		{
 			super();
 			
-			_mesh = mesh;
-			_gameObjectClass = gameObjectClass;
+			_gameObject = gameObject;
 		}
 		
 		public function reset():void
@@ -52,16 +50,12 @@ package invaders.pools
 				}
 			}
 			
-			gameObject = createItem();
+			gameObject = _gameObject.cloneGameObject();
+			
 			gameObject.addItem(this);
 			_gameObjects.push( gameObject );
 			
 			return gameObject;
-		}
-		
-		protected function createItem():GameObject
-		{
-			return new _gameObjectClass( _mesh.clone() as Mesh );
 		}
 		
 		public function get gameObjects():Vector.<GameObject>
