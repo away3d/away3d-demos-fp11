@@ -11,9 +11,9 @@ package invawayders.objects
 	import flash.geom.*;
 	import flash.utils.*;
 	
-	public class Invader extends GameObject
+	public class Invawayder extends GameObject
 	{
-		private var _invaderData:InvaderData;
+		private var _invaderData:InvawayderData;
 		private var _meshFrame0:Mesh;
 		private var _meshFrame1:Mesh;
 		private var _fireTimer:Timer;
@@ -29,12 +29,12 @@ package invawayders.objects
 		private var _spawnY:Number = 0;
 		private var _targetSpeed:Number = 0;
 		
-		public function get invaderData():InvaderData
+		public function get invaderData():InvawayderData
 		{
 			return _invaderData;
 		}
 		
-		public function Invader( invaderData:InvaderData, meshFrame0:Mesh, meshFrame1:Mesh )
+		public function Invawayder( invaderData:InvawayderData, meshFrame0:Mesh, meshFrame1:Mesh )
 		{
 			super();
 			
@@ -62,7 +62,7 @@ package invawayders.objects
 
 		override public function cloneGameObject():GameObject
 		{
-			return new Invader( _invaderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
+			return new Invawayder( _invaderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
 		}
 
 		public function stopTimers():void

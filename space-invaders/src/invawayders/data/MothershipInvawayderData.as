@@ -5,9 +5,9 @@ package invawayders.data
 	/**
 	 * 
 	 */
-	public class MothershipInvaderData extends InvaderData
+	public class MothershipInvawayderData extends InvawayderData
 	{
-		public function MothershipInvaderData(id:uint)
+		public function MothershipInvawayderData(id:uint)
 		{
 			this.id = id;
 			

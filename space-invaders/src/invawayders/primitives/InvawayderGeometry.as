@@ -5,7 +5,7 @@ package invawayders.primitives
 	
 	import flash.geom.*;
 	
-	public class InvaderGeometry extends PrimitiveBase
+	public class InvawayderGeometry extends PrimitiveBase
 	{
 		private var _definitionMatrix:Vector.<uint>;
 		private var _gridDimensions:Point;
@@ -19,7 +19,7 @@ package invawayders.primitives
 		private var _rawUvs:Vector.<Number>;
 		private var _currentIndex:uint;
 		
-		public function InvaderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Vector.<uint>, gridDimensions:Point )
+		public function InvawayderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Vector.<uint>, gridDimensions:Point )
 		{
 			super();
 			_cellSizeXY = cellSizeXY;

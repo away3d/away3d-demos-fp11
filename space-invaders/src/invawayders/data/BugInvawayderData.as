@@ -5,9 +5,9 @@ package invawayders.data
 	/**
 	 * 
 	 */
-	public class BugInvaderData extends InvaderData
+	public class BugInvawayderData extends InvawayderData
 	{
-		public function BugInvaderData(id:uint)
+		public function BugInvawayderData(id:uint)
 		{
 			this.id = id;
 			

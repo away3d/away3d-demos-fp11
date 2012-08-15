@@ -11,43 +11,43 @@ package
 	import flash.geom.*;
 	
 
-	public class InvaderFactory
+	public class InvawayderFactory
 	{
-		private static var _instance:InvaderFactory;
+		private static var _instance:InvawayderFactory;
 		
 		public static const BUG_INVADER:uint = 0;
 		public static const OCTOPUS_INVADER:uint = 1;
 		public static const ROUNDED_OCTOPUS_INVADER:uint = 2;
 		public static const MOTHERSHIP:uint = 3;
 		
-		private var _invaders:Vector.<InvaderData> = Vector.<InvaderData>([
-			new BugInvaderData(BUG_INVADER),
-			new OctopusInvaderData(OCTOPUS_INVADER),
-			new RoundedOctopusInvaderData(ROUNDED_OCTOPUS_INVADER),
-			new MothershipInvaderData(MOTHERSHIP)
+		private var _invaders:Vector.<InvawayderData> = Vector.<InvawayderData>([
+			new BugInvawayderData(BUG_INVADER),
+			new OctopusInvawayderData(OCTOPUS_INVADER),
+			new RoundedOctopusInvawayderData(ROUNDED_OCTOPUS_INVADER),
+			new MothershipInvawayderData(MOTHERSHIP)
 		]);
 		
-		public static function getInstance():InvaderFactory
+		public static function getInstance():InvawayderFactory
 		{
 			if (_instance)
 				return _instance;
 			
-			_instance = new InvaderFactory();
+			_instance = new InvawayderFactory();
 			
 			return _instance;
 		}
 		
-		public function get invaders():Vector.<InvaderData>
+		public function get invaders():Vector.<InvawayderData>
 		{
 			return _invaders;
 		}
 		
-		public function getInvader( id:uint, material:MaterialBase ):Invader
+		public function getInvader( id:uint, material:MaterialBase ):Invawayder
 		{
-			var invaderData:InvaderData = _invaders[id];
+			var invaderData:InvawayderData = _invaders[id];
 			
 			if (invaderData.invader)
-				return invaderData.invader.cloneGameObject() as Invader;
+				return invaderData.invader.cloneGameObject() as Invawayder;
 			
 			var definition:Vector.<Vector.<uint>> = invaderData.cellDefinition;
 			var dimensions:Point = invaderData.dimensions;
@@ -55,8 +55,8 @@ package
 			var definitionFrame0:Vector.<uint> = definition[ 0 ];
 			var definitionFrame1:Vector.<uint> = definition[ 1 ];
 			
-			var invaderGeometry0:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame0, dimensions );
-			var invaderGeometry1:Geometry = new InvaderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame1, dimensions );
+			var invaderGeometry0:Geometry = new InvawayderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame0, dimensions );
+			var invaderGeometry1:Geometry = new InvawayderGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeZ, definitionFrame1, dimensions );
 			
 			var meshFrame0:Mesh = new Mesh( invaderGeometry0, material );
 			var meshFrame1:Mesh = new Mesh( invaderGeometry1, material );
@@ -64,12 +64,12 @@ package
 			invaderData.cellsFrame0 = createInvaderCells( definition[ 0 ], dimensions );
 			invaderData.cellsFrame1 = createInvaderCells( definition[ 1 ], dimensions );
 			
-			return invaderData.invader = new Invader( invaderData, meshFrame0, meshFrame1 );
+			return invaderData.invader = new Invawayder( invaderData, meshFrame0, meshFrame1 );
 		}
 		
 		public function resetLastSpawnTimes(time:uint):void
 		{
-			var invaderData:InvaderData;
+			var invaderData:InvawayderData;
 			for each (invaderData in _invaders)
 				invaderData.lastSpawnTime = time;
 		}

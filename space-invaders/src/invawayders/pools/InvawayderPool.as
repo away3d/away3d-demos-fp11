@@ -2,16 +2,16 @@ package invawayders.pools
 {
 	import invawayders.objects.*;
 	
-	public class InvaderPool extends GameObjectPool
+	public class InvawayderPool extends GameObjectPool
 	{
-		public function InvaderPool()
+		public function InvawayderPool()
 		{
 			super(null);
 		}
 		
 		public function stop():void
 		{
-			var invader:Invader;
+			var invader:Invawayder;
 			for each ( invader in _gameObjects)
 				if( invader.enabled )
 					invader.stopTimers();
@@ -19,16 +19,16 @@ package invawayders.pools
 		
 		public function resume():void
 		{
-			var invader:Invader;
+			var invader:Invawayder;
 			for each ( invader in _gameObjects)
 				if( invader.enabled )
 					invader.resumeTimers();
 		}
 		
-		public function getInvaderOfType( id:uint ):Invader
+		public function getInvaderOfType( id:uint ):Invawayder
 		{
 			// Adds an unused item or creates a new item if none are found.
-			var invader:Invader;
+			var invader:Invawayder;
 			for each ( invader in _gameObjects) {
 				if( !invader.enabled && invader.invaderData.id == id ) {
 					invader.addItem(this);

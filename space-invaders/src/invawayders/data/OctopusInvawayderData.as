@@ -5,9 +5,9 @@ package invawayders.data
 	/**
 	 * 
 	 */
-	public class OctopusInvaderData extends InvaderData
+	public class OctopusInvawayderData extends InvawayderData
 	{
-		public function OctopusInvaderData(id:uint)
+		public function OctopusInvawayderData(id:uint)
 		{
 			this.id = id;
 			

@@ -1,6 +1,6 @@
 package 
 {
-	import invawayders.data.InvaderData;
+	import invawayders.data.InvawayderData;
 	import invawayders.events.*;
 	import invawayders.objects.*;
 	import invawayders.pools.*;
@@ -40,11 +40,11 @@ package
 		
 		private var _time:uint;
 		private var _spawnTimeFactor:Number = 1;
-		private var _invaderFactory:InvaderFactory;
+		private var _invaderFactory:InvawayderFactory;
 		private var _invaderMaterial:ColorMaterial;
 		private var _soundLibrary:SoundLibrary;
 		
-		private var _invaderPool:InvaderPool;
+		private var _invaderPool:InvawayderPool;
 		private var _playerProjectilePool:GameObjectPool;
 		private var _invaderProjectilePool:GameObjectPool;
 		private var _playerBlastPool:GameObjectPool;
@@ -132,7 +132,7 @@ package
 			_soundLibrary = SoundLibrary.getInstance();
 			
 			//initialise invader manager
-			_invaderFactory = InvaderFactory.getInstance();
+			_invaderFactory = InvawayderFactory.getInstance();
 		}
 		
 		/**
@@ -201,7 +201,7 @@ package
 			_invaderMaterial = new ColorMaterial( 0x777780, 1 );
 //			_invaderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			_invaderMaterial.lightPicker = _lightPicker;
-			_invaderPool = new InvaderPool();
+			_invaderPool = new InvawayderPool();
 			_gameObjectPools.push( _invaderPool );
 			_view.scene.addChild( _invaderPool );
 
@@ -209,7 +209,7 @@ package
 //			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
 //			cellMaterial.lightPicker = _lightPicker;
 //			cellMaterial.blendMode = BlendMode.ADD;
-			_cellPool = new GameObjectPool( new InvaderCell(new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), _invaderMaterial )) );
+			_cellPool = new GameObjectPool( new InvawayderCell(new Mesh( new CubeGeometry( GameSettings.invaderSizeXY, GameSettings.invaderSizeXY, GameSettings.invaderSizeZ ), _invaderMaterial )) );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
 		}
@@ -382,13 +382,13 @@ package
 		
 		public function spawnInvaders():void
 		{
-			var invaderData:InvaderData;
+			var invaderData:InvawayderData;
 			for each (invaderData in _invaderFactory.invaders) {
 				var elapsedSinceSpawn:int = _time - invaderData.lastSpawnTime;
 				if( elapsedSinceSpawn > invaderData.spawnRate * _spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
 					
 					//grab an unused invader from the invader pool
-					var invader:Invader = _invaderPool.getInvaderOfType( invaderData.id );
+					var invader:Invawayder = _invaderPool.getInvaderOfType( invaderData.id );
 					
 					//create a new invader if none are available and add it to the pool
 					if (!invader) {
@@ -588,15 +588,15 @@ package
 		
 		private function onInvaderAdded( event:GameObjectEvent ):void
 		{
-			var invader:Invader = event.gameTarget as Invader;
+			var invader:Invawayder = event.gameTarget as Invawayder;
 			
-			if( invader.invaderData.id == InvaderFactory.MOTHERSHIP )
+			if( invader.invaderData.id == InvawayderFactory.MOTHERSHIP )
 				_soundLibrary.playSound( SoundLibrary.MOTHERSHIP );
 		}
 		
 		private function onInvaderDead( event:GameObjectEvent ):void
 		{
-			var invader:Invader = event.gameTarget as Invader;
+			var invader:Invawayder = event.gameTarget as Invawayder;
 			
 			// Check level update and update UI.
 			_currentLevelKills++;
@@ -623,7 +623,7 @@ package
 			}
 
 			// Play sound
-			if( invader.invaderData.id == InvaderFactory.MOTHERSHIP )
+			if( invader.invaderData.id == InvawayderFactory.MOTHERSHIP )
 				_soundLibrary.playSound( SoundLibrary.EXPLOSION_STRONG );
 			else
 				_soundLibrary.playSound( SoundLibrary.INVADER_DEATH );
@@ -635,7 +635,7 @@ package
 			var pos:Point;
 			var sc:Number = invader.scaleX;
 			for each ( pos in positions) {
-				var cell:InvaderCell = _cellPool.getGameObject() as InvaderCell;
+				var cell:InvawayderCell = _cellPool.getGameObject() as InvawayderCell;
 				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
 				
 				// Set cell position according to dummy child position.
@@ -697,13 +697,13 @@ package
 		
 		private function onInvaderFire( event:GameObjectEvent ):void
 		{
-			var invader:Invader = event.gameTarget as Invader;
+			var invader:Invawayder = event.gameTarget as Invawayder;
 			var projectile:Projectile = _invaderProjectilePool.getGameObject() as Projectile;
 			projectile.targets = _playerVector;
 			projectile.transform = invader.transform.clone();
 			projectile.velocity = new Vector3D( 0, 0, -100 );
 			
-			if( invader.invaderData.id != InvaderFactory.MOTHERSHIP ) {
+			if( invader.invaderData.id != InvawayderFactory.MOTHERSHIP ) {
 				_soundLibrary.playSound( SoundLibrary.INVADER_FIRE, 0.5 );
 			} else {
 				var offset:Vector3D = new Vector3D();

@@ -8,13 +8,13 @@ package invawayders.objects
 	import flash.events.*;
 	import flash.utils.*;
 	
-	public class InvaderCell extends GameObject
+	public class InvawayderCell extends GameObject
 	{
 		private var _mesh:Mesh;
 		private var _deathTimer:Timer;
 		private var _startFlashingOnCount:uint;
 		
-		public function InvaderCell( mesh:Mesh )
+		public function InvawayderCell( mesh:Mesh )
 		{
 			super();
 			
@@ -44,7 +44,7 @@ package invawayders.objects
 		
 		override public function cloneGameObject():GameObject
 		{
-			return new InvaderCell( _mesh.clone() as Mesh );
+			return new InvawayderCell( _mesh.clone() as Mesh );
 		}
 		
 		override public function addItem(parent:GameObjectPool):void
