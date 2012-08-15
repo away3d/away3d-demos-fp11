@@ -1,9 +1,14 @@
 package invaders.objects
 {
+	import invaders.events.*;
 	import invaders.utils.*;
 	
 	import away3d.cameras.*;
+	import away3d.entities.*;
+	import away3d.materials.*;
+	import away3d.primitives.*;
 	
+	import flash.geom.*;
 	import flash.events.*;
 	import flash.utils.*;
 	
@@ -14,19 +19,41 @@ package invaders.objects
 		private var _shakeT:Number = 0;
 		private var _shakeTimerCount:uint = 10;
 		
+		private var _fireReleased:Boolean = true;
+		private var _fireReleaseTimer:Timer;
+		private var _leftBlaster:Mesh;
+		private var _rightBlaster:Mesh;
+		
 		public var targets:Vector.<GameObject>;
 		
-		public function Player( camera:Camera3D )
+		public var playerFireCounter:uint;
+		
+		public function Player( camera:Camera3D, material:MaterialBase )
 		{
 			super();
 			
 			addChild( camera );
 
 			_camera = camera;
-
+			
+			// Blasters.
+			_leftBlaster = new Mesh( new CubeGeometry( 25, 25, 500 ), material );
+			_rightBlaster = _leftBlaster.clone() as Mesh;
+			
+			_leftBlaster.position = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
+			_rightBlaster.position = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
+			
+			addChild( _leftBlaster );
+			addChild( _rightBlaster );
+			
+			// used to skae the camera after a hit
 			_shakeTimer = new Timer( 25, _shakeTimerCount );
 			_shakeTimer.addEventListener( TimerEvent.TIMER, onShakeTimerTick );
 			_shakeTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onShakeTimerComplete );
+			
+			// Used for rapid fire.
+			_fireReleaseTimer = new Timer( GameSettings.blasterFireRateMS, 1 );
+			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
 		}
 		
 		override public function update():void
@@ -51,7 +78,27 @@ package invaders.objects
 						}
 					}
 				}
-
+			}
+			
+			// Restore blasters from recoil.
+			_leftBlaster.z += 0.25 * (GameSettings.blasterOffsetD - _leftBlaster.z);
+			_rightBlaster.z += 0.25 * (GameSettings.blasterOffsetD - _rightBlaster.z);
+		}
+		
+		public function updateBlasters():void
+		{
+			if(_fireReleased) {
+				playerFireCounter++;
+				
+				//kick back on the blasters
+				var blaster:Mesh = playerFireCounter % 2 ? _rightBlaster : _leftBlaster;
+				blaster.z -= 500;
+				
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_FIRE, this ) );
+				
+				_fireReleased = false;
+				_fireReleaseTimer.reset();
+				_fireReleaseTimer.start();
 			}
 		}
 		
@@ -80,6 +127,11 @@ package invaders.objects
 			_shakeT = 1;
 			_shakeTimer.reset();
 			_shakeTimer.start();
+		}
+		
+		private function onFireReleaseTimerComplete( event:TimerEvent ):void
+		{
+			_fireReleased = true;
 		}
 	}
 }

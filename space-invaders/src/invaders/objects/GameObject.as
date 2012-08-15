@@ -61,7 +61,8 @@ package invaders.objects
 		{
 			enabled = false;
 			
-			parent.removeChild(this);
+			if (parent)
+				parent.removeChild(this);
 		}
 	}
 }

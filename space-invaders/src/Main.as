@@ -53,12 +53,6 @@ package
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
 		
-		private var _playerFireCounter:uint;
-		private var _fireReleased:Boolean = true;
-		private var _fireReleaseTimer:Timer;
-		private var _leftBlaster:Mesh;
-		private var _rightBlaster:Mesh;
-		
 		private var _showingMouse:Boolean = true;
 		
 		private var _currentLevel:uint;
@@ -238,29 +232,18 @@ package
 			_view.scene.addChild( _playerProjectilePool );
 			
 			// Player.
-			_player = new Player( _view.camera );
+			var playerMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
+			playerMaterial.lightPicker = _cameraLightPicker;
+			_player = new Player( _view.camera, playerMaterial);
 			_player.position = new Vector3D( 0, 0, -1000 );
 			_player.enabled = true;
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onPlayerHit );
+			_player.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onPlayerFire);
 			_player.targets = _invaderPool.gameObjects;
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
 			_player.visible = false;
 			_view.scene.addChild( _player );
-			
-			// Blasters.
-			var playerMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
-			playerMaterial.lightPicker = _cameraLightPicker;
-			_leftBlaster = new Mesh( new CubeGeometry( 25, 25, 500 ), playerMaterial );
-			_rightBlaster = _leftBlaster.clone() as Mesh;
-			_leftBlaster.position = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
-			_rightBlaster.position = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
-			_player.addChild( _leftBlaster );
-			_player.addChild( _rightBlaster );
-			
-			// Used for rapid fire.
-			_fireReleaseTimer = new Timer( GameSettings.blasterFireRateMS, 1 );
-			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
 		}
 		
 		/**
@@ -397,7 +380,7 @@ package
 			_invaderFactory.resetLastSpawnTimes(_time = getTimer());
 		}
 		
-		public function evaluateSpawnInvaders():void
+		public function spawnInvaders():void
 		{
 			var invaderData:InvaderData;
 			for each (invaderData in _invaderFactory.invaders) {
@@ -438,16 +421,6 @@ package
 			_activePopUp.visible = true;
 		}
 		
-		private function showMouse():void
-		{
-			if( _showingMouse )
-				return;
-			
-			Mouse.show();
-			
-			_showingMouse = true;
-		}
-		
 		private function hideMouse():void
 		{
 			if( !_showingMouse )
@@ -456,6 +429,16 @@ package
 			Mouse.hide();
 			
 			_showingMouse = false;
+		}
+		
+		private function showMouse():void
+		{
+			if( _showingMouse )
+				return;
+			
+			Mouse.show();
+			
+			_showingMouse = true;
 		}
 		
 		private function updateLives(lives:uint):void
@@ -501,27 +484,9 @@ package
 		 */		
 		private function onEnterFrame( event:Event ):void
 		{
-			if( _isFiring && _fireReleased && _active) {
-				_playerFireCounter++;
-				
-				_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.5 );
-				
-				//kick back on the blasters
-				var blaster:Mesh = _playerFireCounter % 2 ? _rightBlaster : _leftBlaster;
-				blaster.z -= 500;
-				
-				//create a new projectile
-				var projectile:Projectile = _playerProjectilePool.getGameObject() as Projectile;
-				projectile.targets = _invaderPool.gameObjects;
-				projectile.transform = _player.transform.clone();
-				projectile.velocity = _player.transform.deltaTransformVector( new Vector3D( 0, 0, 200 ) );
-				projectile.position = projectile.position.add( new Vector3D( _playerFireCounter % 2 ? GameSettings.blasterOffsetH : -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, -750 ) );
-				
-				_fireReleased = false;
-				_fireReleaseTimer.reset();
-				_fireReleaseTimer.start();
-			}
-
+			if( _isFiring && _active)
+				_player.updateBlasters();
+			
 			if( _mouseIsOnStage ) {
 				if( stage.mouseX > 0 && stage.mouseX < 100000 )
 					_currentPosition.x = stage.mouseX;
@@ -562,13 +527,8 @@ package
 			}
 			
 			//spawn new invaders
-			if( _active ) {
-				evaluateSpawnInvaders();
-			}
-			
-			// Restore blasters from recoil.
-			_leftBlaster.z += 0.25 * (GameSettings.blasterOffsetD - _leftBlaster.z);
-			_rightBlaster.z += 0.25 * (GameSettings.blasterOffsetD - _rightBlaster.z);
+			if( _active )
+				spawnInvaders();
 
 			// Camera light follows player's position.
 			_cameraLight.transform = _player.transform;
@@ -616,11 +576,6 @@ package
 		// -----------------------------
 		// Game event handlers.
 		// -----------------------------
-		
-		private function onFireReleaseTimerComplete( event:TimerEvent ):void
-		{
-			_fireReleased = true;
-		}
 		
 		private function onInvaderHit( event:GameObjectEvent ):void
 		{
@@ -705,13 +660,16 @@ package
 		private function onPlayerHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.EXPLOSION_SOFT );
+			
+			//creat a new blast object
 			var blast:Blast = _playerBlastPool.getGameObject() as Blast;
 			blast.velocity = event.gameTarget.velocity;
 			blast.position = event.gameTrigger.position.clone();
 			
+			//update lives counter
 			updateLives(_lives - 1);
 			
-			//game over
+			//check if game over
 			if( _lives <= 0 ) {
 				_goScoreText.text =     "SCORE................................... " + uintToString( _score );
 				_goHighScoreText = _gameOverPopUp.highScoreText;
@@ -723,6 +681,18 @@ package
 				showPopUp( _gameOverPopUp );
 				stopGame();
 			}
+		}
+		
+		private function onPlayerFire( event:GameObjectEvent ):void
+		{
+			_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.5 );
+			
+			//create a new projectile
+			var projectile:Projectile = _playerProjectilePool.getGameObject() as Projectile;
+			projectile.targets = _invaderPool.gameObjects;
+			projectile.transform = _player.transform.clone();
+			projectile.velocity = _player.transform.deltaTransformVector( new Vector3D( 0, 0, 200 ) );
+			projectile.position = projectile.position.add( new Vector3D( _player.playerFireCounter % 2 ? GameSettings.blasterOffsetH : -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, -750 ) );
 		}
 		
 		private function onInvaderFire( event:GameObjectEvent ):void
