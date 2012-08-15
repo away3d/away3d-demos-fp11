@@ -18,7 +18,6 @@ package
 	import flash.display.*;
 	import flash.events.*;
 	import flash.geom.*;
-	import flash.net.*;
 	import flash.sensors.*;
 	import flash.text.*;
 	import flash.ui.*;
@@ -90,13 +89,18 @@ package
 		private var _score:uint;
 		private var _highScore:uint = 0;
 		private var _lives:uint;
-		private const SO_NAME:String = "invawayderUserData";
+		
+		//state save manager
+		protected var _saveStateManager : SaveStateManager;
 		
 		/**
 		 * Constructor
 		 */
 		public function Main()
 		{
+			//initialise the save state manager
+			_saveStateManager = new SaveStateManager();
+			
 			init();
 		}
 		
@@ -119,10 +123,8 @@ package
 		 */		
 		private function initGame():void
 		{
-			//initialise the highscore
-			var sharedObject:SharedObject = SharedObject.getLocal( SO_NAME );
-			if( sharedObject )
-				_highScore = sharedObject.data.highScore;
+			//get saved highscroe
+			_highScore = _saveStateManager.loadHighScore();
 			
 			//set stage properties
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -607,9 +609,7 @@ package
 			// Update highscore
 			if( _score > _highScore ) {
 				_highScore = _score;
-				var sharedObject:SharedObject = SharedObject.getLocal( SO_NAME );
-				sharedObject.data.highScore = _score;
-				sharedObject.flush();
+				_saveStateManager.saveHighScore(_highScore);
 			}
 			
 			// Update level

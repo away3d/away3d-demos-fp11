@@ -1,18 +1,19 @@
-package com.away3d.spaceinvaders.save
+package invawayders.utils
 {
 
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 
-	public class MobileStateSaveManager extends StateSaveManager
+	public class MobileSaveStateManager extends SaveStateManager
 	{
-		private const FILE_PATH:String = "away3dSpaceInvadersUserData.txt";
+		private const FILE_PATH:String = "invawaydersUserData.txt";
 
-		public function MobileStateSaveManager() {
+		public function MobileSaveStateManager()
+		{
 			super();
 		}
-
+		
 		override public function saveHighScore( score:uint ):void {
 			var file:File = File.applicationStorageDirectory.resolvePath( FILE_PATH );
 			var str:FileStream = new FileStream();
@@ -20,8 +21,9 @@ package com.away3d.spaceinvaders.save
 			str.position = 0;
 			str.writeUnsignedInt( score );
 		}
-
-		override public function loadHighScore():uint {
+		
+		override public function loadHighScore():uint
+		{
 			var file:File = File.applicationStorageDirectory.resolvePath( FILE_PATH );
 			if( file.exists ) {
 				var str:FileStream = new FileStream();
