@@ -7,8 +7,10 @@ package invaders.data
 	 */
 	public class MothershipInvaderData extends InvaderData
 	{
-		public function MothershipInvaderData()
+		public function MothershipInvaderData(id:uint)
 		{
+			this.id = id;
+			
 			cellDefinition = Vector.<Vector.<uint>>([
 				Vector.<uint>([
 					0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,

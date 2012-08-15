@@ -7,8 +7,10 @@ package invaders.data
 	 */
 	public class OctopusInvaderData extends InvaderData
 	{
-		public function OctopusInvaderData()
+		public function OctopusInvaderData(id:uint)
 		{
+			this.id = id;
+			
 			cellDefinition = Vector.<Vector.<uint>>([
 				Vector.<uint>([
 					0, 0, 0, 1, 1, 0, 0, 0,

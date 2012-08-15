@@ -7,8 +7,10 @@ package invaders.data
 	 */
 	public class BugInvaderData extends InvaderData
 	{
-		public function BugInvaderData()
+		public function BugInvaderData(id:uint)
 		{
+			this.id = id;
+			
 			cellDefinition = Vector.<Vector.<uint>>([
 				Vector.<uint>([
 					0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,

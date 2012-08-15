@@ -7,8 +7,10 @@ package invaders.data
 	 */
 	public class RoundedOctopusInvaderData extends InvaderData
 	{
-		public function RoundedOctopusInvaderData()
+		public function RoundedOctopusInvaderData(id:uint)
 		{
+			this.id = id;
+			
 			cellDefinition = Vector.<Vector.<uint>>([
 				Vector.<uint>([
 					0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,

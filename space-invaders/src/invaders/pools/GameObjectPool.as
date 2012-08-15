@@ -3,12 +3,16 @@ package invaders.pools
 	import invaders.objects.*;
 	
 	import away3d.containers.*;
-	import away3d.entities.*;
 	
 	public class GameObjectPool extends ObjectContainer3D
 	{
 		protected var _gameObject : GameObject;
 		protected var _gameObjects:Vector.<GameObject>  = new Vector.<GameObject>();
+		
+		public function get gameObjects():Vector.<GameObject>
+		{
+			return _gameObjects;
+		}
 		
 		public function GameObjectPool( gameObject:GameObject)
 		{
@@ -56,11 +60,6 @@ package invaders.pools
 			_gameObjects.push( gameObject );
 			
 			return gameObject;
-		}
-		
-		public function get gameObjects():Vector.<GameObject>
-		{
-			return _gameObjects;
 		}
 	}
 }

@@ -9,6 +9,8 @@ package invaders.data
 	 */
 	public class InvaderData
 	{
+		public var id:uint;
+		
 		public var cellDefinition:Vector.<Vector.<uint>>;
 		
 		public var dimensions:Point;

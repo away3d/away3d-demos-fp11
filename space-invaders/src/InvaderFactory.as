@@ -21,10 +21,10 @@ package
 		public static const MOTHERSHIP:uint = 3;
 		
 		private var _invaders:Vector.<InvaderData> = Vector.<InvaderData>([
-			new BugInvaderData(),
-			new OctopusInvaderData(),
-			new RoundedOctopusInvaderData(),
-			new MothershipInvaderData()
+			new BugInvaderData(BUG_INVADER),
+			new OctopusInvaderData(OCTOPUS_INVADER),
+			new RoundedOctopusInvaderData(ROUNDED_OCTOPUS_INVADER),
+			new MothershipInvaderData(MOTHERSHIP)
 		]);
 		
 		public static function getInstance():InvaderFactory
@@ -37,9 +37,9 @@ package
 			return _instance;
 		}
 		
-		public function getInvaderData( id:uint ):InvaderData
+		public function get invaders():Vector.<InvaderData>
 		{
-			return _invaders[id];
+			return _invaders;
 		}
 		
 		public function getInvader( id:uint, material:MaterialBase ):Invader
@@ -64,7 +64,7 @@ package
 			invaderData.cellsFrame0 = createInvaderCells( definition[ 0 ], dimensions );
 			invaderData.cellsFrame1 = createInvaderCells( definition[ 1 ], dimensions );
 			
-			return invaderData.invader = new Invader( id, invaderData, meshFrame0, meshFrame1 );
+			return invaderData.invader = new Invader( invaderData, meshFrame0, meshFrame1 );
 		}
 		
 		public function resetLastSpawnTimes(time:uint):void

@@ -13,11 +13,10 @@ package invaders.objects
 	
 	public class Invader extends GameObject
 	{
+		private var _invaderData:InvaderData;
 		private var _meshFrame0:Mesh;
 		private var _meshFrame1:Mesh;
 		private var _fireTimer:Timer;
-		private var _invaderType:uint;
-		private var _invaderData:InvaderData;
 		private var _targetSpawnZ:Number;
 		private var _animationTimer:Timer;
 		private var _currentDefinitionIndex:uint;
@@ -35,16 +34,10 @@ package invaders.objects
 			return _invaderData;
 		}
 		
-		public function get invaderType():uint
-		{
-			return _invaderType;
-		}
-		
-		public function Invader( invaderType:uint, invaderData:InvaderData, meshFrame0:Mesh, meshFrame1:Mesh )
+		public function Invader( invaderData:InvaderData, meshFrame0:Mesh, meshFrame1:Mesh )
 		{
 			super();
 			
-			_invaderType = invaderType;
 			_invaderData = invaderData;
 			_meshFrame0 = meshFrame0;
 			_meshFrame1 = meshFrame1;
@@ -69,7 +62,7 @@ package invaders.objects
 
 		override public function cloneGameObject():GameObject
 		{
-			return new Invader( _invaderType, _invaderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
+			return new Invader( _invaderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
 		}
 
 		public function stopTimers():void

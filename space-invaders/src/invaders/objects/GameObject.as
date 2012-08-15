@@ -48,6 +48,8 @@ package invaders.objects
 		{
 			enabled = true;
 			
+			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_ADDED, this ) );
+			
 			transform = new Matrix3D();
 			velocity = new Vector3D();
 			rotationalVelocity = new Vector3D();
