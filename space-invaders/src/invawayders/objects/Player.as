@@ -1,15 +1,15 @@
-package invaders.objects
+package invawayders.objects
 {
-	import invaders.events.*;
-	import invaders.utils.*;
+	import invawayders.events.*;
+	import invawayders.utils.*;
 	
 	import away3d.cameras.*;
 	import away3d.entities.*;
 	import away3d.materials.*;
 	import away3d.primitives.*;
 	
-	import flash.geom.*;
 	import flash.events.*;
+	import flash.geom.*;
 	import flash.utils.*;
 	
 	public class Player extends GameObject

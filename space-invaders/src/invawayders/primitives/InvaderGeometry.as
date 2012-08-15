@@ -1,26 +1,24 @@
-package invaders.primitives
+package invawayders.primitives
 {
-
-	import away3d.core.base.SubGeometry;
-	import away3d.primitives.PrimitiveBase;
-
-	import flash.geom.Point;
-	import flash.geom.Vector3D;
-
+	import away3d.core.base.*;
+	import away3d.primitives.*;
+	
+	import flash.geom.*;
+	
 	public class InvaderGeometry extends PrimitiveBase
 	{
 		private var _definitionMatrix:Vector.<uint>;
 		private var _gridDimensions:Point;
 		private var _cellSizeXY:Number;
 		private var _cellSizeZ:Number;
-
+		
 		private var _rawVertices:Vector.<Number>;
 		private var _rawNormals:Vector.<Number>;
 		private var _rawTangents:Vector.<Number>;
 		private var _rawIndices:Vector.<uint>;
 		private var _rawUvs:Vector.<Number>;
 		private var _currentIndex:uint;
-
+		
 		public function InvaderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Vector.<uint>, gridDimensions:Point )
 		{
 			super();
@@ -29,7 +27,7 @@ package invaders.primitives
 			_definitionMatrix = definitionMatrix;
 			_gridDimensions = gridDimensions;
 		}
-
+		
 		protected override function buildGeometry( target:SubGeometry ):void
 		{
 
@@ -39,19 +37,19 @@ package invaders.primitives
 			_rawUvs = new Vector.<Number>();
 			_rawIndices = new Vector.<uint>();
 			_currentIndex = 0;
-
+			
 			var i:uint, j:uint;
 			var posX:Number, posY:Number;
 			var offX:Number, offY:Number;
 			var p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, p4:Vector3D, p5:Vector3D, p6:Vector3D, p7:Vector3D;
-
+			
 			var lenX:uint = _gridDimensions.x;
 			var lenY:uint = _gridDimensions.y;
 			offX = _cellSizeXY / 2 - ( lenX / 2 ) * _cellSizeXY;
 			offY = -_cellSizeXY / 2 + ( lenY / 2 ) * _cellSizeXY;
 			var halfCellSizeXY:Number = _cellSizeXY / 2;
 			var halfCellSizeZ:Number = _cellSizeZ / 2;
-
+			
 			for( j = 0; j < lenY; j++ ) {
 				for( i = 0; i < lenX; i++ ) {
 					if( isCellActiveAtCoordinates( i, j ) == 1 ) {
@@ -99,7 +97,7 @@ package invaders.primitives
 					}
 				}
 			}
-
+			
 			// Report geom data.
 	        target.updateVertexData(        _rawVertices );
 	        target.updateVertexNormalData(  _rawNormals );
@@ -111,9 +109,8 @@ package invaders.primitives
 			_rawIndices  = null;
 			_rawTangents = null;
 			_rawUvs      = null;
-
 		}
-
+		
 		private function addFace( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D ):void
 		{
 			_rawVertices.push( p0.x, p0.y, p0.z );
@@ -136,7 +133,7 @@ package invaders.primitives
 			_rawIndices.push( _currentIndex + 1, _currentIndex + 3, _currentIndex + 2 );
 			_currentIndex += 4;
 		}
-
+		
 		/*
 			Replied Vector3D represents the following:
 				  z
@@ -154,13 +151,13 @@ package invaders.primitives
 			reply.w = j == _gridDimensions.y - 1 ? 0 : isCellActiveAtCoordinates( i,     j + 1 );
 			return reply;
 		}
-
+		
 		private function isCellActiveAtCoordinates( i:uint, j:uint ):uint
 		{
 			var cellIndex:uint = j * _gridDimensions.x + i;
 			return _definitionMatrix[ cellIndex ];
 		}
-
+		
 		override protected function buildUVs( target:SubGeometry ) : void
 		{
 			target.updateUVData( _rawUvs );

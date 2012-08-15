@@ -1,4 +1,4 @@
-package invaders.utils
+package invawayders.utils
 {
 
 	public class MathUtils

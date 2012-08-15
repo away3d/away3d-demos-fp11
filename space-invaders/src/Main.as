@@ -1,11 +1,11 @@
 package 
 {
-	import invaders.data.InvaderData;
-	import invaders.events.*;
-	import invaders.objects.*;
-	import invaders.pools.*;
-	import invaders.sounds.*;
-	import invaders.utils.*;
+	import invawayders.data.InvaderData;
+	import invawayders.events.*;
+	import invawayders.objects.*;
+	import invawayders.pools.*;
+	import invawayders.sounds.*;
+	import invawayders.utils.*;
 	
 	import away3d.containers.*;
 	import away3d.debug.*;

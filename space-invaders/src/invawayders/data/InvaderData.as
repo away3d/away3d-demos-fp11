@@ -1,6 +1,6 @@
-package invaders.data
+package invawayders.data
 {
-	import invaders.objects.*;
+	import invawayders.objects.*;
 	
 	import flash.geom.*;
 	

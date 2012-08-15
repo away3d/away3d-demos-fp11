@@ -1,6 +1,6 @@
-package invaders.events
+package invawayders.events
 {
-	import invaders.objects.*;
+	import invawayders.objects.*;
 	
 	import flash.events.*;
 	

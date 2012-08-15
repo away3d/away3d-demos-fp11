@@ -1,6 +1,6 @@
-package invaders.pools
+package invawayders.pools
 {
-	import invaders.objects.*;
+	import invawayders.objects.*;
 	
 	public class InvaderPool extends GameObjectPool
 	{

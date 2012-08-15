@@ -1,9 +1,9 @@
-package invaders.objects
+package invawayders.objects
 {
-	import invaders.data.*;
-	import invaders.events.*;
-	import invaders.pools.*;
-	import invaders.utils.*;
+	import invawayders.data.*;
+	import invawayders.events.*;
+	import invawayders.pools.*;
+	import invawayders.utils.*;
 	
 	import away3d.entities.*;
 	

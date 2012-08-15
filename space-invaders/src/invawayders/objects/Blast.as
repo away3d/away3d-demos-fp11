@@ -1,6 +1,6 @@
-package invaders.objects
+package invawayders.objects
 {
-	import invaders.pools.*;
+	import invawayders.pools.*;
 	
 	import away3d.entities.*;
 	

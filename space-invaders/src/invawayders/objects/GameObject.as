@@ -1,10 +1,10 @@
-package invaders.objects
+package invawayders.objects
 {
-	import away3d.errors.*;
-	import invaders.pools.GameObjectPool;
-	import invaders.events.*;
+	import invawayders.events.*;
+	import invawayders.pools.*;
 	
 	import away3d.containers.*;
+	import away3d.errors.*;
 	
 	import flash.geom.*;
 	

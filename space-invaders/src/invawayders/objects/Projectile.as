@@ -1,4 +1,4 @@
-package invaders.objects
+package invawayders.objects
 {
 	import away3d.entities.*;
 	

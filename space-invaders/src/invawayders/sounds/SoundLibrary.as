@@ -1,12 +1,8 @@
-package invaders.sounds
+package invawayders.sounds
 {
-
-	import flash.utils.Dictionary;
-	import flash.media.Sound;
-	import flash.media.SoundChannel;
-	import flash.media.SoundTransform;
-
-
+	import flash.utils.*;
+	import flash.media.*;
+	
 	public class SoundLibrary
 	{
 		public static const PLAYER_FIRE:String = "sounds/player/fire";

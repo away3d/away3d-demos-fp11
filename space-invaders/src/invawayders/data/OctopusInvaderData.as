@@ -1,4 +1,4 @@
-package invaders.data
+package invawayders.data
 {
 	import flash.geom.*;
 	

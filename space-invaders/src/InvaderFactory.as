@@ -1,8 +1,8 @@
 package 
 {
-	import invaders.data.*;
-	import invaders.objects.*;
-	import invaders.primitives.*;
+	import invawayders.data.*;
+	import invawayders.objects.*;
+	import invawayders.primitives.*;
 	
 	import away3d.core.base.*;
 	import away3d.entities.*;
