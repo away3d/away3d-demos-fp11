@@ -17,18 +17,18 @@
 <intAttribute key="PLAYER_WIDTH" value="550"/>
 <stringAttribute key="POST_COMPILE_ANT" value="build/post_compile.xml"/>
 <stringAttribute key="PRE_COMPILE_ANT" value="build/pre_compile.xml"/>
-<stringAttribute key="PROJECT_NAME" value="space-invaders"/>
+<stringAttribute key="PROJECT_NAME" value="invawayders-web"/>
 <booleanAttribute key="START_DEBUGGER" value="true"/>
 <booleanAttribute key="START_SWF_ENABLED" value="true"/>
 <stringAttribute key="START_SWF_LOCATION" value="bin/Main.html"/>
 <stringAttribute key="START_SWF_WITH" value="Browser"/>
 <booleanAttribute key="USE_PROJECT_COMPILER_ARGUMENTS" value="true"/>
-<stringAttribute key="bad_container_name" value="/space-invaders/launch"/>
+<stringAttribute key="bad_container_name" value="/invawayders-web/launch"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/space-invaders"/>
+<listEntry value="/invawayders-web"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="4"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="${workspace_loc:/space-invaders/launch/output.txt}"/>
+<stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="${workspace_loc:/invawayders-web/launch/output.txt}"/>
 </launchConfiguration>

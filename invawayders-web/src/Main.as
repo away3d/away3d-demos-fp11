@@ -1,6 +1,6 @@
 package 
 {
-	import invawayders.data.InvawayderData;
+	import invawayders.data.*;
 	import invawayders.events.*;
 	import invawayders.objects.*;
 	import invawayders.pools.*;
@@ -12,13 +12,16 @@ package
 	import away3d.entities.*;
 	import away3d.lights.*;
 	import away3d.materials.lightpickers.*;
+	import away3d.materials.methods.*;
 	import away3d.materials.*;
 	import away3d.primitives.*;
+	import away3d.textures.*;
 	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.geom.*;
 	import flash.sensors.*;
+	import flash.system.*;
 	import flash.text.*;
 	import flash.ui.*;
 	import flash.utils.*;
@@ -27,8 +30,23 @@ package
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Main extends Sprite
 	{
+		//skybox textures
+		[Embed(source="/../embeds/skybox/space_posX.jpg")]
+		private var SkyboxImagePosX:Class;
+		[Embed(source="/../embeds/skybox/space_negX.jpg")]
+		private var SkyboxImageNegX:Class;
+		[Embed(source="/../embeds/skybox/space_posY.jpg")]
+		private var SkyboxImagePosY:Class;
+		[Embed(source="/../embeds/skybox/space_negY.jpg")]
+		private var SkyboxImageNegY:Class;
+		[Embed(source="/../embeds/skybox/space_posZ.jpg")]
+		private var SkyboxImagePosZ:Class;
+		[Embed(source="/../embeds/skybox/space_negZ.jpg")]
+		private var SkyboxImageNegZ:Class;
+		
 		private var _view:View3D;
 		private var _lightPicker:StaticLightPicker;
+		private var _cubeMap:BitmapCubeTexture;
 		
 		private var _cameraLight:PointLight;
 		private var _cameraLightPicker:StaticLightPicker;
@@ -58,10 +76,16 @@ package
 		private var _active:Boolean;
 		
 		private var _currentPosition:Point = new Point();
+		private var _isAccelerometer:Boolean;
+		private var _isDesktop:Boolean;
 		private var _accelerometer:Accelerometer = new Accelerometer();
 		private var _isFiring:Boolean;
 		private var _mouseIsOnStage:Boolean = true;
-		private var _firstAccY:Number;
+		private var _firstAccY:Number = 0;
+		private var _w:int;
+		private var _h:int;
+		private var _hw:int;
+		private var _hh:int;
 		
 		
 		//hud variables
@@ -100,6 +124,12 @@ package
 		{
 			//initialise the save state manager
 			_saveStateManager = new SaveStateManager();
+			
+			//default accelerometer use to true if accelerometer is available
+			_isAccelerometer = Accelerometer.isSupported;
+			
+			var man:String = Capabilities.manufacturer;
+			_isDesktop = (man.indexOf('Win')>=0 || man.indexOf('Mac')>=0);
 			
 			init();
 		}
@@ -170,13 +200,13 @@ package
 
 
 			// Skybox.
-//			_cubeMap = new BitmapCubeTexture(
-//				new SkyboxImagePosX().bitmapData, new SkyboxImageNegX().bitmapData,
-//				new SkyboxImagePosY().bitmapData, new SkyboxImageNegY().bitmapData,
-//				new SkyboxImagePosZ().bitmapData, new SkyboxImageNegZ().bitmapData
-//			);
-//			_skyBox = new SkyBox( _cubeMap );
-//			_view.scene.addChild( _skyBox );
+			_cubeMap = new BitmapCubeTexture(
+				new SkyboxImagePosX().bitmapData, new SkyboxImageNegX().bitmapData,
+				new SkyboxImagePosY().bitmapData, new SkyboxImageNegY().bitmapData,
+				new SkyboxImagePosZ().bitmapData, new SkyboxImageNegZ().bitmapData
+			);
+			
+			_view.scene.addChild( new SkyBox( _cubeMap ) );
 
 			// Init objects.
 			_gameObjectPools = new Vector.<GameObjectPool>();
@@ -201,7 +231,6 @@ package
 			
 			// Reusable invawayders.
 			_invawayderMaterial = new ColorMaterial( 0x777780, 1 );
-//			_invawayderMaterial.addMethod( new EnvMapMethod( _cubeMap, 0.5 ) );
 			_invawayderMaterial.lightPicker = _lightPicker;
 			_invawayderPool = new InvawayderPool();
 			_gameObjectPools.push( _invawayderPool );
@@ -489,7 +518,7 @@ package
 			if( _isFiring && _active)
 				_player.updateBlasters();
 			
-			if( _mouseIsOnStage ) {
+			if( _mouseIsOnStage && !_isAccelerometer ) {
 				if( stage.mouseX > 0 && stage.mouseX < 100000 )
 					_currentPosition.x = stage.mouseX;
 				
@@ -499,15 +528,13 @@ package
 
 			// Update player.
 			if( _active ) {
-				var hw:Number = stage.stageWidth / 2;
-				var hh:Number = stage.stageHeight / 2;
-				
-				var dx:Number = GameSettings.mouseMotionFactor * ( _currentPosition.x - hw ) / hw - _player.x;
-				var dy:Number = -GameSettings.mouseMotionFactor * ( _currentPosition.y - hh ) / hh - _player.y;
-				
-				_player.velocity.x = dx * GameSettings.mouseCameraMotionEase;
-				_player.velocity.y = dy * GameSettings.mouseCameraMotionEase;
-				
+				if (_isAccelerometer) {
+					_player.velocity.x =  (GameSettings.accelerometerMotionFactorX * _currentPosition.x - _player.x) * GameSettings.accelerometerCameraMotionEase;
+					_player.velocity.y =  (GameSettings.accelerometerMotionFactorY * _currentPosition.y - _player.y) * GameSettings.accelerometerCameraMotionEase;
+				} else {
+					_player.velocity.x = (GameSettings.mouseMotionFactor * ( _currentPosition.x / _hw - 1 ) - _player.x) * GameSettings.mouseCameraMotionEase;
+					_player.velocity.y = (-GameSettings.mouseMotionFactor * ( _currentPosition.y / _hh - 1 ) - _player.y) * GameSettings.mouseCameraMotionEase;
+				}
 				if( GameSettings.panTiltFactor != 0 ) {
 					_player.rotationY = -GameSettings.panTiltFactor * _player.x;
 					_player.rotationX =  GameSettings.panTiltFactor * _player.y;
@@ -552,27 +579,27 @@ package
 		 */
 		private function onResize(event:Event = null):void
 		{
-			var w:int = stage.stageWidth;
-			var h:int = stage.stageHeight;
-			var hw:int = w/2;
-			var hh:int = h/2;
+			_w = _isDesktop? stage.stageWidth : stage.fullScreenWidth;
+			_h = _isDesktop? stage.stageHeight : stage.fullScreenHeight;
+			_hw = _w/2;
+			_hh = _h/2;
 			
 			//update view size
-			_view.width = w;
-			_view.height = h;
+			_view.width = _w;
+			_view.height = _h;
 			
 			//update crosshair & popup position
-			_popUpContainer.x = _crossHair.x = hw;
-			_popUpContainer.y = _crossHair.y = hh;
+			_popUpContainer.x = _crossHair.x = _hw;
+			_popUpContainer.y = _crossHair.y = _hh;
 			
 			//update lives text position
-			_livesText.x = hw - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5;
-			_livesText.y = h - 35;
+			_livesText.x = _hw - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5;
+			_livesText.y = _h - 35;
 			_liveIconsContainer.x = _livesText.x + _livesText.width + 10;
 			_liveIconsContainer.y = _livesText.y + 12;
 			
-			_pauseButton.x = w - _pauseButton.width;
-			_scoreText.x = hw - _scoreText.width / 2;
+			_pauseButton.x = _w - _pauseButton.width;
+			_scoreText.x = _hw - _scoreText.width / 2;
 		}
 		
 		// -----------------------------
@@ -801,8 +828,8 @@ package
 				_firstAccY = event.accelerationY;
 			}
 			// Update position.
-			_currentPosition.x = -GameSettings.accelerometerMotionFactorX * event.accelerationX * GameSettings.cameraPanRange;
-			_currentPosition.y =  GameSettings.accelerometerMotionFactorY * ( _firstAccY - event.accelerationY ) * GameSettings.cameraPanRange;
+			_currentPosition.x = -event.accelerationX * GameSettings.cameraPanRange;
+			_currentPosition.y =  ( _firstAccY - event.accelerationY ) * GameSettings.cameraPanRange;
 			// Containment.
 //			if( _currentPosition.x < -GameSettings.cameraPanRange ) _currentPosition.x = -GameSettings.cameraPanRange;
 //			if( _currentPosition.x >  GameSettings.cameraPanRange ) _currentPosition.x =  GameSettings.cameraPanRange;
