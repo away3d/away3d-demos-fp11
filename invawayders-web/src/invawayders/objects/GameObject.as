@@ -48,7 +48,7 @@ package invawayders.objects
 		{
 			enabled = true;
 			
-			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_ADDED, this ) );
+			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_ADD, this ) );
 			
 			transform = new Matrix3D();
 			velocity = new Vector3D();

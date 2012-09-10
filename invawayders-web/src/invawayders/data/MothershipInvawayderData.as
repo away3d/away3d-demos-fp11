@@ -11,7 +11,7 @@ package invawayders.data
 		{
 			this.id = id;
 			
-			cellDefinition = Vector.<Vector.<uint>>([
+			cellDefinitions = Vector.<Vector.<uint>>([
 				Vector.<uint>([
 					0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 					0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,

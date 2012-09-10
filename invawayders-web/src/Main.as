@@ -1,19 +1,53 @@
+/*
+
+Basic game structure example for web and mobile published game in Away3d
+
+Demonstrates:
+
+How to use 3d object pooling to keep control of the geometry and material instances of your game
+How to use game object to manage individual logic on game elements
+How to setup game controls for multiple input devices
+How to simulate exploding particles
+
+Code by Rob Bateman & Li
+rob@infiniteturtles.co.uk
+http://www.infiniteturtles.co.uk
+Alejandro Santander
+http://www.lidev.com.ar/
+
+This code is distributed under the MIT License
+
+Copyright (c)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+
 package 
 {
-	import invawayders.data.*;
-	import invawayders.events.*;
-	import invawayders.objects.*;
-	import invawayders.pools.*;
-	import invawayders.sounds.*;
-	import invawayders.utils.*;
-	
 	import away3d.containers.*;
 	import away3d.debug.*;
 	import away3d.entities.*;
 	import away3d.lights.*;
+	import away3d.materials.*;
 	import away3d.materials.lightpickers.*;
 	import away3d.materials.methods.*;
-	import away3d.materials.*;
 	import away3d.primitives.*;
 	import away3d.textures.*;
 	
@@ -25,6 +59,13 @@ package
 	import flash.text.*;
 	import flash.ui.*;
 	import flash.utils.*;
+	
+	import invawayders.data.*;
+	import invawayders.events.*;
+	import invawayders.objects.*;
+	import invawayders.pools.*;
+	import invawayders.sounds.*;
+	import invawayders.utils.*;
 	
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
@@ -44,37 +85,43 @@ package
 		[Embed(source="/../embeds/skybox/space_negZ.jpg")]
 		private var SkyboxImageNegZ:Class;
 		
+		//engine variables
 		private var _view:View3D;
 		private var _lightPicker:StaticLightPicker;
 		private var _cubeMap:BitmapCubeTexture;
 		
+		//light variables
 		private var _cameraLight:PointLight;
 		private var _cameraLightPicker:StaticLightPicker;
 		private var _gameObjectPools:Vector.<GameObjectPool>;
 		
+		//player variables
 		private var _player:Player;
 		private var _playerVector:Vector.<GameObject>;
 		
-		private var _time:uint;
-		private var _spawnTimeFactor:Number = 1;
+		//invawayder variables
 		private var _invawayderFactory:InvawayderFactory;
 		private var _invawayderMaterial:ColorMaterial;
+		
+		//game variables
+		private var _time:uint;
+		private var _totalKills:uint;
+		private var _currentLevelKills:uint;
+		private var _spawnTimeFactor:Number = 1;
+		private var _currentLevel:uint;
 		private var _soundLibrary:SoundLibrary;
 		
+		//game object pools
 		private var _invawayderPool:InvawayderPool;
 		private var _playerProjectilePool:GameObjectPool;
 		private var _invawayderProjectilePool:GameObjectPool;
 		private var _playerBlastPool:GameObjectPool;
 		private var _invawayderBlastPool:GameObjectPool;
 		private var _cellPool:GameObjectPool;
-		private var _totalKills:uint;
-		private var _currentLevelKills:uint;
 		
+		//interaction variables
 		private var _showingMouse:Boolean = true;
-		
-		private var _currentLevel:uint;
 		private var _active:Boolean;
-		
 		private var _currentPosition:Point = new Point();
 		private var _isAccelerometer:Boolean;
 		private var _isDesktop:Boolean;
@@ -86,7 +133,6 @@ package
 		private var _h:int;
 		private var _hw:int;
 		private var _hh:int;
-		
 		
 		//hud variables
 		private var _hudContainer:Sprite;
@@ -128,6 +174,7 @@ package
 			//default accelerometer use to true if accelerometer is available
 			_isAccelerometer = Accelerometer.isSupported;
 			
+			//determine the platform we are running on (used for screen dimension variables)
 			var man:String = Capabilities.manufacturer;
 			_isDesktop = (man.indexOf('Win')>=0 || man.indexOf('Mac')>=0);
 			
@@ -144,7 +191,7 @@ package
 			initScene();
 			initInvawayders();
 			initPlayer();
-			initUI();
+			initHUD();
 			initListeners();
 		}
 		
@@ -172,12 +219,13 @@ package
 		 */
 		private function initEngine():void
 		{
+			//setup the 3d view
 			_view = new View3D();
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
 			addChild( _view );
 			
-			// Stats.
+			// add awaystats if in debug mode
 			if( GameSettings.debugMode ) {
 				addChild( new AwayStats( _view ) );
 				_view.scene.addChild( new Trident() );
@@ -186,7 +234,7 @@ package
 		
 		private function initScene():void
 		{
-			// Init Lights.
+			// initialise lights
 			var frontLight:DirectionalLight = new DirectionalLight();
 			frontLight.direction = new Vector3D( 0.5, 0, 1 );
 			frontLight.color = 0xFFFFFF;
@@ -199,7 +247,7 @@ package
 			_lightPicker = new StaticLightPicker( [ frontLight ] );
 
 
-			// Skybox.
+			// create skybox texture
 			_cubeMap = new BitmapCubeTexture(
 				new SkyboxImagePosX().bitmapData, new SkyboxImageNegX().bitmapData,
 				new SkyboxImagePosY().bitmapData, new SkyboxImageNegY().bitmapData,
@@ -208,7 +256,7 @@ package
 			
 			_view.scene.addChild( new SkyBox( _cubeMap ) );
 
-			// Init objects.
+			// initialise game object pools
 			_gameObjectPools = new Vector.<GameObjectPool>();
 		}
 		
@@ -237,32 +285,29 @@ package
 			_view.scene.addChild( _invawayderPool );
 
 			// Create cells ( used for invawayder death explosions ).
-//			var cellMaterial:ColorMaterial = new ColorMaterial( 0xFF0000, 0.75 );
-//			cellMaterial.lightPicker = _lightPicker;
-//			cellMaterial.blendMode = BlendMode.ADD;
 			_cellPool = new GameObjectPool( new InvawayderCell(new Mesh( new CubeGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ ), _invawayderMaterial )) );
 			_gameObjectPools.push( _cellPool );
 			_view.scene.addChild( _cellPool );
 		}
 		
 		/**
-		 * 
+		 * Initialise the player
 		 */
 		private function initPlayer():void
 		{
-			// Reusable player blasts.
+			// initialise reusable player blasts
 			_playerBlastPool = new GameObjectPool( new Blast(new Mesh( new SphereGeometry(), new ColorMaterial( 0xFF0000, 0.5 ) )) );
 			_gameObjectPools.push( _playerBlastPool );
 			_view.scene.addChild( _playerBlastPool );
 			
-			// Reusable player projectiles.
+			// initialise player projectiles
 			var playerProjectileMaterial:ColorMaterial = new ColorMaterial( 0x00FFFF, 0.75 );
 			playerProjectileMaterial.lightPicker = _lightPicker;
 			_playerProjectilePool = new GameObjectPool( new Projectile(new Mesh( new CubeGeometry( 25, 25, 200 ), playerProjectileMaterial )) );
 			_gameObjectPools.push( _playerProjectilePool );
 			_view.scene.addChild( _playerProjectilePool );
 			
-			// Player.
+			// initialise player
 			var playerMaterial:ColorMaterial = new ColorMaterial( 0xFFFFFF );
 			playerMaterial.lightPicker = _cameraLightPicker;
 			_player = new Player( _view.camera, playerMaterial);
@@ -278,27 +323,29 @@ package
 		}
 		
 		/**
-		 * Initialise the UI
+		 * Initialise the game HUD
 		 */		
-		private function initUI():void
+		private function initHUD():void
 		{
-			// Initialise the HUD
+			// initialise the HUD container
 			_hudContainer = new Sprite();
 			addChild(_hudContainer);
 			
-			// Cross hair.
+			// initialise the cross hair graphic
 			_crossHair = new Crosshair();
 			_hudContainer.addChild( _crossHair );
 			
-			// Score text.
-			_scoreText = getTextField();
+			// initialise the score text
+			var scoreClip:CustomTextField = new CustomTextField();
+			_scoreText = scoreClip.tf;
 			_hudContainer.addChild( _scoreText );
 			
-			// Lives text.
-			_livesText = getTextField();
+			// initialise the lives text
+			var livesClip:CustomTextField = new CustomTextField();
+			_livesText = livesClip.tf;
 			_hudContainer.addChild( _livesText );
 			
-			// Lives icons.
+			// initialise the lives icons
 			_liveIconsContainer = new Sprite();
 			_hudContainer.addChild( _liveIconsContainer );
 			for( var i:uint; i < GameSettings.playerLives; i++ ) {
@@ -307,35 +354,35 @@ package
 				_liveIconsContainer.addChild( live );
 			}
 			
-			// Restart button
+			// initialise the restart button
 			_restartButton = new RestartButton();
 			_restartButton.addEventListener( MouseEvent.MOUSE_UP, onRestart );
 			_hudContainer.addChild( _restartButton );
 			
-			// Pause button
+			// initialise the pause button
 			_pauseButton = new PauseButton();
 			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
 			_hudContainer.addChild( _pauseButton );
 			
-			// Initialise the popups
+			// initialise the popup container
 			_popUpContainer = new Sprite();
 			addChild(_popUpContainer);
 			
-			// Splash popup
+			// initialise the splash popup
 			_splashPopUp = new SplashPopUp();
 			_splashPopUp.visible = false;
 			_popUpContainer.addChild(_splashPopUp);
 			_playButton = _splashPopUp.playButton;
 			_playButton.addEventListener( MouseEvent.MOUSE_UP, onPlay );
 			
-			// Pause popup
+			// initialise the pause popup
 			_pausePopUp = new PausePopUp();
 			_pausePopUp.visible = false;
 			_popUpContainer.addChild(_pausePopUp);
 			_resumeButton = _pausePopUp.resumeButton;
 			_resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume );
 			
-			// Game over popup
+			// initialise the game over popup
 			_gameOverPopUp = new GameOverPopUp();
 			_gameOverPopUp.visible = false;
 			_popUpContainer.addChild(_gameOverPopUp);
@@ -343,8 +390,8 @@ package
 			_playAgainButton.addEventListener( MouseEvent.MOUSE_UP, onPlay, false, 0, true );
 			_goScoreText = _gameOverPopUp.scoreText;
 			
+			// set the splash popup to visible
 			showPopUp( _splashPopUp );
-			
 		}
 		
 		/**
@@ -367,7 +414,10 @@ package
 		// -----------------------
 		// App flow.
 		// -----------------------
-
+		
+		/**
+		 * Stops the game. Called by the pause button or when the player's lives decrease to zero
+		 */
 		private function stopGame():void
 		{
 			showMouse();
@@ -375,7 +425,10 @@ package
 			_active = false;
 			_player.visible = false;
 		}
-
+		
+		/**
+		 * Starts the game. Called by the play button or restart button
+		 */
 		private function startGame():void
 		{
 			hideMouse();
@@ -400,6 +453,9 @@ package
 			onResize();
 		}
 		
+		/**
+		 * Resumes the game. Called on game start or by the resume button.
+		 */
 		private function resumeGame():void
 		{
 			_firstAccY = 0;
@@ -411,40 +467,20 @@ package
 			_invawayderFactory.resetLastSpawnTimes(_time = getTimer());
 		}
 		
-		public function spawnInvawayders():void
-		{
-			var invawayderData:InvawayderData;
-			for each (invawayderData in _invawayderFactory.invawayders) {
-				var elapsedSinceSpawn:int = _time - invawayderData.lastSpawnTime;
-				if( elapsedSinceSpawn > invawayderData.spawnRate * _spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
-					
-					//grab an unused invawayder from the invawayder pool
-					var invawayder:Invawayder = _invawayderPool.getInvawayderOfType( invawayderData.id );
-					
-					//create a new invawayder if none are available and add it to the pool
-					if (!invawayder) {
-						invawayder = _invawayderFactory.getInvawayder(invawayderData.id, _invawayderMaterial);
-						
-						// handle invawayder events
-						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_DEAD, onInvawayderDead );
-						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onInvawayderFire );
-						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onInvawayderHit );
-						invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_ADDED, onInvawayderAdded );
-						
-						invawayder.addItem(_invawayderPool);
-						_invawayderPool.gameObjects.push( invawayder );
-					}
-					invawayderData.lastSpawnTime = _time;
-				}
-			}
-		}
-		
+		/**
+		 * Hides the active popup.
+		 */
 		private function hidePopUp():void
 		{
 			_hudContainer.visible = true;
 			_activePopUp.visible = false;
 		}
-
+		
+		/**
+		 * Shows the popup defined in the argument.
+		 * 
+		 * @param popUp The moviecip containing the desired popup graphics.
+		 */
 		private function showPopUp( popUp:MovieClip ):void
 		{
 			_activePopUp = popUp;
@@ -452,6 +488,9 @@ package
 			_activePopUp.visible = true;
 		}
 		
+		/**
+		 * Hides the mouse cursor for desktop implementations.
+		 */
 		private function hideMouse():void
 		{
 			if( !_showingMouse )
@@ -462,6 +501,9 @@ package
 			_showingMouse = false;
 		}
 		
+		/**
+		 * Shows the mouse cursor for desktop implementations.
+		 */
 		private function showMouse():void
 		{
 			if( _showingMouse )
@@ -472,6 +514,11 @@ package
 			_showingMouse = true;
 		}
 		
+		/**
+		 * Updates the lives counter to a new lives value.
+		 * 
+		 * @param lives An unsigned integer representing the new number of lives available.
+		 */
 		private function updateLives(lives:uint):void
 		{
 			_lives = lives;
@@ -487,24 +534,30 @@ package
 			_livesText.width = _livesText.textWidth * 1.05;
 		}
 		
+		/**
+		 * Updates the score counter to a new score value.
+		 * 
+		 * @param score An unsigned integer representing the new score.
+		 */
 		private function updateScore(score:uint):void
 		{
 			_score = score;
-			_scoreText.text = "SCORE " + uintToString( _score ) + "   HIGH-SCORE " + uintToString( _highScore );
+			_scoreText.text = "SCORE " + uintToSameLengthString( _score, 5 ) + "   HIGH-SCORE " + uintToSameLengthString( _highScore, 5 );
 			_scoreText.width = int(_scoreText.textWidth * 1.05);
 		}
-
-		private function getTextField():TextField
-		{
-			var clip:CustomTextField = new CustomTextField();
-			return clip.tf;
-		}
-
-		private function uintToString( value:uint ):String
+		
+		/**
+		 * Utility function to convert unsigned integrers to same-length strings.
+		 * 
+		 * @param value Unsigned integer value to convert
+		 * @param length Desired length of the resulting string
+		 * @return The resulting string representing the unsigned integer.
+		 */
+		private function uintToSameLengthString(value:uint, length:uint):String
 		{
 			var str:String = value.toString();
 			
-			while( str.length < 5 )
+			while( str.length < length )
 				str = "0" + str;
 			
 			return str;
@@ -551,13 +604,37 @@ package
 			// Update all game object pools.
 			if( _active || _lives <= 0) {
 				var gameObjectPool:GameObjectPool;
-				for each ( gameObjectPool  in _gameObjectPools)
+				for each (gameObjectPool  in _gameObjectPools)
 					gameObjectPool.update();
 			}
 			
-			//spawn new invawayders
-			if( _active )
-				spawnInvawayders();
+			//spawn new invawayders if time elapsed has exceeded spawn rate.
+			if( _active ) {
+				var invawayderData:InvawayderData;
+				for each (invawayderData in _invawayderFactory.invawayders) {
+					var elapsedSinceSpawn:int = _time - invawayderData.lastSpawnTime;
+					if( elapsedSinceSpawn > invawayderData.spawnRate * _spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
+						
+						//grab an unused invawayder from the invawayder pool
+						var invawayder:Invawayder = _invawayderPool.getInvawayderOfType( invawayderData.id );
+						
+						//create a new invawayder if none are available and add it to the pool
+						if (!invawayder) {
+							invawayder = _invawayderFactory.getInvawayder(invawayderData.id, _invawayderMaterial);
+							
+							// handle invawayder events
+							invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_DIE, onInvawayderDie );
+							invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onInvawayderFire );
+							invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onInvawayderHit );
+							invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_ADD, onInvawayderAdd );
+							
+							invawayder.addItem(_invawayderPool);
+							_invawayderPool.gameObjects.push( invawayder );
+						}
+						invawayderData.lastSpawnTime = _time;
+					}
+				}
+			}
 
 			// Camera light follows player's position.
 			_cameraLight.transform = _player.transform;
@@ -575,7 +652,7 @@ package
 		}
 		
 		/**
-		 * stage listener for resize events
+		 * Handler for resize events from the stage
 		 */
 		private function onResize(event:Event = null):void
 		{
@@ -606,6 +683,9 @@ package
 		// Game event handlers.
 		// -----------------------------
 		
+		/**
+		 * Handler for invawayder hit events, broadcast when an invawayder has been hit by a player projectile or player.
+		 */
 		private function onInvawayderHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.BOING );
@@ -615,7 +695,10 @@ package
 			blast.z -= GameSettings.invawayderSizeZ;
 		}
 		
-		private function onInvawayderAdded( event:GameObjectEvent ):void
+		/**
+		 * Handler for invawayder add events, broadcast when an invawayder has been added to the game.
+		 */
+		private function onInvawayderAdd( event:GameObjectEvent ):void
 		{
 			var invawayder:Invawayder = event.gameTarget as Invawayder;
 			
@@ -623,7 +706,10 @@ package
 				_soundLibrary.playSound( SoundLibrary.MOTHERSHIP );
 		}
 		
-		private function onInvawayderDead( event:GameObjectEvent ):void
+		/**
+		 * Handler for invawayder die events, broadcast when an invawayder has died.
+		 */
+		private function onInvawayderDie( event:GameObjectEvent ):void
 		{
 			var invawayder:Invawayder = event.gameTarget as Invawayder;
 			
@@ -661,6 +747,7 @@ package
 			var positions:Vector.<Point> = invawayder.cellPositions;
 			var pos:Point;
 			var sc:Number = invawayder.scaleX;
+			
 			for each ( pos in positions) {
 				var cell:InvawayderCell = _cellPool.getGameObject() as InvawayderCell;
 				cell.scaleX = cell.scaleY = cell.scaleZ = sc;
@@ -684,6 +771,9 @@ package
 			}
 		}
 		
+		/**
+		 * Handler for player hit events, broadcast when a player has been hit by an invawayder projectile or invawayder.
+		 */
 		private function onPlayerHit( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.EXPLOSION_SOFT );
@@ -698,9 +788,9 @@ package
 			
 			//check if game over
 			if( _lives <= 0 ) {
-				_goScoreText.text =     "SCORE................................... " + uintToString( _score );
+				_goScoreText.text =     "SCORE................................... " + uintToSameLengthString( _score, 5 );
 				_goHighScoreText = _gameOverPopUp.highScoreText;
-				_goHighScoreText.text = "HIGH-SCORE.............................. " + uintToString( _highScore );
+				_goHighScoreText.text = "HIGH-SCORE.............................. " + uintToSameLengthString( _highScore, 5 );
 				_goScoreText.width = int(_goScoreText.textWidth * 1.05);
 				_goScoreText.x = -int(_goScoreText.width / 2);
 				_goHighScoreText.width = int(_goHighScoreText.textWidth * 1.05);
@@ -710,6 +800,9 @@ package
 			}
 		}
 		
+		/**
+		 * Handler for pplayer fire events, broadcast when the player has fired a projectile.
+		 */
 		private function onPlayerFire( event:GameObjectEvent ):void
 		{
 			_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.5 );
@@ -722,6 +815,9 @@ package
 			projectile.position = projectile.position.add( new Vector3D( _player.playerFireCounter % 2 ? GameSettings.blasterOffsetH : -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, -750 ) );
 		}
 		
+		/**
+		 * Handler for invawayder fire events, broadcast when an invawayder has fired a projectile.
+		 */
 		private function onInvawayderFire( event:GameObjectEvent ):void
 		{
 			var invawayder:Invawayder = event.gameTarget as Invawayder;
@@ -744,6 +840,9 @@ package
 		// User interface event handlers.
 		// -----------------------------
 		
+		/**
+		 * Button handler for mouse events, broadcast when the resume button is clicked.
+		 */
 		private function onResume( event:MouseEvent ):void
 		{
 			hideMouse();
@@ -752,6 +851,9 @@ package
 			resumeGame();
 		}
 		
+		/**
+		 * Button handler for mouse events, broadcast when the pause button is clicked.
+		 */
 		private function onPause( event:MouseEvent ):void
 		{
 			showPopUp( _pausePopUp );
@@ -759,11 +861,17 @@ package
 			stopGame();
 		}
 		
+		/**
+		 * Button handler for mouse events, broadcast when the restart button is clicked.
+		 */
 		private function onRestart( event:MouseEvent ):void
 		{
 			startGame();
 		}
 		
+		/**
+		 * Button handler for mouse events, broadcast when the play button is clicked.
+		 */
 		private function onPlay( event:MouseEvent ):void
 		{
 			hideMouse();
@@ -776,14 +884,25 @@ package
 		// Input event handlers.
 		// -----------------------------
 		
-		private function onMouseMove( event:MouseEvent ):void {
+		/**
+		 * Stage handler for mouse events, broadcast when the mouse moves.
+		 */
+		private function onMouseMove( event:MouseEvent ):void
+		{
 			_mouseIsOnStage = true;
 		}
 		
-		private function onMouseLeave( event:Event ):void {
+		/**
+		 * Stage handler for mouse events, broadcast when the mouse leaves the stage area.
+		 */
+		private function onMouseLeave( event:Event ):void
+		{
 			_mouseIsOnStage = false;
 		}
 		
+		/**
+		 * Stage handler for mouse events, broadcast when the mouse button is pressed.
+		 */
 		private function onMouseDown( event:MouseEvent ):void
 		{
 			switch(event.target){
@@ -799,13 +918,20 @@ package
 					break;
 			}
 		}
-
+		
+		/**
+		 * Stage handler for mouse events, broadcast when the mouse button is released.
+		 */
 		private function onMouseUp( event:MouseEvent ):void
 		{
 			_isFiring = false;
 		}
 		
-		private function onKeyDown( event:KeyboardEvent ):void {
+		/**
+		 * Stage handler for key events, broadcast when a key is pressed.
+		 */
+		private function onKeyDown( event:KeyboardEvent ):void
+		{
 			switch( event.keyCode ) {
 				case Keyboard.SPACE:
 					_isFiring = true;
@@ -813,7 +939,11 @@ package
 			}
 		}
 		
-		private function onKeyUp( event:KeyboardEvent ):void {
+		/**
+		 * Stage handler for mouse events, broadcast when a key is released.
+		 */
+		private function onKeyUp( event:KeyboardEvent ):void
+		{
 			switch( event.keyCode ) {
 				case Keyboard.SPACE:
 					_isFiring = false;
@@ -821,21 +951,19 @@ package
 			}
 		}
 		
-		private function onAccelerometerUpdate( event:AccelerometerEvent ):void {
-//			trace( "accelerometer: " + event.accelerationX + ", " + event.accelerationY + ", " + event.accelerationZ );
+		/**
+		 * Accelerometer handler for accelerometer events, broadcast when the values of the accelerometer update.
+		 */
+		private function onAccelerometerUpdate( event:AccelerometerEvent ):void
+		{
 			// Use first encountered acc Y as Y center.
 			if( _firstAccY == 0 ) {
 				_firstAccY = event.accelerationY;
 			}
+			
 			// Update position.
 			_currentPosition.x = -event.accelerationX * GameSettings.cameraPanRange;
 			_currentPosition.y =  ( _firstAccY - event.accelerationY ) * GameSettings.cameraPanRange;
-			// Containment.
-//			if( _currentPosition.x < -GameSettings.cameraPanRange ) _currentPosition.x = -GameSettings.cameraPanRange;
-//			if( _currentPosition.x >  GameSettings.cameraPanRange ) _currentPosition.x =  GameSettings.cameraPanRange;
-//			if( _currentPosition.y < -GameSettings.cameraPanRange ) _currentPosition.y = -GameSettings.cameraPanRange;
-//			if( _currentPosition.y >  GameSettings.cameraPanRange ) _currentPosition.y =  GameSettings.cameraPanRange;
 		}
-
 	}
 }

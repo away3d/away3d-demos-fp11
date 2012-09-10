@@ -102,7 +102,7 @@ package invawayders.objects
 			_life -= GameSettings.blasterStrength;
 			if( _life <= 0 || trigger is Player ) {
 				removeItem();
-				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DEAD, this, trigger ) );
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DIE, this, trigger ) );
 			}
 		}
 
@@ -151,7 +151,7 @@ package invawayders.objects
 		
 		public function get cellPositions():Vector.<Point>
 		{
-			return _currentDefinitionIndex == 0 ? _invawayderData.cellsFrame0 : _invawayderData.cellsFrame1;
+			return _currentDefinitionIndex == 0 ? _invawayderData.cellPositions[0] : _invawayderData.cellPositions[1];
 		}
 	}
 }

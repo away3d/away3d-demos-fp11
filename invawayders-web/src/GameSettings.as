@@ -1,5 +1,8 @@
 package 
 {
+	/**
+	 * Static class used to store game constants
+	 */
 	public class GameSettings
 	{
 		// -----------------------

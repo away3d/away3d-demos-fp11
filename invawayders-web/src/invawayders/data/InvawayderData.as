@@ -11,7 +11,9 @@ package invawayders.data
 	{
 		public var id:uint;
 		
-		public var cellDefinition:Vector.<Vector.<uint>>;
+		public var cellDefinitions:Vector.<Vector.<uint>>;
+		
+		public var cellPositions:Vector.<Vector.<Point>>;
 		
 		public var dimensions:Point;
 		
@@ -32,9 +34,5 @@ package invawayders.data
 		public var lastSpawnTime:uint;
 		
 		public var invawayder:Invawayder;
-		
-		public var cellsFrame0:Vector.<Point>;
-		
-		public var cellsFrame1:Vector.<Point>;
 	}
 }
