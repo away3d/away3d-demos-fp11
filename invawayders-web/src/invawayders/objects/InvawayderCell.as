@@ -33,7 +33,7 @@ package invawayders.objects
 		
 		private function onDeathTimerComplete( event:TimerEvent ):void
 		{
-			removeItem();
+			clear();
 		}
 		
 		private function onDeathTimerTick( event:TimerEvent ):void
@@ -47,18 +47,18 @@ package invawayders.objects
 			return new InvawayderCell( _mesh.clone() as Mesh );
 		}
 		
-		override public function addItem(parent:GameObjectPool):void
+		override public function add(parent:GameObjectPool):void
 		{
-			super.addItem(parent);
+			super.add(parent);
 			
 			visible = true;
 			
 			_deathTimer.start();
 		}
 		
-		override public function removeItem():void
+		override public function clear():void
 		{
-			super.removeItem();
+			super.clear();
 			
 			_deathTimer.reset();
 		}

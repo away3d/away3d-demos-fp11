@@ -24,7 +24,7 @@ package invawayders.objects
 			scaleX = scaleY = scaleZ += 0.15;
 			
 			if( scaleX >= 5 )
-				removeItem();
+				clear();
 			
 		}
 		
@@ -33,9 +33,9 @@ package invawayders.objects
 			return new Blast( _mesh.clone() as Mesh );
 		}
 		
-		override public function addItem(parent:GameObjectPool):void 
+		override public function add(parent:GameObjectPool):void 
 		{
-			super.addItem(parent);
+			super.add(parent);
 			
 			scaleX = scaleY = scaleZ = 0;
 		}

@@ -27,7 +27,7 @@ package invawayders.objects
 			super.update();
 			
 			if( z > 30000 ) {
-				removeItem();
+				clear();
 				return;
 			}
 			
@@ -36,7 +36,7 @@ package invawayders.objects
 
 			// Check for collisions.
 			for each ( target in targets) {
-				if( target.enabled ) {
+				if( target.active ) {
 
 					dz = target.z - z;
 
@@ -46,7 +46,7 @@ package invawayders.objects
 						distance = Math.sqrt( dx * dx + dy * dy );
 						if( distance < GameSettings.impactHitSize * target.scaleX ) {
 							target.impact( this );
-							removeItem();
+							clear();
 						}
 					}
 				}

@@ -14,7 +14,7 @@ package invawayders.objects
 		
 		public var rotationalVelocity:Vector3D = new Vector3D();
 		
-		public var enabled:Boolean;
+		public var active:Boolean;
 		
 		public function GameObject()
 		{
@@ -44,9 +44,9 @@ package invawayders.objects
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_HIT, this, trigger ) );
 		}
 		
-		public function addItem(parent:GameObjectPool):void
+		public function add(parent:GameObjectPool):void
 		{
-			enabled = true;
+			active = true;
 			
 			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_ADD, this ) );
 			
@@ -57,9 +57,9 @@ package invawayders.objects
 			parent.addChild(this);
 		}
 		
-		public function removeItem():void
+		public function clear():void
 		{
-			enabled = false;
+			active = false;
 			
 			if (parent)
 				parent.removeChild(this);

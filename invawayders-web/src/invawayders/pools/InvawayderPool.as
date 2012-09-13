@@ -2,36 +2,56 @@ package invawayders.pools
 {
 	import invawayders.objects.*;
 	
+	/**
+	 * Game object pool for all invvawayder game objects.
+	 */
 	public class InvawayderPool extends GameObjectPool
 	{
+		/**
+		 * Creates a new <code>InvawayderPool</code> object.
+		 */
 		public function InvawayderPool()
 		{
 			super(null);
 		}
 		
-		public function stop():void
+		/**
+		 * Stops the internal timers on all active invawayder objects.
+		 */
+		public function stopTimers():void
 		{
 			var invawayder:Invawayder;
 			for each ( invawayder in _gameObjects)
-				if( invawayder.enabled )
+				if( invawayder.active )
 					invawayder.stopTimers();
 		}
 		
-		public function resume():void
+		/**
+		 * Resumes the internal timers on all active invawayder objects.
+		 */
+		public function resumeTimers():void
 		{
 			var invawayder:Invawayder;
 			for each ( invawayder in _gameObjects)
-				if( invawayder.enabled )
+				if( invawayder.active )
 					invawayder.resumeTimers();
 		}
 		
+		/**
+		 * Returns an active invawayder object in the pool that is currently unused and is of the specified type.
+		 * If no unused objects exist, a null value is returned.
+		 * 
+		 * @param id An unsigned integer representing the type of invawayder to be returned.
+		 * 
+		 * @return An active unused invawayder object of the specified type.
+		 */
 		public function getInvawayderOfType( id:uint ):Invawayder
 		{
 			// Adds an unused item or creates a new item if none are found.
 			var invawayder:Invawayder;
 			for each ( invawayder in _gameObjects) {
-				if( !invawayder.enabled && invawayder.invawayderData.id == id ) {
-					invawayder.addItem(this);
+				if( !invawayder.active && invawayder.invawayderData.id == id ) {
+					invawayder.add(this);
 					return invawayder;
 				}
 			}

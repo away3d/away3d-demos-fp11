@@ -101,7 +101,7 @@ package invawayders.objects
 			
 			_life -= GameSettings.blasterStrength;
 			if( _life <= 0 || trigger is Player ) {
-				removeItem();
+				clear();
 				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DIE, this, trigger ) );
 			}
 		}
@@ -119,9 +119,9 @@ package invawayders.objects
 				velocity.z *= 0.75;
 		}
 		
-		override public function addItem(parent:GameObjectPool):void
+		override public function add(parent:GameObjectPool):void
 		{
-			super.addItem(parent);
+			super.add(parent);
 			
 			_animationTimer.start();
 			_fireTimer.start();
@@ -141,9 +141,9 @@ package invawayders.objects
 			_life = _invawayderData.life;
 		}
 		
-		override public function removeItem():void
+		override public function clear():void
 		{
-			super.removeItem();
+			super.clear();
 			
 			_animationTimer.reset();
 			_fireTimer.reset();

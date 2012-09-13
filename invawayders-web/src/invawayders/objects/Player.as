@@ -67,7 +67,7 @@ package invawayders.objects
 			// Check for collisions with invawayders.
 			var target:GameObject;
 			for each ( target in targets ) {
-				if( target.enabled ) {
+				if( target.active ) {
 
 					dz = target.z - z;
 

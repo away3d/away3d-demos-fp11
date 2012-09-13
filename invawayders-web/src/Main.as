@@ -311,7 +311,7 @@ package
 			playerMaterial.lightPicker = _cameraLightPicker;
 			_player = new Player( _view.camera, playerMaterial);
 			_player.position = new Vector3D( 0, 0, -1000 );
-			_player.enabled = true;
+			_player.active = true;
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onPlayerHit );
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onPlayerFire);
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_DIE, onPlayerDie);
@@ -421,7 +421,7 @@ package
 		private function stopGame():void
 		{
 			showMouse();
-			_invawayderPool.stop();
+			_invawayderPool.stopTimers();
 			_active = false;
 			_player.visible = false;
 		}
@@ -436,7 +436,7 @@ package
 			// Reset all game object pools.
 			var gameObjectPool:GameObjectPool;
 			for each ( gameObjectPool in _gameObjectPools)
-				gameObjectPool.reset();
+				gameObjectPool.clear();
 			
 			//reset level data
 			_currentLevel = 0;
@@ -465,7 +465,7 @@ package
 		private function resumeGame():void
 		{
 			_firstAccY = 0;
-			_invawayderPool.resume();
+			_invawayderPool.resumeTimers();
 			_active = true;
 			_player.visible = true;
 			
@@ -608,7 +608,7 @@ package
 							invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onInvawayderHit );
 							invawayder.addEventListener( GameObjectEvent.GAME_OBJECT_ADD, onInvawayderAdd );
 							
-							invawayder.addItem(_invawayderPool);
+							invawayder.add(_invawayderPool);
 							_invawayderPool.gameObjects.push( invawayder );
 						}
 						invawayderData.lastSpawnTime = _time;
