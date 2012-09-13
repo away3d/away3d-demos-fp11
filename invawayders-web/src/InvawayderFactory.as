@@ -12,7 +12,7 @@ package
 	
 	
 	/**
-	 * Factory class for the creation of invawayder forms used throughout the game
+	 * Singleton factory class for the creation of invawayder forms used throughout the game
 	 */
 	public class InvawayderFactory
 	{
@@ -27,10 +27,10 @@ package
 		
 		//internal array of invawayder data instances, one for each type
 		private var _invawayders:Vector.<InvawayderData> = Vector.<InvawayderData>([
-			new BugInvawayderData(BUG_INVAWAYDER),
-			new OctopusInvawayderData(OCTOPUS_INVAWAYDER),
-			new RoundedOctopusInvawayderData(ROUNDED_OCTOPUS_INVAWAYDER),
-			new MothershipInvawayderData(MOTHERSHIP_INVAWAYDER)
+			new BugInvawayderData(),
+			new OctopusInvawayderData(),
+			new RoundedOctopusInvawayderData(),
+			new MothershipInvawayderData()
 		]);
 		
 		/**
@@ -65,20 +65,25 @@ package
 		{
 			var invawayderData:InvawayderData = _invawayders[id];
 			
+			//if invawayder object already exists, create and return a clone
 			if (invawayderData.invawayder)
 				return invawayderData.invawayder.cloneGameObject() as Invawayder;
 			
-			var cellDefinitions:Vector.<Vector.<uint>> = invawayderData.cellDefinitions;
+			//grab invawayder dimensions data
 			var dimensions:Point = invawayderData.dimensions;
 			
-			var definitionFrame0:Vector.<uint> = cellDefinitions[ 0 ];
-			var definitionFrame1:Vector.<uint> = cellDefinitions[ 1 ];
+			//grab invawayder cell definition data
+			var definitionFrame0:Vector.<uint> = invawayderData.cellDefinitions[ 0 ];
+			var definitionFrame1:Vector.<uint> = invawayderData.cellDefinitions[ 1 ];
 			
+			//define mesh objects frames for invawayder data
 			var meshFrame0:Mesh = new Mesh( new InvawayderGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ, definitionFrame0, dimensions ), material );
 			var meshFrame1:Mesh = new Mesh( new InvawayderGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ, definitionFrame1, dimensions ), material );
 			
+			//define cell positions for invawayder data
 			invawayderData.cellPositions = Vector.<Vector.<Point>>([createInvawayderCellPositions( definitionFrame0, dimensions ), createInvawayderCellPositions( definitionFrame1, dimensions )]);
 			
+			// create and return invawayder object
 			return invawayderData.invawayder = new Invawayder( invawayderData, meshFrame0, meshFrame1 );
 		}
 		

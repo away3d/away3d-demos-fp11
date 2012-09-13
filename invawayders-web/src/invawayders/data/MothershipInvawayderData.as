@@ -3,13 +3,13 @@ package invawayders.data
 	import flash.geom.*;
 	
 	/**
-	 * 
+	 * Data class for Mothership Invawayder
 	 */
 	public class MothershipInvawayderData extends InvawayderData
 	{
-		public function MothershipInvawayderData(id:uint)
+		public function MothershipInvawayderData()
 		{
-			this.id = id;
+			id = InvawayderFactory.MOTHERSHIP_INVAWAYDER;
 			
 			cellDefinitions = Vector.<Vector.<uint>>([
 				Vector.<uint>([

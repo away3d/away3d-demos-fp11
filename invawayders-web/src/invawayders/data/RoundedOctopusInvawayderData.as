@@ -3,13 +3,13 @@ package invawayders.data
 	import flash.geom.*;
 	
 	/**
-	 * 
+	 * Data class for Rounded Octopus Invawayder
 	 */
 	public class RoundedOctopusInvawayderData extends InvawayderData
 	{
-		public function RoundedOctopusInvawayderData(id:uint)
+		public function RoundedOctopusInvawayderData()
 		{
-			this.id = id;
+			id = InvawayderFactory.ROUNDED_OCTOPUS_INVAWAYDER;
 			
 			cellDefinitions = Vector.<Vector.<uint>>([
 				Vector.<uint>([

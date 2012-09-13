@@ -3,13 +3,13 @@ package invawayders.data
 	import flash.geom.*;
 	
 	/**
-	 * 
+	 * Data class for Octopus Invawayder
 	 */
 	public class OctopusInvawayderData extends InvawayderData
 	{
-		public function OctopusInvawayderData(id:uint)
+		public function OctopusInvawayderData()
 		{
-			this.id = id;
+			id = InvawayderFactory.OCTOPUS_INVAWAYDER;
 			
 			cellDefinitions = Vector.<Vector.<uint>>([
 				Vector.<uint>([

@@ -3,6 +3,9 @@ package invawayders.sounds
 	import flash.utils.*;
 	import flash.media.*;
 	
+	/**
+	 * Singleton for managing the storage and playback of all game sounds.
+	 */
 	public class SoundLibrary
 	{
 		public static const PLAYER_FIRE:String = "sounds/player/fire";
@@ -19,11 +22,9 @@ package invawayders.sounds
 		
 		private var _sounds:Dictionary = new Dictionary();
 		
-		public function SoundLibrary()
-		{
-			
-		}
-		
+		/**
+		 * Returns a SoundLibrary instance
+		 */
 		public static function getInstance():SoundLibrary
 		{
 			if (_instance)
@@ -43,11 +44,20 @@ package invawayders.sounds
 			return _instance;
 		}
 		
+		/**
+		 * Registers a sound object in the library, making it available for playback.
+		 */
 		public function registerSound( id:String, sound:Sound ):void
 		{
 			_sounds[ id ] = sound;
 		}
-
+		
+		/**
+		 * Plays a sound object in the library
+		 * 
+		 * @param id A string representing the id of the sound to be played.
+		 * @param volume A number representing the volume level of the sound to be played. Defaults to 1.
+		 */
 		public function playSound( id:String, volume:Number = 1 ):void
 		{
 			if( !GameSettings.useSound )

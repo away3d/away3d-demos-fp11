@@ -28,6 +28,8 @@ package invawayders.objects
 		
 		public var playerFireCounter:uint;
 		
+		public var lives:uint;
+		
 		public function Player( camera:Camera3D, material:MaterialBase )
 		{
 			super();
@@ -104,8 +106,19 @@ package invawayders.objects
 		
 		override public function impact( trigger:GameObject ):void
 		{
+			//decrease the number of lives
+			lives--;
+			
 			super.impact( trigger );
-			shake();
+			
+			//shake the camera to give the impression of impact
+			_shakeT = 1;
+			_shakeTimer.reset();
+			_shakeTimer.start();
+			
+			//check to see if player is dead
+			if (!lives)
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DIE, this, trigger ) );
 		}
 		
 		private function onShakeTimerTick( event:TimerEvent ):void
@@ -120,13 +133,6 @@ package invawayders.objects
 		{
 			_camera.x = 0;
 			_camera.y = 0;
-		}
-		
-		private function shake():void
-		{
-			_shakeT = 1;
-			_shakeTimer.reset();
-			_shakeTimer.start();
 		}
 		
 		private function onFireReleaseTimerComplete( event:TimerEvent ):void

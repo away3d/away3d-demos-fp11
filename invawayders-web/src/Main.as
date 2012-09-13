@@ -158,7 +158,6 @@ package
 		//score variables
 		private var _score:uint;
 		private var _highScore:uint = 0;
-		private var _lives:uint;
 		
 		//state save manager
 		protected var _saveStateManager : SaveStateManager;
@@ -315,6 +314,7 @@ package
 			_player.enabled = true;
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_HIT, onPlayerHit );
 			_player.addEventListener( GameObjectEvent.GAME_OBJECT_FIRE, onPlayerFire);
+			_player.addEventListener( GameObjectEvent.GAME_OBJECT_DIE, onPlayerDie);
 			_player.targets = _invawayderPool.gameObjects;
 			_playerVector = new Vector.<GameObject>();
 			_playerVector.push( _player );
@@ -448,8 +448,14 @@ package
 			resumeGame();
 			
 			//reset score
-			updateScore(0);
-			updateLives(GameSettings.playerLives);
+			_score = 0;
+			updateScoreCounter();
+			
+			//reset lives
+			_player.lives = 3;
+			updateLivesCounter();
+			
+			//reset layout to account for lives and score text
 			onResize();
 		}
 		
@@ -516,51 +522,25 @@ package
 		
 		/**
 		 * Updates the lives counter to a new lives value.
-		 * 
-		 * @param lives An unsigned integer representing the new number of lives available.
 		 */
-		private function updateLives(lives:uint):void
+		private function updateLivesCounter():void
 		{
-			_lives = lives;
-			
 			// Update icons.
-			for( var i:uint; i < GameSettings.playerLives; i++ ) {
-				var child:Sprite = _liveIconsContainer.getChildAt( i ) as Sprite;
-				child.visible = _lives >= i + 1;
-			}
+			for( var i:uint; i < GameSettings.playerLives; i++ )
+				_liveIconsContainer.getChildAt( i ).visible = _player.lives >= i + 1;
 			
 			// Update text.
-			_livesText.text = "LIVES " + _lives + "";
+			_livesText.text = "LIVES " + _player.lives + "";
 			_livesText.width = _livesText.textWidth * 1.05;
 		}
 		
 		/**
 		 * Updates the score counter to a new score value.
-		 * 
-		 * @param score An unsigned integer representing the new score.
 		 */
-		private function updateScore(score:uint):void
+		private function updateScoreCounter():void
 		{
-			_score = score;
-			_scoreText.text = "SCORE " + uintToSameLengthString( _score, 5 ) + "   HIGH-SCORE " + uintToSameLengthString( _highScore, 5 );
+			_scoreText.text = "SCORE " + StringUtils.uintToSameLengthString( _score, 5 ) + "   HIGH-SCORE " + StringUtils.uintToSameLengthString( _highScore, 5 );
 			_scoreText.width = int(_scoreText.textWidth * 1.05);
-		}
-		
-		/**
-		 * Utility function to convert unsigned integrers to same-length strings.
-		 * 
-		 * @param value Unsigned integer value to convert
-		 * @param length Desired length of the resulting string
-		 * @return The resulting string representing the unsigned integer.
-		 */
-		private function uintToSameLengthString(value:uint, length:uint):String
-		{
-			var str:String = value.toString();
-			
-			while( str.length < length )
-				str = "0" + str;
-			
-			return str;
 		}
 		
 		/**
@@ -602,7 +582,7 @@ package
 			_time = getTimer();
 			
 			// Update all game object pools.
-			if( _active || _lives <= 0) {
+			if( _active || _player.lives <= 0) {
 				var gameObjectPool:GameObjectPool;
 				for each (gameObjectPool  in _gameObjectPools)
 					gameObjectPool.update();
@@ -684,6 +664,17 @@ package
 		// -----------------------------
 		
 		/**
+		 * Handler for invawayder add events, broadcast when an invawayder has been added to the game.
+		 */
+		private function onInvawayderAdd( event:GameObjectEvent ):void
+		{
+			var invawayder:Invawayder = event.gameTarget as Invawayder;
+			
+			if( invawayder.invawayderData.id == InvawayderFactory.MOTHERSHIP_INVAWAYDER )
+				_soundLibrary.playSound( SoundLibrary.MOTHERSHIP );
+		}
+		
+		/**
 		 * Handler for invawayder hit events, broadcast when an invawayder has been hit by a player projectile or player.
 		 */
 		private function onInvawayderHit( event:GameObjectEvent ):void
@@ -696,14 +687,24 @@ package
 		}
 		
 		/**
-		 * Handler for invawayder add events, broadcast when an invawayder has been added to the game.
+		 * Handler for invawayder fire events, broadcast when an invawayder has fired a projectile.
 		 */
-		private function onInvawayderAdd( event:GameObjectEvent ):void
+		private function onInvawayderFire( event:GameObjectEvent ):void
 		{
 			var invawayder:Invawayder = event.gameTarget as Invawayder;
+			var projectile:Projectile = _invawayderProjectilePool.getGameObject() as Projectile;
+			projectile.targets = _playerVector;
+			projectile.transform = invawayder.transform.clone();
+			projectile.velocity = new Vector3D( 0, 0, -100 );
 			
-			if( invawayder.invawayderData.id == InvawayderFactory.MOTHERSHIP_INVAWAYDER )
-				_soundLibrary.playSound( SoundLibrary.MOTHERSHIP );
+			if( invawayder.invawayderData.id != InvawayderFactory.MOTHERSHIP_INVAWAYDER ) {
+				_soundLibrary.playSound( SoundLibrary.INVAWAYDER_FIRE, 0.5 );
+			} else {
+				var offset:Vector3D = new Vector3D();
+				offset.x = MathUtils.rand( -700, 700 );
+				offset.y = MathUtils.rand( -150, 150 );
+				projectile.position = projectile.position.add( offset );
+			}
 		}
 		
 		/**
@@ -717,7 +718,9 @@ package
 			_currentLevelKills++;
 			_totalKills++;
 			
-			updateScore(_score + invawayder.invawayderData.score);
+			// Update score
+			_score += invawayder.invawayderData.score;
+			updateScoreCounter();
 			
 			// Update highscore
 			if( _score > _highScore ) {
@@ -784,20 +787,24 @@ package
 			blast.position = event.gameTrigger.position.clone();
 			
 			//update lives counter
-			updateLives(_lives - 1);
-			
+			updateLivesCounter();
+		}
+		
+		/**
+		 * Handler for player die events, broadcast when a player has died.
+		 */
+		private function onPlayerDie( event:GameObjectEvent ):void
+		{
 			//check if game over
-			if( _lives <= 0 ) {
-				_goScoreText.text =     "SCORE................................... " + uintToSameLengthString( _score, 5 );
-				_goHighScoreText = _gameOverPopUp.highScoreText;
-				_goHighScoreText.text = "HIGH-SCORE.............................. " + uintToSameLengthString( _highScore, 5 );
-				_goScoreText.width = int(_goScoreText.textWidth * 1.05);
-				_goScoreText.x = -int(_goScoreText.width / 2);
-				_goHighScoreText.width = int(_goHighScoreText.textWidth * 1.05);
-				_goHighScoreText.x = -int(_goHighScoreText.width / 2);
-				showPopUp( _gameOverPopUp );
-				stopGame();
-			}
+			_goScoreText.text =     "SCORE................................... " + StringUtils.uintToSameLengthString( _score, 5 );
+			_goHighScoreText = _gameOverPopUp.highScoreText;
+			_goHighScoreText.text = "HIGH-SCORE.............................. " + StringUtils.uintToSameLengthString( _highScore, 5 );
+			_goScoreText.width = int(_goScoreText.textWidth * 1.05);
+			_goScoreText.x = -int(_goScoreText.width / 2);
+			_goHighScoreText.width = int(_goHighScoreText.textWidth * 1.05);
+			_goHighScoreText.x = -int(_goHighScoreText.width / 2);
+			showPopUp( _gameOverPopUp );
+			stopGame();
 		}
 		
 		/**
@@ -813,27 +820,6 @@ package
 			projectile.transform = _player.transform.clone();
 			projectile.velocity = _player.transform.deltaTransformVector( new Vector3D( 0, 0, 200 ) );
 			projectile.position = projectile.position.add( new Vector3D( _player.playerFireCounter % 2 ? GameSettings.blasterOffsetH : -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, -750 ) );
-		}
-		
-		/**
-		 * Handler for invawayder fire events, broadcast when an invawayder has fired a projectile.
-		 */
-		private function onInvawayderFire( event:GameObjectEvent ):void
-		{
-			var invawayder:Invawayder = event.gameTarget as Invawayder;
-			var projectile:Projectile = _invawayderProjectilePool.getGameObject() as Projectile;
-			projectile.targets = _playerVector;
-			projectile.transform = invawayder.transform.clone();
-			projectile.velocity = new Vector3D( 0, 0, -100 );
-			
-			if( invawayder.invawayderData.id != InvawayderFactory.MOTHERSHIP_INVAWAYDER ) {
-				_soundLibrary.playSound( SoundLibrary.INVAWAYDER_FIRE, 0.5 );
-			} else {
-				var offset:Vector3D = new Vector3D();
-				offset.x = MathUtils.rand( -700, 700 );
-				offset.y = MathUtils.rand( -150, 150 );
-				projectile.position = projectile.position.add( offset );
-			}
 		}
 		
 		// -----------------------------

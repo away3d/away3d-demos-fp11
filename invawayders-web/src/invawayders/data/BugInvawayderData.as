@@ -3,13 +3,13 @@ package invawayders.data
 	import flash.geom.*;
 	
 	/**
-	 * 
+	 * Data class for Bug Invawayder
 	 */
 	public class BugInvawayderData extends InvawayderData
 	{
-		public function BugInvawayderData(id:uint)
+		public function BugInvawayderData()
 		{
-			this.id = id;
+			id = InvawayderFactory.BUG_INVAWAYDER;
 			
 			cellDefinitions = Vector.<Vector.<uint>>([
 				Vector.<uint>([
