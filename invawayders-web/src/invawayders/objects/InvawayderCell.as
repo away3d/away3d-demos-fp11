@@ -8,12 +8,20 @@ package invawayders.objects
 	import flash.events.*;
 	import flash.utils.*;
 	
+	/**
+	 * Game object used for an invawayder cell that forms the invawayder as it explodes after being killed.
+	 */
 	public class InvawayderCell extends GameObject
 	{
 		private var _mesh:Mesh;
 		private var _deathTimer:Timer;
 		private var _startFlashingOnCount:uint;
 		
+		/**
+		 * Creates a new <code>InvawayderCell</code> object.
+		 * 
+		 * @param mesh The Away3D mesh object used for the cell in the 3D scene.
+		 */
 		public function InvawayderCell( mesh:Mesh )
 		{
 			super();
@@ -29,17 +37,6 @@ package invawayders.objects
 			_deathTimer = new Timer( MathUtils.rand(30, 50), flashCount );
 			_deathTimer.addEventListener( TimerEvent.TIMER, onDeathTimerTick );
 			_deathTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onDeathTimerComplete );
-		}
-		
-		private function onDeathTimerComplete( event:TimerEvent ):void
-		{
-			clear();
-		}
-		
-		private function onDeathTimerTick( event:TimerEvent ):void
-		{
-			if( _deathTimer.currentCount > _startFlashingOnCount )
-				visible = !visible;
 		}
 		
 		override public function cloneGameObject():GameObject
@@ -61,6 +58,17 @@ package invawayders.objects
 			super.clear();
 			
 			_deathTimer.reset();
+		}
+		
+		private function onDeathTimerComplete( event:TimerEvent ):void
+		{
+			clear();
+		}
+		
+		private function onDeathTimerTick( event:TimerEvent ):void
+		{
+			if( _deathTimer.currentCount > _startFlashingOnCount )
+				visible = !visible;
 		}
 	}
 }

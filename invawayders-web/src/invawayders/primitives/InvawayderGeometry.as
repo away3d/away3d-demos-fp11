@@ -5,9 +5,12 @@ package invawayders.primitives
 	
 	import flash.geom.*;
 	
+	/**
+	 * Primitive geometry class that creates an invawayder mesh from the cell definition of the invawayder data type.
+	 */
 	public class InvawayderGeometry extends PrimitiveBase
 	{
-		private var _definitionMatrix:Vector.<uint>;
+		private var _cellDefinition:Vector.<uint>;
 		private var _gridDimensions:Point;
 		private var _cellSizeXY:Number;
 		private var _cellSizeZ:Number;
@@ -19,15 +22,26 @@ package invawayders.primitives
 		private var _rawUvs:Vector.<Number>;
 		private var _currentIndex:uint;
 		
-		public function InvawayderGeometry( cellSizeXY:Number, cellSizeZ:Number, definitionMatrix:Vector.<uint>, gridDimensions:Point )
+		/**
+		 * Creates a new <code>InvawayderGeometry</code> object.
+		 * 
+		 * @param cellSizeXY The dimension of the XY edge of each cell.
+		 * @param cellSizeZ The dimension of the Z edge of each cell.
+		 * @param cellDefinition The cell definitions from the invawayder data type used to create the invawayder geometry.
+		 * @param gridDimensions The 2D dimensions of the grid used for the cell definition.
+		 */
+		public function InvawayderGeometry( cellSizeXY:Number, cellSizeZ:Number, cellDefinition:Vector.<uint>, gridDimensions:Point )
 		{
 			super();
 			_cellSizeXY = cellSizeXY;
 			_cellSizeZ = cellSizeZ;
-			_definitionMatrix = definitionMatrix;
+			_cellDefinition = cellDefinition;
 			_gridDimensions = gridDimensions;
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		protected override function buildGeometry( target:SubGeometry ):void
 		{
 
@@ -65,31 +79,31 @@ package invawayders.primitives
 						p6 = new Vector3D( posX - halfCellSizeXY, posY - halfCellSizeXY,  halfCellSizeZ );
 						p7 = new Vector3D( posX + halfCellSizeXY, posY - halfCellSizeXY,  halfCellSizeZ );
 						if( neighbors.x == 0 ) { // LEFT
-							addFace(
+							addQuad(
 								p4, p0, p6, p2,
 								new Vector3D( -1, 0, 0 )
 							);
 						}
 						if( neighbors.y == 0 ) { // RIGHT
-							addFace(
+							addQuad(
 								p1, p5, p3, p7,
 								new Vector3D( 1, 0, 0 )
 							);
 						}
 						if( neighbors.z == 0 ) { // TOP
-							addFace(
+							addQuad(
 								p1, p0, p5, p4,
 								new Vector3D( -1, 0, 0 )
 							);
 						}
 						if( neighbors.w == 0 ) { // BOTTOM
-							addFace(
+							addQuad(
 								p7, p6, p3, p2,
 								new Vector3D( -1, 0, 0 )
 							);
 						}
 						// FRONT (always).
-						addFace(
+						addQuad(
 							p0, p1, p2, p3,
 							new Vector3D( 0, 0, -1 )
 						);
@@ -111,7 +125,24 @@ package invawayders.primitives
 			_rawUvs      = null;
 		}
 		
-		private function addFace( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D ):void
+		/**
+		 * @inheritDoc
+		 */
+		override protected function buildUVs( target:SubGeometry ) : void
+		{
+			target.updateUVData( _rawUvs );
+		}
+		
+		/**
+		 * Utility function used to add a single quad denifition to the stream data (a quad is made up of two triangles).
+		 * 
+		 * @param p0 The first vertex in the quad.
+		 * @param p1 The second vertex in the quad.
+		 * @param p2 The third vertex in the quad.
+		 * @param p3 The fourth vertex in the quad.
+		 * @param normal The normal vector of the quad.
+		 */
+		private function addQuad( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D ):void
 		{
 			_rawVertices.push( p0.x, p0.y, p0.z );
 			_rawVertices.push( p1.x, p1.y, p1.z );
@@ -134,13 +165,17 @@ package invawayders.primitives
 			_currentIndex += 4;
 		}
 		
-		/*
-			Replied Vector3D represents the following:
-				  z
-				x n y
-				  w
-			with n being the cell at the current coordinates
-			and each x, y, z, w value being 1 if the neighbor is active or 0 otherwise.
+		/**
+		 * Returns a Vector3D represents the following:
+		 * 	  z
+		 * 	x n y
+		 * 	  w
+		 * with n being the cell at the current coordinates and each x, y, z, w value being 1 if the neighbor is active or 0 otherwise.
+		 * 
+		 * @param i The horizontal position to check in the grid.
+		 * @param j The vertical position to check in the grid.
+		 * 
+		 * @return The 3D vector representing the surrounding active cell status.
 		 */
 		private function areNeighborsActiveAtCoordinates( i:uint, j:uint ):Vector3D
 		{
@@ -152,15 +187,18 @@ package invawayders.primitives
 			return reply;
 		}
 		
+		/**
+		 * Checks whether the given cell is active
+		 * 
+		 * @param i The horizontal of the cell in the grid.
+		 * @param j The vertical of the cell in the grid.
+		 * 
+		 * @return A value of 1 (active) or 0 (inactive).
+		 */
 		private function isCellActiveAtCoordinates( i:uint, j:uint ):uint
 		{
 			var cellIndex:uint = j * _gridDimensions.x + i;
-			return _definitionMatrix[ cellIndex ];
-		}
-		
-		override protected function buildUVs( target:SubGeometry ) : void
-		{
-			target.updateUVData( _rawUvs );
+			return _cellDefinition[ cellIndex ];
 		}
 	}
 }

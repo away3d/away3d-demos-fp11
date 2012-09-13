@@ -4,10 +4,18 @@ package invawayders.objects
 	
 	import away3d.entities.*;
 	
+	/**
+	 * Game object used for the blast that occurs when an impact is detected.
+	 */
 	public class Blast extends GameObject
 	{
 		private var _mesh:Mesh;
 		
+		/**
+		 * Creates a new <code>Blast</code> object.
+		 * 
+		 * @param mesh The Away3D mesh object used for the blast in the 3D scene.
+		 */
 		public function Blast( mesh:Mesh )
 		{
 			super();
@@ -17,6 +25,9 @@ package invawayders.objects
 			addChild( mesh );
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override public function update():void
 		{
 			super.update();
@@ -28,11 +39,17 @@ package invawayders.objects
 			
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override public function cloneGameObject():GameObject
 		{
 			return new Blast( _mesh.clone() as Mesh );
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override public function add(parent:GameObjectPool):void 
 		{
 			super.add(parent);

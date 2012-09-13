@@ -11,6 +11,9 @@ package invawayders.objects
 	import flash.geom.*;
 	import flash.utils.*;
 	
+	/**
+	 * Game object used for an invawayder in the scene.
+	 */
 	public class Invawayder extends GameObject
 	{
 		private var _invawayderData:InvawayderData;
@@ -29,11 +32,31 @@ package invawayders.objects
 		private var _spawnY:Number = 0;
 		private var _targetSpeed:Number = 0;
 		
+		/**
+		 * The data object from the invawayder factory used to initialise the invawayder game object.
+		 * 
+		 * @see invawayders.InvawayderFactory
+		 */
 		public function get invawayderData():InvawayderData
 		{
 			return _invawayderData;
 		}
 		
+		/**
+		 * The active cell positions of the invawayder, used to position explosion cells when invawayder dies.
+		 */
+		public function get cellPositions():Vector.<Point>
+		{
+			return _currentDefinitionIndex == 0 ? _invawayderData.cellPositions[0] : _invawayderData.cellPositions[1];
+		}
+		
+		/**
+		 * Creates a new <code>Invawayder</code> object.
+		 * 
+		 * @param invawayderData The data object from the invawayder factory used to initialise the invawayder game object.
+		 * @param meshFrame0 The Away3D mesh object used for frame 0 of the invawayder in the 3D scene.
+		 * @param meshFrame1 The Away3D mesh object used for frame 1 of the invawayder in the 3D scene.
+		 */
 		public function Invawayder( invawayderData:InvawayderData, meshFrame0:Mesh, meshFrame1:Mesh )
 		{
 			super();
@@ -51,50 +74,38 @@ package invawayders.objects
 			_fireTimer = new Timer( getFireRate() );
 			_fireTimer.addEventListener( TimerEvent.TIMER, onFireTimerTick );
 			
-			toggleFrame();
+			updateFrame();
 		}
-
-		private function getFireRate():uint
-		{
-			var rate:uint = _invawayderData.fireRate;
-			return Math.floor( MathUtils.rand( rate, rate * 1.5 ) );
-		}
-
-		override public function cloneGameObject():GameObject
-		{
-			return new Invawayder( _invawayderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
-		}
-
+		
+		/**
+		 * Stops the internal timer on the invawayder object.
+		 */
 		public function stopTimers():void
 		{
 			_animationTimer.stop();
 			_fireTimer.stop();
 		}
-
+		
+		/**
+		 * Resumes the internal timer on the invawayder object.
+		 */
 		public function resumeTimers():void
 		{
 			_animationTimer.start();
 			_fireTimer.start();
 		}
-
-		private function onFireTimerTick( event:TimerEvent ):void
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function cloneGameObject():GameObject
 		{
-			_fireTimer.delay = getFireRate();
-			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_FIRE, this ) );
+			return new Invawayder( _invawayderData, _meshFrame0.clone() as Mesh, _meshFrame1.clone() as Mesh);
 		}
-
-		private function onAnimationTimerTick( event:TimerEvent ):void
-		{
-			toggleFrame();
-		}
-
-		private function toggleFrame():void
-		{
-			_meshFrame0.visible = !_meshFrame0.visible;
-			_meshFrame1.visible = !_meshFrame0.visible;
-			_currentDefinitionIndex = _meshFrame0.visible ? 0 : 1;
-		}
-
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function impact( trigger:GameObject ):void
 		{
 			super.impact( trigger );
@@ -105,7 +116,10 @@ package invawayders.objects
 				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DIE, this, trigger ) );
 			}
 		}
-
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function update():void
 		{
 			super.update();
@@ -119,6 +133,9 @@ package invawayders.objects
 				velocity.z *= 0.75;
 		}
 		
+		/**
+		 * @inheritDoc
+		 */		
 		override public function add(parent:GameObjectPool):void
 		{
 			super.add(parent);
@@ -141,6 +158,9 @@ package invawayders.objects
 			_life = _invawayderData.life;
 		}
 		
+		/**
+		 * @inheritDoc
+		 */		
 		override public function clear():void
 		{
 			super.clear();
@@ -149,9 +169,40 @@ package invawayders.objects
 			_fireTimer.reset();
 		}
 		
-		public function get cellPositions():Vector.<Point>
+		/**
+		 * Handler for fire timer events, broadcast when the invawayder has fired a projectile.
+		 */
+		private function onFireTimerTick( event:TimerEvent ):void
 		{
-			return _currentDefinitionIndex == 0 ? _invawayderData.cellPositions[0] : _invawayderData.cellPositions[1];
+			_fireTimer.delay = getFireRate();
+			dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_FIRE, this ) );
+		}
+		
+		/**
+		 * Handler for animation timer events, broadcast when the invawayder has updated its animation frame.
+		 */
+		private function onAnimationTimerTick( event:TimerEvent ):void
+		{
+			updateFrame();
+		}
+		
+		/**
+		 * Returns a new fire rate based on the fire rate of the invawayder type and a random element.
+		 */
+		private function getFireRate():uint
+		{
+			var rate:uint = _invawayderData.fireRate;
+			return Math.floor( MathUtils.rand( rate, rate * 1.5 ) );
+		}
+		
+		/**
+		 * Updates the animation frame of the invawayder.
+		 */
+		private function updateFrame():void
+		{
+			_meshFrame0.visible = !_meshFrame0.visible;
+			_meshFrame1.visible = !_meshFrame0.visible;
+			_currentDefinitionIndex = _meshFrame0.visible ? 0 : 1;
 		}
 	}
 }

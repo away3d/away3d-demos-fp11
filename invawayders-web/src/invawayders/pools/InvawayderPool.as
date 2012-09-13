@@ -17,6 +17,8 @@ package invawayders.pools
 		
 		/**
 		 * Stops the internal timers on all active invawayder objects.
+		 * 
+		 * @see invawayders.objects.Invawayder#stopTimers
 		 */
 		public function stopTimers():void
 		{
@@ -28,6 +30,8 @@ package invawayders.pools
 		
 		/**
 		 * Resumes the internal timers on all active invawayder objects.
+		 * 
+		 * @see invawayders.objects.Invawayder#resumeTimers
 		 */
 		public function resumeTimers():void
 		{

@@ -12,6 +12,9 @@ package invawayders.objects
 	import flash.geom.*;
 	import flash.utils.*;
 	
+	/**
+	 * Game object used for the player in the scene.
+	 */
 	public class Player extends GameObject
 	{
 		private var _camera:Camera3D;
@@ -30,6 +33,12 @@ package invawayders.objects
 		
 		public var lives:uint;
 		
+		/**
+		 * Creates a new <code>Player</code> object.
+		 * 
+		 * @param camera The Away3D camera object controlled by the player.
+		 * @param material The material used for the player's blaster objects.
+		 */
 		public function Player( camera:Camera3D, material:MaterialBase )
 		{
 			super();
@@ -58,6 +67,29 @@ package invawayders.objects
 			_fireReleaseTimer.addEventListener( TimerEvent.TIMER_COMPLETE, onFireReleaseTimerComplete );
 		}
 		
+		/**
+		 * updates the firing state of the player's blaster objects.
+		 */
+		public function updateBlasters():void
+		{
+			if(_fireReleased) {
+				playerFireCounter++;
+				
+				//kick back on the blasters
+				var blaster:Mesh = playerFireCounter % 2 ? _rightBlaster : _leftBlaster;
+				blaster.z -= 500;
+				
+				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_FIRE, this ) );
+				
+				_fireReleased = false;
+				_fireReleaseTimer.reset();
+				_fireReleaseTimer.start();
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function update():void
 		{
 			super.update();
@@ -87,23 +119,9 @@ package invawayders.objects
 			_rightBlaster.z += 0.25 * (GameSettings.blasterOffsetD - _rightBlaster.z);
 		}
 		
-		public function updateBlasters():void
-		{
-			if(_fireReleased) {
-				playerFireCounter++;
-				
-				//kick back on the blasters
-				var blaster:Mesh = playerFireCounter % 2 ? _rightBlaster : _leftBlaster;
-				blaster.z -= 500;
-				
-				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_FIRE, this ) );
-				
-				_fireReleased = false;
-				_fireReleaseTimer.reset();
-				_fireReleaseTimer.start();
-			}
-		}
-		
+		/**
+		 * @inheritDoc
+		 */
 		override public function impact( trigger:GameObject ):void
 		{
 			//decrease the number of lives
@@ -121,6 +139,9 @@ package invawayders.objects
 				dispatchEvent( new GameObjectEvent( GameObjectEvent.GAME_OBJECT_DIE, this, trigger ) );
 		}
 		
+		/**
+		 * Handler for shake timer tick events, broadcast for a short time after the player has been hit by a projectile or invawayder. 
+		 */
 		private function onShakeTimerTick( event:TimerEvent ):void
 		{
 			var shakeRange:Number = GameSettings.playerHitShake * _shakeT;
@@ -129,12 +150,18 @@ package invawayders.objects
 			_shakeT = 1 - _shakeTimer.currentCount / _shakeTimerCount;
 		}
 		
+		/**
+		 * Handler for shake timer complete events, broadcast when the shake timer has completed. 
+		 */
 		private function onShakeTimerComplete( event:TimerEvent ):void
 		{
 			_camera.x = 0;
 			_camera.y = 0;
 		}
 		
+		/**
+		 * Handler for fire release timer complete events, broadcast when the fire release timer has completed. 
+		 */
 		private function onFireReleaseTimerComplete( event:TimerEvent ):void
 		{
 			_fireReleased = true;

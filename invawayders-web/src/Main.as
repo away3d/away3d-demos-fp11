@@ -9,7 +9,7 @@ How to use game object to manage individual logic on game elements
 How to setup game controls for multiple input devices
 How to simulate exploding particles
 
-Code by Rob Bateman & Li
+Code by Rob Bateman & Alejandro Santander
 rob@infiniteturtles.co.uk
 http://www.infiniteturtles.co.uk
 Alejandro Santander
