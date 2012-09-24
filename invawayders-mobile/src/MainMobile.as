@@ -11,10 +11,16 @@ package
 		 */
 		public function MainMobile()
 		{
+			super();
+		}
+		
+		/**
+		 * Initialise the save state of the game
+		 */		
+		override protected function initSaveState():void
+		{
 			//initialise the save state manager
 			_saveStateManager = new MobileSaveStateManager();
-			
-			init();
 		}
 	}
 }

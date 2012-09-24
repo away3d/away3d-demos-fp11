@@ -107,7 +107,7 @@ package
 		private var _time:uint;
 		private var _totalKills:uint;
 		private var _currentLevelKills:uint;
-		private var _spawnTimeFactor:Number = 1;
+		private var _spawnTimeFactor:Number;
 		private var _currentLevel:uint;
 		private var _soundLibrary:SoundLibrary;
 		
@@ -133,6 +133,7 @@ package
 		private var _h:int;
 		private var _hw:int;
 		private var _hh:int;
+		private var _scale:Number;
 		
 		//hud variables
 		private var _hudContainer:Sprite;
@@ -167,9 +168,6 @@ package
 		 */
 		public function Main()
 		{
-			//initialise the save state manager
-			_saveStateManager = new SaveStateManager();
-			
 			//default accelerometer use to true if accelerometer is available
 			_isAccelerometer = Accelerometer.isSupported;
 			
@@ -185,6 +183,7 @@ package
 		 */
 		private function init():void
 		{
+			initSaveState();
 			initGame();
 			initEngine();
 			initScene();
@@ -192,6 +191,15 @@ package
 			initPlayer();
 			initHUD();
 			initListeners();
+		}
+		
+		/**
+		 * Initialise the save state of the game
+		 */		
+		protected function initSaveState():void
+		{
+			//initialise the save state manager
+			_saveStateManager = new SaveStateManager();
 		}
 		
 		/**
@@ -416,9 +424,9 @@ package
 		// -----------------------
 		
 		/**
-		 * Stops the game. Called by the pause button or when the player's lives decrease to zero
+		 * Halts the game logic. Called by the pause button or when the player's lives decrease to zero
 		 */
-		private function stopGame():void
+		private function pauseGame():void
 		{
 			showMouse();
 			_invawayderPool.stopTimers();
@@ -427,12 +435,10 @@ package
 		}
 		
 		/**
-		 * Starts the game. Called by the play button or restart button
+		 * Restarts the game. Called by the play button or restart button
 		 */
-		private function startGame():void
+		private function beginGame():void
 		{
-			hideMouse();
-			
 			// Reset all game object pools.
 			var gameObjectPool:GameObjectPool;
 			for each ( gameObjectPool in _gameObjectPools)
@@ -442,10 +448,7 @@ package
 			_currentLevel = 0;
 			_currentLevelKills = 0;
 			_totalKills = 0;
-			_spawnTimeFactor = 1;
-			
-			//resume play
-			resumeGame();
+			_spawnTimeFactor = GameSettings.startingSpawnTimeFactor;
 			
 			//reset score
 			_score = 0;
@@ -457,6 +460,9 @@ package
 			
 			//reset layout to account for lives and score text
 			onResize();
+			
+			//resume play
+			resumeGame();
 		}
 		
 		/**
@@ -464,6 +470,9 @@ package
 		 */
 		private function resumeGame():void
 		{
+			hideMouse();
+			hidePopUp();
+			
 			_firstAccY = 0;
 			_invawayderPool.resumeTimers();
 			_active = true;
@@ -489,6 +498,8 @@ package
 		 */
 		private function showPopUp( popUp:MovieClip ):void
 		{
+			pauseGame();
+			
 			_activePopUp = popUp;
 			_hudContainer.visible = false;
 			_activePopUp.visible = true;
@@ -544,7 +555,7 @@ package
 		}
 		
 		/**
-		 * Navigation and render loop
+		 * Interaction, game and render loop
 		 */		
 		private function onEnterFrame( event:Event ):void
 		{
@@ -581,8 +592,8 @@ package
 			
 			_time = getTimer();
 			
-			// Update all game object pools.
-			if( _active || _player.lives <= 0) {
+			// Update all game object pools (continue moving objects after player's death)
+			if( _active || !_player.lives) {
 				var gameObjectPool:GameObjectPool;
 				for each (gameObjectPool  in _gameObjectPools)
 					gameObjectPool.update();
@@ -592,8 +603,8 @@ package
 			if( _active ) {
 				var invawayderData:InvawayderData;
 				for each (invawayderData in _invawayderFactory.invawayders) {
-					var elapsedSinceSpawn:int = _time - invawayderData.lastSpawnTime;
-					if( elapsedSinceSpawn > invawayderData.spawnRate * _spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
+					//determine if enough time has passed to spawn another invawayder
+					if( _time > invawayderData.lastSpawnTime + invawayderData.spawnRate * _spawnTimeFactor * MathUtils.rand( 0.9, 1.1 ) ) {
 						
 						//grab an unused invawayder from the invawayder pool
 						var invawayder:Invawayder = _invawayderPool.getInvawayderOfType( invawayderData.id );
@@ -624,7 +635,7 @@ package
 			_view.render();
 			
 			if( _active ) {
-				if( mouseY < 50 )
+				if( mouseY < 50*_scale )
 					showMouse();
 				else
 					hideMouse();
@@ -641,22 +652,41 @@ package
 			_hw = _w/2;
 			_hh = _h/2;
 			
+			//adjust the scale of buttons and text according to the resolution
+			if (_w < 800) {
+				_scale = 0.5
+			} else if (_w > 1600) {
+				_scale = 2;
+			} else {
+				_scale = 1;
+			}
+			
 			//update view size
 			_view.width = _w;
 			_view.height = _h;
 			
 			//update crosshair & popup position
+			_popUpContainer.scaleX = _popUpContainer.scaleY = _scale;
 			_popUpContainer.x = _crossHair.x = _hw;
 			_popUpContainer.y = _crossHair.y = _hh;
 			
 			//update lives text position
-			_livesText.x = _hw - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5;
-			_livesText.y = _h - 35;
-			_liveIconsContainer.x = _livesText.x + _livesText.width + 10;
-			_liveIconsContainer.y = _livesText.y + 12;
+			_livesText.scaleX = _livesText.scaleY = _scale;
+			_livesText.x = _hw - _livesText.width / 2 - _liveIconsContainer.width / 2 - 5*_scale;
+			_livesText.y = _h - 35*_scale;
 			
+			_liveIconsContainer.scaleX = _liveIconsContainer.scaleY = _scale;
+			_liveIconsContainer.x = _livesText.x + _livesText.width + 10*_scale;
+			_liveIconsContainer.y = _livesText.y + 8*_scale;
+			
+			_restartButton.scaleX = _restartButton.scaleY = _scale;
+			
+			_pauseButton.scaleX = _pauseButton.scaleY = _scale;
 			_pauseButton.x = _w - _pauseButton.width;
-			_scoreText.x = _hw - _scoreText.width / 2;
+			
+			_scoreText.scaleX = _scoreText.scaleY = _scale;
+			_scoreText.x = _hw - _scoreText.width / 2 + 20*_scale;
+			_scoreText.y = 7*_scale;
 		}
 		
 		// -----------------------------
@@ -698,12 +728,11 @@ package
 			projectile.velocity = new Vector3D( 0, 0, -100 );
 			
 			if( invawayder.invawayderData.id != InvawayderFactory.MOTHERSHIP_INVAWAYDER ) {
+				//play invawayder fire sound
 				_soundLibrary.playSound( SoundLibrary.INVAWAYDER_FIRE, 0.5 );
 			} else {
-				var offset:Vector3D = new Vector3D();
-				offset.x = MathUtils.rand( -700, 700 );
-				offset.y = MathUtils.rand( -150, 150 );
-				projectile.position = projectile.position.add( offset );
+				//offset projectile on the mothership by a random amount
+				projectile.position = projectile.position.add( new Vector3D(MathUtils.rand( -700, 700 ), MathUtils.rand( -150, 150 ), 0) );
 			}
 		}
 		
@@ -723,7 +752,7 @@ package
 			updateScoreCounter();
 			
 			// Update highscore
-			if( _score > _highScore ) {
+			if( _score > _highScore && _player.lives ) {
 				_highScore = _score;
 				_saveStateManager.saveHighScore(_highScore);
 			}
@@ -732,10 +761,11 @@ package
 			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
 				_currentLevelKills = 0;
 				_currentLevel++;
-				_spawnTimeFactor -= GameSettings.spawnTimeDecreasePerLevel;
 				
-				if( _spawnTimeFactor < GameSettings.minimumSpawnTime )
-					_spawnTimeFactor = GameSettings.minimumSpawnTime;
+				_spawnTimeFactor -= GameSettings.spawnTimeFactorPerLevel;
+				
+				if( _spawnTimeFactor < GameSettings.minimumSpawnTimeFactor )
+					_spawnTimeFactor = GameSettings.minimumSpawnTimeFactor;
 			}
 
 			// Play sound
@@ -765,9 +795,13 @@ package
 				var dy:Number = cell.y - trigger.y;
 				var distanceSq:Number = dx * dx + dy * dy;
 				var rotSpeed:Number = intensity * 5000 / distanceSq;
+				
+				//set the rotation velocity of the cell
 				cell.rotationalVelocity.x = MathUtils.rand( -rotSpeed, rotSpeed );
 				cell.rotationalVelocity.y = MathUtils.rand( -rotSpeed, rotSpeed );
 				cell.rotationalVelocity.z = MathUtils.rand( -rotSpeed, rotSpeed );
+				
+				//set the linear velocity of the cell
 				cell.velocity.x = intensity * MathUtils.rand( 100, 500 ) * dx / distanceSq;
 				cell.velocity.y = intensity * MathUtils.rand( 100, 500 ) * dy / distanceSq;
 				cell.velocity.z = intensity * 50 * trigger.velocity.z / distanceSq + invawayder.velocity.z;
@@ -795,7 +829,7 @@ package
 		 */
 		private function onPlayerDie( event:GameObjectEvent ):void
 		{
-			//check if game over
+			//prepare game over popup
 			_goScoreText.text =     "SCORE................................... " + StringUtils.uintToSameLengthString( _score, 5 );
 			_goHighScoreText = _gameOverPopUp.highScoreText;
 			_goHighScoreText.text = "HIGH-SCORE.............................. " + StringUtils.uintToSameLengthString( _highScore, 5 );
@@ -803,8 +837,8 @@ package
 			_goScoreText.x = -int(_goScoreText.width / 2);
 			_goHighScoreText.width = int(_goHighScoreText.textWidth * 1.05);
 			_goHighScoreText.x = -int(_goHighScoreText.width / 2);
+			
 			showPopUp( _gameOverPopUp );
-			stopGame();
 		}
 		
 		/**
@@ -831,9 +865,6 @@ package
 		 */
 		private function onResume( event:MouseEvent ):void
 		{
-			hideMouse();
-			hidePopUp();
-			
 			resumeGame();
 		}
 		
@@ -843,8 +874,6 @@ package
 		private function onPause( event:MouseEvent ):void
 		{
 			showPopUp( _pausePopUp );
-			
-			stopGame();
 		}
 		
 		/**
@@ -852,7 +881,7 @@ package
 		 */
 		private function onRestart( event:MouseEvent ):void
 		{
-			startGame();
+			beginGame();
 		}
 		
 		/**
@@ -863,7 +892,7 @@ package
 			hideMouse();
 			hidePopUp();
 			
-			startGame();
+			beginGame();
 		}
 		
 		// -----------------------------

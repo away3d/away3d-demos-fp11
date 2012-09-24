@@ -124,6 +124,9 @@ package invawayders.objects
 		 */
 		override public function impact( trigger:GameObject ):void
 		{
+			if (!lives)
+				return;
+			
 			//decrease the number of lives
 			lives--;
 			
