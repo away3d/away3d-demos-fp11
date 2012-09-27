@@ -52,6 +52,8 @@ package
 	import away3d.primitives.*;
 	import away3d.textures.*;
 	
+	import com.adobe.viewsource.ViewSource;
+	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.geom.*;
@@ -169,6 +171,8 @@ package
 		 */
 		public function Main()
 		{
+			//add the viewsource righ-click op"srcview/index.html");tion
+			ViewSource.addMenuItem(this, "srcview/index.html");
 			//default accelerometer use to true if accelerometer is available
 			_isAccelerometer = Accelerometer.isSupported;
 			
@@ -229,6 +233,7 @@ package
 		{
 			//setup the 3d view
 			_view = new View3D();
+			_view.addSourceURL("srcview/index.html");
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
 			addChild( _view );
@@ -847,7 +852,7 @@ package
 		 */
 		private function onPlayerFire( event:GameObjectEvent ):void
 		{
-			_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.5 );
+			_soundLibrary.playSound( SoundLibrary.PLAYER_FIRE, 0.25 );
 			
 			//create a new projectile
 			var projectile:Projectile = _playerProjectilePool.getGameObject() as Projectile;
@@ -927,7 +932,7 @@ package
 				case _pauseButton:
 				case _playAgainButton:
 				case _resumeButton:
-					SoundLibrary.getInstance().playSound( SoundLibrary.UFO );
+					SoundLibrary.getInstance().playSound( SoundLibrary.UFO, 0.5 );
 					break;
 				default:
 					_isFiring = true;
