@@ -5,7 +5,8 @@ Basic game structure example for web and mobile published game in Away3d
 Demonstrates:
 
 How to use 3d object pooling to keep control of the geometry and material instances of your game
-How to use game object to manage individual logic on game elements
+How to use game objects to manage individual logic on game elements.
+How to create dynamically resizing screen elements for different resolutions
 How to setup game controls for multiple input devices
 How to simulate exploding particles
 
@@ -17,7 +18,7 @@ http://www.lidev.com.ar/
 
 This code is distributed under the MIT License
 
-Copyright (c)
+Copyright (c) Away Media 2012
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the “Software”), to deal
