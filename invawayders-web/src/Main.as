@@ -52,8 +52,6 @@ package
 	import away3d.primitives.*;
 	import away3d.textures.*;
 	
-	import com.adobe.viewsource.ViewSource;
-	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.geom.*;
@@ -171,8 +169,6 @@ package
 		 */
 		public function Main()
 		{
-			//add the viewsource righ-click op"srcview/index.html");tion
-			ViewSource.addMenuItem(this, "srcview/index.html");
 			//default accelerometer use to true if accelerometer is available
 			_isAccelerometer = Accelerometer.isSupported;
 			
@@ -755,13 +751,14 @@ package
 			
 			// Update score
 			_score += invawayder.invawayderData.score;
-			updateScoreCounter();
 			
 			// Update highscore
 			if( _score > _highScore && _player.lives ) {
 				_highScore = _score;
 				_saveStateManager.saveHighScore(_highScore);
 			}
+			
+			updateScoreCounter();
 			
 			// Update level
 			if( _currentLevelKills > GameSettings.killsToAdvanceDifficulty ) {
