@@ -15,11 +15,8 @@ package invawayders.primitives
 		private var _cellSizeXY:Number;
 		private var _cellSizeZ:Number;
 		
-		private var _rawVertices:Vector.<Number>;
-		private var _rawNormals:Vector.<Number>;
-		private var _rawTangents:Vector.<Number>;
-		private var _rawIndices:Vector.<uint>;
-		private var _rawUvs:Vector.<Number>;
+		private var _vertices:Vector.<Number>;
+		private var _indices:Vector.<uint>;
 		private var _currentIndex:uint;
 		
 		/**
@@ -42,14 +39,11 @@ package invawayders.primitives
 		/**
 		 * @inheritDoc
 		 */
-		protected override function buildGeometry( target:SubGeometry ):void
+		protected override function buildGeometry( target:CompactSubGeometry ):void
 		{
 
-			_rawVertices = new Vector.<Number>();
-			_rawNormals = new Vector.<Number>();
-			_rawTangents = new Vector.<Number>();
-			_rawUvs = new Vector.<Number>();
-			_rawIndices = new Vector.<uint>();
+			_vertices = new Vector.<Number>();
+			_indices = new Vector.<uint>();
 			_currentIndex = 0;
 			
 			var i:uint, j:uint;
@@ -113,24 +107,36 @@ package invawayders.primitives
 			}
 			
 			// Report geom data.
-	        target.updateVertexData(        _rawVertices );
-	        target.updateVertexNormalData(  _rawNormals );
-			target.updateVertexTangentData( _rawTangents );
-			target.updateUVData(            _rawUvs );
-			target.updateIndexData(         _rawIndices);
-			_rawVertices = null;
-			_rawNormals  = null;
-			_rawIndices  = null;
-			_rawTangents = null;
-			_rawUvs      = null;
+			target.updateData(_vertices);
+			target.updateIndexData(_indices);
+			_vertices = null;
+			_indices  = null;
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override protected function buildUVs( target:SubGeometry ) : void
+		protected override function buildUVs(target : CompactSubGeometry) : void
 		{
-			target.updateUVData( _rawUvs );
+			var stride:uint = target.UVStride;
+			var numUvs : uint = target.vertexData.length;
+			var data : Vector.<Number>;
+			var skip:uint = stride - 2;
+
+			if (target.UVData && numUvs == target.UVData.length)
+				data = target.UVData;
+			else {
+				data = new Vector.<Number>(numUvs, true);
+				invalidateGeometry();
+			}
+
+			var index : int;
+			for (index = target.UVOffset; index < numUvs; index += skip) {
+				data[index++] = 0;
+				data[index++] = 0;
+			}
+			
+			target.updateData(data);
 		}
 		
 		/**
@@ -144,24 +150,28 @@ package invawayders.primitives
 		 */
 		private function addQuad( p0:Vector3D, p1:Vector3D, p2:Vector3D, p3:Vector3D, normal:Vector3D ):void
 		{
-			_rawVertices.push( p0.x, p0.y, p0.z );
-			_rawVertices.push( p1.x, p1.y, p1.z );
-			_rawVertices.push( p2.x, p2.y, p2.z );
-			_rawVertices.push( p3.x, p3.y, p3.z );
-			_rawNormals.push( normal.x, normal.y, normal.z );
-			_rawNormals.push( normal.x, normal.y, normal.z );
-			_rawNormals.push( normal.x, normal.y, normal.z );
-			_rawNormals.push( normal.x, normal.y, normal.z );
-			_rawTangents.push( 0, 0, 0 ); // Ignoring tangents ( ok as long as color materials are used ).
-			_rawTangents.push( 0, 0, 0 );
-			_rawTangents.push( 0, 0, 0 );
-			_rawTangents.push( 0, 0, 0 );
-			_rawUvs.push( 0, 0, 0 ); // Ignoring UVs ( ok as long as color materials are used ).
-			_rawUvs.push( 0, 0, 0 );
-			_rawUvs.push( 0, 0, 0 );
-			_rawUvs.push( 0, 0, 0 );
-			_rawIndices.push( _currentIndex + 0, _currentIndex + 1, _currentIndex + 2 );
-			_rawIndices.push( _currentIndex + 1, _currentIndex + 3, _currentIndex + 2 );
+			_vertices.push( p0.x, p0.y, p0.z );
+			_vertices.push( normal.x, normal.y, normal.z );
+			_vertices.push( 0, 0, 0 ); // Ignoring tangents ( ok as long as color materials are used ).
+			_vertices.push( 0, 0 ); // Ignoring UVs ( ok as long as color materials are used ).
+			_vertices.push( 0, 0 );
+			_vertices.push( p1.x, p1.y, p1.z );
+			_vertices.push( normal.x, normal.y, normal.z );
+			_vertices.push( 0, 0, 0 );
+			_vertices.push( 0, 0 );
+			_vertices.push( 0, 0 );
+			_vertices.push( p2.x, p2.y, p2.z );
+			_vertices.push( normal.x, normal.y, normal.z );
+			_vertices.push( 0, 0, 0 );
+			_vertices.push( 0, 0 );
+			_vertices.push( 0, 0 );
+			_vertices.push( p3.x, p3.y, p3.z );
+			_vertices.push( normal.x, normal.y, normal.z );
+			_vertices.push( 0, 0, 0 );
+			_vertices.push( 0, 0 );
+			_vertices.push( 0, 0 );
+			_indices.push( _currentIndex + 0, _currentIndex + 1, _currentIndex + 2 );
+			_indices.push( _currentIndex + 1, _currentIndex + 3, _currentIndex + 2 );
 			_currentIndex += 4;
 		}
 		
