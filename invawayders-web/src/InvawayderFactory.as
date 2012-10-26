@@ -1,14 +1,56 @@
 package 
 {
-	import away3d.core.base.*;
-	import away3d.entities.*;
-	import away3d.materials.*;
+	import away3d.core.base.CompactSubGeometry;
+	import away3d.core.base.Geometry;
+	import away3d.core.base.IMaterialOwner;
+	import away3d.core.base.IRenderable;
+	import away3d.core.base.ISubGeometry;
+	import away3d.core.base.Object3D;
+	import away3d.core.base.SkinnedSubGeometry;
+	import away3d.core.base.SubGeometry;
+	import away3d.core.base.SubGeometryBase;
+	import away3d.core.base.SubMesh;
+	import away3d.entities.Entity;
+	import away3d.entities.Mesh;
+	import away3d.entities.SegmentSet;
+	import away3d.entities.Sprite3D;
+	import away3d.entities.TextureProjector;
+	import away3d.materials.ColorMaterial;
+	import away3d.materials.ColorMultiPassMaterial;
+	import away3d.materials.LightSources;
+	import away3d.materials.MaterialBase;
+	import away3d.materials.MultiPassMaterialBase;
+	import away3d.materials.SegmentMaterial;
+	import away3d.materials.SinglePassMaterialBase;
+	import away3d.materials.SkyBoxMaterial;
+	import away3d.materials.TextureMaterial;
+	import away3d.materials.TextureMultiPassMaterial;
+	import com.away3d.invawayders.archetypes.ArchetypeBase;
+	import com.away3d.invawayders.archetypes.BugInvawayderArchetype;
+	import com.away3d.invawayders.archetypes.InvawayderArchetype;
+	import com.away3d.invawayders.archetypes.InvawayderProjectileArchetype;
+	import com.away3d.invawayders.archetypes.MothershipInvawayderArchetype;
+	import com.away3d.invawayders.archetypes.PlayerProjectileArchetype;
+	import com.away3d.invawayders.archetypes.RoundedOctopusInvawayderArchetype;
+	import com.away3d.invawayders.objects.Blast;
+	import com.away3d.invawayders.objects.GameObject;
+	import com.away3d.invawayders.objects.Invawayder;
+	import com.away3d.invawayders.objects.InvawayderCell;
+	import com.away3d.invawayders.objects.Player;
+	import com.away3d.invawayders.objects.Projectile;
+	import com.away3d.invawayders.primitives.InvawayderGeometry;
+	import flash.geom.ColorTransform;
+	import flash.geom.Matrix;
+	import flash.geom.Matrix3D;
+	import flash.geom.Orientation3D;
+	import flash.geom.PerspectiveProjection;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
+	import flash.geom.Transform;
+	import flash.geom.Utils3D;
+	import flash.geom.Vector3D;
 	
-	import flash.geom.*;
 	
-	import invawayders.data.*;
-	import invawayders.objects.*;
-	import invawayders.primitives.*;
 	
 	
 	/**
@@ -26,11 +68,11 @@ package
 		public static const MOTHERSHIP_INVAWAYDER:uint = 3;
 		
 		//internal array of invawayder data instances, one for each type
-		private var _invawayders:Vector.<InvawayderData> = Vector.<InvawayderData>([
-			new BugInvawayderData(),
+		private var _invawayders:Vector.<InvawayderArchetype> = Vector.<InvawayderArchetype>([
+			new BugInvawayderArchetype(),
 			new OctopusInvawayderData(),
-			new RoundedOctopusInvawayderData(),
-			new MothershipInvawayderData()
+			new RoundedOctopusInvawayderArchetype(),
+			new MothershipInvawayderArchetype()
 		]);
 		
 		/**
@@ -49,7 +91,7 @@ package
 		/**
 		 * Returns an array of invawayder data instances, one for each type
 		 */
-		public function get invawayders():Vector.<InvawayderData>
+		public function get invawayders():Vector.<InvawayderArchetype>
 		{
 			return _invawayders;
 		}
@@ -63,7 +105,7 @@ package
 		 */
 		public function getInvawayder( id:uint, material:MaterialBase ):Invawayder
 		{
-			var invawayderData:InvawayderData = _invawayders[id];
+			var invawayderData:InvawayderArchetype = _invawayders[id];
 			
 			//if invawayder object already exists, create and return a clone
 			if (invawayderData.invawayder)
@@ -94,9 +136,9 @@ package
 		 */
 		public function resetLastSpawnTimes(time:uint):void
 		{
-			var invawayderData:InvawayderData;
+			var invawayderData:InvawayderArchetype;
 			for each (invawayderData in _invawayders)
-				invawayderData.lastSpawnTime = time;
+				invawayderData.spawnTimer = time;
 		}
 		
 		/**

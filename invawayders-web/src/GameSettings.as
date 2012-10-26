@@ -38,6 +38,7 @@ package
 		public static const cameraPanRange:Number = 1750;
 		public static const panTiltFactor:Number = 0;
 		public static const playerHitShake:Number = 200;
+		public static const playerCountShake:Number = 10;
 		public static const playerLives:uint = 3;
 		
 		// Mouse control settings.
