@@ -60,5 +60,9 @@ package
 		// Scene range.
 		public static const minZ:Number = -2000;
 		public static const maxZ:Number = 50000;
+		
+		//spawn range
+		public static const minSpawnZ:Number = 15000;
+		public static const maxSpawnZ:Number = 20000;
 	}
 }

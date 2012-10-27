@@ -11,6 +11,8 @@ package com.away3d.invawayders.archetypes.subtypes
 	{
 		public function MothershipExplosionArchetype()
 		{
+			id = ExplosionArchetype.MOTHERSHIP;
+			
 			soundOnAdd = SoundLibrary.EXPLOSION_STRONG;
 		}
 	}

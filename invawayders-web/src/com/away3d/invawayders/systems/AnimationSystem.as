@@ -54,7 +54,7 @@ package com.away3d.invawayders.systems
 			invawayder.spawnX = node.transform.x;
 			invawayder.spawnY = node.transform.y;
 			invawayder.targetSpeed = -subType.speed * MathUtils.rand( 0.75, 1.25 );
-			invawayder.targetSpawnZ = MathUtils.rand( 15000, 20000 );
+			invawayder.targetSpawnZ = MathUtils.rand( GameSettings.minSpawnZ, GameSettings.maxSpawnZ );
 			invawayder.life = subType.life;
 			invawayder.fireTimer = getFireTimer(subType);
 			invawayder.animationTimer = getAnimationTimer();

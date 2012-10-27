@@ -13,6 +13,8 @@ package com.away3d.invawayders.archetypes
 	 */
 	public class ExplosionArchetype extends ArchetypeBase
 	{
+		public static const MOTHERSHIP:uint = 1;
+		
 		public var cellContainers:Vector.<ObjectContainer3D>;
 		
 		public static const explosionGeometry:Geometry = new CubeGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ );

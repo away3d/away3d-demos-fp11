@@ -66,6 +66,12 @@ package com.away3d.invawayders.systems
 					z = projectile.transform.z;
 					velocity = projectile.motion.velocity;
 					
+					//dispose of projectiles if they get ot far
+					if (z > GameSettings.minSpawnZ) {
+						creator.destroyEntity(projectile.entity);
+						continue;
+					}
+					
 					switch(projectile.dataModel.subType.id)
 					{
 						case ProjectileArchetype.PLAYER:
