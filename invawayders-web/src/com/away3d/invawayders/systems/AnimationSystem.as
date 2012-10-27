@@ -28,8 +28,8 @@ package com.away3d.invawayders.systems
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.InvawayderNode")]
 		public var invawayders : NodeList;
-		[Inject(nodeType="com.away3d.invawayders.nodes.BulletNode")]
-		public var bullets : NodeList;
+		[Inject(nodeType="com.away3d.invawayders.nodes.ProjectileNode")]
+		public var projectiles : NodeList;
 		[Inject(nodeType="com.away3d.invawayders.nodes.BlastNode")]
 		public var blasts : NodeList;
 		[Inject(nodeType="com.away3d.invawayders.nodes.ExplosionNode")]
@@ -39,7 +39,7 @@ package com.away3d.invawayders.systems
 		public function setUpListeners() : void
 		{
 			invawayders.nodeAdded.add( addToInvawayders );
-			bullets.nodeAdded.add( addToBullets );
+			projectiles.nodeAdded.add( addToProjectiles );
 			blasts.nodeAdded.add( addToBlasts );
 		}
 		
@@ -64,7 +64,7 @@ package com.away3d.invawayders.systems
 			node.transform.scaleX = node.transform.scaleY = node.transform.scaleZ = subType.scale;
 		}
 		
-		private function addToBullets( node : BulletNode ) : void
+		private function addToProjectiles( node : ProjectileNode ) : void
 		{
 			//offset projectiles from the mothership by a random amount
 			if (node.dataModel.subType.id == ProjectileArchetype.MOTHERSHIP) {

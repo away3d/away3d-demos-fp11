@@ -31,7 +31,7 @@ package com.away3d.invawayders.archetypes
 			
 			material = projectileMaterial;
 			
-			Component = Bullet;
+			Component = Projectile;
 		}
 		
 		override protected function clone(archetype:ArchetypeBase, subId:uint):ArchetypeBase

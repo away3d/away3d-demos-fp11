@@ -5,10 +5,10 @@ package com.away3d.invawayders.nodes
 	import net.richardlord.ash.core.*;
 	
 
-	public class BulletNode extends Node
+	public class ProjectileNode extends Node
 	{
 		public var dataModel : DataModel;
-		public var bullet : Bullet;
+		public var projectile : Projectile;
 		public var transform : Transform3D;
 		public var motion : Motion3D;
 	}

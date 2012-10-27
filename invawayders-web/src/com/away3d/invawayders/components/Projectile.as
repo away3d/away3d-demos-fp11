@@ -1,8 +1,8 @@
 package com.away3d.invawayders.components
 {
-	public class Bullet
+	public class Projectile
 	{
-		public function Bullet()
+		public function Projectile()
 		{
 		}
 	}

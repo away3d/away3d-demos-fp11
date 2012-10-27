@@ -35,15 +35,15 @@ package com.away3d.invawayders.systems
 		[Inject(nodeType="com.away3d.invawayders.nodes.InvawayderNode")]
 		public var invawayderNodes : NodeList;
 		
-		[Inject(nodeType="com.away3d.invawayders.nodes.BulletNode")]
-		public var bulletNodes : NodeList;
+		[Inject(nodeType="com.away3d.invawayders.nodes.ProjectileNode")]
+		public var projectileNodes : NodeList;
 
 		override public function update( time : Number ) : void
 		{
 			time *= 1000;
 			
 			var game : GameNode;
-			var bullet : BulletNode;
+			var projectile : ProjectileNode;
 			var invawayder : InvawayderNode;
 			var player : PlayerNode;
 			var dx : Number;
@@ -59,14 +59,14 @@ package com.away3d.invawayders.systems
 			for ( game = gameNodes.head; game; game = game.next )
 			{
 				//detect collisions between projectiles and invawayders / players
-				for ( bullet = bulletNodes.head; bullet; bullet = bullet.next )
+				for ( projectile = projectileNodes.head; projectile; projectile = projectile.next )
 				{
-					x = bullet.transform.x;
-					y = bullet.transform.y;
-					z = bullet.transform.z;
-					velocity = bullet.motion.velocity;
+					x = projectile.transform.x;
+					y = projectile.transform.y;
+					z = projectile.transform.z;
+					velocity = projectile.motion.velocity;
 					
-					switch(bullet.dataModel.subType.id)
+					switch(projectile.dataModel.subType.id)
 					{
 						case ProjectileArchetype.PLAYER:
 							for ( invawayder = invawayderNodes.head; invawayder; invawayder = invawayder.next )
@@ -79,8 +79,8 @@ package com.away3d.invawayders.systems
 									dy = transform.y - y;
 									if( Math.sqrt( dx * dx + dy * dy ) < GameSettings.impactHitSize * transform.scaleX ) {
 										
-										//destroy bullet
-										creator.destroyEntity( bullet.entity );
+										//destroy Projectile
+										creator.destroyEntity( projectile.entity );
 										
 										//deplete invawayder life
 										invawayder.invawayder.life -= GameSettings.blasterStrength;
@@ -106,8 +106,8 @@ package com.away3d.invawayders.systems
 									dy = transform.y - y;
 									if( Math.sqrt( dx * dx + dy * dy ) < GameSettings.impactHitSize ) {
 										
-										//destroy bullet
-										creator.destroyEntity( bullet.entity );
+										//destroy Projectile
+										creator.destroyEntity( projectile.entity );
 										
 										//register a hit
 										hitPlayer(game, player, x, y, z);
