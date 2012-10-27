@@ -56,20 +56,20 @@ package
 		private var _hudContainer:Sprite;
 		private var _scoreText:TextField;
 		private var _livesText:TextField;
-		private var _restartButton:SimpleButton;
-		private var _pauseButton:SimpleButton;
+		private var _restartButton:MovieClip;
+		private var _pauseButton:MovieClip;
 		
 		//popup variables
 		private var _activePopUp:MovieClip;
 		private var _popUpContainer:Sprite;
 		private var _splashPopUp:MovieClip;
-		private var _playButton:SimpleButton;
+		private var _playButton:MovieClip;
 		private var _pausePopUp:MovieClip;
-		private var _resumeButton:SimpleButton;
+		private var _resumeButton:MovieClip;
 		private var _gameOverPopUp:MovieClip;
 		private var _goScoreText:TextField;
 		private var _goHighScoreText:TextField;
-		private var _playAgainButton:SimpleButton;
+		private var _playAgainButton:MovieClip;
 		private var _liveIconsContainer:Sprite;
 		private var _crossHair:Sprite;
 		
@@ -195,11 +195,17 @@ package
 			
 			// initialise the restart button
 			_restartButton = new RestartButton();
+			_restartButton.buttonMode = true;
+			_restartButton.mouseChildren = false;
+			_restartButton.stop();
 			_restartButton.addEventListener( MouseEvent.MOUSE_UP, onRestart );
 			_hudContainer.addChild( _restartButton );
 			
 			// initialise the pause button
 			_pauseButton = new PauseButton();
+			_pauseButton.buttonMode = true;
+			_pauseButton.mouseChildren = false;
+			_pauseButton.stop();
 			_pauseButton.addEventListener( MouseEvent.MOUSE_UP, onPause );
 			_hudContainer.addChild( _pauseButton );
 			
@@ -212,6 +218,9 @@ package
 			_splashPopUp.visible = false;
 			_popUpContainer.addChild(_splashPopUp);
 			_playButton = _splashPopUp.playButton;
+			_playButton.buttonMode = true;
+			_playButton.mouseChildren = false;
+			_playButton.stop();
 			_playButton.addEventListener( MouseEvent.MOUSE_UP, onRestart );
 			
 			// initialise the pause popup
@@ -219,6 +228,9 @@ package
 			_pausePopUp.visible = false;
 			_popUpContainer.addChild(_pausePopUp);
 			_resumeButton = _pausePopUp.resumeButton;
+			_resumeButton.buttonMode = true;
+			_resumeButton.mouseChildren = false;
+			_resumeButton.stop();
 			_resumeButton.addEventListener( MouseEvent.MOUSE_UP, onResume );
 			
 			// initialise the game over popup
@@ -226,6 +238,9 @@ package
 			_gameOverPopUp.visible = false;
 			_popUpContainer.addChild(_gameOverPopUp);
 			_playAgainButton = _gameOverPopUp.playAgainButton;
+			_playAgainButton.buttonMode = true;
+			_playAgainButton.mouseChildren = false;
+			_playAgainButton.stop();
 			_playAgainButton.addEventListener( MouseEvent.MOUSE_UP, onRestart, false, 0, true );
 			_goScoreText = _gameOverPopUp.scoreText;
 			_goHighScoreText = _gameOverPopUp.highScoreText;
