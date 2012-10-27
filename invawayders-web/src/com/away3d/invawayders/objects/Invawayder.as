@@ -8,7 +8,7 @@ package com.away3d.invawayders.objects
 	import com.away3d.invawayders.archetypes.ArchetypeBase;
 	import com.away3d.invawayders.archetypes.BugInvawayderArchetype;
 	import com.away3d.invawayders.archetypes.InvawayderArchetype;
-	import com.away3d.invawayders.archetypes.InvawayderProjectileArchetype;
+	import com.away3d.invawayders.archetypes.ProjectileArchetype;
 	import com.away3d.invawayders.archetypes.MothershipInvawayderArchetype;
 	import com.away3d.invawayders.archetypes.PlayerProjectileArchetype;
 	import com.away3d.invawayders.archetypes.RoundedOctopusInvawayderArchetype;

@@ -1,6 +1,5 @@
 package com.away3d.invawayders.archetypes
 {
-	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.sounds.*;
 	
 	import flash.geom.*;
@@ -12,7 +11,7 @@ package com.away3d.invawayders.archetypes
 	{
 		public function MothershipInvawayderArchetype()
 		{
-			id = ArchetypeLibrary.INVAWAYDERS[3];
+			id = InvawayderArchetype.MOTHERSHIP;
 			
 			cellDefinitions = Vector.<Vector.<uint>>([
 				Vector.<uint>([
@@ -55,9 +54,7 @@ package com.away3d.invawayders.archetypes
 			
 			soundOnRemove = SoundLibrary.EXPLOSION_STRONG;
 			
-			projectileArchetype = ArchetypeLibrary.MOTHERSHIP_PROJECTILE;
-			
-			Component = Invawayder;
+			projectileArchetype = ProjectileArchetype.MOTHERSHIP;
 		}
 	}
 }

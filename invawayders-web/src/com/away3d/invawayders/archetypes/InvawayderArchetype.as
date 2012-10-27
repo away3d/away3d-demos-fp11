@@ -1,5 +1,8 @@
 package com.away3d.invawayders.archetypes
 {
+	import com.away3d.invawayders.components.*;
+	import com.away3d.invawayders.sounds.*;
+	
 	import away3d.entities.*;
 	import away3d.materials.*;
 	
@@ -10,6 +13,17 @@ package com.away3d.invawayders.archetypes
 	 */
 	public class InvawayderArchetype extends ArchetypeBase
 	{
+		public static const BUG:uint = 0;
+		
+		public static const MOTHERSHIP:uint = 1;
+		
+		public static const OCTOPUS:uint = 2;
+		
+		public static const ROUNDED_OCTOPUS:uint = 3;
+		
+		public static const invawayders:Vector.<uint> = Vector.<uint>([0,1,2,3]);
+		
+		public static const invawayderMaterial:ColorMaterial = new ColorMaterial( 0x777780, 1 );
 		
 		/**
 		 * The vector data defining the shape of the invawayder data frames.
@@ -72,9 +86,19 @@ package com.away3d.invawayders.archetypes
 		
 		public var projectileArchetype : uint;
 		
-		public function InvawayderArchetype()
+		public function InvawayderArchetype(subTypes:Vector.<ArchetypeBase> = null)
 		{
-			material = new ColorMaterial( 0x777780, 1 );
+			super(subTypes);
+			
+			id = ArchetypeLibrary.INVAWAYDER;
+			
+			material = invawayderMaterial;
+			
+			soundOnRemove = SoundLibrary.INVAWAYDER_DEATH;
+			
+			projectileArchetype = ProjectileArchetype.INVAWAYDER;
+			
+			Component = Invawayder;
 		}
 	}
 }

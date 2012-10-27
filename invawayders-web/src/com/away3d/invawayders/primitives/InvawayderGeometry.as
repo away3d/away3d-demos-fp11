@@ -1,42 +1,9 @@
 package com.away3d.invawayders.primitives
 {
-	import away3d.core.base.CompactSubGeometry;
-	import away3d.core.base.Geometry;
-	import away3d.core.base.IMaterialOwner;
-	import away3d.core.base.IRenderable;
-	import away3d.core.base.ISubGeometry;
-	import away3d.core.base.Object3D;
-	import away3d.core.base.SkinnedSubGeometry;
-	import away3d.core.base.SubGeometry;
-	import away3d.core.base.SubGeometryBase;
-	import away3d.core.base.SubMesh;
-	import away3d.primitives.CapsuleGeometry;
-	import away3d.primitives.ConeGeometry;
-	import away3d.primitives.CubeGeometry;
-	import away3d.primitives.CylinderGeometry;
-	import away3d.primitives.LineSegment;
-	import away3d.primitives.PlaneGeometry;
-	import away3d.primitives.PrimitiveBase;
-	import away3d.primitives.RegularPolygonGeometry;
-	import away3d.primitives.SkyBox;
-	import away3d.primitives.SphereGeometry;
-	import away3d.primitives.TorusGeometry;
-	import away3d.primitives.WireframeCube;
-	import away3d.primitives.WireframeCylinder;
-	import away3d.primitives.WireframePlane;
-	import away3d.primitives.WireframePrimitiveBase;
-	import away3d.primitives.WireframeSphere;
-	import flash.geom.ColorTransform;
-	import flash.geom.Matrix;
-	import flash.geom.Matrix3D;
-	import flash.geom.Orientation3D;
-	import flash.geom.PerspectiveProjection;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import flash.geom.Transform;
-	import flash.geom.Utils3D;
-	import flash.geom.Vector3D;
+	import away3d.core.base.*;
+	import away3d.primitives.*;
 	
+	import flash.geom.*;
 	
 	/**
 	 * Primitive geometry class that creates an invawayder mesh from the cell definition of the invawayder archetype.

@@ -134,8 +134,8 @@ package com.away3d.invawayders
 			//reset spawn times
 			var id : uint;
 			var invawayderArchetype : InvawayderArchetype;
-			for each (id in ArchetypeLibrary.INVAWAYDERS) {
-				invawayderArchetype = ArchetypeLibrary.getArchetype(id) as InvawayderArchetype;
+			for each (id in InvawayderArchetype.invawayders) {
+				invawayderArchetype = ArchetypeLibrary.getArchetype(ArchetypeLibrary.INVAWAYDER).getSubType(id) as InvawayderArchetype;
 				invawayderArchetype.spawnTimer = invawayderArchetype.spawnRate * gameManager.games.head.state.spawnTimeFactor * MathUtils.rand( 0.9, 1.1 );
 			}
 			

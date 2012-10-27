@@ -5,20 +5,22 @@ package com.away3d.invawayders.archetypes
 	 */
 	public class ArchetypeLibrary
 	{
-		//different player archetypes
+		private static var _instance:ArchetypeLibrary;
+		
+		//player archetype
 		public static const PLAYER:uint = 0;
 		
-		//internal array of invawayder archetypes
-		public static const INVAWAYDERS:Vector.<uint> = Vector.<uint>([1,2,3,4]);
+		//invawayder archetype
+		public static const INVAWAYDER:uint = 1;
 		
-		//different projectile archetypes
-		public static var PLAYER_PROJECTILE:uint = 5;
-		public static var INVAWAYDER_PROJECTILE:uint = 6;
-		public static var MOTHERSHIP_PROJECTILE:uint = 7;
+		//projectile archetype
+		public static var PROJECTILE:uint = 2;
 		
-		//different blast archetypes
-		public static const PLAYER_BLAST:uint = 8;
-		public static const INVAWAYDER_BLAST:uint = 9;
+		//blast archetype
+		public static const BLAST:uint = 3;
+		
+		//explosion archetype
+		public static const EXPLOSION:uint = 4;
 		
 		public static function getArchetype(id:uint) : ArchetypeBase
 		{
@@ -28,23 +30,16 @@ package com.away3d.invawayders.archetypes
 			return _instance.archetypes[id];
 		}
 		
-		private static var _instance:ArchetypeLibrary;
-		
 		protected var archetypes : Vector.<ArchetypeBase>;
 		
 		public function ArchetypeLibrary()
 		{
 			archetypes = new Vector.<ArchetypeBase>();
 			archetypes.push(new PlayerArchetype());
-			archetypes.push(new BugInvawayderArchetype());
-			archetypes.push(new OctopusInvawayderArchetype());
-			archetypes.push(new RoundedOctopusInvawayderArchetype());
-			archetypes.push(new MothershipInvawayderArchetype());
-			archetypes.push(new PlayerProjectileArchetype());
-			archetypes.push(new InvawayderProjectileArchetype());
-			archetypes.push(new MothershipProjectileArchetype());
-			archetypes.push(new PlayerBlastArchetype());
-			archetypes.push(new InvawayderBlastArchetype());
+			archetypes.push(new InvawayderArchetype(Vector.<ArchetypeBase>([new BugInvawayderArchetype(), new MothershipInvawayderArchetype(), new OctopusInvawayderArchetype(), new RoundedOctopusInvawayderArchetype()])));
+			archetypes.push(new ProjectileArchetype(Vector.<ArchetypeBase>([new InvawayderProjectileArchetype(), new PlayerProjectileArchetype()])));
+			archetypes.push(new BlastArchetype(Vector.<ArchetypeBase>([new PlayerBlastArchetype(), new InvawayderBlastArchetype()])));
+			archetypes.push(new ExplosionArchetype());
 		}
 	}
 }

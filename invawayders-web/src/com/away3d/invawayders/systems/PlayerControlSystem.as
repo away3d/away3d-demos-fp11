@@ -95,7 +95,7 @@ package com.away3d.invawayders.systems
 					blaster.z -= 500;
 					
 					//create projectile
-					creator.createEntity( transform.x + blaster.x, transform.y + blaster.y, transform.z - 750, new Vector3D(0, 0, 200), ArchetypeLibrary.PLAYER_PROJECTILE );
+					creator.createEntity( transform.x + blaster.x, transform.y + blaster.y, transform.z - 750, new Vector3D(0, 0, 200), ArchetypeLibrary.PROJECTILE, ProjectileArchetype.PLAYER );
 					
 					//reset shot delay
 					player.fireTimer = GameSettings.blasterFireRateMS;

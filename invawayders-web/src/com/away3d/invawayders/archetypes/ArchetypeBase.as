@@ -11,6 +11,8 @@ package com.away3d.invawayders.archetypes
 	 */
 	public class ArchetypeBase
 	{
+		protected var subTypes:Vector.<ArchetypeBase>;
+		
 		public var id : uint;
 		
 		public var geometry : Geometry;
@@ -30,5 +32,34 @@ package com.away3d.invawayders.archetypes
 		public var soundOnRemove:String;
 		
 		public var Component : Class;
+		
+		public function ArchetypeBase(subTypes:Vector.<ArchetypeBase> = null)
+		{
+			this.subTypes = subTypes || new Vector.<ArchetypeBase>();
+		}
+		
+		public function getSubType(subId : uint):ArchetypeBase
+		{
+			if (subTypes.length < subId + 1)
+				subTypes.length = subId + 1;
+			
+			if (subTypes[subId])
+				return subTypes[subId];
+			
+			return clone(subTypes[subId], subId);
+		}
+		
+		protected function clone(archetype:ArchetypeBase, subId : uint):ArchetypeBase
+		{
+			archetype ||= new ArchetypeBase();
+			archetype.id = subId;
+			archetype.geometry ||= geometry;
+			archetype.material ||= material;
+			archetype.soundOnAdd ||= soundOnAdd;
+			archetype.soundOnRemove ||= soundOnRemove;
+			archetype.Component ||= Component;
+			
+			return archetype;
+		}
 	}
 }

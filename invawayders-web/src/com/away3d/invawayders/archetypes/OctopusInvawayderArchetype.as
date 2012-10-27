@@ -1,8 +1,5 @@
 package com.away3d.invawayders.archetypes
 {
-	import com.away3d.invawayders.components.*;
-	import com.away3d.invawayders.sounds.*;
-	
 	import flash.geom.*;
 	
 	/**
@@ -12,7 +9,7 @@ package com.away3d.invawayders.archetypes
 	{
 		public function OctopusInvawayderArchetype()
 		{
-			id = ArchetypeLibrary.INVAWAYDERS[1];
+			id = InvawayderArchetype.OCTOPUS;
 			
 			cellDefinitions = Vector.<Vector.<uint>>([
 				Vector.<uint>([
@@ -52,12 +49,6 @@ package com.away3d.invawayders.archetypes
 			scale = 1;
 			
 			score = 100;
-			
-			soundOnRemove = SoundLibrary.INVAWAYDER_DEATH;
-			
-			projectileArchetype = ArchetypeLibrary.INVAWAYDER_PROJECTILE;
-			
-			Component = Invawayder;
 		}
 	}
 }

@@ -41,16 +41,17 @@ package com.away3d.invawayders
 			return gameEntity;
 		}
 
-		public function createEntity( x : Number, y : Number, z : Number, velocity : Vector3D, archetypeId:uint ) : Entity
+		public function createEntity( x : Number, y : Number, z : Number, velocity : Vector3D, archetypeId:uint, subTypeId:uint = 0 ) : Entity
 		{
 			var archetype : ArchetypeBase = ArchetypeLibrary.getArchetype(archetypeId);
+			var subType : ArchetypeBase = archetype.getSubType(subTypeId);
 			var entity : Entity;
 			var transform : Transform3D;
 			var motion : Motion3D;
 			
 			//return if entity exists in pool.
-			if (archetype.entityPool.length) {
-				entity = archetype.entityPool.pop();
+			if (subType.entityPool.length) {
+				entity = subType.entityPool.pop();
 				transform = entity.get(Transform3D) as Transform3D;
 				transform.x = x;
 				transform.y = y;
@@ -65,20 +66,20 @@ package com.away3d.invawayders
 			entity = new Entity()
 				.add( new Transform3D(x, y, z) )
 				.add( new Motion3D(velocity) )
-				.add( new DataModel(archetype) );
+				.add( new DataModel(archetype, subType) );
 			
 			game.addEntity( entity );
 			
-			var material : MaterialBase = archetype.material;
+			var material : MaterialBase = subType.material;
+			var entityView:ObjectContainer3D;
 			
-			switch(archetype.Component)
+			switch(subType.Component)
 			{
 				case Invawayder:
 				
 					var meshFrame0:Mesh;
 					var meshFrame1:Mesh;
-					var entityView:ObjectContainer3D;
-					var invawayderArchetype:InvawayderArchetype = archetype as InvawayderArchetype;
+					var invawayderArchetype:InvawayderArchetype = subType as InvawayderArchetype;
 					
 					//if invawayder view exists, create a clone from the mesh frames
 					if (invawayderArchetype.entityView) {
@@ -111,27 +112,80 @@ package com.away3d.invawayders
 					
 					material.lightPicker = cameraLightPicker;
 					
-					var leftBlaster : Mesh = new Mesh( archetype.geometry, material );
+					var leftBlaster : Mesh = new Mesh( subType.geometry, material );
 					var rightBlaster : Mesh = leftBlaster.clone() as Mesh;
-					entityView = archetype.entityView = new PlayerView(leftBlaster, rightBlaster);
+					entityView = subType.entityView = new PlayerView(leftBlaster, rightBlaster);
 					
 					leftBlaster.position = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
 					rightBlaster.position = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
 					
 					entity.add( new Player( view.camera, leftBlaster, rightBlaster ) );
 					break;
+				
+				case Explosion:
+					
+					var explosionArchetype:ExplosionArchetype = subType as ExplosionArchetype;
+					var cellPositions:Vector.<Vector.<Point>> = (ArchetypeLibrary.getArchetype(ArchetypeLibrary.INVAWAYDER).getSubType(subType.id) as InvawayderArchetype).cellPositions;
+					var cellContainers:Vector.<ObjectContainer3D>;
+					var cellVelocities : Vector.<Vector.<Vector3D>>;
+					var cellRotationalVelocities : Vector.<Vector.<Vector3D>>;
+					var cellDeathTimers : Vector.<Vector.<uint>>;
+					var cellContainer:ObjectContainer3D;
+					
+					if (explosionArchetype.entityView) {
+						entityView = new ObjectContainer3D();
+						cellContainers = new Vector.<ObjectContainer3D>();
+						cellVelocities = new Vector.<Vector.<Vector3D>>();
+						cellRotationalVelocities = new Vector.<Vector.<Vector3D>>();
+						cellDeathTimers = new Vector.<Vector.<uint>>();
+						for each (cellContainer in explosionArchetype.cellContainers) {
+							cellContainer = cellContainer.clone() as ObjectContainer3D;
+							cellContainers.push(cellContainer);
+							cellVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
+							cellRotationalVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
+							cellDeathTimers.push(new Vector.<uint>(cellContainer.numChildren));
+							entityView.addChild(cellContainer);
+						}
+					} else {
+						material.lightPicker = cameraLightPicker;
+						
+						entityView = explosionArchetype.entityView = new ObjectContainer3D();
+						
+						cellContainers = explosionArchetype.cellContainers = new Vector.<ObjectContainer3D>();
+						cellVelocities = new Vector.<Vector.<Vector3D>>();
+						cellRotationalVelocities = new Vector.<Vector.<Vector3D>>();
+						cellDeathTimers = new Vector.<Vector.<uint>>();
+						
+						var frame:Vector.<Point>;
+						var position:Point;
+						for each (frame in cellPositions) {
+							cellContainer = new ObjectContainer3D();
+							for each (position in frame) {
+								cellContainer.addChild(new Mesh( subType.geometry, material ));
+							}
+							cellContainers.push(cellContainer);
+							cellVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
+							cellRotationalVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
+							cellDeathTimers.push(new Vector.<uint>(cellContainer.numChildren));
+							entityView.addChild(cellContainer);
+						}
+					}
+					
+					//passes the cellposition data from invawayder to explosion archetype
+					entity.add( new Explosion(cellContainers, cellVelocities, cellRotationalVelocities, cellDeathTimers) );
+					break;
 					
 				default:
 					
-					if (archetype.entityView)
-						entityView = archetype.entityView.clone() as ObjectContainer3D;
+					if (subType.entityView)
+						entityView = subType.entityView.clone() as ObjectContainer3D;
 					else
-						entityView = archetype.entityView = new Mesh(archetype.geometry, material);
+						entityView = subType.entityView = new Mesh(subType.geometry, material);
 					
-					if (archetype.Component != Blast)
+					if (subType.Component != Blast)
 						material.lightPicker = lightPicker;
 					
-					var Component:Class = archetype.Component;
+					var Component:Class = subType.Component;
 					entity.add( new Component() );
 					break;
 			}
@@ -147,7 +201,7 @@ package com.away3d.invawayders
 			
 			//push entity into entity pool for archetype
 			if (entity.get(DataModel))
-				(entity.get(DataModel) as DataModel).archetype.entityPool.push(entity);
+				(entity.get(DataModel) as DataModel).subType.entityPool.push(entity);
 		}
 				
 		/**

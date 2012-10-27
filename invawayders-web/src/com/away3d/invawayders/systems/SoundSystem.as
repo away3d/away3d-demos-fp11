@@ -22,14 +22,14 @@ package com.away3d.invawayders.systems
 		
 		private function addToNodes( node : SoundNode ) : void
 		{
-			if (node.dataModel.archetype.soundOnAdd)
-				soundLibrary.playSound(node.dataModel.archetype.soundOnAdd);
+			if (node.dataModel.subType.soundOnAdd)
+				soundLibrary.playSound(node.dataModel.subType.soundOnAdd);
 		}
 		
 		private function removeFromNodes( node : SoundNode ) : void
 		{
-			if (node.dataModel.archetype.soundOnRemove)
-				soundLibrary.playSound(node.dataModel.archetype.soundOnRemove);
+			if (node.dataModel.subType.soundOnRemove)
+				soundLibrary.playSound(node.dataModel.subType.soundOnRemove);
 		}
 	}
 }

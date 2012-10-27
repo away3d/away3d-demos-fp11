@@ -28,6 +28,8 @@ package com.away3d.invawayders.components
 		
 		public var targetSpawnZ:Number;
 		
+		public var currentFrame : uint;
+		
 		public function Invawayder( meshFrame0 : Mesh, meshFrame1 : Mesh )
 		{
 			this.meshFrame0 = meshFrame0;

@@ -1,23 +1,27 @@
 package com.away3d.invawayders.components
 {
-	import away3d.entities.*;
+	import away3d.containers.*;
 	
 	import flash.geom.*;
 	
 	public class Explosion
 	{
-		var cells : Vector.<Mesh>;
+		public var currentFrame : uint;
 		
-		var cellPositions : Vector.<Vector3D>;
+		public var cellContainers : Vector.<ObjectContainer3D>;
 		
-		var cellRotations : Vector.<Vector3D>;
+		public var cellVelocities : Vector.<Vector.<Vector3D>>;
 		
-		var cellVelocities : Vector.<Vector3D>;
+		public var cellRotationalVelocities : Vector.<Vector.<Vector3D>>;
 		
-		var cellRotationalVelocities : Vector.<Vector3D>;
+		public var cellDeathTimers : Vector.<Vector.<uint>>;
 		
-		public function Explosion()
+		public function Explosion(cellContainers : Vector.<ObjectContainer3D>, cellVelocities : Vector.<Vector.<Vector3D>>, cellRotationalVelocities : Vector.<Vector.<Vector3D>>, cellDeathTimers : Vector.<Vector.<uint>>)
 		{
+			this.cellContainers = cellContainers;
+			this.cellVelocities = cellVelocities;
+			this.cellRotationalVelocities = cellRotationalVelocities;
+			this.cellDeathTimers = cellDeathTimers;
 		}
 	}
 }

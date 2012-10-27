@@ -1,5 +1,7 @@
 package com.away3d.invawayders.systems
 {
+	import away3d.core.base.Object3D;
+	import away3d.containers.ObjectContainer3D;
 	import com.away3d.invawayders.*;
 	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.components.*;
@@ -59,9 +61,9 @@ package com.away3d.invawayders.systems
 					z = bullet.transform.z;
 					velocity = bullet.motion.velocity;
 					
-					switch(bullet.dataModel.archetype.id)
+					switch(bullet.dataModel.subType.id)
 					{
-						case ArchetypeLibrary.PLAYER_PROJECTILE:
+						case ProjectileArchetype.PLAYER:
 							for ( invawayder = invawayders.head; invawayder; invawayder = invawayder.next )
 							{
 								transform = invawayder.transform;
@@ -79,7 +81,7 @@ package com.away3d.invawayders.systems
 										invawayder.invawayder.life -= GameSettings.blasterStrength;
 										
 										//show blast
-										creator.createEntity(x, y, z, invawayder.motion.velocity, ArchetypeLibrary.INVAWAYDER_BLAST);
+										creator.createEntity(x, y, z, invawayder.motion.velocity, ArchetypeLibrary.BLAST, BlastArchetype.INVAWAYDER);
 										
 										//destroy invawayder if life is depleted
 										if( invawayder.invawayder.life <= 0)
@@ -88,7 +90,7 @@ package com.away3d.invawayders.systems
 								}
 							}
 							break;
-						case ArchetypeLibrary.INVAWAYDER_PROJECTILE:
+						case ProjectileArchetype.INVAWAYDER:
 							for ( player = players.head; player; player = player.next )
 							{
 								transform = player.transform;
@@ -137,7 +139,7 @@ package com.away3d.invawayders.systems
 								destroyInvawayder(game, invawayder, x, y, z, velocity);
 								
 								//show invawayder blast
-								creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.INVAWAYDER_BLAST);
+								creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.BLAST, BlastArchetype.INVAWAYDER);
 							}
 						}
 					}
@@ -160,13 +162,73 @@ package com.away3d.invawayders.systems
 		
 		private function destroyInvawayder(game : GameNode, invawayder : InvawayderNode, x : Number, y : Number, z : Number, velocity : Vector3D) : void
 		{
+			var transform:Transform3D = invawayder.transform;
+			var currentFrame : uint = invawayder.invawayder.currentFrame;
+			var archetype : InvawayderArchetype = invawayder.dataModel.subType as InvawayderArchetype;
+			var cellPositions : Vector.<Point> = archetype.cellPositions[currentFrame];
+			var scale : Number = archetype.scale;
+			var i:uint;
+			
 			creator.destroyEntity( invawayder.entity );
 			
 			//create explosion
-			//creator.createEntity();
+			var explosionEntity : Entity = creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.EXPLOSION, invawayder.dataModel.subType.id);
+			var explositonTransform:Transform3D = explosionEntity.get(Transform3D) as Transform3D;
+			var explosion : Explosion = explosionEntity.get(Explosion) as Explosion;
+			explosion.currentFrame = currentFrame;
+			
+			//reset explosion scale
+			explositonTransform.scaleX = explositonTransform.scaleY = explositonTransform.scaleZ = scale;
+			
+			//rest explosion visibility
+			for (i=0; i<explosion.cellContainers.length; i++)
+				explosion.cellContainers[i].visible = (i == currentFrame);
+			
+			//reset explosion animation
+			var cellContainer:ObjectContainer3D = explosion.cellContainers[currentFrame];
+			var cellVelocities:Vector.<Vector3D> = explosion.cellVelocities[currentFrame];
+			var cellRotationalVelocities:Vector.<Vector3D> = explosion.cellRotationalVelocities[currentFrame];
+			var cellDeathTimers:Vector.<uint> = explosion.cellDeathTimers[currentFrame];
+			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
+			var cell:ObjectContainer3D;
+			var position:Point;
+			var cellVelocity:Vector3D;
+			var cellRotationalVelocity:Vector3D;
+			
+			for (i=0; i<cellPositions.length; i++) {
+				position = cellPositions[i];
+				cell = cellContainer.getChildAt(i) as ObjectContainer3D;
+				cell.visible = true;
+				
+				//set position of cell
+				cell.x = position.x;
+				cell.y = position.y;
+				
+				// Determine explosion velocity of cell.
+				var dx:Number = cell.x*scale + transform.x - x;
+				var dy:Number = cell.y*scale + transform.y - y;
+				var distanceSq:Number = dx * dx + dy * dy;
+				var rotSpeed:Number = intensity * 5000 / distanceSq;
+				
+				//set the rotation velocity of the cell
+				cellRotationalVelocity = cellRotationalVelocities[i] ||= new Vector3D();
+				cellRotationalVelocity.x = MathUtils.rand( -rotSpeed, rotSpeed );
+				cellRotationalVelocity.y = MathUtils.rand( -rotSpeed, rotSpeed );
+				cellRotationalVelocity.z = MathUtils.rand( -rotSpeed, rotSpeed );
+				
+				//set the linear velocity of the cell
+				cellVelocity = cellVelocities[i] ||= new Vector3D();
+				cellVelocity.x = intensity * MathUtils.rand( 100, 500 ) * dx / distanceSq;
+				cellVelocity.y = intensity * MathUtils.rand( 100, 500 ) * dy / distanceSq;
+				cellVelocity.z = intensity * 50 * velocity.z / distanceSq + invawayder.motion.velocity.z;
+				
+				//set the death timer of the cell
+				cellDeathTimers[i] = MathUtils.rand(250, 500);
+				
+			}
 			
 			//increase score
-			game.state.score += (invawayder.dataModel.archetype as InvawayderArchetype).score;
+			game.state.score += (invawayder.dataModel.subType as InvawayderArchetype).score;
 			
 			// Update highscore
 			if( game.state.score > game.state.highScore && game.state.lives ) {
@@ -192,7 +254,7 @@ package com.away3d.invawayders.systems
 			game.state.lives--;
 			
 			//show player blast
-			creator.createEntity(x, y, z, player.motion.velocity, ArchetypeLibrary.PLAYER_BLAST);
+			creator.createEntity(x, y, z, player.motion.velocity, ArchetypeLibrary.BLAST, BlastArchetype.PLAYER);
 			
 			//trigger camera shake
 			player.player.shakeCounter = GameSettings.playerCountShake;
