@@ -258,6 +258,8 @@ package
 		 */
 		private function hidePopUp():void
 		{
+			stageProperties.popupVisible = false;
+			
 			_hudContainer.visible = true;
 			_activePopUp.visible = false;
 		}
@@ -269,7 +271,7 @@ package
 		 */
 		private function showPopUp( popUp:MovieClip ):void
 		{
-			showMouse();
+			stageProperties.popupVisible = true;
 			
 			_activePopUp = popUp;
 			_hudContainer.visible = false;
@@ -322,7 +324,7 @@ package
 			//reset layout to account for lives and score text
 			onResize();
 			
-			if (!gameState.lives) {
+			if (!gameState.lives && !stageProperties.popupVisible) {
 				//prepare game over popup
 				_goScoreText.text =     "SCORE................................... " + StringUtils.uintToSameLengthString( gameState.score, 5 );
 				_goHighScoreText = _gameOverPopUp.highScoreText;
@@ -333,6 +335,8 @@ package
 				_goHighScoreText.x = -int(_goHighScoreText.width / 2);
 				
 				showPopUp( _gameOverPopUp );
+				
+				invawayders.end();
 			}
 		}
 		
@@ -345,7 +349,6 @@ package
 		 */
 		private function onResume( event:MouseEvent ):void
 		{
-			hideMouse();
 			hidePopUp();
 			
 			invawayders.resume();
@@ -366,7 +369,6 @@ package
 		 */
 		private function onRestart( event:MouseEvent ):void
 		{
-			hideMouse();
 			hidePopUp();
 			
 			invawayders.restart();
@@ -378,6 +380,11 @@ package
 		private function onEnterFrame(event:Event):void
 		{
 			_view.render();
+			
+			if( stageProperties.popupVisible || mouseY < 50*stageProperties.scale )
+				showMouse();
+			else
+				hideMouse();
 		}
 		
 		/**
@@ -394,12 +401,13 @@ package
 			
 			//adjust the scale of buttons and text according to the resolution
 			if (w < 800) {
-				scale = 0.5; //smaller mobile handsets
+				stageProperties.scale = 0.5; //smaller mobile handsets
 			} else if (w > 1600) {
-				scale = 2; //large cinema displays and ipad3
+				stageProperties.scale = 2; //large cinema displays and ipad3
 			} else {
-				scale = 1; // normal resolution
+				stageProperties.scale = 1; // normal resolution
 			}
+			scale = stageProperties.scale;
 			
 			//update view size
 			_view.width = w;

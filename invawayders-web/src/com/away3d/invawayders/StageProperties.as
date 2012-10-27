@@ -2,6 +2,10 @@ package com.away3d.invawayders
 {
 	public class StageProperties
 	{
+		public var popupVisible : Boolean;
+		
+		public var scale : Number;
+		
 		public var width : Number;
 		public var height : Number;
 		

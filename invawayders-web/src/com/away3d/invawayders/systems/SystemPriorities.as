@@ -5,11 +5,12 @@ package com.away3d.invawayders.systems
 	 */
 	public class SystemPriorities
 	{
-		public static const preUpdate : int = 1;
-		public static const update : int = 2;
-		public static const move : int = 3;
-		public static const resolveCollisions : int = 4;
-		public static const playSounds : int = 5;
-		public static const render : int = 6;
+		public static const manager : int = 1;
+		public static const animations : int = 2;
+		public static const control : int = 3;
+		public static const move : int = 4;
+		public static const collisions : int = 5;
+		public static const sounds : int = 6;
+		public static const render : int = 7;
 	}
 }

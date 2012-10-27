@@ -32,14 +32,14 @@ package com.away3d.invawayders.sounds
 				return _instance;
 			
 			_instance = new SoundLibrary();
-			_instance.registerSound( PLAYER_FIRE, new SoundShoot() );
+			_instance.registerSound( PLAYER_FIRE, new SoundShoot(), 0.25 );
 			_instance.registerSound( INVAWAYDER_DEATH, new SoundInvawayderDeath() );
 			_instance.registerSound( EXPLOSION_SOFT, new SoundExplosionSoft() );
 			_instance.registerSound( EXPLOSION_STRONG, new SoundExplosionStrong() );
 			_instance.registerSound( MOTHERSHIP, new SoundMothership() );
-			_instance.registerSound( INVAWAYDER_FIRE, new SoundPlayerFire() );
+			_instance.registerSound( INVAWAYDER_FIRE, new SoundPlayerFire(), 0.5 );
 			_instance.registerSound( THUCK, new SoundThuck() );
-			_instance.registerSound( UFO, new SoundUfo() );
+			_instance.registerSound( UFO, new SoundUfo(), 0.5 );
 			_instance.registerSound( BOING, new SoundBoing() );
 			
 			return _instance;

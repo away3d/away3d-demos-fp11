@@ -26,6 +26,11 @@ package
 		public static const invawayderSizeXY:Number = 50;
 		public static const invawayderSizeZ:Number = 200;
 		public static const deathExplosionIntensity:Number = 3;
+		public static const cellVelocityMin:Number = 100;
+		public static const cellVelocityMax:Number = 500;
+		public static const deathTimerMin:Number = 250;
+		public static const deathTimerMax:Number = 500;
+		public static const deathTimerFlash:Number = 125;
 		public static const invawayderAnimationTimeMS:uint = 250;
 		public static const impactHitSize:Number = 300;
 		

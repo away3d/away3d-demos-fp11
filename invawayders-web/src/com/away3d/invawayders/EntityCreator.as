@@ -110,14 +110,23 @@ package com.away3d.invawayders
 					
 				case Player:
 					
+					var leftBlaster : Mesh;
+					var rightBlaster : Mesh;
+					var playerArchetype:PlayerArchetype = subType as PlayerArchetype;
+					
 					material.lightPicker = cameraLightPicker;
 					
-					var leftBlaster : Mesh = new Mesh( subType.geometry, material );
-					var rightBlaster : Mesh = leftBlaster.clone() as Mesh;
-					entityView = subType.entityView = new PlayerView(leftBlaster, rightBlaster);
-					
-					leftBlaster.position = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
-					rightBlaster.position = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
+					if (subType.entityView) {
+						leftBlaster = playerArchetype.leftBlaster.clone() as Mesh;
+						rightBlaster  = playerArchetype.rightBlaster.clone() as Mesh;
+						entityView = new PlayerView(leftBlaster, rightBlaster);
+					} else {
+						leftBlaster = new Mesh( subType.geometry, material );
+						rightBlaster  = leftBlaster.clone() as Mesh;
+						leftBlaster.position = new Vector3D( -GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
+						rightBlaster.position = new Vector3D( GameSettings.blasterOffsetH, GameSettings.blasterOffsetV, GameSettings.blasterOffsetD );
+						entityView = subType.entityView = new PlayerView(leftBlaster, rightBlaster);
+					}
 					
 					entity.add( new Player( view.camera, leftBlaster, rightBlaster ) );
 					break;

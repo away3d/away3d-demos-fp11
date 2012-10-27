@@ -1,16 +1,17 @@
 package com.away3d.invawayders.systems
 {
-	import away3d.core.base.Object3D;
-	import away3d.containers.ObjectContainer3D;
 	import com.away3d.invawayders.*;
 	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.nodes.*;
 	import com.away3d.invawayders.utils.*;
 	
+	import away3d.containers.*;
+	
 	import flash.geom.*;
 	
 	import net.richardlord.ash.core.*;
+	import net.richardlord.signals.*;
 	
 
 	
@@ -20,19 +21,22 @@ package com.away3d.invawayders.systems
 		public var creator : EntityCreator;
 		
 		[Inject]
+		public var gameStateUpdated : Signal1;
+		
+		[Inject]
 		public var saveStateManager : SaveStateManager;
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.GameNode")]
 		public var gameNodes : NodeList;
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.PlayerNode")]
-		public var players : NodeList;
+		public var playerNodes : NodeList;
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.InvawayderNode")]
-		public var invawayders : NodeList;
+		public var invawayderNodes : NodeList;
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.BulletNode")]
-		public var bullets : NodeList;
+		public var bulletNodes : NodeList;
 
 		override public function update( time : Number ) : void
 		{
@@ -51,10 +55,11 @@ package com.away3d.invawayders.systems
 			var velocity : Vector3D;
 			var transform : Transform3D;
 			
+			//update collisions when a game is present
 			for ( game = gameNodes.head; game; game = game.next )
 			{
 				//detect collisions between projectiles and invawayders / players
-				for ( bullet = bullets.head; bullet; bullet = bullet.next )
+				for ( bullet = bulletNodes.head; bullet; bullet = bullet.next )
 				{
 					x = bullet.transform.x;
 					y = bullet.transform.y;
@@ -64,7 +69,7 @@ package com.away3d.invawayders.systems
 					switch(bullet.dataModel.subType.id)
 					{
 						case ProjectileArchetype.PLAYER:
-							for ( invawayder = invawayders.head; invawayder; invawayder = invawayder.next )
+							for ( invawayder = invawayderNodes.head; invawayder; invawayder = invawayder.next )
 							{
 								transform = invawayder.transform;
 								dz = transform.z - z;
@@ -91,7 +96,7 @@ package com.away3d.invawayders.systems
 							}
 							break;
 						case ProjectileArchetype.INVAWAYDER:
-							for ( player = players.head; player; player = player.next )
+							for ( player = playerNodes.head; player; player = player.next )
 							{
 								transform = player.transform;
 								dz = transform.z - z;
@@ -115,19 +120,19 @@ package com.away3d.invawayders.systems
 				}
 				
 				//detect collisions between players and invawayders
-				for ( player = players.head; player; player = player.next )
+				for ( player = playerNodes.head; player; player = player.next )
 				{
 					x = player.transform.x;
 					y = player.transform.y;
 					z = player.transform.z;
 					velocity = player.motion.velocity;
 					
-					for ( invawayder = invawayders.head; invawayder; invawayder = invawayder.next )
+					for ( invawayder = invawayderNodes.head; invawayder; invawayder = invawayder.next )
 					{
 						transform = invawayder.transform;
 						dz = transform.z - z;
-	
-						if( Math.abs( dz ) < Math.abs( velocity.z ) ) {
+						
+						if( Math.abs( dz ) < Math.abs( invawayder.motion.velocity.z ) ) {
 							dx = transform.x - x;
 							dy = transform.y - y;
 							if( Math.sqrt( dx * dx + dy * dy ) < GameSettings.impactHitSize ) {
@@ -218,12 +223,12 @@ package com.away3d.invawayders.systems
 				
 				//set the linear velocity of the cell
 				cellVelocity = cellVelocities[i] ||= new Vector3D();
-				cellVelocity.x = intensity * MathUtils.rand( 100, 500 ) * dx / distanceSq;
-				cellVelocity.y = intensity * MathUtils.rand( 100, 500 ) * dy / distanceSq;
+				cellVelocity.x = intensity * MathUtils.rand( GameSettings.cellVelocityMin, GameSettings.cellVelocityMax ) * dx / distanceSq;
+				cellVelocity.y = intensity * MathUtils.rand( GameSettings.cellVelocityMin, GameSettings.cellVelocityMax ) * dy / distanceSq;
 				cellVelocity.z = intensity * 50 * velocity.z / distanceSq + invawayder.motion.velocity.z;
 				
 				//set the death timer of the cell
-				cellDeathTimers[i] = MathUtils.rand(250, 500);
+				cellDeathTimers[i] = MathUtils.rand(GameSettings.deathTimerMin, GameSettings.deathTimerMax);
 				
 			}
 			
@@ -235,6 +240,9 @@ package com.away3d.invawayders.systems
 				game.state.highScore = game.state.score;
 				saveStateManager.saveHighScore(game.state.highScore);
 			}
+			
+			//dispatch game state udpated signal
+			gameStateUpdated.dispatch( game.state );
 			
 			//update game level
 			if( game.state.levelKills > GameSettings.killsToAdvanceDifficulty ) {
@@ -252,6 +260,9 @@ package com.away3d.invawayders.systems
 		{
 			//deplete player lives
 			game.state.lives--;
+			
+			//dispatch game state udpated signal
+			gameStateUpdated.dispatch( game.state );
 			
 			//show player blast
 			creator.createEntity(x, y, z, player.motion.velocity, ArchetypeLibrary.BLAST, BlastArchetype.PLAYER);

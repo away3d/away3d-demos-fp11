@@ -1,5 +1,6 @@
 package com.away3d.invawayders.archetypes
 {
+	import com.away3d.invawayders.sounds.SoundLibrary;
 	import away3d.materials.*;
 	
 	/**
@@ -12,6 +13,8 @@ package com.away3d.invawayders.archetypes
 			id = BlastArchetype.INVAWAYDER;
 			
 			material = new ColorMaterial( 0x00FFFF, 0.5 );
+			
+			soundOnAdd = SoundLibrary.BOING;
 		}
 	}
 }

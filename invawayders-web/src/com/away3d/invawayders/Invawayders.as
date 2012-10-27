@@ -1,5 +1,7 @@
 package com.away3d.invawayders
 {
+	import com.away3d.invawayders.nodes.GameNode;
+	import com.away3d.invawayders.nodes.PlayerNode;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.components.*;
@@ -70,11 +72,12 @@ package com.away3d.invawayders
 			gameManager = new GameManager();
 			
 			//add game systems
-			game.addSystem( gameManager, SystemPriorities.preUpdate );
-			game.addSystem( new PlayerControlSystem(), SystemPriorities.update );
+			game.addSystem( gameManager, SystemPriorities.manager );
+			game.addSystem( new AnimationSystem(), SystemPriorities.animations );
+			game.addSystem( new PlayerControlSystem(), SystemPriorities.control );
 			game.addSystem( new MovementSystem(), SystemPriorities.move );
-			game.addSystem( new CollisionSystem(), SystemPriorities.resolveCollisions );
-			game.addSystem( new SoundSystem(), SystemPriorities.playSounds );
+			game.addSystem( new CollisionSystem(), SystemPriorities.collisions );
+			game.addSystem( new SoundSystem(), SystemPriorities.sounds );
 			game.addSystem( new RenderSystem(), SystemPriorities.render );
 			
 			//create entity creator
@@ -90,11 +93,6 @@ package com.away3d.invawayders
 		 */
 		public function restart():void
 		{
-			tickProvider.stop();
-			
-			//play sound
-			soundLibrary.playSound( SoundLibrary.UFO, 0.5 );
-			
 			// Reset all game entities
 			var entity : Entity;
 			for each (entity in game.entities)
@@ -115,7 +113,8 @@ package com.away3d.invawayders
 			//play sound
 			soundLibrary.playSound( SoundLibrary.UFO, 0.5 );
 			
-			entityCreator.destroyEntity(gameManager.players.head);
+			//remove player node
+			entityCreator.destroyEntity(game.getNodeList(PlayerNode).head.entity);
 			
 			tickProvider.stop();
 		}
@@ -142,6 +141,19 @@ package com.away3d.invawayders
 			entityCreator.createEntity(0, 0, -1000, new Vector3D(), ArchetypeLibrary.PLAYER);
 			
 			tickProvider.start();
+		}
+		
+		
+		/**
+		 * Ends the game. Called on game over.
+		 */
+		public function end():void
+		{
+			//remove game
+			entityCreator.destroyEntity(game.getNodeList(GameNode).head.entity);
+			
+			//remove player node
+			entityCreator.destroyEntity(game.getNodeList(PlayerNode).head.entity);
 		}
 	}
 }
