@@ -9,7 +9,7 @@ package com.away3d.invawayders.systems
 	public class MovementSystem extends System
 	{
 		[Inject]
-		public var creator : EntityCreator;
+		public var creator : EntityManager;
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.MovementNode")]
 		public var movementNodes : NodeList;

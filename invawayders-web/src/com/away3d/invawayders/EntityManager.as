@@ -15,7 +15,7 @@ package com.away3d.invawayders
 	import flash.geom.*;
 	
 	
-	public class EntityCreator
+	public class EntityManager
 	{
 		[Inject]
 		public var game : Game;
@@ -29,7 +29,7 @@ package com.away3d.invawayders
 		[Inject(name="cameraLightPicker")]
 		public var cameraLightPicker : StaticLightPicker;
 		
-		public function EntityCreator()
+		public function EntityManager()
 		{
 		}
 		

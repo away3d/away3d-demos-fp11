@@ -21,7 +21,7 @@ package com.away3d.invawayders.systems
 		private var _currentPosition : Vector3D = new Vector3D();
 		
 		[Inject]
-		public var creator : EntityCreator;
+		public var creator : EntityManager;
 		
 		[Inject]
 		public var view : View3D;

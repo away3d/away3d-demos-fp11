@@ -31,7 +31,7 @@ package com.away3d.invawayders
 		
 		private var gameManager : GameManager;
 		
-		private var entityCreator : EntityCreator;
+		private var entityCreator : EntityManager;
 		
 		private var tickProvider : FrameTickProvider;
 		
@@ -62,7 +62,7 @@ package com.away3d.invawayders
 			injector.map( SaveStateManager ).toValue( saveStateManager );
 			injector.map( StageProperties ).toValue( stageProperties );
 			injector.map( SoundLibrary ).toValue( soundLibrary );
-			injector.map( EntityCreator ).asSingleton();
+			injector.map( EntityManager ).asSingleton();
 			injector.map( KeyPoll ).toValue( new KeyPoll( view.stage ) );
 			injector.map( MousePoll ).toValue( new MousePoll( view ) );
 			injector.map( AccelerometerPoll ).toValue( accelerometerPoll );
@@ -81,7 +81,7 @@ package com.away3d.invawayders
 			game.addSystem( new RenderSystem(), SystemPriorities.render );
 			
 			//create entity creator
-			entityCreator = injector.getInstance( EntityCreator );
+			entityCreator = injector.getInstance( EntityManager );
 			
 			//setup the tick provider
 			tickProvider = new FrameTickProvider( view );

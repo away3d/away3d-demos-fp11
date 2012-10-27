@@ -18,7 +18,7 @@ package com.away3d.invawayders.systems
 	public class CollisionSystem extends System
 	{
 		[Inject]
-		public var creator : EntityCreator;
+		public var creator : EntityManager;
 		
 		[Inject]
 		public var gameStateUpdated : Signal1;
