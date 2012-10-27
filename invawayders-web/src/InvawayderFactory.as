@@ -26,12 +26,12 @@ package
 	import away3d.materials.TextureMaterial;
 	import away3d.materials.TextureMultiPassMaterial;
 	import com.away3d.invawayders.archetypes.ArchetypeBase;
-	import com.away3d.invawayders.archetypes.BugInvawayderArchetype;
 	import com.away3d.invawayders.archetypes.InvawayderArchetype;
 	import com.away3d.invawayders.archetypes.ProjectileArchetype;
-	import com.away3d.invawayders.archetypes.MothershipInvawayderArchetype;
-	import com.away3d.invawayders.archetypes.PlayerProjectileArchetype;
-	import com.away3d.invawayders.archetypes.RoundedOctopusInvawayderArchetype;
+	import com.away3d.invawayders.archetypes.subtypes.BugInvawayderArchetype;
+	import com.away3d.invawayders.archetypes.subtypes.MothershipInvawayderArchetype;
+	import com.away3d.invawayders.archetypes.subtypes.PlayerProjectileArchetype;
+	import com.away3d.invawayders.archetypes.subtypes.RoundedOctopusInvawayderArchetype;
 	import com.away3d.invawayders.objects.Blast;
 	import com.away3d.invawayders.objects.GameObject;
 	import com.away3d.invawayders.objects.Invawayder;

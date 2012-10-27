@@ -1,5 +1,6 @@
-package com.away3d.invawayders.archetypes
+package com.away3d.invawayders.archetypes.subtypes
 {
+	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.sounds.*;
 	
 	import away3d.materials.*;

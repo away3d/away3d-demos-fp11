@@ -1,5 +1,7 @@
 package com.away3d.invawayders.archetypes
 {
+	import com.away3d.invawayders.archetypes.subtypes.*;
+	
 	/**
 	 * @author robbateman
 	 */
