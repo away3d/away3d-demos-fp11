@@ -213,7 +213,7 @@ package com.away3d.invawayders.systems
 				var dx:Number = cell.x*scale + transform.x - x;
 				var dy:Number = cell.y*scale + transform.y - y;
 				var distanceSq:Number = dx * dx + dy * dy;
-				var rotSpeed:Number = intensity * 5000 / distanceSq;
+				var rotSpeed:Number = intensity * 2500 / distanceSq;
 				
 				//set the rotation velocity of the cell
 				cellRotationalVelocity = cellRotationalVelocities[i] ||= new Vector3D();
@@ -225,7 +225,7 @@ package com.away3d.invawayders.systems
 				cellVelocity = cellVelocities[i] ||= new Vector3D();
 				cellVelocity.x = intensity * MathUtils.rand( GameSettings.cellVelocityMin, GameSettings.cellVelocityMax ) * dx / distanceSq;
 				cellVelocity.y = intensity * MathUtils.rand( GameSettings.cellVelocityMin, GameSettings.cellVelocityMax ) * dy / distanceSq;
-				cellVelocity.z = intensity * 50 * velocity.z / distanceSq + invawayder.motion.velocity.z;
+				cellVelocity.z = intensity * MathUtils.rand( GameSettings.cellVelocityMinZ, GameSettings.cellVelocityMaxZ ) * velocity.z / distanceSq;
 				
 				//set the death timer of the cell
 				cellDeathTimers[i] = MathUtils.rand(GameSettings.deathTimerMin, GameSettings.deathTimerMax);

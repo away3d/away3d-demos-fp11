@@ -52,7 +52,6 @@ package com.away3d.invawayders.systems
 			//update game loop
 			for ( game = games.head; game; game = game.next )
 			{
-				
 				//determine if enough time has passed to spawn another invawayder
 				for each (id in InvawayderArchetype.invawayders) {
 					var invawayderArchetype : InvawayderArchetype = ArchetypeLibrary.getArchetype(ArchetypeLibrary.INVAWAYDER).getSubType(id) as InvawayderArchetype;

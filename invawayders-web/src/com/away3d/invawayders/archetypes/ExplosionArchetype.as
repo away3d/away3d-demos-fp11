@@ -1,6 +1,7 @@
 package com.away3d.invawayders.archetypes
 {
 	import com.away3d.invawayders.components.*;
+	import com.away3d.invawayders.sounds.*;
 	
 	import away3d.containers.*;
 	import away3d.core.base.*;
@@ -18,13 +19,17 @@ package com.away3d.invawayders.archetypes
 		
 		public static const explosionMaterial:ColorMaterial = new ColorMaterial( 0x777780);
 		
-		public function ExplosionArchetype()
+		public function ExplosionArchetype(subTypes:Vector.<ArchetypeBase> = null)
 		{
+			super(subTypes);
+			
 			id = ArchetypeLibrary.EXPLOSION;
 			
 			geometry = explosionGeometry;
 			
 			material = explosionMaterial;
+			
+			soundOnAdd = SoundLibrary.INVAWAYDER_DEATH;
 			
 			Component = Explosion;
 		}

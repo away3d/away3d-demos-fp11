@@ -53,8 +53,6 @@ package com.away3d.invawayders.archetypes.subtypes
 			
 			soundOnAdd = SoundLibrary.MOTHERSHIP;
 			
-			soundOnRemove = SoundLibrary.EXPLOSION_STRONG;
-			
 			projectileArchetype = ProjectileArchetype.MOTHERSHIP;
 		}
 	}

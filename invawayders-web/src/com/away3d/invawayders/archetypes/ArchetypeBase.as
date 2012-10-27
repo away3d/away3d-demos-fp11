@@ -29,8 +29,6 @@ package com.away3d.invawayders.archetypes
 		
 		public var soundOnAdd:String;
 		
-		public var soundOnRemove:String;
-		
 		public var Component : Class;
 		
 		public function ArchetypeBase(subTypes:Vector.<ArchetypeBase> = null)
@@ -56,7 +54,6 @@ package com.away3d.invawayders.archetypes
 			archetype.geometry ||= geometry;
 			archetype.material ||= material;
 			archetype.soundOnAdd ||= soundOnAdd;
-			archetype.soundOnRemove ||= soundOnRemove;
 			archetype.Component ||= Component;
 			
 			return archetype;

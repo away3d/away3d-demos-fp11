@@ -1,7 +1,6 @@
 package com.away3d.invawayders.archetypes
 {
 	import com.away3d.invawayders.components.*;
-	import com.away3d.invawayders.sounds.*;
 	
 	import away3d.entities.*;
 	import away3d.materials.*;
@@ -93,8 +92,6 @@ package com.away3d.invawayders.archetypes
 			id = ArchetypeLibrary.INVAWAYDER;
 			
 			material = invawayderMaterial;
-			
-			soundOnRemove = SoundLibrary.INVAWAYDER_DEATH;
 			
 			projectileArchetype = ProjectileArchetype.INVAWAYDER;
 			
