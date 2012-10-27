@@ -26,6 +26,13 @@ package
 		public static const invawayderSizeXY:Number = 50;
 		public static const invawayderSizeZ:Number = 200;
 		public static const deathExplosionIntensity:Number = 3;
+		public static const cellVelocityMin:Number = 30;
+		public static const cellVelocityMax:Number = 250;
+		public static const cellVelocityMinZ:Number = 16;
+		public static const cellVelocityMaxZ:Number = 25;
+		public static const deathTimerMin:Number = 450;
+		public static const deathTimerMax:Number = 1250;
+		public static const deathTimerFlash:Number = 125;
 		public static const invawayderAnimationTimeMS:uint = 250;
 		public static const impactHitSize:Number = 300;
 		
@@ -38,6 +45,7 @@ package
 		public static const cameraPanRange:Number = 1750;
 		public static const panTiltFactor:Number = 0;
 		public static const playerHitShake:Number = 200;
+		public static const playerCountShake:Number = 10;
 		public static const playerLives:uint = 3;
 		
 		// Mouse control settings.
@@ -52,5 +60,9 @@ package
 		// Scene range.
 		public static const minZ:Number = -2000;
 		public static const maxZ:Number = 50000;
+		
+		//spawn range
+		public static const minSpawnZ:Number = 15000;
+		public static const maxSpawnZ:Number = 20000;
 	}
 }
