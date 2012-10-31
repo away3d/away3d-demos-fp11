@@ -113,7 +113,7 @@ package
 			}
 			
 			//generate the particle geometry
-			var particleGeometry:Geometry = ParticleGeometryHelper.generateCompactGeometry(geometrySet);
+			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
 			//create the particle animation set
 			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();

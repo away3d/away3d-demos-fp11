@@ -131,7 +131,7 @@ package
 			{
 				geometrySet.push(plane);
 			}
-			var particleGeometry:Geometry = ParticleGeometryHelper.generateCompactGeometry(geometrySet);
+			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
 			//create the particle animation set
 			animationSet = new ParticleAnimationSet();
