@@ -28,7 +28,7 @@ package
 	import flash.ui.Keyboard;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
-	public class PeformanceBenchmark extends Sprite
+	public class PerformanceBenchmark extends Sprite
 	{
 		[Embed(source="../embeds/blue.png")]
 		private var ParticleImg:Class;
@@ -50,7 +50,7 @@ package
 		
 		private var input:TextField;
 
-		public function PeformanceBenchmark()
+		public function PerformanceBenchmark()
 		{
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
