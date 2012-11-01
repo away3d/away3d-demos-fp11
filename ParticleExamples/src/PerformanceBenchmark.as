@@ -164,6 +164,7 @@ package
 			for (i = 0; i < _num; i++)
 			{
 				_view.scene.removeChild(particles[i]);
+				particles[i].dispose();
 			}
 			
 			particles.length = 0;
