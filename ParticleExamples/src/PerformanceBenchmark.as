@@ -1,8 +1,8 @@
 package
 {
+	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.data.ParticleParameter;
-	import away3d.animators.nodes.ParticleBillboardGlobalNode;
-	import away3d.animators.nodes.ParticleVelocityLocalNode;
+	import away3d.animators.nodes.ParticleBillboardNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
 	import away3d.containers.View3D;
@@ -137,8 +137,8 @@ package
 			animationSet = new ParticleAnimationSet();
 			animationSet.loop = true;
 			
-			animationSet.addAnimation(new ParticleBillboardGlobalNode());
-			animationSet.addAnimation(new ParticleVelocityLocalNode());
+			animationSet.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
 			animationSet.initParticleFunc = initParticleParam;
 			
 			
@@ -150,11 +150,11 @@ package
 		private function initParticleParam(param:ParticleParameter):void
 		{
 			param.startTime = Math.random()*5;
-			param.duringTime = 5;
+			param.duration = 5;
 			var degree1:Number = Math.random() * Math.PI * 2;
 			var degree2:Number = Math.random() * Math.PI * 2;
 			var r:Number = Math.random() * 50 + 400;
-			param[ParticleVelocityLocalNode.NAME] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+			param[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
 		}
 		
 		

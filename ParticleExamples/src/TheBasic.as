@@ -1,10 +1,10 @@
 package
 {
+	import away3d.animators.nodes.ParticleColorNode;
 	import away3d.animators.data.ParticleParameter;
-	import away3d.animators.nodes.ParticleAccelerateGlobalNode;
-	import away3d.animators.nodes.ParticleFlickerByTimeGlobalNode;
-	import away3d.animators.nodes.ParticleOffsetPositionLocalNode;
-	import away3d.animators.nodes.ParticleVelocityGlobalNode;
+	import away3d.animators.nodes.ParticleAccelerationNode;
+	import away3d.animators.nodes.ParticlePositionNode;
+	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
 	import away3d.containers.View3D;
@@ -91,11 +91,11 @@ package
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
-			animationSet.addAnimation(new ParticleVelocityGlobalNode(new Vector3D(0, 200, 0)));
-			animationSet.addAnimation(new ParticleAccelerateGlobalNode(new Vector3D(0, -40, 0)));
-			animationSet.addAnimation(new ParticleFlickerByTimeGlobalNode(new ColorTransform(1, 0, 0), new ColorTransform(0, 1, 1), 2));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 200, 0)));
+			animationSet.addAnimation(new ParticleAccelerationNode(ParticleAccelerationNode.GLOBAL, new Vector3D(0, -40, 0)));
+			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, new ColorTransform(1, 0, 0), new ColorTransform(0, 1, 1), 2));
 			//no need to set the local animations here, because they influence all the particle with different factors.
-			animationSet.addAnimation(new ParticleOffsetPositionLocalNode());
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
 			
 			//set the initParticleFunc. It will be invoke for the local property initialization of every particle
 			animationSet.initParticleFunc = initParticleParam;
@@ -115,13 +115,13 @@ package
 			//let all particle appear when time=0
 			param.startTime = 0;
 			//let all particle's life = 10s
-			param.duringTime = 10;
+			param.duration = 10;
 			//calculate the original position of every particle. this value will be fetched by ParticleOffsetPositionLocalNode
 			var percent:Number = param.index / param.total;
 			var r:Number = percent * 1000;
 			var x:Number = r*Math.cos(percent * Math.PI * 2 * 20);
 			var z:Number = r*Math.sin(percent * Math.PI * 2 * 20);
-			param[ParticleOffsetPositionLocalNode.NAME] = new Vector3D(x, 0, z);
+			param[ParticlePositionNode.POSITION_VECTOR3D] = new Vector3D(x, 0, z);
 		}
 		
 

@@ -1,11 +1,10 @@
 package
 {
 	import away3d.animators.data.ParticleParameter;
-	import away3d.animators.nodes.ParticleAccelerateGlobalNode;
-	import away3d.animators.nodes.ParticleBillboardGlobalNode;
-	import away3d.animators.nodes.ParticleOffsetPositionLocalNode;
-	import away3d.animators.nodes.ParticleVelocityGlobalNode;
-	import away3d.animators.nodes.ParticleVelocityLocalNode;
+	import away3d.animators.nodes.ParticleAccelerationNode;
+	import away3d.animators.nodes.ParticleBillboardNode;
+	import away3d.animators.nodes.ParticlePositionNode;
+	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
 	import away3d.containers.View3D;
@@ -90,9 +89,9 @@ package
 			
 			var animationSet1:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet1.loop = true;
-			animationSet1.addAnimation(new ParticleBillboardGlobalNode());
-			animationSet1.addAnimation(new ParticleVelocityLocalNode());
-			animationSet1.addAnimation(new ParticleAccelerateGlobalNode(new Vector3D(0, -500, 0)));
+			animationSet1.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animationSet1.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
+			animationSet1.addAnimation(new ParticleAccelerationNode(ParticleAccelerationNode.GLOBAL, new Vector3D(0, -500, 0)));
 			animationSet1.initParticleFunc = initParticleParam1;
 			
 			var material1:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(WaterImg));
@@ -109,9 +108,9 @@ package
 			
 			var animationSet2:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet2.loop = true;
-			animationSet2.addAnimation(new ParticleBillboardGlobalNode());
-			animationSet2.addAnimation(new ParticleVelocityGlobalNode(new Vector3D(0,700,0)));
-			animationSet2.addAnimation(new ParticleOffsetPositionLocalNode());
+			animationSet2.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animationSet2.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0,700,0)));
+			animationSet2.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
 			animationSet2.initParticleFunc = initParticleParam2;
 			
 			var material2:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(Light));
@@ -131,24 +130,24 @@ package
 		private function initParticleParam1(param:ParticleParameter):void
 		{
 			param.startTime = Math.random() * 3;
-			param.duringTime = 3;
+			param.duration = 3;
 			var r:Number = 700;
 			var r2:Number = Math.random() * 10;
 			var degree1:Number = Math.random() * Math.PI * 2;
 			var degree2:Number = Math.PI * 80 / 180 + Math.random() * Math.PI * 5 / 180;
-			param[ParticleVelocityLocalNode.NAME] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.sin(degree2), r * Math.cos(degree1) * Math.cos(degree2));
+			param[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.sin(degree2), r * Math.cos(degree1) * Math.cos(degree2));
 		}
 		
 		private function initParticleParam2(param:ParticleParameter):void
 		{
 			param.startTime = Math.random() * 1;
-			param.duringTime = 1;
+			param.duration = 1;
 			
 			var degree:Number = Math.random() * Math.PI * 2;
 			var cos:Number = Math.cos(degree);
 			var sin:Number = Math.sin(degree);
 			var r:Number = Math.random() * 100;
-			param[ParticleOffsetPositionLocalNode.NAME] = new Vector3D(r * cos, 0, r * sin);
+			param[ParticlePositionNode.POSITION_VECTOR3D] = new Vector3D(r * cos, 0, r * sin);
 		}
 
 		private function onEnterFrame(event:Event):void

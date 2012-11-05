@@ -1,10 +1,11 @@
 package
 {
+	import away3d.animators.nodes.ParticleColorNode;
+	import away3d.core.base.ParticleGeometry;
 	import away3d.animators.data.ParticleParameter;
-	import away3d.animators.nodes.ParticleFlickerByTimeGlobalNode;
-	import away3d.animators.nodes.ParticleFreeRotateLocalNode;
-	import away3d.animators.nodes.ParticleOffsetPositionLocalNode;
-	import away3d.animators.nodes.ParticleVelocityGlobalNode;
+	import away3d.animators.nodes.ParticleRotationalVelocityNode;
+	import away3d.animators.nodes.ParticlePositionNode;
+	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
 	import away3d.containers.View3D;
@@ -113,7 +114,7 @@ package
 			}
 			
 			//generate the particle geometry
-			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
+			var particleGeometry:ParticleGeometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
 			//create the particle animation set
 			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
@@ -121,11 +122,11 @@ package
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
-			animationSet.addAnimation(new ParticleVelocityGlobalNode(new Vector3D(0, 100, 0)));
-			animationSet.addAnimation(new ParticleFlickerByTimeGlobalNode(new ColorTransform(1, 0, 0), new ColorTransform(0, 0, 1), 4));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 100, 0)));
+			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, new ColorTransform(1, 0, 0), new ColorTransform(0, 0, 1), 4));
 			//no need to set the local animations here, because they influence all the particle with different factors.
-			animationSet.addAnimation(new ParticleOffsetPositionLocalNode());
-			animationSet.addAnimation(new ParticleFreeRotateLocalNode());
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
+			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticleRotationalVelocityNode.LOCAL));
 			
 			//set the initParticleFunc. It will be invoke for the local property initialization of every particle
 			animationSet.initParticleFunc = initParticleParam;
@@ -145,9 +146,9 @@ package
 		private function initParticleParam(param:ParticleParameter):void
 		{
 			param.startTime = Math.random() * 5;
-			param.duringTime = Math.random() * 2 + 3;
-			param[ParticleOffsetPositionLocalNode.NAME] = new Vector3D(Math.random() * 2000 - 1000, 0, Math.random() * 2000 - 1000);
-			param[ParticleFreeRotateLocalNode.NAME] = new Vector3D(0, 1, 0, Math.random() + 1);
+			param.duration = Math.random() * 2 + 3;
+			param[ParticlePositionNode.POSITION_VECTOR3D] = new Vector3D(Math.random() * 2000 - 1000, 0, Math.random() * 2000 - 1000);
+			param[ParticleRotationalVelocityNode.ROTATIONALVELOCITY_VECTOR3D] = new Vector3D(0, 1, 0, Math.random() + 1);
 			
 		}
 		

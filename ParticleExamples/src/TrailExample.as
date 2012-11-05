@@ -1,10 +1,10 @@
 package
 {
+	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.data.ParticleParameter;
-	import away3d.animators.nodes.ParticleBillboardGlobalNode;
-	import away3d.animators.nodes.ParticleColorByLifeGlobalNode;
+	import away3d.animators.nodes.ParticleBillboardNode;
+	import away3d.animators.nodes.ParticleColorNode;
 	import away3d.animators.nodes.ParticleFollowNode;
-	import away3d.animators.nodes.ParticleVelocityLocalNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
 	import away3d.animators.states.ParticleFollowState;
@@ -101,13 +101,13 @@ package
 			
 			var animation:ParticleAnimationSet = new ParticleAnimationSet();
 			animation.loop = true;
-			animation.hasDuringTime = true;
-			animation.hasSleepTime = true;
+			animation.hasDuration = true;
+			animation.hasDelay = true;
 			
-			animation.addAnimation(new ParticleBillboardGlobalNode());
-			animation.addAnimation(new ParticleVelocityLocalNode());
-			animation.addAnimation(new ParticleColorByLifeGlobalNode(new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
-			animation.addAnimation(new ParticleFollowNode(true, false));
+			animation.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animation.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
+			animation.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
+			animation.addAnimation(new ParticleFollowNode(ParticleFollowNode.LOCAL, true, false));
 			
 			animation.initParticleFunc = initParticleParam;
 			
@@ -117,7 +117,7 @@ package
 			particleMesh.animator = animator;
 			animator.start();
 			_view.scene.addChild(particleMesh);
-			ParticleFollowState(animator.getAnimationStateByName(ParticleFollowNode.NAME)).followTarget = followTrarget1;
+			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode0")).followTarget = followTrarget1;
 			
 			var clone:Mesh = particleMesh.clone() as Mesh;
 			clone.y = 300;
@@ -125,14 +125,14 @@ package
 			clone.animator = animator;
 			animator.start();
 			_view.scene.addChild(clone);
-			ParticleFollowState(animator.getAnimationStateByName(ParticleFollowNode.NAME)).followTarget = followTrarget2;
+			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode0")).followTarget = followTrarget2;
 		}
 		
 		private function initParticleParam(param:ParticleParameter):void
 		{
 			param.startTime = Math.random()*4.1;
-			param.duringTime = 4;
-			param[ParticleVelocityLocalNode.NAME] = new Vector3D(Math.random() * 100 - 50, Math.random() * 100 - 200, Math.random() * 100 - 50);
+			param.duration = 4;
+			param[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 100 - 50, Math.random() * 100 - 200, Math.random() * 100 - 50);
 		}
 		
 

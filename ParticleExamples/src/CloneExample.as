@@ -1,10 +1,12 @@
 package
 {
+	import away3d.utils.Cast;
+	import away3d.materials.TextureMaterial;
+	import away3d.animators.nodes.ParticleBillboardNode;
 	import away3d.animators.data.ParticleParameter;
-	import away3d.animators.nodes.ParticleColorByLifeGlobalNode;
-	import away3d.animators.nodes.ParticleScaleByLifeGlobalNode;
-	import away3d.animators.nodes.ParticleVelocityGlobalNode;
-	import away3d.animators.nodes.ParticleVelocityLocalNode;
+	import away3d.animators.nodes.ParticleColorNode;
+	import away3d.animators.nodes.ParticleScaleNode;
+	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
 	import away3d.containers.View3D;
@@ -31,7 +33,8 @@ package
 	public class CloneExample extends Sprite
 	{
 		
-
+[Embed(source="../embeds/blue.png")]
+		private var ParticleImg:Class;
 		private var _view:View3D;
 		private var _cameraController:HoverController;
 		
@@ -77,13 +80,13 @@ package
 		private function initParticle():void
 		{
 			//create the original particle geometry
-			var sphere:Geometry = new SphereGeometry(10, 6, 6);
+			var plane:Geometry = new PlaneGeometry(10, 10, 1, 1, false);
 			
 			//combine them into a list
 			var geometrySet:Vector.<Geometry> = new Vector.<Geometry>;
 			for (var i:int = 0; i < 500; i++)
 			{
-				geometrySet.push(sphere);
+				geometrySet.push(plane);
 			}
 			
 			//generate the particle geometry
@@ -95,17 +98,18 @@ package
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
-			animationSet.addAnimation(new ParticleScaleByLifeGlobalNode(2.5, 0.5));
-			animationSet.addAnimation(new ParticleVelocityGlobalNode(new Vector3D(0, 80, 0)));
-			animationSet.addAnimation(new ParticleColorByLifeGlobalNode(new ColorTransform(), new ColorTransform(0.6, 0, 0, 0)));
+			animationSet.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animationSet.addAnimation(new ParticleScaleNode(ParticleScaleNode.GLOBAL, 2.5, 0.5));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 80, 0)));
+			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, new ColorTransform(0, 0, 0, 1, 0xFF, 0x33, 0x01), new ColorTransform(0, 0, 0, 1, 0x99)));
 			//no need to set the local animations here, because they influence all the particle with different factors.
-			animationSet.addAnimation(new ParticleVelocityLocalNode());
+			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
 			
 			//set the initParticleFunc. It will be invoke for the local property initialization of every particle
 			animationSet.initParticleFunc = initParticleParam;
 			
 			//create a mesh with material for particles
-			var material:ColorMaterial = new ColorMaterial(0xFF3301,0.5);
+			var material:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(ParticleImg));
 			material.blendMode = BlendMode.ADD;
 			var particleMesh:Mesh = new Mesh(particleGeometry, material);
 			
@@ -144,12 +148,12 @@ package
 		private function initParticleParam(param:ParticleParameter):void
 		{
 			param.startTime = Math.random()*5;
-			param.duringTime = Math.random() * 4 + 0.1;
+			param.duration = Math.random() * 4 + 0.1;
 			
 			var degree1:Number = Math.random() * Math.PI * 2;
 			var degree2:Number = Math.random() * Math.PI * 2;
 			var r:Number = 15;
-			param[ParticleVelocityLocalNode.NAME] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+			param[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
 		}
 		
 

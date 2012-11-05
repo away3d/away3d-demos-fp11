@@ -1,10 +1,10 @@
 package
 {
 	import away3d.animators.data.ParticleParameter;
-	import away3d.animators.nodes.ParticleDriftLocalNode;
-	import away3d.animators.nodes.ParticleFreeRotateLocalNode;
-	import away3d.animators.nodes.ParticleOffsetPositionLocalNode;
-	import away3d.animators.nodes.ParticleVelocityGlobalNode;
+	import away3d.animators.nodes.ParticleOscillatorNode;
+	import away3d.animators.nodes.ParticleRotationalVelocityNode;
+	import away3d.animators.nodes.ParticlePositionNode;
+	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
 	import away3d.containers.View3D;
@@ -182,10 +182,10 @@ package
 			
 			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet.loop = true;
-			animationSet.addAnimation(new ParticleVelocityGlobalNode(new Vector3D(0, -100, 0)));
-			animationSet.addAnimation(new ParticleOffsetPositionLocalNode());
-			animationSet.addAnimation(new ParticleDriftLocalNode());
-			animationSet.addAnimation(new ParticleFreeRotateLocalNode());
+			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, -100, 0)));
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
+			animationSet.addAnimation(new ParticleOscillatorNode(ParticleOscillatorNode.LOCAL));
+			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticleOscillatorNode.LOCAL));
 			animationSet.initParticleFunc = initParticleParam;
 			
 			var material:ColorMaterial = new ColorMaterial();
@@ -205,10 +205,10 @@ package
 		private function initParticleParam(param:ParticleParameter):void
 		{
 			param.startTime = Math.random()*20;
-			param.duringTime = 20;
-			param[ParticleDriftLocalNode.NAME] = new Vector3D(Math.random() * 100 - 50, 0, Math.random() * 100 - 50, Math.random() * 2 + 3);
-			param[ParticleOffsetPositionLocalNode.NAME] = new Vector3D(Math.random() * 10000 - 5000, 1200, Math.random() * 10000 - 5000);
-			param[ParticleFreeRotateLocalNode.NAME] = new Vector3D(Math.random(), Math.random(), Math.random(), Math.random() * 2 + 2);
+			param.duration = 20;
+			param[ParticleOscillatorNode.OSCILLATOR_VECTOR3D] = new Vector3D(Math.random() * 100 - 50, 0, Math.random() * 100 - 50, Math.random() * 2 + 3);
+			param[ParticlePositionNode.POSITION_VECTOR3D] = new Vector3D(Math.random() * 10000 - 5000, 1200, Math.random() * 10000 - 5000);
+			param[ParticleRotationalVelocityNode.ROTATIONALVELOCITY_VECTOR3D] = new Vector3D(Math.random(), Math.random(), Math.random(), Math.random() * 2 + 2);
 		}
 		
 
