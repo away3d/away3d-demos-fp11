@@ -65,7 +65,7 @@ package
 		[Embed(source="../embeds/sky_negZ.jpg")]
 		private var NegZ:Class;
 		
-		[Embed(source = "../embeds/star.obj", mimeType = "application/octet-stream")]
+		[Embed(source = "../embeds/snow.obj", mimeType = "application/octet-stream")]
 		private var Snow:Class;
 		
 		[Embed(source="../embeds/water.png")]
