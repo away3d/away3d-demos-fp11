@@ -18,6 +18,7 @@ package
 	import away3d.lights.PointLight;
 	import away3d.loaders.AssetLoader;
 	import away3d.loaders.parsers.Max3DSParser;
+	import away3d.loaders.parsers.OBJParser;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.FogMethod;
@@ -64,7 +65,7 @@ package
 		[Embed(source="../embeds/sky_negZ.jpg")]
 		private var NegZ:Class;
 		
-		[Embed(source = "../embeds/snow.3ds", mimeType = "application/octet-stream")]
+		[Embed(source = "../embeds/star.obj", mimeType = "application/octet-stream")]
 		private var Snow:Class;
 		
 		[Embed(source="../embeds/water.png")]
@@ -111,7 +112,6 @@ package
 		{
 			var sunLight:DirectionalLight = new DirectionalLight(-1, -0.4, 1);
 			sunLight.color = 0xFFFFFF;
-			sunLight.castsShadows = true;
 			sunLight.ambient = 1;
 			sunLight.diffuse = 1;
 			sunLight.specular = 1;
@@ -130,7 +130,7 @@ package
 			
 			var loader:AssetLoader = new AssetLoader();
 			loader.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
-			loader.loadData(new Snow(), '', null, null, new Max3DSParser());
+			loader.loadData(new Snow(), '', null, null, new OBJParser());
 			
 			var groundMaterial:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(SnowDiffuse), true, true, true);
 			groundMaterial.lightPicker = lightPicker;
