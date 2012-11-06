@@ -98,10 +98,10 @@ package
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
-			animationSet.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
-			animationSet.addAnimation(new ParticleScaleNode(ParticleScaleNode.GLOBAL, 2.5, 0.5));
+			animationSet.addAnimation(new ParticleBillboardNode());
+			animationSet.addAnimation(new ParticleScaleNode(ParticleScaleNode.GLOBAL, false, false, 2.5, 0.5));
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 80, 0)));
-			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, new ColorTransform(0, 0, 0, 1, 0xFF, 0x33, 0x01), new ColorTransform(0, 0, 0, 1, 0x99)));
+			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, true, false, false, new ColorTransform(0, 0, 0, 1, 0xFF, 0x33, 0x01), new ColorTransform(0, 0, 0, 1, 0x99)));
 			//no need to set the local animations here, because they influence all the particle with different factors.
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
 			

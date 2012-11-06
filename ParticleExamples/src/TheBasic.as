@@ -1,5 +1,7 @@
 package
 {
+	import flash.geom.Matrix3D;
+	import away3d.tools.helpers.data.ParticleGeometryTransform;
 	import away3d.animators.nodes.ParticleColorNode;
 	import away3d.animators.data.ParticleParameter;
 	import away3d.animators.nodes.ParticleAccelerationNode;
@@ -77,13 +79,24 @@ package
 			
 			//combine them into a list
 			var geometrySet:Vector.<Geometry> = new Vector.<Geometry>;
+			var particleTransforms:Vector.<ParticleGeometryTransform> = new Vector.<ParticleGeometryTransform>;
+			var particleTransform:ParticleGeometryTransform;
 			for (var i:int = 0; i < 2000; i++)
 			{
 				geometrySet.push(cube);
+				particleTransform = new ParticleGeometryTransform();
+				
+				var percent:Number = i/2000;
+				var r:Number = percent * 1000;
+				var x:Number = r*Math.cos(percent * Math.PI * 2 * 20);
+				var z:Number = r*Math.sin(percent * Math.PI * 2 * 20);
+				
+				particleTransform.vertexTransform = new Matrix3D(Vector.<Number>([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, 0, z, 1]));
+				particleTransforms.push(particleTransform);
 			}
 			
 			//generate the particle geometry
-			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
+			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet, particleTransforms);
 			
 			//create the particle animation set
 			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
@@ -93,9 +106,9 @@ package
 			//the global animations can be set directly, because they influence all the particles with the same factor
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 200, 0)));
 			animationSet.addAnimation(new ParticleAccelerationNode(ParticleAccelerationNode.GLOBAL, new Vector3D(0, -40, 0)));
-			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, new ColorTransform(1, 0, 0), new ColorTransform(0, 1, 1), 2));
+			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 1, 1), 2));
 			//no need to set the local animations here, because they influence all the particle with different factors.
-			animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
+			//animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
 			
 			//set the initParticleFunc. It will be invoke for the local property initialization of every particle
 			animationSet.initParticleFunc = initParticleParam;

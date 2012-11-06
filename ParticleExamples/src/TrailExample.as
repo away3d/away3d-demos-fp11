@@ -104,10 +104,10 @@ package
 			animation.hasDuration = true;
 			animation.hasDelay = true;
 			
-			animation.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animation.addAnimation(new ParticleBillboardNode());
 			animation.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
-			animation.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
-			animation.addAnimation(new ParticleFollowNode(ParticleFollowNode.LOCAL, true, false));
+			animation.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
+			animation.addAnimation(new ParticleFollowNode(true, false));
 			
 			animation.initParticleFunc = initParticleParam;
 			

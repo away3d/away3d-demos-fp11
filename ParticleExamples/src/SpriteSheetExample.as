@@ -25,7 +25,7 @@ package
 	import flash.geom.Vector3D;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
-	public class SpritesheetExample extends Sprite
+	public class SpriteSheetExample extends Sprite
 	{
 		
 		[Embed(source="/../embeds/LightningBall.png")]
@@ -41,7 +41,7 @@ package
 		private var _lastMouseY:Number;
 		
 
-		public function SpritesheetExample()
+		public function SpriteSheetExample()
 		{
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
@@ -88,7 +88,7 @@ package
 			animationSet.loop = true;
 			animationSet.hasDelay = true;
 			
-			animationSet.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));;
+			animationSet.addAnimation(new ParticleBillboardNode());;
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
 			animationSet.addAnimation(new ParticleSpriteSheetNode(ParticleSpriteSheetNode.GLOBAL, 3, 2, 0, 1));
 			
