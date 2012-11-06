@@ -123,7 +123,7 @@ package
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 100, 0)));
-			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 0, 1), 1));
+			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 0, 1), 4));
 			//no need to set the local animations here, because they influence all the particle with different factors.
 			animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
 			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticleRotationalVelocityNode.LOCAL));

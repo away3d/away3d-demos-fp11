@@ -25,7 +25,7 @@ package
 	import flash.geom.Vector3D;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
-	public class SpriteSheetExample extends Sprite
+	public class SpritesheetExample extends Sprite
 	{
 		
 		[Embed(source="/../embeds/LightningBall.png")]
@@ -41,7 +41,7 @@ package
 		private var _lastMouseY:Number;
 		
 
-		public function SpriteSheetExample()
+		public function SpritesheetExample()
 		{
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
