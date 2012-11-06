@@ -90,7 +90,7 @@ package
 			
 			animationSet.addAnimation(new ParticleBillboardNode());;
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
-			animationSet.addAnimation(new ParticleSpriteSheetNode(ParticleSpriteSheetNode.GLOBAL, 3, 2, 0, 1));
+			animationSet.addAnimation(new ParticleSpriteSheetNode(ParticleSpriteSheetNode.GLOBAL, true, false, 3, 2, 1));
 			
 			animationSet.initParticleFunc = initParticleParam;
 			
