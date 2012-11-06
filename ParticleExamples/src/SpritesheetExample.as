@@ -88,7 +88,7 @@ package
 			animationSet.loop = true;
 			animationSet.hasDelay = true;
 			
-			animationSet.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));;
+			animationSet.addAnimation(new ParticleBillboardNode());;
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
 			animationSet.addAnimation(new ParticleSpriteSheetNode(ParticleSpriteSheetNode.GLOBAL, 3, 2, 0, 1));
 			

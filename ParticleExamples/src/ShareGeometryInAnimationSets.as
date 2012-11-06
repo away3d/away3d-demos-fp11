@@ -89,7 +89,7 @@ package
 			
 			var animationSet1:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet1.loop = true;
-			animationSet1.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animationSet1.addAnimation(new ParticleBillboardNode());
 			animationSet1.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
 			animationSet1.addAnimation(new ParticleAccelerationNode(ParticleAccelerationNode.GLOBAL, new Vector3D(0, -500, 0)));
 			animationSet1.initParticleFunc = initParticleParam1;
@@ -108,7 +108,7 @@ package
 			
 			var animationSet2:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet2.loop = true;
-			animationSet2.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animationSet2.addAnimation(new ParticleBillboardNode());
 			animationSet2.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0,700,0)));
 			animationSet2.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
 			animationSet2.initParticleFunc = initParticleParam2;

@@ -137,7 +137,7 @@ package
 			animationSet = new ParticleAnimationSet();
 			animationSet.loop = true;
 			
-			animationSet.addAnimation(new ParticleBillboardNode(ParticleBillboardNode.GLOBAL));
+			animationSet.addAnimation(new ParticleBillboardNode());
 			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
 			animationSet.initParticleFunc = initParticleParam;
 			
