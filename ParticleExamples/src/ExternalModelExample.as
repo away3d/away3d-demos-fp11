@@ -1,6 +1,7 @@
 package
 {
-	import away3d.animators.data.ParticleParameter;
+	import away3d.animators.data.ParticlePropertiesMode;
+	import away3d.animators.data.ParticleProperties;
 	import away3d.animators.nodes.ParticleOscillatorNode;
 	import away3d.animators.nodes.ParticleRotationalVelocityNode;
 	import away3d.animators.nodes.ParticlePositionNode;
@@ -182,10 +183,10 @@ package
 			
 			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet.loop = true;
-			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, -100, 0)));
-			animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
-			animationSet.addAnimation(new ParticleOscillatorNode(ParticleOscillatorNode.LOCAL));
-			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticleOscillatorNode.LOCAL));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, -100, 0)));
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticleOscillatorNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL));
 			animationSet.initParticleFunc = initParticleParam;
 			
 			var material:ColorMaterial = new ColorMaterial();
@@ -202,7 +203,7 @@ package
 		
 		
 		
-		private function initParticleParam(param:ParticleParameter):void
+		private function initParticleParam(param:ParticleProperties):void
 		{
 			param.startTime = Math.random()*20;
 			param.duration = 20;

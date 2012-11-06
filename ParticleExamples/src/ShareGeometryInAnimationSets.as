@@ -1,6 +1,7 @@
 package
 {
-	import away3d.animators.data.ParticleParameter;
+	import away3d.animators.data.ParticlePropertiesMode;
+	import away3d.animators.data.ParticleProperties;
 	import away3d.animators.nodes.ParticleAccelerationNode;
 	import away3d.animators.nodes.ParticleBillboardNode;
 	import away3d.animators.nodes.ParticlePositionNode;
@@ -90,8 +91,8 @@ package
 			var animationSet1:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet1.loop = true;
 			animationSet1.addAnimation(new ParticleBillboardNode());
-			animationSet1.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
-			animationSet1.addAnimation(new ParticleAccelerationNode(ParticleAccelerationNode.GLOBAL, new Vector3D(0, -500, 0)));
+			animationSet1.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet1.addAnimation(new ParticleAccelerationNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, -500, 0)));
 			animationSet1.initParticleFunc = initParticleParam1;
 			
 			var material1:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(WaterImg));
@@ -109,8 +110,8 @@ package
 			var animationSet2:ParticleAnimationSet = new ParticleAnimationSet();
 			animationSet2.loop = true;
 			animationSet2.addAnimation(new ParticleBillboardNode());
-			animationSet2.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0,700,0)));
-			animationSet2.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
+			animationSet2.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0,700,0)));
+			animationSet2.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
 			animationSet2.initParticleFunc = initParticleParam2;
 			
 			var material2:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(Light));
@@ -127,7 +128,7 @@ package
 		
 		
 		
-		private function initParticleParam1(param:ParticleParameter):void
+		private function initParticleParam1(param:ParticleProperties):void
 		{
 			param.startTime = Math.random() * 3;
 			param.duration = 3;
@@ -138,7 +139,7 @@ package
 			param[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.sin(degree2), r * Math.cos(degree1) * Math.cos(degree2));
 		}
 		
-		private function initParticleParam2(param:ParticleParameter):void
+		private function initParticleParam2(param:ParticleProperties):void
 		{
 			param.startTime = Math.random() * 1;
 			param.duration = 1;

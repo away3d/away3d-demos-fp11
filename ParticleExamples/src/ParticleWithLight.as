@@ -1,8 +1,9 @@
 package
 {
+	import away3d.animators.data.ParticlePropertiesMode;
 	import away3d.animators.nodes.ParticleColorNode;
 	import away3d.core.base.ParticleGeometry;
-	import away3d.animators.data.ParticleParameter;
+	import away3d.animators.data.ParticleProperties;
 	import away3d.animators.nodes.ParticleRotationalVelocityNode;
 	import away3d.animators.nodes.ParticlePositionNode;
 	import away3d.animators.nodes.ParticleVelocityNode;
@@ -122,11 +123,11 @@ package
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
-			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 100, 0)));
-			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 0, 1), 4));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, 100, 0)));
+			animationSet.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 0, 1), 4));
 			//no need to set the local animations here, because they influence all the particle with different factors.
-			animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
-			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticleRotationalVelocityNode.LOCAL));
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL));
 			
 			//set the initParticleFunc. It will be invoke for the local property initialization of every particle
 			animationSet.initParticleFunc = initParticleParam;
@@ -143,7 +144,7 @@ package
 			_view.scene.addChild(particleMesh);
 		}
 		
-		private function initParticleParam(param:ParticleParameter):void
+		private function initParticleParam(param:ParticleProperties):void
 		{
 			param.startTime = Math.random() * 5;
 			param.duration = Math.random() * 2 + 3;

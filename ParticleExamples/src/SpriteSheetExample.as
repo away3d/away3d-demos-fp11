@@ -1,6 +1,7 @@
 package
 {
-	import away3d.animators.data.ParticleParameter;
+	import away3d.animators.data.ParticlePropertiesMode;
+	import away3d.animators.data.ParticleProperties;
 	import away3d.animators.nodes.ParticleBillboardNode;
 	import away3d.animators.nodes.ParticleSpriteSheetNode;
 	import away3d.animators.nodes.ParticleVelocityNode;
@@ -89,8 +90,8 @@ package
 			animationSet.hasDelay = true;
 			
 			animationSet.addAnimation(new ParticleBillboardNode());;
-			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
-			animationSet.addAnimation(new ParticleSpriteSheetNode(ParticleSpriteSheetNode.GLOBAL, 3, 2, 0, 1));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticleSpriteSheetNode(ParticlePropertiesMode.GLOBAL, true, true, 3, 2, 0, 1));
 			
 			animationSet.initParticleFunc = initParticleParam;
 			
@@ -105,7 +106,7 @@ package
 			_view.scene.addChild(particleMesh);
 		}
 		
-		private function initParticleParam(param:ParticleParameter):void
+		private function initParticleParam(param:ParticleProperties):void
 		{
 			param.startTime = Math.random()*1;
 			param.duration = 6;

@@ -1,7 +1,8 @@
 package
 {
+	import away3d.animators.data.ParticlePropertiesMode;
 	import away3d.animators.nodes.ParticleVelocityNode;
-	import away3d.animators.data.ParticleParameter;
+	import away3d.animators.data.ParticleProperties;
 	import away3d.animators.nodes.ParticleBillboardNode;
 	import away3d.animators.nodes.ParticleColorNode;
 	import away3d.animators.nodes.ParticleFollowNode;
@@ -105,8 +106,8 @@ package
 			animation.hasDelay = true;
 			
 			animation.addAnimation(new ParticleBillboardNode());
-			animation.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
-			animation.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
+			animation.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animation.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
 			animation.addAnimation(new ParticleFollowNode(true, false));
 			
 			animation.initParticleFunc = initParticleParam;
@@ -128,7 +129,7 @@ package
 			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode0")).followTarget = followTrarget2;
 		}
 		
-		private function initParticleParam(param:ParticleParameter):void
+		private function initParticleParam(param:ParticleProperties):void
 		{
 			param.startTime = Math.random()*4.1;
 			param.duration = 4;

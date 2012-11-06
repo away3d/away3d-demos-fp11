@@ -1,9 +1,10 @@
 package
 {
+	import away3d.animators.data.ParticlePropertiesMode;
 	import flash.geom.Matrix3D;
 	import away3d.tools.helpers.data.ParticleGeometryTransform;
 	import away3d.animators.nodes.ParticleColorNode;
-	import away3d.animators.data.ParticleParameter;
+	import away3d.animators.data.ParticleProperties;
 	import away3d.animators.nodes.ParticleAccelerationNode;
 	import away3d.animators.nodes.ParticlePositionNode;
 	import away3d.animators.nodes.ParticleVelocityNode;
@@ -104,9 +105,9 @@ package
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
-			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.GLOBAL, new Vector3D(0, 200, 0)));
-			animationSet.addAnimation(new ParticleAccelerationNode(ParticleAccelerationNode.GLOBAL, new Vector3D(0, -40, 0)));
-			animationSet.addAnimation(new ParticleColorNode(ParticleColorNode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 1, 1), 2));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, 200, 0)));
+			animationSet.addAnimation(new ParticleAccelerationNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, -40, 0)));
+			animationSet.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 1, 1), 2));
 			//no need to set the local animations here, because they influence all the particle with different factors.
 			//animationSet.addAnimation(new ParticlePositionNode(ParticlePositionNode.LOCAL));
 			
@@ -123,7 +124,7 @@ package
 			_view.scene.addChild(particleMesh);
 		}
 		
-		private function initParticleParam(param:ParticleParameter):void
+		private function initParticleParam(param:ParticleProperties):void
 		{
 			//let all particle appear when time=0
 			param.startTime = 0;

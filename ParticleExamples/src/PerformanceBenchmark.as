@@ -1,7 +1,8 @@
 package
 {
+	import away3d.animators.data.ParticlePropertiesMode;
 	import away3d.animators.nodes.ParticleVelocityNode;
-	import away3d.animators.data.ParticleParameter;
+	import away3d.animators.data.ParticleProperties;
 	import away3d.animators.nodes.ParticleBillboardNode;
 	import away3d.animators.ParticleAnimationSet;
 	import away3d.animators.ParticleAnimator;
@@ -138,7 +139,7 @@ package
 			animationSet.loop = true;
 			
 			animationSet.addAnimation(new ParticleBillboardNode());
-			animationSet.addAnimation(new ParticleVelocityNode(ParticleVelocityNode.LOCAL));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
 			animationSet.initParticleFunc = initParticleParam;
 			
 			
@@ -147,7 +148,7 @@ package
 			particleMesh = new Mesh(particleGeometry, material);
 		}
 		
-		private function initParticleParam(param:ParticleParameter):void
+		private function initParticleParam(param:ParticleProperties):void
 		{
 			param.startTime = Math.random()*5;
 			param.duration = 5;
