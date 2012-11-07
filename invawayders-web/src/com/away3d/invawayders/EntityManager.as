@@ -1,26 +1,22 @@
 package com.away3d.invawayders
 {
-	import com.away3d.invawayders.utils.MathUtils;
-	import away3d.animators.states.ParticlePositionState;
-	import away3d.animators.ParticleAnimator;
-	import away3d.animators.data.ParticlePropertiesMode;
-	import away3d.animators.nodes.ParticleVelocityNode;
-	import away3d.animators.nodes.ParticleRotationalVelocityNode;
-	import away3d.animators.nodes.ParticlePositionNode;
-	import away3d.animators.data.ParticleProperties;
-	import away3d.animators.ParticleAnimationSet;
-	import away3d.tools.helpers.ParticleGeometryHelper;
-	import away3d.tools.helpers.data.ParticleGeometryTransform;
-	import away3d.core.base.Geometry;
+	
 	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.graphics.*;
 	import com.away3d.invawayders.primitives.*;
+	import com.away3d.invawayders.utils.*;
 	
+	import away3d.animators.*;
+	import away3d.animators.data.*;
+	import away3d.animators.nodes.*;
+	import away3d.animators.states.*;
 	import away3d.containers.*;
+	import away3d.core.base.*;
 	import away3d.entities.Mesh;
 	import away3d.materials.*;
 	import away3d.materials.lightpickers.*;
+	import away3d.tools.helpers.*;
 
 	import net.richardlord.ash.core.*;
 	

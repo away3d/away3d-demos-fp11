@@ -6,8 +6,6 @@ package com.away3d.invawayders.systems
 	import com.away3d.invawayders.nodes.*;
 	import com.away3d.invawayders.utils.*;
 	
-	import away3d.containers.*;
-	
 	import net.richardlord.ash.core.*;
 	import net.richardlord.signals.*;
 	
@@ -32,8 +30,6 @@ package com.away3d.invawayders.systems
 		public var projectiles : NodeList;
 		[Inject(nodeType="com.away3d.invawayders.nodes.BlastNode")]
 		public var blasts : NodeList;
-		[Inject(nodeType="com.away3d.invawayders.nodes.ExplosionNode")]
-		public var explosions : NodeList;
 		
 		[PostConstruct]
 		public function setUpListeners() : void
@@ -85,7 +81,6 @@ package com.away3d.invawayders.systems
 			
 			var invawayderNode : InvawayderNode;
 			var blastNode : BlastNode;
-			var explosionNode : ExplosionNode;
 			var transform : Transform3D;
 			
 			//update invawayder animations
@@ -139,45 +134,6 @@ package com.away3d.invawayders.systems
 				if (scale > 5)
 					creator.destroyEntity(blastNode.entity);
 			}
-			
-			//update explosion animations
-			/**
-			for ( explosionNode = explosions.head; explosionNode; explosionNode = explosionNode.next )
-			{
-				var explosion:Explosion = explosionNode.explosion;
-				var currentFrame:uint = explosion.currentFrame;
-				var cellContainer:ObjectContainer3D = explosion.particleMeshes[currentFrame];
-				var cellVelocities:Vector.<Vector3D> = explosion.particleVelocities[currentFrame];
-				var cellRotationalVelocities:Vector.<Vector3D> = explosion.particleRotationalVelocities[currentFrame];
-				var i:uint;
-				var cell:ObjectContainer3D;
-				var cellVelocity:Vector3D;
-				var cellRotationalVelocity:Vector3D;
-				
-				// Move, rotate and kill
-				for (i=0; i<cellContainer.numChildren; i++) {
-					cell = cellContainer.getChildAt(i) as ObjectContainer3D;
-					
-					if (!cell.visible)
-						continue;
-					
-					cellVelocity = cellVelocities[i];
-					cellRotationalVelocity = cellRotationalVelocities[i];
-					
-					//move
-					cell.x += cellVelocity.x;
-					cell.y += cellVelocity.y;
-					cell.z += cellVelocity.z;
-					
-					//rotate
-					cell.rotationX += cellRotationalVelocity.x;
-					cell.rotationY += cellRotationalVelocity.y;
-					cell.rotationZ += cellRotationalVelocity.z;
-					
-				}
-			}
-			 * 
-			 */
 		}
 		
 		private function getFireTimer( archetype : InvawayderArchetype ) : Number

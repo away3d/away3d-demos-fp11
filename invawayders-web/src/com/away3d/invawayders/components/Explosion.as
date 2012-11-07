@@ -1,7 +1,6 @@
 package com.away3d.invawayders.components
 {
-	import away3d.animators.ParticleAnimator;
-	import away3d.entities.Mesh;
+	import away3d.entities.*;
 	
 	import flash.geom.*;
 	

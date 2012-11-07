@@ -1,13 +1,11 @@
 package com.away3d.invawayders.archetypes
 {
-	import away3d.animators.ParticleAnimator;
-	import away3d.entities.Mesh;
-	import away3d.animators.ParticleAnimationSet;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.sounds.*;
 	
-	import away3d.containers.*;
+	import away3d.animators.*;
 	import away3d.core.base.*;
+	import away3d.entities.*;
 	import away3d.materials.*;
 	import away3d.primitives.*;
 	

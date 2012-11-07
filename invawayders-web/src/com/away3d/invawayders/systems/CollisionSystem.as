@@ -1,17 +1,14 @@
 package com.away3d.invawayders.systems
 {
-	import away3d.animators.ParticleAnimator;
-	import away3d.animators.states.ParticleRotationalVelocityState;
-	import away3d.animators.states.ParticleVelocityState;
-	import away3d.animators.states.ParticlePositionState;
+	import away3d.animators.*;
+	import away3d.animators.states.*;
 	import away3d.entities.Mesh;
+	
 	import com.away3d.invawayders.*;
 	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.nodes.*;
 	import com.away3d.invawayders.utils.*;
-	
-	import away3d.containers.*;
 	
 	import flash.geom.*;
 	
@@ -216,7 +213,7 @@ package com.away3d.invawayders.systems
 				var dx:Number = position.x*scale + transform.x - x;
 				var dy:Number = position.y*scale + transform.y - y;
 				var distanceSq:Number = dx * dx + dy * dy;
-				var rotSpeed:Number = intensity * 2500 / distanceSq;
+				var rotSpeed:Number = intensity * 7500 / distanceSq;
 				var degree1:Number = Math.random() * Math.PI * 2;
 				var degree2:Number = Math.random() * Math.PI;
 				
