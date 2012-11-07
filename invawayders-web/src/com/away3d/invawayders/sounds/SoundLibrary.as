@@ -9,8 +9,8 @@ package com.away3d.invawayders.sounds
 	public class SoundLibrary
 	{
 		public static const PLAYER_FIRE:String = "sounds/player/fire";
-		public static const EXPLOSION_SOFT:String = "sounds/explosion/soft";
-		public static const EXPLOSION_STRONG:String = "sounds/explosion/strong";
+		public static const EXPLOSION_SOFT:String = "sounds/fragments/soft";
+		public static const EXPLOSION_STRONG:String = "sounds/fragments/strong";
 		public static const INVAWAYDER_DEATH:String = "sounds/invawayder/death";
 		public static const MOTHERSHIP:String = "sounds/mothership";
 		public static const INVAWAYDER_FIRE:String = "sounds/boing";

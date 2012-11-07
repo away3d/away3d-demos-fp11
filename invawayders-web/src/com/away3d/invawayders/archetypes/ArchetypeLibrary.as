@@ -33,7 +33,7 @@ package com.away3d.invawayders.archetypes
 			archetypes.push(new InvawayderArchetype(Vector.<ArchetypeBase>([new BugInvawayderArchetype(), new MothershipInvawayderArchetype(), new OctopusInvawayderArchetype(), new RoundedOctopusInvawayderArchetype()])));
 			archetypes.push(new ProjectileArchetype(Vector.<ArchetypeBase>([new InvawayderProjectileArchetype(), new PlayerProjectileArchetype()])));
 			archetypes.push(new BlastArchetype(Vector.<ArchetypeBase>([new PlayerBlastArchetype(), new InvawayderBlastArchetype()])));
-			archetypes.push(new ExplosionArchetype(Vector.<ArchetypeBase>([null, new MothershipExplosionArchetype()])));
+			archetypes.push(new FragmentsArchetype(Vector.<ArchetypeBase>([null, new MothershipFragmentsArchetype()])));
 		}
 	}
 }

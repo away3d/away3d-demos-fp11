@@ -184,24 +184,24 @@ package com.away3d.invawayders.systems
 			
 			creator.destroyEntity( invawayder.entity );
 			
-			//create explosion
-			var explosionEntity : Entity = creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.EXPLOSION, invawayder.dataModel.subType.id);
-			var explositonTransform:Transform3D = explosionEntity.get(Transform3D) as Transform3D;
-			var explosion : Explosion = explosionEntity.get(Explosion) as Explosion;
-			explosion.currentFrame = currentFrame;
+			//create fragments
+			var fragmentsEntity : Entity = creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.EXPLOSION, invawayder.dataModel.subType.id);
+			var explositonTransform:Transform3D = fragmentsEntity.get(Transform3D) as Transform3D;
+			var fragments : Fragments = fragmentsEntity.get(Fragments) as Fragments;
+			fragments.currentFrame = currentFrame;
 			
-			//reset explosion scale
+			//reset fragments scale
 			explositonTransform.scaleX = explositonTransform.scaleY = explositonTransform.scaleZ = scale;
 			
-			//rest explosion visibility
-			for (i=0; i<explosion.particleMeshes.length; i++)
-				explosion.particleMeshes[i].visible = (i == currentFrame);
+			//rest fragments visibility
+			for (i=0; i<fragments.particleMeshes.length; i++)
+				fragments.particleMeshes[i].visible = (i == currentFrame);
 			
-			//reset explosion animation
-			var particleMesh:Mesh = explosion.particleMeshes[currentFrame];
-			var particleVelocities:Vector.<Vector3D> = explosion.particleVelocities[currentFrame];
-			var particleRotationalVelocities:Vector.<Vector3D> = explosion.particleRotationalVelocities[currentFrame];
-			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
+			//reset fragments animation
+			var particleMesh:Mesh = fragments.particleMeshes[currentFrame];
+			var particleVelocities:Vector.<Vector3D> = fragments.particleVelocities[currentFrame];
+			var particleRotationalVelocities:Vector.<Vector3D> = fragments.particleRotationalVelocities[currentFrame];
+			var intensity:Number = GameSettings.deathFragmentsIntensity * MathUtils.rand( 1, 4 );
 			var position:Vector3D;
 			var particleVelocity:Vector3D;
 			var particleRotationalVelocity:Vector3D;
@@ -209,7 +209,7 @@ package com.away3d.invawayders.systems
 			for (i=0; i<particlePositions.length; i++) {
 				position = particlePositions[i];
 				
-				// Determine explosion velocity of particle.
+				// Determine fragments velocity of particle.
 				var dx:Number = position.x*scale + transform.x - x;
 				var dy:Number = position.y*scale + transform.y - y;
 				var distanceSq:Number = dx * dx + dy * dy;

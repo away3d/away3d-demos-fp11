@@ -25,7 +25,7 @@ package
 		// Invawayders.
 		public static const invawayderSizeXY:Number = 50;
 		public static const invawayderSizeZ:Number = 200;
-		public static const deathExplosionIntensity:Number = 3;
+		public static const deathFragmentsIntensity:Number = 3;
 		public static const particleVelocityMin:Number = 30;
 		public static const particleVelocityMax:Number = 250;
 		public static const particleVelocityMinZ:Number = 16;

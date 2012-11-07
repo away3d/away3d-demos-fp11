@@ -30,7 +30,7 @@ package com.away3d.invawayders.archetypes
 		public var cellDefinitions:Vector.<Vector.<uint>>;
 		
 		/**
-		 * The vector data defining the positions in space of each building block 'cell', used for explosions.
+		 * The vector data defining the positions in space of each building block 'cell', used for fragmentss.
 		 */
 		public var particlePositions:Vector.<Vector.<Vector3D>>;
 		

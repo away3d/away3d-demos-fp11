@@ -10,9 +10,9 @@ package com.away3d.invawayders.archetypes
 	import away3d.primitives.*;
 	
 	/**
-	 * Data class for explosion data
+	 * Data class for fragments data
 	 */
-	public class ExplosionArchetype extends ArchetypeBase
+	public class FragmentsArchetype extends ArchetypeBase
 	{
 		public static const MOTHERSHIP:uint = 1;
 		
@@ -20,28 +20,28 @@ package com.away3d.invawayders.archetypes
 		
 		public var particleMeshes:Vector.<Mesh>;
 		
-		public static const explosionGeometry:Geometry = new CubeGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ );
+		public static const fragmentsGeometry:Geometry = new CubeGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ );
 		
-		public static const explosionMaterial:ColorMaterial = new ColorMaterial( 0x777780);
+		public static const fragmentsMaterial:ColorMaterial = new ColorMaterial( 0x777780);
 		
-		public function ExplosionArchetype(subTypes:Vector.<ArchetypeBase> = null)
+		public function FragmentsArchetype(subTypes:Vector.<ArchetypeBase> = null)
 		{
 			super(subTypes);
 			
 			id = ArchetypeLibrary.EXPLOSION;
 			
-			geometry = explosionGeometry;
+			geometry = fragmentsGeometry;
 			
-			material = explosionMaterial;
+			material = fragmentsMaterial;
 			
 			soundOnAdd = SoundLibrary.INVAWAYDER_DEATH;
 			
-			Component = Explosion;
+			Component = Fragments;
 		}
 		
 		override protected function clone(archetype:ArchetypeBase, subId:uint):ArchetypeBase
 		{
-			return super.clone(archetype ||= new ExplosionArchetype(), subId);
+			return super.clone(archetype ||= new FragmentsArchetype(), subId);
 		}
 	}
 }

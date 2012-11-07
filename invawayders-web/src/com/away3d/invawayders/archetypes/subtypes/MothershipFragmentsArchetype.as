@@ -5,13 +5,13 @@ package com.away3d.invawayders.archetypes.subtypes
 	
 	
 	/**
-	 * Data class for explosion data
+	 * Data class for fragments data
 	 */
-	public class MothershipExplosionArchetype extends ExplosionArchetype
+	public class MothershipFragmentsArchetype extends FragmentsArchetype
 	{
-		public function MothershipExplosionArchetype()
+		public function MothershipFragmentsArchetype()
 		{
-			id = ExplosionArchetype.MOTHERSHIP;
+			id = FragmentsArchetype.MOTHERSHIP;
 			
 			soundOnAdd = SoundLibrary.EXPLOSION_STRONG;
 		}

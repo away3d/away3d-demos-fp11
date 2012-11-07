@@ -4,7 +4,7 @@ package com.away3d.invawayders.components
 	
 	import flash.geom.*;
 	
-	public class Explosion
+	public class Fragments
 	{
 		public var currentFrame : uint;
 		
@@ -16,7 +16,7 @@ package com.away3d.invawayders.components
 		
 		public var particleRotationalVelocities:Vector.<Vector.<Vector3D>>;
 		
-		public function Explosion(particleMeshes : Vector.<Mesh>, particlePositions:Vector.<Vector.<Vector3D>>, particleVelocities:Vector.<Vector.<Vector3D>>, particleRotationalVelocities:Vector.<Vector.<Vector3D>>)
+		public function Fragments(particleMeshes : Vector.<Mesh>, particlePositions:Vector.<Vector.<Vector3D>>, particleVelocities:Vector.<Vector.<Vector3D>>, particleRotationalVelocities:Vector.<Vector.<Vector3D>>)
 		{
 			this.particleMeshes = particleMeshes;
 			this.particlePositions = particlePositions;

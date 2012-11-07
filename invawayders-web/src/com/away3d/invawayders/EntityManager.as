@@ -139,9 +139,9 @@ package com.away3d.invawayders
 					entity.add( new Player( view.camera, leftBlaster, rightBlaster ) );
 					break;
 				
-				case Explosion:
+				case Fragments:
 					
-					var explosionArchetype:ExplosionArchetype = subType as ExplosionArchetype;
+					var fragmentsArchetype:FragmentsArchetype = subType as FragmentsArchetype;
 					var particlePositions:Vector.<Vector.<Vector3D>> = (ArchetypeLibrary.getArchetype(ArchetypeLibrary.INVAWAYDER).getSubType(subType.id) as InvawayderArchetype).particlePositions;
 					var particleVelocities:Vector.<Vector.<Vector3D>> = new Vector.<Vector.<Vector3D>>();
 					var particleRotationalVelocities:Vector.<Vector.<Vector3D>> = new Vector.<Vector.<Vector3D>>();
@@ -149,37 +149,37 @@ package com.away3d.invawayders
 					var particleMesh:Mesh;
 					var particleAnimator:ParticleAnimator;
 					
-					if (explosionArchetype.entityView) {
+					if (fragmentsArchetype.entityView) {
 						entityView = new ObjectContainer3D();
-						particleMeshes = explosionArchetype.particleMeshes;
+						particleMeshes = fragmentsArchetype.particleMeshes;
 						
 						var i:uint = 0;
-						for (i=0; i < explosionArchetype.particleMeshes.length; i++) {
+						for (i=0; i < fragmentsArchetype.particleMeshes.length; i++) {
 							//generate vectors for velocities and rotationalvelocities
 							particleVelocities.push(new Vector.<Vector3D>(particlePositions[i].length));
 							particleRotationalVelocities.push(new Vector.<Vector3D>(particlePositions[i].length));
 							
 							//duplicate particle mesh
-							particleMesh = explosionArchetype.particleMeshes[i].clone() as Mesh;
+							particleMesh = fragmentsArchetype.particleMeshes[i].clone() as Mesh;
 							particleMeshes.push(particleMesh);
 							entityView.addChild(particleMesh);
 							
 							//duplicate particle animator
-							particleAnimator = new ParticleAnimator(explosionArchetype.particleAnimationSet);
+							particleAnimator = new ParticleAnimator(fragmentsArchetype.particleAnimationSet);
 							(particleAnimator.getAnimationStateByName("ParticlePositionNode") as ParticlePositionState).setPositions(particlePositions[i]);
 							particleMesh.animator = particleAnimator;
 						}
 					} else {
 						material.lightPicker = cameraLightPicker;
 						
-						entityView = explosionArchetype.entityView = new ObjectContainer3D();
+						entityView = fragmentsArchetype.entityView = new ObjectContainer3D();
 						
 						//create the particle animation set !ONLY CREATE ONE!
 						
-						var particleAnimationSet:ParticleAnimationSet = (archetype as ExplosionArchetype).particleAnimationSet;
+						var particleAnimationSet:ParticleAnimationSet = (archetype as FragmentsArchetype).particleAnimationSet;
 						
 						if (!particleAnimationSet) {
-							particleAnimationSet = (archetype as ExplosionArchetype).particleAnimationSet = new ParticleAnimationSet();
+							particleAnimationSet = (archetype as FragmentsArchetype).particleAnimationSet = new ParticleAnimationSet();
 							particleAnimationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
 							particleAnimationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
 							particleAnimationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
@@ -187,7 +187,7 @@ package com.away3d.invawayders
 							particleAnimationSet.hasDuration = true;
 						}
 						
-						particleMeshes = explosionArchetype.particleMeshes = new Vector.<Mesh>();
+						particleMeshes = fragmentsArchetype.particleMeshes = new Vector.<Mesh>();
 						
 						var geometrySet:Vector.<Geometry>;
 						var frame:Vector.<Vector3D>;
@@ -196,7 +196,7 @@ package com.away3d.invawayders
 							//generate the particle geometry vector
 							geometrySet = new Vector.<Geometry>();
 							for each (position in frame) 
-								geometrySet.push(explosionArchetype.geometry);
+								geometrySet.push(fragmentsArchetype.geometry);
 							
 							//generate vectors for velocities and rotationalvelocities
 							particleVelocities.push(new Vector.<Vector3D>(frame.length));
@@ -214,8 +214,8 @@ package com.away3d.invawayders
 						}
 					}
 					
-					//passes the cellposition data from invawayder to explosion archetype
-					entity.add( new Explosion(particleMeshes, particlePositions, particleVelocities, particleRotationalVelocities) );
+					//passes the cellposition data from invawayder to fragments archetype
+					entity.add( new Fragments(particleMeshes, particlePositions, particleVelocities, particleRotationalVelocities) );
 					break;
 					
 				default:
