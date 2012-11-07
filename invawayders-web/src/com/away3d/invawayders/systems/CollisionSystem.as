@@ -1,5 +1,10 @@
 package com.away3d.invawayders.systems
 {
+	import away3d.animators.ParticleAnimator;
+	import away3d.animators.states.ParticleRotationalVelocityState;
+	import away3d.animators.states.ParticleVelocityState;
+	import away3d.animators.states.ParticlePositionState;
+	import away3d.entities.Mesh;
 	import com.away3d.invawayders.*;
 	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.components.*;
@@ -176,7 +181,7 @@ package com.away3d.invawayders.systems
 			var transform:Transform3D = invawayder.transform;
 			var currentFrame : uint = invawayder.invawayder.currentFrame;
 			var archetype : InvawayderArchetype = invawayder.dataModel.subType as InvawayderArchetype;
-			var cellPositions : Vector.<Point> = archetype.cellPositions[currentFrame];
+			var particlePositions : Vector.<Vector3D> = archetype.particlePositions[currentFrame];
 			var scale : Number = archetype.scale;
 			var i:uint;
 			
@@ -192,52 +197,48 @@ package com.away3d.invawayders.systems
 			explositonTransform.scaleX = explositonTransform.scaleY = explositonTransform.scaleZ = scale;
 			
 			//rest explosion visibility
-			for (i=0; i<explosion.cellContainers.length; i++)
-				explosion.cellContainers[i].visible = (i == currentFrame);
+			for (i=0; i<explosion.particleMeshes.length; i++)
+				explosion.particleMeshes[i].visible = (i == currentFrame);
 			
 			//reset explosion animation
-			var cellContainer:ObjectContainer3D = explosion.cellContainers[currentFrame];
-			var cellVelocities:Vector.<Vector3D> = explosion.cellVelocities[currentFrame];
-			var cellRotationalVelocities:Vector.<Vector3D> = explosion.cellRotationalVelocities[currentFrame];
-			var cellDeathTimers:Vector.<uint> = explosion.cellDeathTimers[currentFrame];
+			var particleMesh:Mesh = explosion.particleMeshes[currentFrame];
+			var particleVelocities:Vector.<Vector3D> = explosion.particleVelocities[currentFrame];
+			var particleRotationalVelocities:Vector.<Vector3D> = explosion.particleRotationalVelocities[currentFrame];
 			var intensity:Number = GameSettings.deathExplosionIntensity * MathUtils.rand( 1, 4 );
-			var cell:ObjectContainer3D;
-			var position:Point;
-			var cellVelocity:Vector3D;
-			var cellRotationalVelocity:Vector3D;
+			var position:Vector3D;
+			var particleVelocity:Vector3D;
+			var particleRotationalVelocity:Vector3D;
 			
-			for (i=0; i<cellPositions.length; i++) {
-				position = cellPositions[i];
-				cell = cellContainer.getChildAt(i) as ObjectContainer3D;
-				cell.visible = true;
+			for (i=0; i<particlePositions.length; i++) {
+				position = particlePositions[i];
 				
-				//set position of cell
-				cell.x = position.x;
-				cell.y = position.y;
-				
-				// Determine explosion velocity of cell.
-				var dx:Number = cell.x*scale + transform.x - x;
-				var dy:Number = cell.y*scale + transform.y - y;
+				// Determine explosion velocity of particle.
+				var dx:Number = position.x*scale + transform.x - x;
+				var dy:Number = position.y*scale + transform.y - y;
 				var distanceSq:Number = dx * dx + dy * dy;
 				var rotSpeed:Number = intensity * 2500 / distanceSq;
+				var degree1:Number = Math.random() * Math.PI * 2;
+				var degree2:Number = Math.random() * Math.PI;
 				
-				//set the rotation velocity of the cell
-				cellRotationalVelocity = cellRotationalVelocities[i] ||= new Vector3D();
-				cellRotationalVelocity.x = MathUtils.rand( -rotSpeed, rotSpeed );
-				cellRotationalVelocity.y = MathUtils.rand( -rotSpeed, rotSpeed );
-				cellRotationalVelocity.z = MathUtils.rand( -rotSpeed, rotSpeed );
-				
-				//set the linear velocity of the cell
-				cellVelocity = cellVelocities[i] ||= new Vector3D();
-				cellVelocity.x = intensity * MathUtils.rand( GameSettings.cellVelocityMin, GameSettings.cellVelocityMax ) * dx / distanceSq;
-				cellVelocity.y = intensity * MathUtils.rand( GameSettings.cellVelocityMin, GameSettings.cellVelocityMax ) * dy / distanceSq;
-				cellVelocity.z = intensity * MathUtils.rand( GameSettings.cellVelocityMinZ, GameSettings.cellVelocityMaxZ ) * velocity.z / distanceSq;
-				
-				//set the death timer of the cell
-				cellDeathTimers[i] = MathUtils.rand(GameSettings.deathTimerMin, GameSettings.deathTimerMax);
-				
+				//set the rotation velocity of the particle
+				particleRotationalVelocity = particleRotationalVelocities[i] ||= new Vector3D();
+				particleRotationalVelocity.x = Math.sin(degree1) * Math.cos(degree2);
+				particleRotationalVelocity.y = Math.cos(degree1) * Math.cos(degree2);
+				particleRotationalVelocity.z = Math.sin(degree2);
+				particleRotationalVelocity.w = MathUtils.rand( -rotSpeed, rotSpeed );
+				//set the linear velocity of the particle
+				particleVelocity = particleVelocities[i] ||= new Vector3D();
+				particleVelocity.x = 100*intensity * MathUtils.rand( GameSettings.particleVelocityMin, GameSettings.particleVelocityMax ) * dx / distanceSq;
+				particleVelocity.y = 100*intensity * MathUtils.rand( GameSettings.particleVelocityMin, GameSettings.particleVelocityMax ) * dy / distanceSq;
+				particleVelocity.z = 100*intensity * MathUtils.rand( GameSettings.particleVelocityMinZ, GameSettings.particleVelocityMaxZ ) * velocity.z / distanceSq;
 			}
 			
+			//apply new velocities and rotational velocities to animator
+			(particleMesh.animator.getAnimationStateByName("ParticleVelocityNode2") as ParticleVelocityState).setVelocities(particleVelocities);
+			(particleMesh.animator.getAnimationStateByName("ParticleRotationalVelocityNode2") as ParticleRotationalVelocityState).setRotationalVelocities(particleRotationalVelocities);
+			
+			//start the animation
+			(particleMesh.animator as ParticleAnimator).start();
 			//increase score
 			game.state.score += (invawayder.dataModel.subType as InvawayderArchetype).score;
 			

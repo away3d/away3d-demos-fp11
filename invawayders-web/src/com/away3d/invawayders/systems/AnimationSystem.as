@@ -141,14 +141,14 @@ package com.away3d.invawayders.systems
 			}
 			
 			//update explosion animations
+			/**
 			for ( explosionNode = explosions.head; explosionNode; explosionNode = explosionNode.next )
 			{
 				var explosion:Explosion = explosionNode.explosion;
 				var currentFrame:uint = explosion.currentFrame;
-				var cellContainer:ObjectContainer3D = explosion.cellContainers[currentFrame];
-				var cellVelocities:Vector.<Vector3D> = explosion.cellVelocities[currentFrame];
-				var cellRotationalVelocities:Vector.<Vector3D> = explosion.cellRotationalVelocities[currentFrame];
-				var cellDeathTimers:Vector.<uint> = explosion.cellDeathTimers[currentFrame];
+				var cellContainer:ObjectContainer3D = explosion.particleMeshes[currentFrame];
+				var cellVelocities:Vector.<Vector3D> = explosion.particleVelocities[currentFrame];
+				var cellRotationalVelocities:Vector.<Vector3D> = explosion.particleRotationalVelocities[currentFrame];
 				var i:uint;
 				var cell:ObjectContainer3D;
 				var cellVelocity:Vector3D;
@@ -174,13 +174,10 @@ package com.away3d.invawayders.systems
 					cell.rotationY += cellRotationalVelocity.y;
 					cell.rotationZ += cellRotationalVelocity.z;
 					
-					//kill
-					if ((cellDeathTimers[i] -= time) < 0)
-						cell.visible = false;
-					else if (cellDeathTimers[i] < GameSettings.deathTimerFlash)
-						cell.visible = !cell.visible;
 				}
 			}
+			 * 
+			 */
 		}
 		
 		private function getFireTimer( archetype : InvawayderArchetype ) : Number

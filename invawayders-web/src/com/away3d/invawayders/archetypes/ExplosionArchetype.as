@@ -1,5 +1,8 @@
 package com.away3d.invawayders.archetypes
 {
+	import away3d.animators.ParticleAnimator;
+	import away3d.entities.Mesh;
+	import away3d.animators.ParticleAnimationSet;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.sounds.*;
 	
@@ -15,7 +18,9 @@ package com.away3d.invawayders.archetypes
 	{
 		public static const MOTHERSHIP:uint = 1;
 		
-		public var cellContainers:Vector.<ObjectContainer3D>;
+		public var particleAnimationSet : ParticleAnimationSet;
+		
+		public var particleMeshes:Vector.<Mesh>;
 		
 		public static const explosionGeometry:Geometry = new CubeGeometry( GameSettings.invawayderSizeXY, GameSettings.invawayderSizeXY, GameSettings.invawayderSizeZ );
 		

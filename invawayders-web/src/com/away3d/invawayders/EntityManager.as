@@ -1,5 +1,17 @@
 package com.away3d.invawayders
 {
+	import com.away3d.invawayders.utils.MathUtils;
+	import away3d.animators.states.ParticlePositionState;
+	import away3d.animators.ParticleAnimator;
+	import away3d.animators.data.ParticlePropertiesMode;
+	import away3d.animators.nodes.ParticleVelocityNode;
+	import away3d.animators.nodes.ParticleRotationalVelocityNode;
+	import away3d.animators.nodes.ParticlePositionNode;
+	import away3d.animators.data.ParticleProperties;
+	import away3d.animators.ParticleAnimationSet;
+	import away3d.tools.helpers.ParticleGeometryHelper;
+	import away3d.tools.helpers.data.ParticleGeometryTransform;
+	import away3d.core.base.Geometry;
 	import com.away3d.invawayders.archetypes.*;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.graphics.*;
@@ -95,7 +107,7 @@ package com.away3d.invawayders
 						var definitionFrame1:Vector.<uint> = invawayderArchetype.cellDefinitions[ 1 ];
 						
 						//define cell positions for invawayder data
-						invawayderArchetype.cellPositions = Vector.<Vector.<Point>>([createInvawayderCellPositions( definitionFrame0, dimensions ), createInvawayderCellPositions( definitionFrame1, dimensions )]);
+						invawayderArchetype.particlePositions = Vector.<Vector.<Vector3D>>([createInvawayderparticlePositions( definitionFrame0, dimensions ), createInvawayderparticlePositions( definitionFrame1, dimensions )]);
 						
 						material.lightPicker = lightPicker;
 						
@@ -134,54 +146,80 @@ package com.away3d.invawayders
 				case Explosion:
 					
 					var explosionArchetype:ExplosionArchetype = subType as ExplosionArchetype;
-					var cellPositions:Vector.<Vector.<Point>> = (ArchetypeLibrary.getArchetype(ArchetypeLibrary.INVAWAYDER).getSubType(subType.id) as InvawayderArchetype).cellPositions;
-					var cellContainers:Vector.<ObjectContainer3D>;
-					var cellVelocities : Vector.<Vector.<Vector3D>>;
-					var cellRotationalVelocities : Vector.<Vector.<Vector3D>>;
-					var cellDeathTimers : Vector.<Vector.<uint>>;
-					var cellContainer:ObjectContainer3D;
+					var particlePositions:Vector.<Vector.<Vector3D>> = (ArchetypeLibrary.getArchetype(ArchetypeLibrary.INVAWAYDER).getSubType(subType.id) as InvawayderArchetype).particlePositions;
+					var particleVelocities:Vector.<Vector.<Vector3D>> = new Vector.<Vector.<Vector3D>>();
+					var particleRotationalVelocities:Vector.<Vector.<Vector3D>> = new Vector.<Vector.<Vector3D>>();
+					var particleMeshes:Vector.<Mesh>;
+					var particleMesh:Mesh;
+					var particleAnimator:ParticleAnimator;
 					
 					if (explosionArchetype.entityView) {
 						entityView = new ObjectContainer3D();
-						cellContainers = new Vector.<ObjectContainer3D>();
-						cellVelocities = new Vector.<Vector.<Vector3D>>();
-						cellRotationalVelocities = new Vector.<Vector.<Vector3D>>();
-						cellDeathTimers = new Vector.<Vector.<uint>>();
-						for each (cellContainer in explosionArchetype.cellContainers) {
-							cellContainer = cellContainer.clone() as ObjectContainer3D;
-							cellContainers.push(cellContainer);
-							cellVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
-							cellRotationalVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
-							cellDeathTimers.push(new Vector.<uint>(cellContainer.numChildren));
-							entityView.addChild(cellContainer);
+						particleMeshes = explosionArchetype.particleMeshes;
+						
+						var i:uint = 0;
+						for (i=0; i < explosionArchetype.particleMeshes.length; i++) {
+							//generate vectors for velocities and rotationalvelocities
+							particleVelocities.push(new Vector.<Vector3D>(particlePositions[i].length));
+							particleRotationalVelocities.push(new Vector.<Vector3D>(particlePositions[i].length));
+							
+							//duplicate particle mesh
+							particleMesh = explosionArchetype.particleMeshes[i].clone() as Mesh;
+							particleMeshes.push(particleMesh);
+							entityView.addChild(particleMesh);
+							
+							//duplicate particle animator
+							particleAnimator = new ParticleAnimator(explosionArchetype.particleAnimationSet);
+							(particleAnimator.getAnimationStateByName("ParticlePositionNode") as ParticlePositionState).setPositions(particlePositions[i]);
+							particleMesh.animator = particleAnimator;
 						}
 					} else {
 						material.lightPicker = cameraLightPicker;
 						
 						entityView = explosionArchetype.entityView = new ObjectContainer3D();
 						
-						cellContainers = explosionArchetype.cellContainers = new Vector.<ObjectContainer3D>();
-						cellVelocities = new Vector.<Vector.<Vector3D>>();
-						cellRotationalVelocities = new Vector.<Vector.<Vector3D>>();
-						cellDeathTimers = new Vector.<Vector.<uint>>();
+						//create the particle animation set !ONLY CREATE ONE!
 						
-						var frame:Vector.<Point>;
-						var position:Point;
-						for each (frame in cellPositions) {
-							cellContainer = new ObjectContainer3D();
-							for each (position in frame) {
-								cellContainer.addChild(new Mesh( subType.geometry, material ));
-							}
-							cellContainers.push(cellContainer);
-							cellVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
-							cellRotationalVelocities.push(new Vector.<Vector3D>(cellContainer.numChildren));
-							cellDeathTimers.push(new Vector.<uint>(cellContainer.numChildren));
-							entityView.addChild(cellContainer);
+						var particleAnimationSet:ParticleAnimationSet = (archetype as ExplosionArchetype).particleAnimationSet;
+						
+						if (!particleAnimationSet) {
+							particleAnimationSet = (archetype as ExplosionArchetype).particleAnimationSet = new ParticleAnimationSet();
+							particleAnimationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
+							particleAnimationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
+							particleAnimationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
+							particleAnimationSet.initParticleFunc = initParticleFunc;
+							particleAnimationSet.hasDuration = true;
+						}
+						
+						particleMeshes = explosionArchetype.particleMeshes = new Vector.<Mesh>();
+						
+						var geometrySet:Vector.<Geometry>;
+						var frame:Vector.<Vector3D>;
+						var position:Vector3D;
+						for each (frame in particlePositions) {
+							//generate the particle geometry vector
+							geometrySet = new Vector.<Geometry>();
+							for each (position in frame) 
+								geometrySet.push(explosionArchetype.geometry);
+							
+							//generate vectors for velocities and rotationalvelocities
+							particleVelocities.push(new Vector.<Vector3D>(frame.length));
+							particleRotationalVelocities.push(new Vector.<Vector3D>(frame.length));
+							
+							//generate the particle mesh
+							particleMesh = new Mesh( ParticleGeometryHelper.generateGeometry(geometrySet), material );
+							particleMeshes.push(particleMesh);
+							entityView.addChild(particleMesh);
+							
+							//generate the particle animator
+							particleAnimator = new ParticleAnimator(particleAnimationSet);
+							(particleAnimator.getAnimationStateByName("ParticlePositionNode2") as ParticlePositionState).setPositions(frame);
+							particleMesh.animator = particleAnimator;
 						}
 					}
 					
 					//passes the cellposition data from invawayder to explosion archetype
-					entity.add( new Explosion(cellContainers, cellVelocities, cellRotationalVelocities, cellDeathTimers) );
+					entity.add( new Explosion(particleMeshes, particlePositions, particleVelocities, particleRotationalVelocities) );
 					break;
 					
 				default:
@@ -221,9 +259,9 @@ package com.away3d.invawayders
 		 * 
 		 * @return A vector of point data representing the cell positions of the invawayder data.
 		 */
-		private function createInvawayderCellPositions( definition:Vector.<uint>, gridDimensions:Point ):Vector.<Point>
+		private function createInvawayderparticlePositions( definition:Vector.<uint>, gridDimensions:Point ):Vector.<Vector3D>
 		{
-			var cellPositions:Vector.<Point> = new Vector.<Point>();
+			var particlePositions:Vector.<Vector3D> = new Vector.<Vector3D>();
 			
 			var i:uint, j:uint;
 			var cellSize:Number = GameSettings.invawayderSizeXY;
@@ -235,9 +273,16 @@ package com.away3d.invawayders
 			for( j = 0; j < lenY; j++ )
 				for( i = 0; i < lenX; i++ )
 					if( definition[ j * lenX + i ] )
-						cellPositions.push( new Point( offX + i * cellSize, offY - j * cellSize ) );
+						particlePositions.push( new Vector3D( offX + i * cellSize, offY - j * cellSize, 0 ) );
 			
-			return cellPositions;
+			return particlePositions;
+		}
+		
+		
+		private function initParticleFunc(param:ParticleProperties):void
+		{
+			param.startTime = 0;
+			param.duration = MathUtils.rand(GameSettings.deathTimerMin, GameSettings.deathTimerMax);
 		}
 	}
 }
