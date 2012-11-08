@@ -1,4 +1,4 @@
-package invawayders.utils
+package com.away3d.invawayders.utils
 {
 
 	import flash.filesystem.File;

@@ -1,5 +1,8 @@
 package
 {
+	import away3d.entities.Mesh;
+	import away3d.materials.SkyBoxMaterial;
+	import away3d.materials.TextureMaterial;
 	import com.away3d.invawayders.*;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.utils.*;
@@ -44,10 +47,10 @@ package
 		private var _lightPicker:StaticLightPicker;
 		private var _cubeMap:BitmapCubeTexture;
 		
-		private var invawayders : Invawayders;
+		private var _invawayders : Invawayders;
 		
-		protected var saveStateManager : SaveStateManager;
-		protected var stageProperties : StageProperties;
+		protected var _saveStateManager : SaveStateManager;
+		protected var _stageProperties : StageProperties;
 		
 		//interaction variables
 		private var _showingMouse:Boolean = true;
@@ -97,7 +100,7 @@ package
 		protected function initSaveState():void
 		{
 			//initialise the save state manager
-			saveStateManager = new SaveStateManager();
+			_saveStateManager = new SaveStateManager();
 		}
 		
 		/**
@@ -108,11 +111,11 @@ package
 			//set stage properties
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-			stageProperties = new StageProperties();
+			_stageProperties = new StageProperties();
 			
 			//determine the platform we are running on (used for screen dimension variables)
 			var man:String = Capabilities.manufacturer;
-			stageProperties.isDesktop = (man.indexOf('Win')>=0 || man.indexOf('Mac')>=0);
+			_stageProperties.isDesktop = (man.indexOf('Win')>=0 || man.indexOf('Mac')>=0);
 		}
 		
 		/**
@@ -158,7 +161,11 @@ package
 				new SkyboxImagePosZ().bitmapData, new SkyboxImageNegZ().bitmapData
 			);
 			
-			_view.scene.addChild( new SkyBox( _cubeMap ) );
+			var cubeMaterial:SkyBoxMaterial = new SkyBoxMaterial(_cubeMap);
+			cubeMaterial.bothSides = true;
+			var cube:Mesh = new Mesh(new CubeGeometry(50000, 50000, 50000), cubeMaterial);
+			
+			_view.scene.addChild( cube );
 		}
 		
 		/**
@@ -254,8 +261,8 @@ package
 		 */		
 		private function initGame():void
 		{
-			invawayders = new Invawayders( _view, saveStateManager, _cameraLightPicker, _lightPicker, stageProperties );
-			invawayders.gameStateUpdated.add(onUpdateGameState);
+			_invawayders = new Invawayders( _view, _saveStateManager, _cameraLightPicker, _lightPicker, _stageProperties );
+			_invawayders.gameStateUpdated.add(onUpdateGameState);
 		}
 		
 		/**
@@ -273,7 +280,7 @@ package
 		 */
 		private function hidePopUp():void
 		{
-			stageProperties.popupVisible = false;
+			_stageProperties.popupVisible = false;
 			
 			_hudContainer.visible = true;
 			_activePopUp.visible = false;
@@ -286,7 +293,7 @@ package
 		 */
 		private function showPopUp( popUp:MovieClip ):void
 		{
-			stageProperties.popupVisible = true;
+			_stageProperties.popupVisible = true;
 			
 			_activePopUp = popUp;
 			_hudContainer.visible = false;
@@ -339,7 +346,7 @@ package
 			//reset layout to account for lives and score text
 			onResize();
 			
-			if (!gameState.lives && !stageProperties.popupVisible) {
+			if (!gameState.lives && !_stageProperties.popupVisible) {
 				//prepare game over popup
 				_goScoreText.text =     "SCORE................................... " + StringUtils.uintToSameLengthString( gameState.score, 5 );
 				_goHighScoreText = _gameOverPopUp.highScoreText;
@@ -351,7 +358,7 @@ package
 				
 				showPopUp( _gameOverPopUp );
 				
-				invawayders.end();
+				_invawayders.end();
 			}
 		}
 		
@@ -366,7 +373,7 @@ package
 		{
 			hidePopUp();
 			
-			invawayders.resume();
+			_invawayders.resume();
 		}
 		
 		/**
@@ -376,7 +383,7 @@ package
 		{
 			showPopUp( _pausePopUp );
 			
-			invawayders.pause();
+			_invawayders.pause();
 		}
 		
 		/**
@@ -386,7 +393,7 @@ package
 		{
 			hidePopUp();
 			
-			invawayders.restart();
+			_invawayders.restart();
 		}
 		
 		/**
@@ -396,7 +403,7 @@ package
 		{
 			_view.render();
 			
-			if( stageProperties.popupVisible || mouseY < 50*stageProperties.scale )
+			if( _stageProperties.popupVisible || mouseY < 50*_stageProperties.scale )
 				showMouse();
 			else
 				hideMouse();
@@ -409,20 +416,20 @@ package
 		{
 			var w : uint, h : uint, hw : uint, hh : uint, scale : Number;
 			
-			stageProperties.width = w = stageProperties.isDesktop? stage.stageWidth : stage.fullScreenWidth;
-			stageProperties.height = h = stageProperties.isDesktop? stage.stageHeight : stage.fullScreenHeight;
-			stageProperties.halfWidth = hw = w/2;
-			stageProperties.halfHeight = hh = h/2;
+			_stageProperties.width = w = _stageProperties.isDesktop? stage.stageWidth : stage.fullScreenWidth;
+			_stageProperties.height = h = _stageProperties.isDesktop? stage.stageHeight : stage.fullScreenHeight;
+			_stageProperties.halfWidth = hw = w/2;
+			_stageProperties.halfHeight = hh = h/2;
 			
 			//adjust the scale of buttons and text according to the resolution
 			if (w < 800) {
-				stageProperties.scale = 0.5; //smaller mobile handsets
+				_stageProperties.scale = 0.5; //smaller mobile handsets
 			} else if (w > 1600) {
-				stageProperties.scale = 2; //large cinema displays and ipad3
+				_stageProperties.scale = 2; //large cinema displays and ipad3
 			} else {
-				stageProperties.scale = 1; // normal resolution
+				_stageProperties.scale = 1; // normal resolution
 			}
-			scale = stageProperties.scale;
+			scale = _stageProperties.scale;
 			
 			//update view size
 			_view.width = w;

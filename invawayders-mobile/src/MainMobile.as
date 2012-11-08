@@ -1,6 +1,6 @@
 package
 {
-	import invawayders.utils.*;
+	import com.away3d.invawayders.utils.MobileSaveStateManager;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class MainMobile extends Main
