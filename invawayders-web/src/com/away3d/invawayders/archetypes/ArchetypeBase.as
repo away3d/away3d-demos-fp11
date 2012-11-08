@@ -11,7 +11,7 @@ package com.away3d.invawayders.archetypes
 	 */
 	public class ArchetypeBase
 	{
-		protected var subTypes:Vector.<ArchetypeBase>;
+		public var subTypes:Vector.<ArchetypeBase>;
 		
 		public var id : uint;
 		

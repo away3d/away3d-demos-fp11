@@ -86,6 +86,20 @@ package com.away3d.invawayders
 			//setup the tick provider
 			tickProvider = new FrameTickProvider( view );
 			tickProvider.add( game.update );
+			
+			//upload all archetypes content to the gpu
+			
+			var archetype:ArchetypeBase;
+			var subType:ArchetypeBase;
+			var entity : Entity;
+			for each (archetype in ArchetypeLibrary.archetypes) {
+				if (archetype.subTypes.length) {
+					for each (subType in archetype.subTypes)
+						entity = entityCreator.createEntity(0, 0, 0, new Vector3D(), archetype.id, subType? subType.id : 0);
+				} else {
+					entity = entityCreator.createEntity(0, 0, 0, new Vector3D(), archetype.id);
+				}
+			}
 		}
 		
 		/**
