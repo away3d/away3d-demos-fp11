@@ -1,25 +1,39 @@
 package com.away3d.invawayders
 {
+	import com.away3d.invawayders.archetypes.ArchetypeBase;
+	import com.away3d.invawayders.archetypes.ArchetypeLibrary;
+	import com.away3d.invawayders.archetypes.InvawayderArchetype;
+	import com.away3d.invawayders.components.Display;
+	import com.away3d.invawayders.components.GameState;
+	import com.away3d.invawayders.input.AccelerometerPoll;
+	import com.away3d.invawayders.input.KeyPoll;
+	import com.away3d.invawayders.input.MousePoll;
 	import com.away3d.invawayders.nodes.GameNode;
 	import com.away3d.invawayders.nodes.PlayerNode;
+	import com.away3d.invawayders.sounds.SoundLibrary;
+	import com.away3d.invawayders.systems.AnimationSystem;
+	import com.away3d.invawayders.systems.CollisionSystem;
+	import com.away3d.invawayders.systems.GameManager;
+	import com.away3d.invawayders.systems.MovementSystem;
+	import com.away3d.invawayders.systems.PlayerControlSystem;
+	import com.away3d.invawayders.systems.RenderSystem;
+	import com.away3d.invawayders.systems.SoundSystem;
+	import com.away3d.invawayders.systems.SystemPriorities;
+	import com.away3d.invawayders.utils.MathUtils;
+	import com.away3d.invawayders.utils.SaveStateManager;
+	
+	import flash.geom.Vector3D;
+	
+	import away3d.containers.View3D;
 	import away3d.materials.lightpickers.StaticLightPicker;
-	import com.away3d.invawayders.archetypes.*;
-	import com.away3d.invawayders.components.*;
-	import com.away3d.invawayders.input.*;
-	import com.away3d.invawayders.sounds.*;
-	import com.away3d.invawayders.systems.*;
-	import com.away3d.invawayders.utils.*;
 	
-	import away3d.containers.*;
+	import net.richardlord.ash.core.Entity;
+	import net.richardlord.ash.core.Game;
+	import net.richardlord.ash.integration.swiftsuspenders.SwiftSuspendersGame;
+	import net.richardlord.ash.tick.FrameTickProvider;
+	import net.richardlord.signals.Signal1;
 	
-	import net.richardlord.ash.core.*;
-	import net.richardlord.ash.integration.swiftsuspenders.*;
-	import net.richardlord.ash.tick.*;
-	import net.richardlord.signals.*;
-	
-	import org.swiftsuspenders.*;
-	
-	import flash.geom.*;
+	import org.swiftsuspenders.Injector;
 	
 	public class Invawayders
 	{
@@ -90,14 +104,17 @@ package com.away3d.invawayders
 			//upload all archetypes content to the gpu
 			
 			var archetype:ArchetypeBase;
-			var subType:ArchetypeBase;
+			var i:uint;
 			var entity : Entity;
 			for each (archetype in ArchetypeLibrary.archetypes) {
 				if (archetype.subTypes.length) {
-					for each (subType in archetype.subTypes)
-						entity = entityCreator.createEntity(0, 0, 0, new Vector3D(), archetype.id, subType? subType.id : 0);
+					for (i=0;i< archetype.subTypes.length; i++) {
+						entity = entityCreator.createEntity(0, 0, 0, new Vector3D(), archetype.id, i);
+						(entity.get(Display) as Display).container.z = 80000;
+					}
 				} else {
-					entity = entityCreator.createEntity(0, 0, 0, new Vector3D(), archetype.id);
+					entity = entityCreator.createEntity(0, 0, 100000, new Vector3D(), archetype.id);
+					(entity.get(Display) as Display).container.z = 80000;
 				}
 			}
 		}
