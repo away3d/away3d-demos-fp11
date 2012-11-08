@@ -118,7 +118,7 @@ package
 			particleMesh.animator = animator;
 			animator.start();
 			_view.scene.addChild(particleMesh);
-			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode0")).followTarget = followTrarget1;
+			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode")).followTarget = followTrarget1;
 			
 			var clone:Mesh = particleMesh.clone() as Mesh;
 			clone.y = 300;
@@ -126,7 +126,7 @@ package
 			clone.animator = animator;
 			animator.start();
 			_view.scene.addChild(clone);
-			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode0")).followTarget = followTrarget2;
+			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode")).followTarget = followTrarget2;
 		}
 		
 		private function initParticleParam(param:ParticleProperties):void
