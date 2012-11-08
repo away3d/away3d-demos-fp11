@@ -14,7 +14,8 @@ package com.away3d.invawayders.archetypes
 		public static const INVAWAYDER:uint = 1;
 		public static const PROJECTILE:uint = 2;
 		public static const BLAST:uint = 3;
-		public static const EXPLOSION:uint = 4;
+		public static const FRAGMENTS:uint = 4;
+		public static const EXPLOSION:uint = 5;
 		
 		public static function getArchetype(id:uint) : ArchetypeBase
 		{
@@ -34,6 +35,7 @@ package com.away3d.invawayders.archetypes
 			archetypes.push(new ProjectileArchetype(Vector.<ArchetypeBase>([new InvawayderProjectileArchetype(), new PlayerProjectileArchetype()])));
 			archetypes.push(new BlastArchetype(Vector.<ArchetypeBase>([new PlayerBlastArchetype(), new InvawayderBlastArchetype()])));
 			archetypes.push(new FragmentsArchetype(Vector.<ArchetypeBase>([null, new MothershipFragmentsArchetype()])));
+			archetypes.push(new ExplosionArchetype());
 		}
 	}
 }

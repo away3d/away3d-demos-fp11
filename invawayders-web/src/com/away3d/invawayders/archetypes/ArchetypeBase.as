@@ -44,7 +44,7 @@ package com.away3d.invawayders.archetypes
 			if (subTypes[subId])
 				return subTypes[subId];
 			
-			return clone(subTypes[subId], subId);
+			return subTypes[subId] = clone(null, subId);
 		}
 		
 		protected function clone(archetype:ArchetypeBase, subId : uint):ArchetypeBase

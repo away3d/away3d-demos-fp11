@@ -28,7 +28,7 @@ package com.away3d.invawayders.archetypes
 		{
 			super(subTypes);
 			
-			id = ArchetypeLibrary.EXPLOSION;
+			id = ArchetypeLibrary.FRAGMENTS;
 			
 			geometry = fragmentsGeometry;
 			

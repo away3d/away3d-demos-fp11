@@ -36,6 +36,11 @@ package
 		public static const invawayderAnimationTimeMS:uint = 250;
 		public static const impactHitSize:Number = 300;
 		
+		//Explosion
+		public static const explosionSizeXY:Number = 50;
+		public static const explosionTimerMin:Number = 0.2;
+		public static const explosionTimerMax:Number = 0.6;
+		
 		// Player.
 		public static const blasterOffsetH:Number = 100;
 		public static const blasterOffsetV:Number = -100;

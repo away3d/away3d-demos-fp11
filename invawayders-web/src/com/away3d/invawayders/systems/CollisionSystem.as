@@ -184,8 +184,15 @@ package com.away3d.invawayders.systems
 			
 			creator.destroyEntity( invawayder.entity );
 			
+			//create explosion
+			var explosionEntity : Entity = creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.EXPLOSION, ExplosionArchetype.INVAWAYDER);
+			var explosion : Explosion = explosionEntity.get(Explosion) as Explosion;
+			
+			//start the animation
+			explosion.animator.start();
+			
 			//create fragments
-			var fragmentsEntity : Entity = creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.EXPLOSION, invawayder.dataModel.subType.id);
+			var fragmentsEntity : Entity = creator.createEntity(transform.x, transform.y, transform.z, invawayder.motion.velocity, ArchetypeLibrary.FRAGMENTS, invawayder.dataModel.subType.id);
 			var explositonTransform:Transform3D = fragmentsEntity.get(Transform3D) as Transform3D;
 			var fragments : Fragments = fragmentsEntity.get(Fragments) as Fragments;
 			fragments.currentFrame = currentFrame;
@@ -236,6 +243,7 @@ package com.away3d.invawayders.systems
 			
 			//start the animation
 			(particleMesh.animator as ParticleAnimator).start();
+			
 			//increase score
 			game.state.score += (invawayder.dataModel.subType as InvawayderArchetype).score;
 			
