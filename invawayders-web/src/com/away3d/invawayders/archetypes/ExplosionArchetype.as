@@ -21,7 +21,7 @@ package com.away3d.invawayders.archetypes
 		
 		public static const explosionGeometry:Geometry = new PlaneGeometry( GameSettings.explosionSizeXY, GameSettings.explosionSizeXY, 1, 1, false );
 		
-		public static const explosionMaterial:ColorMaterial = new ColorMaterial( 0xFF0000 );
+		public static const explosionMaterial:ColorMaterial = new ColorMaterial( 0xFFFF00 );
 		
 		public function ExplosionArchetype(subTypes:Vector.<ArchetypeBase> = null)
 		{
