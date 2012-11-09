@@ -128,6 +128,7 @@ package
 			_view.addSourceURL("srcview/index.html");
 			_view.camera.lens.near = 50;
 			_view.camera.lens.far = 100000;
+			_view.camera.z = -2000;
 			addChild( _view );
 			
 			// add awaystats if in debug mode
@@ -163,7 +164,7 @@ package
 			
 			var cubeMaterial:SkyBoxMaterial = new SkyBoxMaterial(_cubeMap);
 			cubeMaterial.bothSides = true;
-			var cube:Mesh = new Mesh(new CubeGeometry(50000, 50000, 50000), cubeMaterial);
+			var cube:Mesh = new Mesh(new CubeGeometry(100000, 100000, 100000), cubeMaterial);
 			
 			_view.scene.addChild( cube );
 		}
