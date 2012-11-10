@@ -91,7 +91,6 @@ package com.away3d.invawayders
 			game.addSystem( new PlayerControlSystem(), SystemPriorities.control );
 			game.addSystem( new MovementSystem(), SystemPriorities.move );
 			game.addSystem( new CollisionSystem(), SystemPriorities.collisions );
-			game.addSystem( new SoundSystem(), SystemPriorities.sounds );
 			game.addSystem( new RenderSystem(), SystemPriorities.render );
 			
 			//create entity creator
@@ -117,6 +116,9 @@ package com.away3d.invawayders
 					(entity.get(Display) as Display).container.z = 80000;
 				}
 			}
+			
+			//add sound system after object have been initialised
+			game.addSystem( new SoundSystem(), SystemPriorities.sounds );
 		}
 		
 		/**
