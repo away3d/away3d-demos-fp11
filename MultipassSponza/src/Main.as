@@ -19,6 +19,7 @@ package
 	import away3d.lights.*;
 	import away3d.lights.shadowmaps.*;
 	import away3d.loaders.*;
+	import away3d.loaders.misc.*;
 	import away3d.loaders.parsers.*;
 	import away3d.materials.*;
 	import away3d.materials.lightpickers.*;
@@ -56,7 +57,7 @@ package
 		private var _skyMap:BitmapCubeTexture;
 		private var _assetsRoot:String = "assets/";
 		
-		private var meshNameStrings:Vector.<String> = Vector.<String>(["sponza_atrium"]);
+		private var materialNameStrings:Vector.<String> = Vector.<String>(["arch",            "Material__298",  "bricks",            "ceiling",            "chain",             "column_a",          "column_b",          "column_c",          "fabric_g",              "fabric_c",         "fabric_f",               "details",          "fabric_d",             "fabric_a",        "fabric_e",              "flagpole",          "floor",            "16___Default","Material__25","roof",       "leaf",           "vase",         "vase_hanging",     "Material__57",   "vase_round"]);
 		private var diffuseTextureStrings:Vector.<String> = Vector.<String>(["arch_diff.jpg", "background.jpg", "bricks_a_diff.jpg", "ceiling_a_diff.jpg", "chain_texture.png", "column_a_diff.jpg", "column_b_diff.jpg", "column_c_diff.jpg", "curtain_blue_diff.jpg", "curtain_diff.jpg", "curtain_green_diff.jpg", "details_diff.jpg", "fabric_blue_diff.jpg", "fabric_diff.jpg", "fabric_green_diff.jpg", "flagpole_diff.jpg", "floor_a_diff.jpg", "gi_flag.jpg", "lion.jpg", "roof_diff.jpg", "thorn_diff.png", "vase_dif.jpg", "vase_hanging.jpg", "vase_plant.png", "vase_round.jpg"]);
 		private var normalTextureStrings:Vector.<String> = Vector.<String>(["arch_ddn.jpg", "background_ddn.jpg", "bricks_a_ddn.jpg", null,                "chain_texture_ddn.jpg", "column_a_ddn.jpg", "column_b_ddn.jpg", "column_c_ddn.jpg", null,                   null,               null,                     null,               null,                   null,              null,                    null,                null,               null,          "lion2_ddn.jpg", null,       "thorn_ddn.jpg", "vase_ddn.jpg",  null,               null,             "vase_round_ddn.jpg"]);
 		private var specularTextureStrings:Vector.<String> = Vector.<String>(["arch_spec.jpg", null,            "bricks_a_spec.jpg", "ceiling_a_spec.jpg", null,                "column_a_spec.jpg", "column_b_spec.jpg", "column_c_spec.jpg", "curtain_spec.jpg",      "curtain_spec.jpg", "curtain_spec.jpg",       "details_spec.jpg", "fabric_spec.jpg",      "fabric_spec.jpg", "fabric_spec.jpg",       "flagpole_spec.jpg", "floor_a_spec.jpg", null,          null,       null,            "thorn_spec.jpg", null,           null,               "vase_plant_spec.jpg", "vase_round_spec.jpg"]);
@@ -489,9 +490,12 @@ package
 		{
             var loader:URLLoader = e.target as URLLoader;
             var loader3d:Loader3D = new Loader3D(false);
+			var context:AssetLoaderContext = new AssetLoaderContext();
+			//context.includeDependencies = false;
+			context.dependencyBaseUrl = "assets/textures/";
             loader3d.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete, false, 0, true);
             loader3d.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete, false, 0, true);
-            loader3d.loadData(loader.data, null, null, new AWDParser());
+            loader3d.loadData(loader.data, context, null, new AWDParser());
 			
             loader.removeEventListener(ProgressEvent.PROGRESS, loadProgress);
             loader.removeEventListener(Event.COMPLETE, parseAWD);
@@ -503,40 +507,7 @@ package
          */
         private function onAssetComplete(event:AssetEvent):void
 		{
-			if (event.asset.assetType == AssetType.TEXTURE) {
-				//create multipass material
-				var material:TextureMultiPassMaterial = new TextureMultiPassMaterial(event.asset as BitmapTexture);
-				material.lightPicker = _lightPicker;
-				material.shadowMethod = _cascadeMethod;
-				material.addMethod(_fogMethod);
-				material.mipmap = true;
-				material.repeat = true;
-				material.specular = 2;
-				
-				var name:String = event.asset.name.split("/")[2];
-				var textureIndex:int = diffuseTextureStrings.indexOf(name);
-				var textureName:String;
-				
-				if (textureIndex == -1)
-					return;
-				
-				//use alpha transparancy if texture is png
-				if (name.substring(name.length - 3) == "png")
-					material.alphaThreshold = 0.5;
-				
-				//add normal map if it exists
-				if ((textureName = diffuseTextureStrings[textureIndex]))
-					material.normalMap = textureDictionary[textureName];
-				
-				//add specular map if it exists
-				if ((textureName = specularTextureStrings[textureIndex]))
-					material.specularMap = textureDictionary[textureName];
-				
-				//add to material dictionary
-				materialDictionary[name] = material;
-			} else if (event.asset.assetType == AssetType.MESH) {
-				trace(event.asset.name);
-				
+			if (event.asset.assetType == AssetType.MESH) {
 				//store meshes
 				_meshes.push(event.asset as Mesh);
 			}
@@ -557,11 +528,11 @@ package
 				if (mesh.name == "sponza_04")
 					continue;
 				
-				var material:TextureMultiPassMaterial = materialDictionary[mesh.name];
+				var material:TextureMultiPassMaterial = materialDictionary[mesh.material.name];
 				
 				if (!material) {
-					var textureIndex:int = meshNameStrings.indexOf(mesh.name);
-					if (textureIndex == -1)
+					var textureIndex:int = materialNameStrings.indexOf(mesh.material.name);
+					if (textureIndex == -1 || textureIndex >= materialNameStrings.length)
 						continue;
 					
 					var textureName:String = diffuseTextureStrings[textureIndex];
@@ -572,7 +543,7 @@ package
 					material.shadowMethod = _cascadeMethod;
 					material.addMethod(_fogMethod);
 					material.mipmap = true;
-					material.repeat = false;
+					material.repeat = true;
 					material.specular = 2;
 					
 					
@@ -581,19 +552,21 @@ package
 						material.alphaThreshold = 0.5;
 					
 					//add normal map if it exists
-					//if ((textureName = normalTextureStrings[textureIndex]))
-					//	material.normalMap = textureDictionary[textureName];
+					textureName = normalTextureStrings[textureIndex];
+					if (textureName)
+						material.normalMap = textureDictionary[textureName];
 					
 					//add specular map if it exists
-					//if ((textureName = specularTextureStrings[textureIndex]))
-					//	material.specularMap = textureDictionary[textureName];
+					textureName = specularTextureStrings[textureIndex]
+					if (textureName)
+						material.specularMap = textureDictionary[textureName];
 					
 					//add to material dictionary
 					materialDictionary[mesh.name] = material;
 				}
 				
 				mesh.material = material;
-				trace("added" + mesh.name);
+				
 				_view.scene.addChild(mesh);
 			}
 			
