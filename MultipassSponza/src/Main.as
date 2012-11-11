@@ -131,6 +131,9 @@ package
 		private var _lights:Array = new Array();
 		private var _flameMaterial:TextureMaterial;
 		private var _flameGeometry:PlaneGeometry;
+		private var _numTextures:uint = 0;
+		private var _currentTexture:uint = 0;
+		private var _loadingText:String;
 		private var _text:TextField;
 				
 		//rotation variables
@@ -297,7 +300,13 @@ package
 			initGUI();
 			initListeners();
 			
+			//count textures
+			n = 0;
+			loadingTextureStrings = diffuseTextureStrings;
+			countNumTextures();
+			
 			//kickoff asset loading
+			n = 0;
 			loadingTextureStrings = diffuseTextureStrings;
 			load(loadingTextureStrings[n]);
 		}
@@ -505,6 +514,32 @@ package
 			);
 		}
 		
+		/**
+		 * Count the total number of textures to be loaded
+		 */
+		private function countNumTextures():void
+		{
+			_numTextures++;
+			
+			//skip null textures
+			while (n++ < loadingTextureStrings.length - 1)
+				if (loadingTextureStrings[n])
+					break;
+			
+			//switch to next teture set
+			if (n < loadingTextureStrings.length) {
+				countNumTextures();
+			} else if (loadingTextureStrings == diffuseTextureStrings) {
+				n = 0;
+				loadingTextureStrings = normalTextureStrings;
+				countNumTextures();
+			} else if (loadingTextureStrings == normalTextureStrings) {
+				n = 0;
+				loadingTextureStrings = specularTextureStrings;
+				countNumTextures();
+			}
+		}
+		
         /**
          * Global binary file loader
          */
@@ -516,10 +551,13 @@ package
             switch (url.substring(url.length - 3)) {
                 case "AWD": 
                 case "awd": 
+					_loadingText = "Loading Model";
                     loader.addEventListener(Event.COMPLETE, parseAWD, false, 0, true);
                     break;
                 case "png": 
                 case "jpg": 
+					_currentTexture++;
+					_loadingText = "Loading Textures";
                     loader.addEventListener(Event.COMPLETE, parseBitmap);
 					url = "textures/" + url;
                     break;
@@ -536,7 +574,7 @@ package
 		{
             var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
             if (P != 100)
-                log('loading : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
+                log(_loadingText + '\n' + ((_loadingText = "Loading Model")? int((e.bytesLoaded / 1024) << 0) + 'kb | ' + int((e.bytesTotal / 1024) << 0) + 'kb' : _currentTexture + ' | ' + _numTextures));
             else {
 	            _text.visible = false;
 			}
@@ -546,7 +584,7 @@ package
         
         private function parseBitmap(e:Event):void 
 		{
-            log("parsing");
+            log("Parsing Data");
             var urlLoader:URLLoader = e.target as URLLoader;
             var loader:Loader = new Loader();
             loader.loadBytes(urlLoader.data);
@@ -633,7 +671,6 @@ package
 			var name:String;
 			
 			for each (mesh in _meshes) {
-				//if (mesh.name == "sponza_04" || mesh.name == "sponza_379" || Number(mesh.name.split("_")[1]) >  100)
 				if (mesh.name == "sponza_04" || mesh.name == "sponza_379")
 					continue;
 				
@@ -676,7 +713,8 @@ package
 					
 					singleMaterialDictionary[name] = singleMaterial;
 				}
-				
+
+				//store multi pass materials for use later
 				var multiMaterial:TextureMultiPassMaterial = multiMaterialDictionary[name];
 				
 				if (!multiMaterial) {
@@ -710,10 +748,9 @@ package
 					multiMaterialDictionary[name] = multiMaterial;
 				}
 				
+				//default to multipass material
 				mesh.material = multiMaterial;
 				
-				
-				//mat.shadowMethod = _cascadeMethod;
 				_view.scene.addChild(mesh);
 			}
 			
