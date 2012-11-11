@@ -393,11 +393,6 @@ package
 		 */
 		private function updateDirection():void
 		{
-			trace( new Vector3D(
-				Math.sin(_lightElevation)*Math.cos(_lightDirection),
-				-Math.cos(_lightElevation),
-				Math.sin(_lightElevation)*Math.sin(_lightDirection)
-			));
 			_directionalLight.direction = new Vector3D(
 				Math.sin(_lightElevation)*Math.cos(_lightDirection),
 				-Math.cos(_lightElevation),
