@@ -62,7 +62,8 @@ package
 		private var normalTextureStrings:Vector.<String> = Vector.<String>(["arch_ddn.jpg", "background_ddn.jpg", "bricks_a_ddn.jpg", null,                "chain_texture_ddn.jpg", "column_a_ddn.jpg", "column_b_ddn.jpg", "column_c_ddn.jpg", null,                   null,               null,                     null,               null,                   null,              null,                    null,                null,               null,          "lion2_ddn.jpg", null,       "thorn_ddn.jpg", "vase_ddn.jpg",  null,               null,             "vase_round_ddn.jpg"]);
 		private var specularTextureStrings:Vector.<String> = Vector.<String>(["arch_spec.jpg", null,            "bricks_a_spec.jpg", "ceiling_a_spec.jpg", null,                "column_a_spec.jpg", "column_b_spec.jpg", "column_c_spec.jpg", "curtain_spec.jpg",      "curtain_spec.jpg", "curtain_spec.jpg",       "details_spec.jpg", "fabric_spec.jpg",      "fabric_spec.jpg", "fabric_spec.jpg",       "flagpole_spec.jpg", "floor_a_spec.jpg", null,          null,       null,            "thorn_spec.jpg", null,           null,               "vase_plant_spec.jpg", "vase_round_spec.jpg"]);
 		private var textureDictionary:Dictionary = new Dictionary();
-		private var materialDictionary:Dictionary = new Dictionary();
+		private var multiMaterialDictionary:Dictionary = new Dictionary();
+		private var singleMaterialDictionary:Dictionary = new Dictionary();
 		private var _meshes:Vector.<Mesh> = new Vector.<Mesh>();
 		private var loadingTextureStrings:Vector.<String>;
 		private var n:uint = 0;
@@ -76,6 +77,7 @@ package
 		private var gui:SimpleGUI;
 		
 		private var _lightPicker:StaticLightPicker;
+		private var _baseShadowMethod:FilteredShadowMapMethod;
 		private var _cascadeMethod:CascadeShadowMapMethod;
 		private var _fogMethod : FogMethod;
 		private var _cascadeShadowMapper:CascadeShadowMapper;
@@ -102,11 +104,45 @@ package
 		private var _strafeAcceleration:Number = 0;
 		
 		//gui variables
+		private var _singlePassMaterial:Boolean = false;
+		private var _multiPassMaterial:Boolean = true;
 		private var _cascadeLevels:uint = 3;
 		private var _shadowOptions:String = "PCF";
 		private var _depthMapSize:uint = 2048;
 		private var _lightDirection:Number = Math.PI/2;
 		private var _lightElevation:Number = Math.PI/18;
+		
+		/**
+		 * 
+		 */
+		public function get singlePassMaterial():Boolean
+		{
+			return _singlePassMaterial;
+		}
+		
+		public function set singlePassMaterial(value:Boolean):void
+		{
+			_singlePassMaterial = value;
+			_multiPassMaterial = !value;
+			
+			updateMaterialPass(value? singleMaterialDictionary : multiMaterialDictionary);
+		}
+		
+		/**
+		 * 
+		 */
+		public function get multiPassMaterial():Boolean
+		{
+			return _multiPassMaterial;
+		}
+		
+		public function set multiPassMaterial(value:Boolean):void
+		{
+			_multiPassMaterial = value;
+			_singlePassMaterial = !value;
+			
+			updateMaterialPass(value? multiMaterialDictionary : singleMaterialDictionary);
+		}
 		
 		/**
 		 * 
@@ -296,9 +332,9 @@ package
 			}
 			
 			_lightPicker = new StaticLightPicker(_lights);
-			var baseShadowMethod : SimpleShadowMapMethodBase = new FilteredShadowMapMethod(_directionalLight);
+			_baseShadowMethod = new FilteredShadowMapMethod(_directionalLight);
 			_fogMethod = new FogMethod(0, 4000, 0x9090e7);
-			_cascadeMethod = new CascadeShadowMapMethod(baseShadowMethod);
+			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
 		}
 		
         /**
@@ -362,6 +398,10 @@ package
 			instr += "Keyboard arrows and WASD to move.\n";
 			gui.addLabel(instr);
 			
+			gui.addColumn("Material Settings");
+			gui.addToggle("singlePassMaterial", {label:"Single pass"});
+			gui.addToggle("multiPassMaterial", {label:"Multiple pass"});
+			
 			gui.addColumn("Shadow Settings");
 			gui.addStepper("cascadeLevels", 1, 4, {label:"Cascade level"});
 			gui.addComboBox("shadowOptions", shadowOptions, {label:"Filter method"});
@@ -388,6 +428,21 @@ package
 			onResize();
 		}
 		
+		private function updateMaterialPass(materialDictionary:Dictionary):void
+		{
+			var mesh:Mesh;
+			var name:String;
+			for each (mesh in _meshes) {
+				if (mesh.name == "sponza_04" || mesh.name == "sponza_379")
+					continue;
+				name = mesh.material.name;
+				var textureIndex:int = materialNameStrings.indexOf(name);
+				if (textureIndex == -1 || textureIndex >= materialNameStrings.length)
+					continue;
+				
+				mesh.material = materialDictionary[name];
+			}
+		}
 		/**
 		 * 
 		 */
@@ -525,49 +580,90 @@ package
 			
 			//reassign materials
 			var mesh:Mesh;
+			var name:String;
+			
 			for each (mesh in _meshes) {
+				//if (mesh.name == "sponza_04" || mesh.name == "sponza_379" || Number(mesh.name.split("_")[1]) >  100)
 				if (mesh.name == "sponza_04" || mesh.name == "sponza_379")
 					continue;
 				
-				var material:TextureMultiPassMaterial = materialDictionary[mesh.material.name];
+				name = mesh.material.name;
+				var textureIndex:int = materialNameStrings.indexOf(name);
+				if (textureIndex == -1 || textureIndex >= materialNameStrings.length)
+					continue;
 				
-				if (!material) {
-					var textureIndex:int = materialNameStrings.indexOf(mesh.material.name);
-					if (textureIndex == -1 || textureIndex >= materialNameStrings.length)
-						continue;
+				var textureName:String = diffuseTextureStrings[textureIndex];
+				var normalTextureName:String;
+				var specularTextureName:String;
+				
+				//store single pass materials for use later
+				var singleMaterial:TextureMaterial = singleMaterialDictionary[name];
+				
+				if (!singleMaterial) {
 					
-					var textureName:String = diffuseTextureStrings[textureIndex];
+					//create singlepass material
+					singleMaterial = new TextureMaterial(textureDictionary[textureName]);
+					singleMaterial.name = name;
+					singleMaterial.lightPicker = _lightPicker;
+					singleMaterial.addMethod(_fogMethod);
+					singleMaterial.mipmap = true;
+					singleMaterial.repeat = true;
+					singleMaterial.specular = 2;
+					
+					//use alpha transparancy if texture is png
+					if (textureName.substring(textureName.length - 3) == "png")
+						singleMaterial.alphaThreshold = 0.5;
+					
+					//add normal map if it exists
+					normalTextureName = normalTextureStrings[textureIndex];
+					if (normalTextureName)
+						singleMaterial.normalMap = textureDictionary[normalTextureName];
+					
+					//add specular map if it exists
+					specularTextureName = specularTextureStrings[textureIndex]
+					if (specularTextureName)
+						singleMaterial.specularMap = textureDictionary[specularTextureName];
+					
+					singleMaterialDictionary[name] = singleMaterial;
+				}
+				
+				var multiMaterial:TextureMultiPassMaterial = multiMaterialDictionary[name];
+				
+				if (!multiMaterial) {
 					
 					//create multipass material
-					material = new TextureMultiPassMaterial(textureDictionary[textureName]);
-					material.lightPicker = _lightPicker;
-					material.shadowMethod = _cascadeMethod;
-					material.addMethod(_fogMethod);
-					material.mipmap = true;
-					material.repeat = true;
-					material.specular = 2;
+					multiMaterial = new TextureMultiPassMaterial(textureDictionary[textureName]);
+					multiMaterial.name = name;
+					multiMaterial.lightPicker = _lightPicker;
+					multiMaterial.shadowMethod = _cascadeMethod;
+					multiMaterial.addMethod(_fogMethod);
+					multiMaterial.mipmap = true;
+					multiMaterial.repeat = true;
+					multiMaterial.specular = 2;
 					
 					
 					//use alpha transparancy if texture is png
 					if (textureName.substring(textureName.length - 3) == "png")
-						material.alphaThreshold = 0.5;
+						multiMaterial.alphaThreshold = 0.5;
 					
 					//add normal map if it exists
-					textureName = normalTextureStrings[textureIndex];
-					if (textureName)
-						material.normalMap = textureDictionary[textureName];
+					normalTextureName = normalTextureStrings[textureIndex];
+					if (normalTextureName)
+						multiMaterial.normalMap = textureDictionary[normalTextureName];
 					
 					//add specular map if it exists
-					textureName = specularTextureStrings[textureIndex]
-					if (textureName)
-						material.specularMap = textureDictionary[textureName];
+					specularTextureName = specularTextureStrings[textureIndex]
+					if (specularTextureName)
+						multiMaterial.specularMap = textureDictionary[specularTextureName];
 					
 					//add to material dictionary
-					materialDictionary[mesh.name] = material;
+					multiMaterialDictionary[name] = multiMaterial;
 				}
 				
-				mesh.material = material;
+				mesh.material = multiMaterial;
 				
+				
+				//mat.shadowMethod = _cascadeMethod;
 				_view.scene.addChild(mesh);
 			}
 			
