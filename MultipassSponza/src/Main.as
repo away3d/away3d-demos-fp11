@@ -78,6 +78,7 @@ package
 		private var _lightPicker:StaticLightPicker;
 		private var _cascadeMethod:CascadeShadowMapMethod;
 		private var _fogMethod : FogMethod;
+		private var _cascadeShadowMapper:CascadeShadowMapper;
 		private var _directionalLight:DirectionalLight;
 		private var _lights:Array = new Array();
 		private var _flameMaterial:TextureMaterial;
@@ -105,7 +106,7 @@ package
 		private var _shadowOptions:String = "PCF";
 		private var _depthMapSize:uint = 2048;
 		private var _lightDirection:Number = Math.PI/2;
-		private var _lightElevation:Number = Math.PI/2;
+		private var _lightElevation:Number = Math.PI/18;
 		
 		/**
 		 * 
@@ -119,6 +120,7 @@ package
 		{
 			_cascadeLevels = value;
 			
+			_cascadeShadowMapper.numCascades = value;
 		}
 		
 		/**
@@ -169,12 +171,12 @@ package
 		 */
 		public function get lightDirection():Number
 		{
-			return _lightDirection;
+			return _lightDirection*180/Math.PI;
 		}
 		
 		public function set lightDirection(value:Number):void
 		{
-			_lightDirection = value;
+			_lightDirection = value*Math.PI/180;
 			
 			updateDirection();
 		}
@@ -184,12 +186,12 @@ package
 		 */
 		public function get lightElevation():Number
 		{
-			return _lightElevation;
+			return _lightElevation*180/Math.PI;
 		}
 		
 		public function set lightElevation(value:Number):void
 		{
-			_lightElevation = value;
+			_lightElevation = value*Math.PI/180;
 			
 			updateDirection();
 		}
@@ -268,10 +270,10 @@ package
          */
 		private function initLights():void
 		{
-			var shadowMapper : CascadeShadowMapper = new CascadeShadowMapper(3);
-			shadowMapper.lightOffset = 10000;
+			_cascadeShadowMapper = new CascadeShadowMapper(3);
+			_cascadeShadowMapper.lightOffset = 10000;
 			_directionalLight = new DirectionalLight(-1, -15, 1);
-			_directionalLight.shadowMapper = shadowMapper;
+			_directionalLight.shadowMapper = _cascadeShadowMapper;
 			_directionalLight.castsShadows = true;
 			_directionalLight.color = 0xeedddd;
 			_directionalLight.ambient = .35;
@@ -341,17 +343,16 @@ package
 		private function initGUI():void
 		{
 			var shadowOptions:Array = [
-				{label:"Unfiltered", data:0},
-				{label:"PCF", data:1},
-				{label:"Multiple taps", data:2},
-				{label:"Dithered", data:3}
+				{label:"Unfiltered", data:"Unfiltered"},
+				{label:"PCF", data:"PCF"},
+				{label:"Multiple taps", data:"Multiple taps"},
+				{label:"Dithered", data:"Dithered"}
 			];
 			
 			var depthMapSize:Array = [
 				{label:"512", data:512},
 				{label:"1024", data:1024},
-				{label:"2048", data:2048},
-				{label:"4096", data:4096}
+				{label:"2048", data:2048}
 			];
 			
 			gui = new SimpleGUI(this, "");
@@ -368,8 +369,8 @@ package
 			
 			
 			gui.addColumn("Light Position");
-			gui.addSlider("lightDirection", 0, Math.PI*2, {label:"Direction", tick:0.1});
-			gui.addSlider("lightElevation", 0, Math.PI/2, {label:"Elevation", tick:0.1});
+			gui.addSlider("lightDirection", 0, 360, {label:"Direction", tick:0.1});
+			gui.addSlider("lightElevation", 0, 90, {label:"Elevation", tick:0.1});
 			gui.show();
 		}
 			
@@ -392,6 +393,11 @@ package
 		 */
 		private function updateDirection():void
 		{
+			trace( new Vector3D(
+				Math.sin(_lightElevation)*Math.cos(_lightDirection),
+				-Math.cos(_lightElevation),
+				Math.sin(_lightElevation)*Math.sin(_lightDirection)
+			));
 			_directionalLight.direction = new Vector3D(
 				Math.sin(_lightElevation)*Math.cos(_lightDirection),
 				-Math.cos(_lightElevation),
@@ -525,7 +531,7 @@ package
 			//reassign materials
 			var mesh:Mesh;
 			for each (mesh in _meshes) {
-				if (mesh.name == "sponza_04")
+				if (mesh.name == "sponza_04" || mesh.name == "sponza_379")
 					continue;
 				
 				var material:TextureMultiPassMaterial = materialDictionary[mesh.material.name];
