@@ -1,3 +1,49 @@
+/*
+
+Crytek Sponza demo using multipass materials in Away3D
+
+Demonstrates:
+
+How to apply Multipass materials to a model
+How to enable cascading shadow maps on a multipass material.
+How to setup multiple lightsources, shadows and fog effects all in the same scene.
+How to apply specular, normal and diffuse maps to an AWD model.
+
+Code by Rob Bateman & David Lenaerts
+rob@infiniteturtles.co.uk
+http://www.infiniteturtles.co.uk
+david.lenaerts@gmail.com
+http://www.derschmale.com
+
+Model re-modeled by Frank Meinl at Crytek with inspiration from Marko Dabrovic's original, converted to AWD by LoTH
+contact@crytek.com
+http://www.crytek.com/cryengine/cryengine3/downloads
+3dflashlo@gmail.com
+http://3dflashlo.wordpress.com
+
+This code is distributed under the MIT License
+
+Copyright (c) The Away Foundation http://www.theawayfoundation.org
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
 package
 {
 	import flash.display.*;
@@ -113,7 +159,7 @@ package
 		private var _lightElevation:Number = Math.PI/18;
 		
 		/**
-		 * 
+		 * GUI variable for setting material mode to single pass
 		 */
 		public function get singlePassMaterial():Boolean
 		{
@@ -129,7 +175,7 @@ package
 		}
 		
 		/**
-		 * 
+		 * GUI variable for setting material mode to multi pass
 		 */
 		public function get multiPassMaterial():Boolean
 		{
@@ -145,7 +191,7 @@ package
 		}
 		
 		/**
-		 * 
+		 * GUI variable for setting number of cascade levels.
 		 */
 		public function get cascadeLevels():uint
 		{
@@ -160,7 +206,7 @@ package
 		}
 		
 		/**
-		 * 
+		 * GUI variable for setting the active shadow option
 		 */
 		public function get shadowOptions():String
 		{
@@ -188,7 +234,7 @@ package
 		}
 		
 		/**
-		 * 
+		 * GUI variable for setting the depth map size of the shadow mapper.
 		 */
 		public function get depthMapSize():uint
 		{
@@ -203,7 +249,7 @@ package
 		}
 		
 		/**
-		 * 
+		 * GUI variable for setting the direction of the directional lightsource
 		 */
 		public function get lightDirection():Number
 		{
@@ -218,16 +264,16 @@ package
 		}
 		
 		/**
-		 * 
+		 * GUI variable for setting The elevation of the directional lightsource
 		 */
 		public function get lightElevation():Number
 		{
-			return _lightElevation*180/Math.PI;
+			return 90 - _lightElevation*180/Math.PI;
 		}
 		
 		public function set lightElevation(value:Number):void
 		{
-			_lightElevation = value*Math.PI/180;
+			_lightElevation = (90 - value)*Math.PI/180;
 			
 			updateDirection();
 		}
@@ -428,6 +474,9 @@ package
 			onResize();
 		}
 		
+		/**
+		 * Updates the mateiral mode between single pass and multi pass
+		 */
 		private function updateMaterialPass(materialDictionary:Dictionary):void
 		{
 			var mesh:Mesh;
@@ -443,8 +492,9 @@ package
 				mesh.material = materialDictionary[name];
 			}
 		}
+		
 		/**
-		 * 
+		 * Updates the direction of the directional lightsource
 		 */
 		private function updateDirection():void
 		{
@@ -540,7 +590,7 @@ package
         }
 		
         /**
-         * Load AWD
+         * Parses the AWD file
          */
         private function parseAWD(e:Event):void
 		{
@@ -570,7 +620,7 @@ package
 		}
 		
         /**
-         * Check if all resource loaded
+         * Triggered once all resources are loaded
          */
         private function onResourceComplete(e:LoaderEvent):void
 		{
@@ -837,6 +887,9 @@ import flash.geom.*;
 import away3d.entities.*;
 import away3d.lights.*;
 
+/**
+ * Data class for the Flame objects
+ */
 internal class FlameVO
 {
 	public var position : Vector3D;
