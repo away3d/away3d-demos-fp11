@@ -1,35 +1,34 @@
 package
 {
-	import away3d.loaders.misc.AssetLoaderContext;
-	import away3d.library.assets.AssetType;
-	import flash.utils.Dictionary;
-	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.loaders.parsers.OBJParser;
-	import flash.filters.DropShadowFilter;
+	import flash.display.*;
+	import flash.events.*;
+	import flash.filters.*;
+	import flash.geom.*;
+	import flash.net.*;
+	import flash.text.*;
+	import flash.ui.*;
+	import flash.utils.*;
+	
 	import away3d.containers.*;
 	import away3d.controllers.*;
 	import away3d.core.base.*;
 	import away3d.debug.*;
 	import away3d.entities.*;
 	import away3d.events.*;
+	import away3d.library.assets.*;
 	import away3d.lights.*;
 	import away3d.lights.shadowmaps.*;
 	import away3d.loaders.*;
+	import away3d.loaders.parsers.*;
 	import away3d.materials.*;
+	import away3d.materials.lightpickers.*;
 	import away3d.materials.methods.*;
 	import away3d.primitives.*;
 	import away3d.textures.*;
 	import away3d.utils.*;
 	
-	import com.derschmale.away3d.multipass.ui.*;
-
-	import flash.display.*;
-	import flash.events.*;
-	import flash.geom.*;
-	import flash.net.*;
-	import flash.text.*;
-	import flash.ui.*;
-
+	import uk.co.soulwire.gui.*;
+	
 	[SWF(frameRate="60", backgroundColor="#000000")]
 	public class Main extends Sprite
 	{
@@ -57,6 +56,7 @@ package
 		private var _skyMap:BitmapCubeTexture;
 		private var _assetsRoot:String = "assets/";
 		
+		private var meshNameStrings:Vector.<String> = Vector.<String>(["sponza_atrium"]);
 		private var diffuseTextureStrings:Vector.<String> = Vector.<String>(["arch_diff.jpg", "background.jpg", "bricks_a_diff.jpg", "ceiling_a_diff.jpg", "chain_texture.png", "column_a_diff.jpg", "column_b_diff.jpg", "column_c_diff.jpg", "curtain_blue_diff.jpg", "curtain_diff.jpg", "curtain_green_diff.jpg", "details_diff.jpg", "fabric_blue_diff.jpg", "fabric_diff.jpg", "fabric_green_diff.jpg", "flagpole_diff.jpg", "floor_a_diff.jpg", "gi_flag.jpg", "lion.jpg", "roof_diff.jpg", "thorn_diff.png", "vase_dif.jpg", "vase_hanging.jpg", "vase_plant.png", "vase_round.jpg"]);
 		private var normalTextureStrings:Vector.<String> = Vector.<String>(["arch_ddn.jpg", "background_ddn.jpg", "bricks_a_ddn.jpg", null,                "chain_texture_ddn.jpg", "column_a_ddn.jpg", "column_b_ddn.jpg", "column_c_ddn.jpg", null,                   null,               null,                     null,               null,                   null,              null,                    null,                null,               null,          "lion2_ddn.jpg", null,       "thorn_ddn.jpg", "vase_ddn.jpg",  null,               null,             "vase_round_ddn.jpg"]);
 		private var specularTextureStrings:Vector.<String> = Vector.<String>(["arch_spec.jpg", null,            "bricks_a_spec.jpg", "ceiling_a_spec.jpg", null,                "column_a_spec.jpg", "column_b_spec.jpg", "column_c_spec.jpg", "curtain_spec.jpg",      "curtain_spec.jpg", "curtain_spec.jpg",       "details_spec.jpg", "fabric_spec.jpg",      "fabric_spec.jpg", "fabric_spec.jpg",       "flagpole_spec.jpg", "floor_a_spec.jpg", null,          null,       null,            "thorn_spec.jpg", null,           null,               "vase_plant_spec.jpg", "vase_round_spec.jpg"]);
@@ -72,9 +72,9 @@ package
 		private var _signature:Sprite;
 		private var _awayStats:AwayStats;
 		
+		private var gui:SimpleGUI;
+		
 		private var _lightPicker:StaticLightPicker;
-		private var _configPanel:ConfigPanel;
-		private var _configMediator:ConfigMediator;
 		private var _cascadeMethod:CascadeShadowMapMethod;
 		private var _fogMethod : FogMethod;
 		private var _directionalLight:DirectionalLight;
@@ -99,6 +99,100 @@ package
 		private var _walkAcceleration:Number = 0;
 		private var _strafeAcceleration:Number = 0;
 		
+		//gui variables
+		private var _cascadeLevels:uint = 3;
+		private var _shadowOptions:String = "PCF";
+		private var _depthMapSize:uint = 2048;
+		private var _lightDirection:Number = Math.PI/2;
+		private var _lightElevation:Number = Math.PI/2;
+		
+		/**
+		 * 
+		 */
+		public function get cascadeLevels():uint
+		{
+			return _cascadeLevels;
+		}
+		
+		public function set cascadeLevels(value:uint):void
+		{
+			_cascadeLevels = value;
+			
+		}
+		
+		/**
+		 * 
+		 */
+		public function get shadowOptions():String
+		{
+			return _shadowOptions;
+		}
+		
+		public function set shadowOptions(value:String):void
+		{
+			_shadowOptions = value;
+			
+			switch(value) {
+				case "Unfiltered":
+					_cascadeMethod.baseMethod = new HardShadowMapMethod(_directionalLight);
+					break;
+				case "Multiple taps":
+					_cascadeMethod.baseMethod = new SoftShadowMapMethod(_directionalLight);
+					break;
+				case "PCF":
+					_cascadeMethod.baseMethod = new FilteredShadowMapMethod(_directionalLight);
+					break;
+				case "Dithered":
+					_cascadeMethod.baseMethod = new DitheredShadowMapMethod(_directionalLight);
+					break;
+			}
+		}
+		
+		/**
+		 * 
+		 */
+		public function get depthMapSize():uint
+		{
+			return _depthMapSize;
+		}
+		
+		public function set depthMapSize(value:uint):void
+		{
+			_depthMapSize = value;
+			
+			_directionalLight.shadowMapper.depthMapSize = value;
+		}
+		
+		/**
+		 * 
+		 */
+		public function get lightDirection():Number
+		{
+			return _lightDirection;
+		}
+		
+		public function set lightDirection(value:Number):void
+		{
+			_lightDirection = value;
+			
+			updateDirection();
+		}
+		
+		/**
+		 * 
+		 */
+		public function get lightElevation():Number
+		{
+			return _lightElevation;
+		}
+		
+		public function set lightElevation(value:Number):void
+		{
+			_lightElevation = value;
+			
+			updateDirection();
+		}
+		
         /**
          * Constructor
          */
@@ -115,11 +209,11 @@ package
 			initEngine();
 			initText();
 			initLights();
-			initUI();
+			initGUI();
 			initListeners();
 			
 			//kickoff asset loading
-			loadingTextureStrings = normalTextureStrings;
+			loadingTextureStrings = diffuseTextureStrings;
 			load(loadingTextureStrings[n]);
 		}
         /**
@@ -155,7 +249,7 @@ package
         private function initText():void
 		{
             _text = new TextField();
-            _text.defaultTextFormat = new TextFormat("Verdana", 11, 0xFFFFFF);
+            _text.defaultTextFormat = new TextFormat("Verdana", 11, 0xFFFFFF, null, null, null, null, null, "center");
 			_text.embedFonts = true;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
 			_text.gridFitType = GridFitType.PIXEL;
@@ -183,6 +277,8 @@ package
 			_directionalLight.ambientColor = 0x808090;
 			_view.scene.addChild(_directionalLight);
 			_lights.push(_directionalLight);
+			
+			updateDirection();
 			
 			//creat flame lights
 			var flameVO:FlameVO;
@@ -238,11 +334,42 @@ package
 			}
 		}
 		
-		private function initUI():void
+		/**
+		 * Initialise the GUI
+		 */
+		private function initGUI():void
 		{
-			_configPanel = new ConfigPanel();
-			_configMediator = new ConfigMediator(_configPanel, _directionalLight, _cascadeMethod);
-			addChild(_configPanel);
+			var shadowOptions:Array = [
+				{label:"Unfiltered", data:0},
+				{label:"PCF", data:1},
+				{label:"Multiple taps", data:2},
+				{label:"Dithered", data:3}
+			];
+			
+			var depthMapSize:Array = [
+				{label:"512", data:512},
+				{label:"1024", data:1024},
+				{label:"2048", data:2048},
+				{label:"4096", data:4096}
+			];
+			
+			gui = new SimpleGUI(this, "");
+			
+			gui.addColumn("Instructions");
+			var instr:String = "Click and drag on the stage to rotate camera.\n";
+			instr += "Keyboard arrows and WASD to move.\n";
+			gui.addLabel(instr);
+			
+			gui.addColumn("Shadow Settings");
+			gui.addStepper("cascadeLevels", 1, 4, {label:"Cascade level"});
+			gui.addComboBox("shadowOptions", shadowOptions, {label:"Filter method"});
+			gui.addComboBox("depthMapSize", depthMapSize, {label:"Depth map size"});
+			
+			
+			gui.addColumn("Light Position");
+			gui.addSlider("lightDirection", 0, Math.PI*2, {label:"Direction", tick:0.1});
+			gui.addSlider("lightElevation", 0, Math.PI/2, {label:"Elevation", tick:0.1});
+			gui.show();
 		}
 			
 		/**
@@ -258,7 +385,19 @@ package
 			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			onResize();
 		}
-		        
+		
+		/**
+		 * 
+		 */
+		private function updateDirection():void
+		{
+			_directionalLight.direction = new Vector3D(
+				Math.sin(_lightElevation)*Math.cos(_lightDirection),
+				-Math.cos(_lightElevation),
+				Math.sin(_lightElevation)*Math.sin(_lightDirection)
+			);
+		}
+		
         /**
          * Global binary file loader
          */
@@ -268,9 +407,9 @@ package
             loader.dataFormat = URLLoaderDataFormat.BINARY;
 			
             switch (url.substring(url.length - 3)) {
-                case "OBJ": 
-                case "obj": 
-                    loader.addEventListener(Event.COMPLETE, parseOBJ, false, 0, true);
+                case "AWD": 
+                case "awd": 
+                    loader.addEventListener(Event.COMPLETE, parseAWD, false, 0, true);
                     break;
                 case "png": 
                 case "jpg": 
@@ -290,14 +429,9 @@ package
 		{
             var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
             if (P != 100)
-                log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
+                log('loading : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
             else {
-	            _text.text = "Cursor keys / WSAD / ZSQD - move\n";
-	            _text.appendText("SHIFT - hold down to run\n");
-	            _text.appendText("E - punch\n");
-	            _text.appendText("SPACE / R - guard\n");
-	            _text.appendText("N - random sky\n");
-	            _text.appendText("B - clone !\n");
+	            _text.visible = false;
 			}
         }
         
@@ -305,7 +439,7 @@ package
         
         private function parseBitmap(e:Event):void 
 		{
-            log("out");
+            log("parsing");
             var urlLoader:URLLoader = e.target as URLLoader;
             var loader:Loader = new Loader();
             loader.loadBytes(urlLoader.data);
@@ -322,7 +456,7 @@ package
 			
 			//create bitmap texture in dictionary
 			if (!textureDictionary[loadingTextureStrings[n]])
-            	textureDictionary[loadingTextureStrings[n]] = (loadingTextureStrings == normalTextureStrings)? Cast.bitmapTexture(e.target.content) : new SpecularBitmapTexture((e.target.content as Bitmap).bitmapData);
+            	textureDictionary[loadingTextureStrings[n]] = (loadingTextureStrings == specularTextureStrings)? new SpecularBitmapTexture((e.target.content as Bitmap).bitmapData) : Cast.bitmapTexture(e.target.content);
 				
             loader.unload();
             loader = null;
@@ -332,32 +466,35 @@ package
 				if (loadingTextureStrings[n])
 					break;
 			
+			//switch to next teture set
             if (n < loadingTextureStrings.length) {
                 load(loadingTextureStrings[n]);
+			} else if (loadingTextureStrings == diffuseTextureStrings) {
+				n = 0;
+				loadingTextureStrings = normalTextureStrings;
+				load(loadingTextureStrings[n]);
 			} else if (loadingTextureStrings == normalTextureStrings) {
 				n = 0;
 				loadingTextureStrings = specularTextureStrings;
 				load(loadingTextureStrings[n]);
 			} else {
-            	load("sponza.obj");
+            	load("sponza.awd");
             }
         }
 		
         /**
          * Load AWD
          */
-        private function parseOBJ(e:Event):void
+        private function parseAWD(e:Event):void
 		{
             var loader:URLLoader = e.target as URLLoader;
             var loader3d:Loader3D = new Loader3D(false);
-			var context:AssetLoaderContext = new AssetLoaderContext();
-			context.mapUrl("sponza.mtl", _assetsRoot + "sponza.mtl");
             loader3d.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete, false, 0, true);
             loader3d.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete, false, 0, true);
-            loader3d.loadData(loader.data, context, null, new OBJParser());
+            loader3d.loadData(loader.data, null, null, new AWDParser());
 			
             loader.removeEventListener(ProgressEvent.PROGRESS, loadProgress);
-            loader.removeEventListener(Event.COMPLETE, parseOBJ);
+            loader.removeEventListener(Event.COMPLETE, parseAWD);
             loader = null;
         }
         
@@ -397,8 +534,9 @@ package
 				
 				//add to material dictionary
 				materialDictionary[name] = material;
-				
 			} else if (event.asset.assetType == AssetType.MESH) {
+				trace(event.asset.name);
+				
 				//store meshes
 				_meshes.push(event.asset as Mesh);
 			}
@@ -416,12 +554,46 @@ package
 			//reassign materials
 			var mesh:Mesh;
 			for each (mesh in _meshes) {
-				if (!(mesh.material is TextureMaterial) || mesh.name == "sponza_04")
+				if (mesh.name == "sponza_04")
 					continue;
-				var material:TextureMultiPassMaterial = materialDictionary[(mesh.material as TextureMaterial).texture.name.split("/")[2]];
-				if (material)
-					mesh.material = material;
+				
+				var material:TextureMultiPassMaterial = materialDictionary[mesh.name];
+				
+				if (!material) {
+					var textureIndex:int = meshNameStrings.indexOf(mesh.name);
+					if (textureIndex == -1)
+						continue;
 					
+					var textureName:String = diffuseTextureStrings[textureIndex];
+					
+					//create multipass material
+					material = new TextureMultiPassMaterial(textureDictionary[textureName]);
+					material.lightPicker = _lightPicker;
+					material.shadowMethod = _cascadeMethod;
+					material.addMethod(_fogMethod);
+					material.mipmap = true;
+					material.repeat = false;
+					material.specular = 2;
+					
+					
+					//use alpha transparancy if texture is png
+					if (textureName.substring(textureName.length - 3) == "png")
+						material.alphaThreshold = 0.5;
+					
+					//add normal map if it exists
+					//if ((textureName = normalTextureStrings[textureIndex]))
+					//	material.normalMap = textureDictionary[textureName];
+					
+					//add specular map if it exists
+					//if ((textureName = specularTextureStrings[textureIndex]))
+					//	material.specularMap = textureDictionary[textureName];
+					
+					//add to material dictionary
+					materialDictionary[mesh.name] = material;
+				}
+				
+				mesh.material = material;
+				trace("added" + mesh.name);
 				_view.scene.addChild(mesh);
 			}
 			
@@ -506,8 +678,8 @@ package
 				case Keyboard.D:
 					_strafeAcceleration = _strafeIncrement;
 					break;
-				case Keyboard.F:
-					_cameraController.fly = !_cameraController.fly;
+				//case Keyboard.F:
+				//	_cameraController.fly = !_cameraController.fly;
 			}
 		}
 		
@@ -570,8 +742,9 @@ package
 		{
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
-			_configPanel.x = stage.stageWidth - _configPanel.width - 20;
-			_configPanel.y = 20;
+			
+			_text.x = (stage.stageWidth - _text.width)/2;
+			_text.y = (stage.stageHeight - _text.height)/2;
 			
 			_signature.y = stage.stageHeight - _signature.height;
 			
@@ -584,14 +757,15 @@ package
         private function log(t:String):void
 		{
             _text.htmlText = t;
+			_text.visible = true;
         }
 	}
 }
 
+import flash.geom.*;
+
 import away3d.entities.*;
 import away3d.lights.*;
-
-import flash.geom.*;
 
 internal class FlameVO
 {
