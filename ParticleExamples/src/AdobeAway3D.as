@@ -15,6 +15,7 @@ package
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.primitives.CubeGeometry;
+	import away3d.primitives.PlaneGeometry;
 	import away3d.tools.helpers.ParticleGeometryHelper;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
@@ -32,7 +33,8 @@ package
 		[Embed(source="../embeds/text.png")]
 		private var TEXT_IMG:Class;
 		
-		private const SIZE:int = 4;
+		private const SIZE:int = 5;
+		private const TIME:int = 10000;
 		
 		private var _view:View3D;
 		private var _cameraController:HoverController;
@@ -45,6 +47,12 @@ package
 		private var data:Vector.<Vector3D>;
 		private var animator:ParticleAnimator;
 		
+		
+		private var greenlight:PointLight;
+		private var redlight:PointLight;
+		private var lightpicker:StaticLightPicker;
+		
+		private var time:Number = 0;
 
 		public function AdobeAway3D()
 		{
@@ -55,7 +63,7 @@ package
 			_view.antiAlias = 2;
 			addChild(_view);
 			
-			_cameraController = new HoverController(_view.camera, null, 0, 0, 1000, -90);
+			_cameraController = new HoverController(_view.camera, null, 180, 0, 1000, -90);
 			
 			addChild(new AwayStats(_view));
 			initTextData();
@@ -69,10 +77,9 @@ package
 			stage.addEventListener(Event.RESIZE, onResize);
 			onResize();
 			
-			var timer:Timer = new Timer(15000);
+			var timer:Timer = new Timer(TIME);
 			timer.addEventListener(TimerEvent.TIMER, onTimer);
 			timer.start();
-			animator.start();
 			onTimer(null);
 		}
 		
@@ -101,21 +108,23 @@ package
 		{
 			var bitmapData:BitmapData = new TEXT_IMG().bitmapData;
 			data = new Vector.<Vector3D>;
-			var depth:int = 6;
+			var depth:int = 8;
+			
 			for (var i:int = 0; i < bitmapData.width; i++)
 			{
 				for (var j:int = 0; j < bitmapData.height; j++)
 				{
-					if (bitmapData.getPixel(i, j) == 0)
+					if (bitmapData.getPixel(i, j) == 0x000000)
 					{
 						for (var k:int = 0; k < depth; k++)
 						{
-							var point:Vector3D = new Vector3D(256 - i , 128 - j, k);
+							var point:Vector3D = new Vector3D((i - bitmapData.width/2) , (-j+bitmapData.height/2), k);
 							point.scaleBy(SIZE);
 							data.push(point);
 						}
 					}
 				}
+				
 			}
 			trace(data.length);
 		}
@@ -135,7 +144,7 @@ package
 			redlight.specular = 2;
 			_view.scene.addChild(greenlight);
 			_view.scene.addChild(redlight);
-			lightpicker = new StaticLightPicker([greenlight,redlight]);
+			lightpicker = new StaticLightPicker([greenlight, redlight]);
 		}
 		
 		private function initParticle():void
@@ -167,8 +176,7 @@ package
 			var particleMesh:Mesh = new Mesh(particleGeometry, material);
 			animator = new ParticleAnimator(animationSet);
 			particleMesh.animator = animator;
-			animator.resetTime(0);
-			animator.stop();
+			animator.start();
 			_view.scene.addChild(particleMesh);
 		}
 		
@@ -176,19 +184,14 @@ package
 		{
 			//let all particle appear when time=0
 			param.startTime = 0;
-			//let all particle's life = 10s
-			//param.duration = 10;
 			var degree1:Number = Math.random() * Math.PI * 2;
 			var degree2:Number = Math.random() * Math.PI * 2;
-			var r:Number = 20;
+			var r:Number = 30;
 			param[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
 			param[ParticlePositionNode.POSITION_VECTOR3D] = data[param.index];
 		}
 		
-		private var time:Number = 0;
-		private var greenlight:PointLight;
-		private var redlight:PointLight;
-		private var lightpicker:StaticLightPicker;
+		
 		private function onEnterFrame(event:Event):void
 		{
 			if (_move)
