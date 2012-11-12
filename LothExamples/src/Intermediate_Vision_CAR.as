@@ -6,6 +6,7 @@ Demonstrates:
 
 How to use the Loader3D object to load an embedded internal awd model.
 How to limite size of AWD export by using away3d clone.
+How to set custom material by using mesh name 
 
 Code and Model by LoTH
 3dflashlo@gmail.com
@@ -117,8 +118,6 @@ package
 		private var _groundMaterial:TextureMaterial;
 		private var _carMaterial:TextureMaterial;
 		
-		
-		
 		//scene objects
         private var _ground:Mesh;
         private var _vision:Vector.<Mesh>;
@@ -182,11 +181,12 @@ package
 			_view.camera.lens.near = 1;
 			
 			//setup controller to be used on the camera
-			_cameraController = new HoverController(_view.camera, null, 180, 0, 800, 10, 90);
+			_cameraController = new HoverController(_view.camera, null, 120, 0, 600, 10, 90);
 			_cameraController.tiltAngle = 0;
 			_cameraController.panAngle = 120;
 			_cameraController.minTiltAngle = -60;
 			_cameraController.maxTiltAngle = 60;
+            _cameraController.distance = 600;
 			_cameraController.autoUpdate = false;
 			
 			//add signature
@@ -208,10 +208,13 @@ package
 		private function initText():void
 		{
 			_text = new TextField();
-			_text.defaultTextFormat = new TextFormat("Verdana", 11, 0xFFFFFF);
-			/*_text.embedFonts = true;
+            var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
+            format.letterSpacing = 1;
+            format.leftMargin = 5;
+			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
-			_text.gridFitType = GridFitType.PIXEL;*/
+			_text.gridFitType = GridFitType.PIXEL;
+            _text.y = 3;
 			_text.width = 300;
 			_text.height = 250;
 			_text.selectable = false;
@@ -452,7 +455,8 @@ package
 			if (P != 100)
 				log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
 			else {
-				_text.text =  "I - full screen\n";
+				_text.text =  "VISION CAR\n\n";
+                _text.appendText("I - full screen\n");
 				_text.appendText("N - random sky\n");
 				_text.appendText("B - clone\n");
 			}

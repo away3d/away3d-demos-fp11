@@ -273,10 +273,13 @@ package
 		private function initText():void
 		{
 			_text = new TextField();
-			_text.defaultTextFormat = new TextFormat("Verdana", 11, 0xFFFFFF);
-			/*_text.embedFonts = true;
+            var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
+            format.letterSpacing = 1;
+            format.leftMargin = 5;
+			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
-			_text.gridFitType = GridFitType.PIXEL;*/
+			_text.gridFitType = GridFitType.PIXEL;
+            _text.y = 3;
 			_text.width = 300;
 			_text.height = 250;
 			_text.selectable = false;
@@ -600,7 +603,8 @@ package
 			if (P != 100)
 				log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
 			else {
-				_text.text = "Cursor keys / WSAD / ZSQD - move\n";
+				_text.text = "ONKBA FPS\n\n";
+                _text.appendText("Cursor keys / WSAD / ZSQD - move\n");
 				_text.appendText("SHIFT - hold down to run\n");
 				_text.appendText("O - next weapon\n");
 				_text.appendText("R - reload weapon\n");
