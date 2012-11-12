@@ -117,6 +117,9 @@ package
 		private var _materials:Vector.<TextureMaterial>;
 		private var _groundMaterial:TextureMaterial;
 		private var _carMaterial:TextureMaterial;
+        private var _carWhiteMat:TextureMaterial;
+        private var _carBlackMat:TextureMaterial;
+        private var _carLightMat:TextureMaterial;
         private var _carMaterial_ds:TextureMaterial;
 		private var _carGlassMaterial:TextureMaterial;
 		
@@ -347,11 +350,27 @@ package
 			_carMaterial.specular = 0.9;
 			_materials[1] = _carMaterial;
             
-            _carMaterial_ds = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0xAAAAAA)));
+            _carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0xDEDEDE)));
+			_carWhiteMat.gloss = 10;
+			_carWhiteMat.specular = 0.9;
+			_materials[2] = _carWhiteMat;
+            
+            _carBlackMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x333333)));
+			_carBlackMat.gloss = 10;
+			_carBlackMat.specular = 0.9;
+			_materials[3] = _carBlackMat;
+            
+            _carLightMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xEEFF8080)));
+            _carLightMat.alphaBlending = true;
+			_carLightMat.gloss = 10;
+			_carLightMat.specular = 0.9;
+			_materials[4] = _carLightMat;
+            
+            _carMaterial_ds = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x333333)));
 			_carMaterial_ds.gloss = 10;
 			_carMaterial_ds.specular = 0.9;
             _carMaterial_ds.bothSides = true;
-			_materials[2] = _carMaterial_ds;
+			_materials[5] = _carMaterial_ds;
             
             _carGlassMaterial =  new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x60AAAAAA)));
             _carGlassMaterial.gloss = 10;
@@ -359,7 +378,8 @@ package
             _carGlassMaterial.alphaBlending = true;
             _carGlassMaterial.bothSides = true;
             _carGlassMaterial.specularMethod = _specularMethod;
-			_materials[3] = _carGlassMaterial;
+			_materials[6] = _carGlassMaterial;
+            
             
 			// apply light and effect for all material
 			for (var i:int; i < _materials.length; i++ ) {
@@ -567,8 +587,10 @@ package
                 mesh = _vision[i]
                 // apply texture 
                 if (mesh.name == 'window_top' || mesh.name == 'doorGlass') { mesh.material = _carGlassMaterial; mesh.castsShadows = false; }
+                else if (mesh.name == 'light_red') mesh.material = _carLightMat;
+                else if(mesh.name == 'interiorSymetrie' || mesh.name == 'chassisPlus' || mesh.name == 'chassisSymetrie' || mesh.name =='wheel_j2') mesh.material = _carBlackMat;
                 else if (mesh.name == 'door') mesh.material = _carMaterial_ds;
-                else mesh.material = _carMaterial;
+                else mesh.material = _carWhiteMat;
                 
                 // dispatch car parts
                 if (mesh.name.substring(0, 3) == 'sit') _sit.addChild(mesh);
