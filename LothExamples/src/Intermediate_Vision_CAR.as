@@ -117,10 +117,22 @@ package
 		private var _materials:Vector.<TextureMaterial>;
 		private var _groundMaterial:TextureMaterial;
 		private var _carMaterial:TextureMaterial;
+        private var _carMaterial_ds:TextureMaterial;
+		private var _carGlassMaterial:TextureMaterial;
 		
-		//scene objects
+		// scene objects
         private var _ground:Mesh;
         private var _vision:Vector.<Mesh>;
+        private var _visionCar:Mesh;
+        
+        // car parts
+        private var _body:Mesh;
+        private var _wheel:Mesh;
+        private var _wheels:Vector.<Mesh>;
+        private var _door:Mesh;
+        private var _doors:Vector.<Mesh>;
+        private var _sit:Mesh;
+        private var _sits:Vector.<Mesh>;
         
 		//navigation
 		private var _prevMouseX:Number;
@@ -142,7 +154,7 @@ package
 			textureStrings = new Vector.<String>();
             
 			// terrain map
-			textureStrings.push("sand.jpg", "sand.jpg");
+			textureStrings.push("sand.jpg");
 			
 			init();
 		}
@@ -335,6 +347,20 @@ package
 			_carMaterial.specular = 0.9;
 			_materials[1] = _carMaterial;
             
+            _carMaterial_ds = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0xAAAAAA)));
+			_carMaterial_ds.gloss = 10;
+			_carMaterial_ds.specular = 0.9;
+            _carMaterial_ds.bothSides = true;
+			_materials[2] = _carMaterial_ds;
+            
+            _carGlassMaterial =  new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x60AAAAAA)));
+            _carGlassMaterial.gloss = 10;
+			_carGlassMaterial.specular = 0.9;
+            _carGlassMaterial.alphaBlending = true;
+            _carGlassMaterial.bothSides = true;
+            _carGlassMaterial.specularMethod = _specularMethod;
+			_materials[3] = _carGlassMaterial;
+            
 			// apply light and effect for all material
 			for (var i:int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
@@ -343,7 +369,6 @@ package
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 0.85;
 				_materials[i].addMethod(_rimLightMethod);
-				// _materials[i].specularMethod = _specularMethod;
 			}
 		}
 		
@@ -361,7 +386,7 @@ package
 			
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(fogFar*2, fogFar*2), _groundMaterial);
-			_ground.geometry.scaleUV(100, 100);
+			_ground.geometry.scaleUV(60, 60);
 			_ground.y = 0;
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground); 
@@ -529,11 +554,71 @@ package
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
 			
-            // add vision car mesh
+            
+            var mesh:Mesh;
+            
+            // fake empty mesh
+            _visionCar = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0)); 
+            _sit = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
+            _wheel = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
+            _door = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
+            
             for (var i:int = 0; i < _vision.length; i++) {
-                _vision[i].material = _carMaterial;
-                _view.scene.addChild(_vision[i]);
+                mesh = _vision[i]
+                // apply texture 
+                if (mesh.name == 'window_top' || mesh.name == 'doorGlass') { mesh.material = _carGlassMaterial; mesh.castsShadows = false; }
+                else if (mesh.name == 'door') mesh.material = _carMaterial_ds;
+                else mesh.material = _carMaterial;
+                
+                // dispatch car parts
+                if (mesh.name.substring(0, 3) == 'sit') _sit.addChild(mesh);
+                else if (mesh.name.substring(0, 5) == 'wheel') _wheel.addChild(mesh);
+                else if (mesh.name.substring(0, 4) == 'door') _door.addChild(mesh);
+                // steering wheel
+                else if (mesh.name == 'steering') { mesh.position =  new Vector3D( -70, 123, 96); }
+                
+                else _visionCar.addChild(mesh);
             }
+            
+            // clone sit
+            _sits = new Vector.<Mesh>(4);
+            
+            for (i = 0; i < 4; i++) {
+                _sits[i] = Mesh(_sit.clone());
+                if (i == 0) { _sits[i].x = -70; _sits[i].z = 125; }
+                else if (i == 1) { _sits[i].x = -70; }
+                else if (i == 2) { _sits[i].x = 70; _sits[i].z = 125; }
+                else if (i == 3) { _sits[i].x = 70; }
+                _visionCar.addChild(_sits[i]);
+            }
+            
+            // clone door
+            _doors = new Vector.<Mesh>(2);
+            
+            for (i = 0; i < 2; i++) {
+                _doors[i] = Mesh(_door.clone());
+                if (i == 0) { _doors[i].x = 0; _doors[i].z = 0; }
+                else if (i == 1) { _doors[i].scaleX = -1 }
+                _visionCar.addChild(_doors[i]);
+            }
+            
+            // clone wheel
+            _wheels = new Vector.<Mesh>(4);
+            
+            for (i = 0; i < 4; i++) {
+                _wheels[i] = Mesh(_wheel.clone());
+                if (i == 0) { _wheels[i].x = -138; _wheels[i].z = 237; }
+                else if (i == 1) { _wheels[i].x = -138; _wheels[i].z = -237; }
+                else if (i == 2) { _wheels[i].x = 138; _wheels[i].z = 237; _wheels[i].rotationY = 180; }
+                else if (i == 3) { _wheels[i].x = 138; _wheels[i].z = -237; _wheels[i].rotationY = 180; }
+                _wheels[i].y = 60;
+                _visionCar.addChild(_wheels[i]);
+            }
+            
+            
+            
+            // finaly add vision car mesh
+            _view.scene.addChild(_visionCar)
 		}
 		
 		//-------------------------------------------------------KEYBOARD FUNCTION
@@ -541,16 +626,16 @@ package
 		/**
 		 * Test some Clones
 		 */
-		private function makeClone(n:int=20):void {
+		private function makeClone(n:int=10):void {
 			if (!_cloneActif) {
 				_cloneActif = true;
 				var g:Mesh;
-				var decal:int = -(n * 100) / 2;
+				var decal:int = -(n * 900) / 2;
 				for (var j:int = 1; j < n; j++) {
 					for (var i:int = 1; i < n; i++) {
-						g = Mesh(_vision[0].clone());
-						g.x = decal + (100 * i);
-						g.z = (decal + (100 * j));
+						g = Mesh(_visionCar.clone());
+						g.x = decal + (900 * i);
+						g.z = (decal + (900 * j));
 						if (g.x != 0 || g.z != 0)
 							_view.scene.addChild(g);
 					}
