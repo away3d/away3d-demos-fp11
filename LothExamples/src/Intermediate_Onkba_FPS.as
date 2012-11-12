@@ -258,6 +258,7 @@ package
 			addChild(_signature = new SignatureSwf());
             _signature.y = stage.stageHeight - _signature.height;
             _signature.x = 10;
+            
             //add stats
             addChild(_stats = new AwayStats(_view, false, true));
             _stats.x = stage.stageWidth - _stats.width - 5;
@@ -347,7 +348,7 @@ package
             _view.scene.addChild(_sky);
             
             // test rim Light methode slow down engine
-            /*for (var i:int=0; i < _materials.length; i++ ) {
+            for (var i:int=0; i < _materials.length; i++ ) {
                 _materials[i].removeMethod(_rimLightMethod);
             }
             
@@ -355,7 +356,7 @@ package
             
             for ( i = 0; i < _materials.length; i++ ) {
                 _materials[i].addMethod(_rimLightMethod);
-            }*/
+            }
         }
         
         
@@ -377,7 +378,7 @@ package
             _shadowMethod.epsilon = .0007;
             
             //create Rim light method
-            //_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
+            _rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
             
             
             //create global fog method
@@ -393,7 +394,6 @@ package
             _heroMaterial.bothSides = false;
             _heroMaterial.alphaThreshold = 0.9;
             _heroMaterial.alphaPremultiplied = true;
-            
             _materials[0] = _heroMaterial;
             
 			//create the gun material
@@ -423,7 +423,6 @@ package
             _eyesOpenMaterial.repeat = true;
             _materials[3] = _eyesOpenMaterial;
             
-            
             // create ground texture
             _groundMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[1]));
             _groundMaterial.gloss = 10;
@@ -432,6 +431,7 @@ package
             _groundMaterial.repeat = true;
             _materials[4] = _groundMaterial;
             
+            
             // apply light and effect for all material
             for (var i:int; i < _materials.length; i++ ) {
                 _materials[i].lightPicker = _lightPicker;
@@ -439,7 +439,7 @@ package
                 _materials[i].specularLightSources = LightSources.LIGHTS;
                 _materials[i].shadowMethod = _shadowMethod;
                 _materials[i].ambient = 0.85;
-                // _materials[i].addMethod(_rimLightMethod);
+                _materials[i].addMethod(_rimLightMethod);
                 // _materials[i].specularMethod = _specularMethod;
             }
 		}
@@ -490,9 +490,10 @@ package
             
             // weapon referency
             _weapons = new Vector.<Mesh>(WEAPON.length);
-            // fake mesh if no weapon 
-            _weapons[0] = new Mesh(new Geometry(), null);
             
+            // fake mesh if no weapon 
+            _weapons[0] = new Mesh(new CubeGeometry(1,1,1), null);
+
 			// Now load Onkba character and weapons
             load("onkba_fps.awd");
 		}
@@ -734,7 +735,7 @@ package
         private function switchWeapon():void
 		{
             currentWeapon++;
-            if (currentWeapon > 5) currentWeapon = 1;
+            if (currentWeapon > 5) currentWeapon = 0;
             for (var i:int; i < _heroWeapon.numChildren; i++ ) {
                 _heroWeapon.removeChild(_heroWeapon.getChildAt(i));
                 }
@@ -1119,7 +1120,7 @@ package
                 material.lightPicker = _lightPicker;
                 _bonesVector = new Vector.<Mesh>(animator.globalPose.numJointPoses);
                 var mref0:Mesh = new Mesh(new CubeGeometry(3, 0.3, 0.3), material);
-                var mref:Mesh = new Mesh(new Geometry);
+                var mref:Mesh = new Mesh(new CubeGeometry(0.7,0.7,0.7), material);
                 mref.addChild(mref0); mref0.x = 1.5;
                 for (var i:int = 0; i <animator.globalPose.numJointPoses; i++) {
                     m = Mesh(mref.clone());
