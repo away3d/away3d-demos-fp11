@@ -1,35 +1,81 @@
+/*
+
+Crytek Sponza demo using multipass materials in Away3D
+
+Demonstrates:
+
+How to apply Multipass materials to a model
+How to enable cascading shadow maps on a multipass material.
+How to setup multiple lightsources, shadows and fog effects all in the same scene.
+How to apply specular, normal and diffuse maps to an AWD model.
+
+Code by Rob Bateman & David Lenaerts
+rob@infiniteturtles.co.uk
+http://www.infiniteturtles.co.uk
+david.lenaerts@gmail.com
+http://www.derschmale.com
+
+Model re-modeled by Frank Meinl at Crytek with inspiration from Marko Dabrovic's original, converted to AWD by LoTH
+contact@crytek.com
+http://www.crytek.com/cryengine/cryengine3/downloads
+3dflashlo@gmail.com
+http://3dflashlo.wordpress.com
+
+This code is distributed under the MIT License
+
+Copyright (c) The Away Foundation http://www.theawayfoundation.org
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
 package
 {
-	import away3d.loaders.misc.AssetLoaderContext;
-	import away3d.library.assets.AssetType;
-	import flash.utils.Dictionary;
-	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.loaders.parsers.OBJParser;
-	import flash.filters.DropShadowFilter;
+	import flash.display.*;
+	import flash.events.*;
+	import flash.filters.*;
+	import flash.geom.*;
+	import flash.net.*;
+	import flash.text.*;
+	import flash.ui.*;
+	import flash.utils.*;
+	
 	import away3d.containers.*;
 	import away3d.controllers.*;
 	import away3d.core.base.*;
 	import away3d.debug.*;
 	import away3d.entities.*;
 	import away3d.events.*;
+	import away3d.library.assets.*;
 	import away3d.lights.*;
 	import away3d.lights.shadowmaps.*;
 	import away3d.loaders.*;
+	import away3d.loaders.misc.*;
+	import away3d.loaders.parsers.*;
 	import away3d.materials.*;
+	import away3d.materials.lightpickers.*;
 	import away3d.materials.methods.*;
 	import away3d.primitives.*;
 	import away3d.textures.*;
 	import away3d.utils.*;
 	
-	import com.derschmale.away3d.multipass.ui.*;
-
-	import flash.display.*;
-	import flash.events.*;
-	import flash.geom.*;
-	import flash.net.*;
-	import flash.text.*;
-	import flash.ui.*;
-
+	import uk.co.soulwire.gui.*;
+	
 	[SWF(frameRate="60", backgroundColor="#000000")]
 	public class Main extends Sprite
 	{
@@ -57,11 +103,13 @@ package
 		private var _skyMap:BitmapCubeTexture;
 		private var _assetsRoot:String = "assets/";
 		
+		private var materialNameStrings:Vector.<String> = Vector.<String>(["arch",            "Material__298",  "bricks",            "ceiling",            "chain",             "column_a",          "column_b",          "column_c",          "fabric_g",              "fabric_c",         "fabric_f",               "details",          "fabric_d",             "fabric_a",        "fabric_e",              "flagpole",          "floor",            "16___Default","Material__25","roof",       "leaf",           "vase",         "vase_hanging",     "Material__57",   "vase_round"]);
 		private var diffuseTextureStrings:Vector.<String> = Vector.<String>(["arch_diff.jpg", "background.jpg", "bricks_a_diff.jpg", "ceiling_a_diff.jpg", "chain_texture.png", "column_a_diff.jpg", "column_b_diff.jpg", "column_c_diff.jpg", "curtain_blue_diff.jpg", "curtain_diff.jpg", "curtain_green_diff.jpg", "details_diff.jpg", "fabric_blue_diff.jpg", "fabric_diff.jpg", "fabric_green_diff.jpg", "flagpole_diff.jpg", "floor_a_diff.jpg", "gi_flag.jpg", "lion.jpg", "roof_diff.jpg", "thorn_diff.png", "vase_dif.jpg", "vase_hanging.jpg", "vase_plant.png", "vase_round.jpg"]);
 		private var normalTextureStrings:Vector.<String> = Vector.<String>(["arch_ddn.jpg", "background_ddn.jpg", "bricks_a_ddn.jpg", null,                "chain_texture_ddn.jpg", "column_a_ddn.jpg", "column_b_ddn.jpg", "column_c_ddn.jpg", null,                   null,               null,                     null,               null,                   null,              null,                    null,                null,               null,          "lion2_ddn.jpg", null,       "thorn_ddn.jpg", "vase_ddn.jpg",  null,               null,             "vase_round_ddn.jpg"]);
 		private var specularTextureStrings:Vector.<String> = Vector.<String>(["arch_spec.jpg", null,            "bricks_a_spec.jpg", "ceiling_a_spec.jpg", null,                "column_a_spec.jpg", "column_b_spec.jpg", "column_c_spec.jpg", "curtain_spec.jpg",      "curtain_spec.jpg", "curtain_spec.jpg",       "details_spec.jpg", "fabric_spec.jpg",      "fabric_spec.jpg", "fabric_spec.jpg",       "flagpole_spec.jpg", "floor_a_spec.jpg", null,          null,       null,            "thorn_spec.jpg", null,           null,               "vase_plant_spec.jpg", "vase_round_spec.jpg"]);
 		private var textureDictionary:Dictionary = new Dictionary();
-		private var materialDictionary:Dictionary = new Dictionary();
+		private var multiMaterialDictionary:Dictionary = new Dictionary();
+		private var singleMaterialDictionary:Dictionary = new Dictionary();
 		private var _meshes:Vector.<Mesh> = new Vector.<Mesh>();
 		private var loadingTextureStrings:Vector.<String>;
 		private var n:uint = 0;
@@ -72,15 +120,20 @@ package
 		private var _signature:Sprite;
 		private var _awayStats:AwayStats;
 		
+		private var gui:SimpleGUI;
+		
 		private var _lightPicker:StaticLightPicker;
-		private var _configPanel:ConfigPanel;
-		private var _configMediator:ConfigMediator;
+		private var _baseShadowMethod:FilteredShadowMapMethod;
 		private var _cascadeMethod:CascadeShadowMapMethod;
 		private var _fogMethod : FogMethod;
+		private var _cascadeShadowMapper:CascadeShadowMapper;
 		private var _directionalLight:DirectionalLight;
 		private var _lights:Array = new Array();
 		private var _flameMaterial:TextureMaterial;
 		private var _flameGeometry:PlaneGeometry;
+		private var _numTextures:uint = 0;
+		private var _currentTexture:uint = 0;
+		private var _loadingText:String;
 		private var _text:TextField;
 				
 		//rotation variables
@@ -99,6 +152,135 @@ package
 		private var _walkAcceleration:Number = 0;
 		private var _strafeAcceleration:Number = 0;
 		
+		//gui variables
+		private var _singlePassMaterial:Boolean = false;
+		private var _multiPassMaterial:Boolean = true;
+		private var _cascadeLevels:uint = 3;
+		private var _shadowOptions:String = "PCF";
+		private var _depthMapSize:uint = 2048;
+		private var _lightDirection:Number = Math.PI/2;
+		private var _lightElevation:Number = Math.PI/18;
+		
+		/**
+		 * GUI variable for setting material mode to single pass
+		 */
+		public function get singlePassMaterial():Boolean
+		{
+			return _singlePassMaterial;
+		}
+		
+		public function set singlePassMaterial(value:Boolean):void
+		{
+			_singlePassMaterial = value;
+			_multiPassMaterial = !value;
+			
+			updateMaterialPass(value? singleMaterialDictionary : multiMaterialDictionary);
+		}
+		
+		/**
+		 * GUI variable for setting material mode to multi pass
+		 */
+		public function get multiPassMaterial():Boolean
+		{
+			return _multiPassMaterial;
+		}
+		
+		public function set multiPassMaterial(value:Boolean):void
+		{
+			_multiPassMaterial = value;
+			_singlePassMaterial = !value;
+			
+			updateMaterialPass(value? multiMaterialDictionary : singleMaterialDictionary);
+		}
+		
+		/**
+		 * GUI variable for setting number of cascade levels.
+		 */
+		public function get cascadeLevels():uint
+		{
+			return _cascadeLevels;
+		}
+		
+		public function set cascadeLevels(value:uint):void
+		{
+			_cascadeLevels = value;
+			
+			_cascadeShadowMapper.numCascades = value;
+		}
+		
+		/**
+		 * GUI variable for setting the active shadow option
+		 */
+		public function get shadowOptions():String
+		{
+			return _shadowOptions;
+		}
+		
+		public function set shadowOptions(value:String):void
+		{
+			_shadowOptions = value;
+			
+			switch(value) {
+				case "Unfiltered":
+					_cascadeMethod.baseMethod = new HardShadowMapMethod(_directionalLight);
+					break;
+				case "Multiple taps":
+					_cascadeMethod.baseMethod = new SoftShadowMapMethod(_directionalLight);
+					break;
+				case "PCF":
+					_cascadeMethod.baseMethod = new FilteredShadowMapMethod(_directionalLight);
+					break;
+				case "Dithered":
+					_cascadeMethod.baseMethod = new DitheredShadowMapMethod(_directionalLight);
+					break;
+			}
+		}
+		
+		/**
+		 * GUI variable for setting the depth map size of the shadow mapper.
+		 */
+		public function get depthMapSize():uint
+		{
+			return _depthMapSize;
+		}
+		
+		public function set depthMapSize(value:uint):void
+		{
+			_depthMapSize = value;
+			
+			_directionalLight.shadowMapper.depthMapSize = value;
+		}
+		
+		/**
+		 * GUI variable for setting the direction of the directional lightsource
+		 */
+		public function get lightDirection():Number
+		{
+			return _lightDirection*180/Math.PI;
+		}
+		
+		public function set lightDirection(value:Number):void
+		{
+			_lightDirection = value*Math.PI/180;
+			
+			updateDirection();
+		}
+		
+		/**
+		 * GUI variable for setting The elevation of the directional lightsource
+		 */
+		public function get lightElevation():Number
+		{
+			return 90 - _lightElevation*180/Math.PI;
+		}
+		
+		public function set lightElevation(value:Number):void
+		{
+			_lightElevation = (90 - value)*Math.PI/180;
+			
+			updateDirection();
+		}
+		
         /**
          * Constructor
          */
@@ -115,11 +297,17 @@ package
 			initEngine();
 			initText();
 			initLights();
-			initUI();
+			initGUI();
 			initListeners();
 			
+			//count textures
+			n = 0;
+			loadingTextureStrings = diffuseTextureStrings;
+			countNumTextures();
+			
 			//kickoff asset loading
-			loadingTextureStrings = normalTextureStrings;
+			n = 0;
+			loadingTextureStrings = diffuseTextureStrings;
 			load(loadingTextureStrings[n]);
 		}
         /**
@@ -155,7 +343,7 @@ package
         private function initText():void
 		{
             _text = new TextField();
-            _text.defaultTextFormat = new TextFormat("Verdana", 11, 0xFFFFFF);
+            _text.defaultTextFormat = new TextFormat("Verdana", 11, 0xFFFFFF, null, null, null, null, null, "center");
 			_text.embedFonts = true;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
 			_text.gridFitType = GridFitType.PIXEL;
@@ -173,16 +361,18 @@ package
          */
 		private function initLights():void
 		{
-			var shadowMapper : CascadeShadowMapper = new CascadeShadowMapper(3);
-			shadowMapper.lightOffset = 10000;
+			_cascadeShadowMapper = new CascadeShadowMapper(3);
+			_cascadeShadowMapper.lightOffset = 10000;
 			_directionalLight = new DirectionalLight(-1, -15, 1);
-			_directionalLight.shadowMapper = shadowMapper;
+			_directionalLight.shadowMapper = _cascadeShadowMapper;
 			_directionalLight.castsShadows = true;
 			_directionalLight.color = 0xeedddd;
 			_directionalLight.ambient = .35;
 			_directionalLight.ambientColor = 0x808090;
 			_view.scene.addChild(_directionalLight);
 			_lights.push(_directionalLight);
+			
+			updateDirection();
 			
 			//creat flame lights
 			var flameVO:FlameVO;
@@ -197,9 +387,9 @@ package
 			}
 			
 			_lightPicker = new StaticLightPicker(_lights);
-			var baseShadowMethod : SimpleShadowMapMethodBase = new FilteredShadowMapMethod(_directionalLight);
+			_baseShadowMethod = new FilteredShadowMapMethod(_directionalLight);
 			_fogMethod = new FogMethod(0, 4000, 0x9090e7);
-			_cascadeMethod = new CascadeShadowMapMethod(baseShadowMethod);
+			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
 		}
 		
         /**
@@ -238,11 +428,45 @@ package
 			}
 		}
 		
-		private function initUI():void
+		/**
+		 * Initialise the GUI
+		 */
+		private function initGUI():void
 		{
-			_configPanel = new ConfigPanel();
-			_configMediator = new ConfigMediator(_configPanel, _directionalLight, _cascadeMethod);
-			addChild(_configPanel);
+			var shadowOptions:Array = [
+				{label:"Unfiltered", data:"Unfiltered"},
+				{label:"PCF", data:"PCF"},
+				{label:"Multiple taps", data:"Multiple taps"},
+				{label:"Dithered", data:"Dithered"}
+			];
+			
+			var depthMapSize:Array = [
+				{label:"512", data:512},
+				{label:"1024", data:1024},
+				{label:"2048", data:2048}
+			];
+			
+			gui = new SimpleGUI(this, "");
+			
+			gui.addColumn("Instructions");
+			var instr:String = "Click and drag on the stage to rotate camera.\n";
+			instr += "Keyboard arrows and WASD to move.\n";
+			gui.addLabel(instr);
+			
+			gui.addColumn("Material Settings");
+			gui.addToggle("singlePassMaterial", {label:"Single pass"});
+			gui.addToggle("multiPassMaterial", {label:"Multiple pass"});
+			
+			gui.addColumn("Shadow Settings");
+			gui.addStepper("cascadeLevels", 1, 4, {label:"Cascade level"});
+			gui.addComboBox("shadowOptions", shadowOptions, {label:"Filter method"});
+			gui.addComboBox("depthMapSize", depthMapSize, {label:"Depth map size"});
+			
+			
+			gui.addColumn("Light Position");
+			gui.addSlider("lightDirection", 0, 360, {label:"Direction", tick:0.1});
+			gui.addSlider("lightElevation", 0, 90, {label:"Elevation", tick:0.1});
+			gui.show();
 		}
 			
 		/**
@@ -258,7 +482,64 @@ package
 			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			onResize();
 		}
-		        
+		
+		/**
+		 * Updates the mateiral mode between single pass and multi pass
+		 */
+		private function updateMaterialPass(materialDictionary:Dictionary):void
+		{
+			var mesh:Mesh;
+			var name:String;
+			for each (mesh in _meshes) {
+				if (mesh.name == "sponza_04" || mesh.name == "sponza_379")
+					continue;
+				name = mesh.material.name;
+				var textureIndex:int = materialNameStrings.indexOf(name);
+				if (textureIndex == -1 || textureIndex >= materialNameStrings.length)
+					continue;
+				
+				mesh.material = materialDictionary[name];
+			}
+		}
+		
+		/**
+		 * Updates the direction of the directional lightsource
+		 */
+		private function updateDirection():void
+		{
+			_directionalLight.direction = new Vector3D(
+				Math.sin(_lightElevation)*Math.cos(_lightDirection),
+				-Math.cos(_lightElevation),
+				Math.sin(_lightElevation)*Math.sin(_lightDirection)
+			);
+		}
+		
+		/**
+		 * Count the total number of textures to be loaded
+		 */
+		private function countNumTextures():void
+		{
+			_numTextures++;
+			
+			//skip null textures
+			while (n++ < loadingTextureStrings.length - 1)
+				if (loadingTextureStrings[n])
+					break;
+			
+			//switch to next teture set
+			if (n < loadingTextureStrings.length) {
+				countNumTextures();
+			} else if (loadingTextureStrings == diffuseTextureStrings) {
+				n = 0;
+				loadingTextureStrings = normalTextureStrings;
+				countNumTextures();
+			} else if (loadingTextureStrings == normalTextureStrings) {
+				n = 0;
+				loadingTextureStrings = specularTextureStrings;
+				countNumTextures();
+			}
+		}
+		
         /**
          * Global binary file loader
          */
@@ -268,12 +549,15 @@ package
             loader.dataFormat = URLLoaderDataFormat.BINARY;
 			
             switch (url.substring(url.length - 3)) {
-                case "OBJ": 
-                case "obj": 
-                    loader.addEventListener(Event.COMPLETE, parseOBJ, false, 0, true);
+                case "AWD": 
+                case "awd": 
+					_loadingText = "Loading Model";
+                    loader.addEventListener(Event.COMPLETE, parseAWD, false, 0, true);
                     break;
                 case "png": 
                 case "jpg": 
+					_currentTexture++;
+					_loadingText = "Loading Textures";
                     loader.addEventListener(Event.COMPLETE, parseBitmap);
 					url = "textures/" + url;
                     break;
@@ -290,14 +574,9 @@ package
 		{
             var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
             if (P != 100)
-                log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
+                log(_loadingText + '\n' + ((_loadingText = "Loading Model")? int((e.bytesLoaded / 1024) << 0) + 'kb | ' + int((e.bytesTotal / 1024) << 0) + 'kb' : _currentTexture + ' | ' + _numTextures));
             else {
-	            _text.text = "Cursor keys / WSAD / ZSQD - move\n";
-	            _text.appendText("SHIFT - hold down to run\n");
-	            _text.appendText("E - punch\n");
-	            _text.appendText("SPACE / R - guard\n");
-	            _text.appendText("N - random sky\n");
-	            _text.appendText("B - clone !\n");
+	            _text.visible = false;
 			}
         }
         
@@ -305,7 +584,7 @@ package
         
         private function parseBitmap(e:Event):void 
 		{
-            log("out");
+            log("Parsing Data");
             var urlLoader:URLLoader = e.target as URLLoader;
             var loader:Loader = new Loader();
             loader.loadBytes(urlLoader.data);
@@ -322,7 +601,7 @@ package
 			
 			//create bitmap texture in dictionary
 			if (!textureDictionary[loadingTextureStrings[n]])
-            	textureDictionary[loadingTextureStrings[n]] = (loadingTextureStrings == normalTextureStrings)? Cast.bitmapTexture(e.target.content) : new SpecularBitmapTexture((e.target.content as Bitmap).bitmapData);
+            	textureDictionary[loadingTextureStrings[n]] = (loadingTextureStrings == specularTextureStrings)? new SpecularBitmapTexture((e.target.content as Bitmap).bitmapData) : Cast.bitmapTexture(e.target.content);
 				
             loader.unload();
             loader = null;
@@ -332,32 +611,38 @@ package
 				if (loadingTextureStrings[n])
 					break;
 			
+			//switch to next teture set
             if (n < loadingTextureStrings.length) {
                 load(loadingTextureStrings[n]);
+			} else if (loadingTextureStrings == diffuseTextureStrings) {
+				n = 0;
+				loadingTextureStrings = normalTextureStrings;
+				load(loadingTextureStrings[n]);
 			} else if (loadingTextureStrings == normalTextureStrings) {
 				n = 0;
 				loadingTextureStrings = specularTextureStrings;
 				load(loadingTextureStrings[n]);
 			} else {
-            	load("sponza.obj");
+            	load("sponza.awd");
             }
         }
 		
         /**
-         * Load AWD
+         * Parses the AWD file
          */
-        private function parseOBJ(e:Event):void
+        private function parseAWD(e:Event):void
 		{
             var loader:URLLoader = e.target as URLLoader;
             var loader3d:Loader3D = new Loader3D(false);
 			var context:AssetLoaderContext = new AssetLoaderContext();
-			context.mapUrl("sponza.mtl", _assetsRoot + "sponza.mtl");
+			//context.includeDependencies = false;
+			context.dependencyBaseUrl = "assets/textures/";
             loader3d.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete, false, 0, true);
             loader3d.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete, false, 0, true);
-            loader3d.loadData(loader.data, context, null, new OBJParser());
+            loader3d.loadData(loader.data, context, null, new AWDParser());
 			
             loader.removeEventListener(ProgressEvent.PROGRESS, loadProgress);
-            loader.removeEventListener(Event.COMPLETE, parseOBJ);
+            loader.removeEventListener(Event.COMPLETE, parseAWD);
             loader = null;
         }
         
@@ -366,46 +651,14 @@ package
          */
         private function onAssetComplete(event:AssetEvent):void
 		{
-			if (event.asset.assetType == AssetType.TEXTURE) {
-				//create multipass material
-				var material:TextureMultiPassMaterial = new TextureMultiPassMaterial(event.asset as BitmapTexture);
-				material.lightPicker = _lightPicker;
-				material.shadowMethod = _cascadeMethod;
-				material.addMethod(_fogMethod);
-				material.mipmap = true;
-				material.repeat = true;
-				material.specular = 2;
-				
-				var name:String = event.asset.name.split("/")[2];
-				var textureIndex:int = diffuseTextureStrings.indexOf(name);
-				var textureName:String;
-				
-				if (textureIndex == -1)
-					return;
-				
-				//use alpha transparancy if texture is png
-				if (name.substring(name.length - 3) == "png")
-					material.alphaThreshold = 0.5;
-				
-				//add normal map if it exists
-				if ((textureName = diffuseTextureStrings[textureIndex]))
-					material.normalMap = textureDictionary[textureName];
-				
-				//add specular map if it exists
-				if ((textureName = specularTextureStrings[textureIndex]))
-					material.specularMap = textureDictionary[textureName];
-				
-				//add to material dictionary
-				materialDictionary[name] = material;
-				
-			} else if (event.asset.assetType == AssetType.MESH) {
+			if (event.asset.assetType == AssetType.MESH) {
 				//store meshes
 				_meshes.push(event.asset as Mesh);
 			}
 		}
 		
         /**
-         * Check if all resource loaded
+         * Triggered once all resources are loaded
          */
         private function onResourceComplete(e:LoaderEvent):void
 		{
@@ -415,13 +668,89 @@ package
 			
 			//reassign materials
 			var mesh:Mesh;
+			var name:String;
+			
 			for each (mesh in _meshes) {
-				if (!(mesh.material is TextureMaterial) || mesh.name == "sponza_04")
+				if (mesh.name == "sponza_04" || mesh.name == "sponza_379")
 					continue;
-				var material:TextureMultiPassMaterial = materialDictionary[(mesh.material as TextureMaterial).texture.name.split("/")[2]];
-				if (material)
-					mesh.material = material;
+				
+				name = mesh.material.name;
+				var textureIndex:int = materialNameStrings.indexOf(name);
+				if (textureIndex == -1 || textureIndex >= materialNameStrings.length)
+					continue;
+				
+				var textureName:String = diffuseTextureStrings[textureIndex];
+				var normalTextureName:String;
+				var specularTextureName:String;
+				
+				//store single pass materials for use later
+				var singleMaterial:TextureMaterial = singleMaterialDictionary[name];
+				
+				if (!singleMaterial) {
 					
+					//create singlepass material
+					singleMaterial = new TextureMaterial(textureDictionary[textureName]);
+					singleMaterial.name = name;
+					singleMaterial.lightPicker = _lightPicker;
+					singleMaterial.addMethod(_fogMethod);
+					singleMaterial.mipmap = true;
+					singleMaterial.repeat = true;
+					singleMaterial.specular = 2;
+					
+					//use alpha transparancy if texture is png
+					if (textureName.substring(textureName.length - 3) == "png")
+						singleMaterial.alphaThreshold = 0.5;
+					
+					//add normal map if it exists
+					normalTextureName = normalTextureStrings[textureIndex];
+					if (normalTextureName)
+						singleMaterial.normalMap = textureDictionary[normalTextureName];
+					
+					//add specular map if it exists
+					specularTextureName = specularTextureStrings[textureIndex]
+					if (specularTextureName)
+						singleMaterial.specularMap = textureDictionary[specularTextureName];
+					
+					singleMaterialDictionary[name] = singleMaterial;
+				}
+
+				//store multi pass materials for use later
+				var multiMaterial:TextureMultiPassMaterial = multiMaterialDictionary[name];
+				
+				if (!multiMaterial) {
+					
+					//create multipass material
+					multiMaterial = new TextureMultiPassMaterial(textureDictionary[textureName]);
+					multiMaterial.name = name;
+					multiMaterial.lightPicker = _lightPicker;
+					multiMaterial.shadowMethod = _cascadeMethod;
+					multiMaterial.addMethod(_fogMethod);
+					multiMaterial.mipmap = true;
+					multiMaterial.repeat = true;
+					multiMaterial.specular = 2;
+					
+					
+					//use alpha transparancy if texture is png
+					if (textureName.substring(textureName.length - 3) == "png")
+						multiMaterial.alphaThreshold = 0.5;
+					
+					//add normal map if it exists
+					normalTextureName = normalTextureStrings[textureIndex];
+					if (normalTextureName)
+						multiMaterial.normalMap = textureDictionary[normalTextureName];
+					
+					//add specular map if it exists
+					specularTextureName = specularTextureStrings[textureIndex]
+					if (specularTextureName)
+						multiMaterial.specularMap = textureDictionary[specularTextureName];
+					
+					//add to material dictionary
+					multiMaterialDictionary[name] = multiMaterial;
+				}
+				
+				//default to multipass material
+				mesh.material = multiMaterial;
+				
 				_view.scene.addChild(mesh);
 			}
 			
@@ -506,8 +835,8 @@ package
 				case Keyboard.D:
 					_strafeAcceleration = _strafeIncrement;
 					break;
-				case Keyboard.F:
-					_cameraController.fly = !_cameraController.fly;
+				//case Keyboard.F:
+				//	_cameraController.fly = !_cameraController.fly;
 			}
 		}
 		
@@ -570,8 +899,9 @@ package
 		{
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
-			_configPanel.x = stage.stageWidth - _configPanel.width - 20;
-			_configPanel.y = 20;
+			
+			_text.x = (stage.stageWidth - _text.width)/2;
+			_text.y = (stage.stageHeight - _text.height)/2;
 			
 			_signature.y = stage.stageHeight - _signature.height;
 			
@@ -584,15 +914,19 @@ package
         private function log(t:String):void
 		{
             _text.htmlText = t;
+			_text.visible = true;
         }
 	}
 }
 
+import flash.geom.*;
+
 import away3d.entities.*;
 import away3d.lights.*;
 
-import flash.geom.*;
-
+/**
+ * Data class for the Flame objects
+ */
 internal class FlameVO
 {
 	public var position : Vector3D;
