@@ -174,7 +174,7 @@ package
 			_redTotal = redData.length;
 			_whiteTotal = whiteData.length;
 			
-			trace(data.length +whiteData.length);
+			trace(redData.length +whiteData.length);
 		}
 		
 		private function initScene():void
