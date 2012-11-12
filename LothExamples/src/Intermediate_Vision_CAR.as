@@ -5,14 +5,9 @@ AWD file loading example in Away3d
 Demonstrates:
 
 How to use the Loader3D object to load an embedded internal awd model.
+How to limite size of AWD export by using away3d clone.
 
-Code by Rob Bateman and LoTh
-rob@infiniteturtles.co.uk
-http://www.infiniteturtles.co.uk
-3dflashlo@gmail.com
-http://3dflashlo.wordpress.com
-
-Model and Map by LoTH
+Code and Model by LoTH
 3dflashlo@gmail.com
 http://3dflashlo.wordpress.com
 
@@ -41,12 +36,6 @@ THE SOFTWARE.
 */
 package
 {
-	import away3d.animators.data.Skeleton;
-	import away3d.animators.SkeletonAnimator;
-	import away3d.animators.SkeletonAnimationSet;
-	import away3d.animators.nodes.SkeletonClipNode;
-	import away3d.animators.transitions.CrossfadeTransition;
-	
 	import away3d.loaders.parsers.AWD2Parser;
 	import away3d.cameras.lenses.*;
 	import away3d.containers.*;
@@ -522,9 +511,8 @@ package
 		private function onAssetComplete(event:AssetEvent):void
 		{
             if (event.asset.assetType == AssetType.MESH) {
-				
 				var mesh:Mesh = event.asset as Mesh;
-				if(mesh.name!='top' && mesh.name!='bottom')_vision.push(mesh);
+				if(mesh.name!='top' && mesh.name!='bottom') _vision.push(mesh);
 			}
 		}
 		
