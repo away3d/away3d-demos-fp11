@@ -85,11 +85,9 @@ package
 			}
 			var particleCubeGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
-			var animationSet1:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet1.loop = true;
-			animationSet1.hasDelay = true;
+			var animationSet1:ParticleAnimationSet = new ParticleAnimationSet(true, true, true);
 
-			animationSet1.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet1.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animationSet1.addAnimation(new ParticleRotateToHeadingNode());
 			animationSet1.initParticleFunc = initParticleParamForExplosion;
 			var material1:ColorMaterial = new ColorMaterial(0xffff10, 0.3);
@@ -114,12 +112,10 @@ package
 			material2.blendMode = BlendMode.ADD;
 			var particleMesh2:Mesh = new Mesh(particlePlaneGeometry, material2);
 			
-			var animationSet2:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet2.loop = true;
-			animationSet2.hasDelay = true;
+			var animationSet2:ParticleAnimationSet = new ParticleAnimationSet(true, true, true);
 			
 			animationSet2.addAnimation(new ParticleBillboardNode());
-			animationSet2.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet2.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animationSet2.addAnimation(new ParticleRotateToHeadingNode());
 			animationSet2.initParticleFunc = initParticleParamForExplosion;
 			var animator2:ParticleAnimator = new ParticleAnimator(animationSet2);
@@ -147,8 +143,7 @@ package
 			var material3:ColorMaterial = new ColorMaterial(0xff0000);
 			var particleMesh3:Mesh = new Mesh(particleCylinderGeometry, material3);
 			
-			var animationSet3:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet3.loop = true;
+			var animationSet3:ParticleAnimationSet = new ParticleAnimationSet(true, true);
 			
 			animationSet3.addAnimation(new ParticleOrbitNode(ParticlePropertiesMode.GLOBAL, true, true, false, 150, 2, 0, new Vector3D(90, 0, 0)));
 			animationSet3.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, 50, 0)));

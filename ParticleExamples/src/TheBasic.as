@@ -100,8 +100,7 @@ package
 			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet, particleTransforms);
 			
 			//create the particle animation set
-			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet.loop = true;
+			var animationSet:ParticleAnimationSet = new ParticleAnimationSet(true, true);
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor

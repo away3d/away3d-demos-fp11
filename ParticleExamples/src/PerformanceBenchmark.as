@@ -135,11 +135,10 @@ package
 			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
 			//create the particle animation set
-			animationSet = new ParticleAnimationSet();
-			animationSet.loop = true;
+			animationSet = new ParticleAnimationSet(true, true);
 			
 			animationSet.addAnimation(new ParticleBillboardNode());
-			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animationSet.initParticleFunc = initParticleParam;
 			
 			
