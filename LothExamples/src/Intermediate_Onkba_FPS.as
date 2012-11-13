@@ -1,6 +1,6 @@
 /*
 
-AWD file loading example in Away3d
+ONKBA FPS
 
 Demonstrates:
 
@@ -43,6 +43,9 @@ package
 	import away3d.animators.SkeletonAnimationSet;
 	import away3d.animators.nodes.SkeletonClipNode;
 	import away3d.animators.transitions.CrossfadeTransition;
+    import away3d.core.managers.Stage3DManager;
+    import away3d.core.managers.Stage3DProxy;
+    import away3d.events.Stage3DEvent;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
@@ -79,7 +82,10 @@ package
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
-	
+    import flash.geom.Point;
+    import flash.geom.Rectangle;
+    
+	import flash.filters.ColorMatrixFilter;
 	import flash.display.StageDisplayState;
 	import flash.filters.DropShadowFilter;
 	import flash.net.URLLoaderDataFormat;
@@ -89,6 +95,7 @@ package
 	import flash.text.AntiAliasType;
 	import flash.display.LoaderInfo;
 	import flash.display.BitmapData;
+    import flash.display.Bitmap;
 	import flash.display.StageAlign;
 	import flash.events.MouseEvent;
 	import flash.text.GridFitType;
@@ -105,8 +112,8 @@ package
 	import flash.ui.Keyboard;
 	
 	import utils.VectorSkyEffects;
-	
-	[SWF(backgroundColor="000000", frameRate="60", quality="LOW")]
+	import utils.BitmapMapper;
+    
 	public class Intermediate_Onkba_FPS extends Sprite
 	{
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
@@ -115,7 +122,7 @@ package
 		private static const ASSETS_ROOT:String = "assets/onkba/";
 		private static const MOUNTAIGN_TOP:Number = 2000;
 		private static const FARVIEW:Number = 30000;
-		private static const FOGNEAR:Number = 500;
+		private static const FOGNEAR:Number = 0;
 		private static const SCALE:Number = 2;
 		
 		// start colors
@@ -129,6 +136,8 @@ package
 		private var _num:uint; 
 		
 		// engine variables
+        private var _stage3DProxy:Stage3DProxy;
+        private var _manager:Stage3DManager;
 		private var _view:View3D;
 		private var _stats:AwayStats;
 		private var _lightPicker:StaticLightPicker;
@@ -219,7 +228,9 @@ package
 		
 		private var _signature:Sprite;
 		private var _text:TextField;
-		
+		private var _capture:Bitmap;
+        private var _capture2:BitmapData;
+        private var _topPause:Sprite;
 		// !! optional physics engine
 		private var _physics:Object;
 		
@@ -248,14 +259,34 @@ package
 			
 			_bitmapStrings.push("height_n.jpg");
 			
-			init();
+			if (stage) init();
+            else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
 		}
 		
 		/**
 		 * Global initialise function
 		 */
-		private function init():void
+		private function init(e:Event=null):void
 		{
+            removeEventListener(Event.ADDED_TO_STAGE, init);
+            
+            stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+            stage.color = 0x000000;
+			stage.frameRate = 60;
+            
+            _manager = Stage3DManager.getInstance(stage);
+            _stage3DProxy = _manager.getFreeStage3DProxy();
+            _stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated, false, 0, true);
+		}
+        
+		private function onContextCreated(e:Stage3DEvent):void
+		{
+            _stage3DProxy.removeEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
+            _stage3DProxy.color = 0x000000;
+            _stage3DProxy.antiAlias = 4;
+            _stage3DProxy.width = stage.stageWidth;
+            _stage3DProxy.height = stage.stageHeight;
 			initEngine();
 			initText();
 			initLights();
@@ -263,7 +294,6 @@ package
 			// kickoff asset loading
 			load(_bitmapStrings[_num]);
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//
@@ -273,14 +303,10 @@ package
 		
 		private function initEngine():void
 		{
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
-			stage.frameRate = 60;
-			
 			// create the view
 			_view = new View3D();
-			_view.backgroundColor = 0x00;
-			_view.antiAlias = 4;
+            _view.stage3DProxy = _stage3DProxy;
+            _view.shareContext = true;
 			addChild(_view);
 			
 			// create custom lens
@@ -402,7 +428,7 @@ package
 			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
 			
 			// global fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW / 2, fogColor);
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW >> 1, fogColor);
 			
 			// 0- hero
 			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[3]));
@@ -438,7 +464,7 @@ package
 			_eyesOpenMaterial.specular = 0.8;
 			_materials[3] = _eyesOpenMaterial;
 			
-			// 4- ground
+			// 4- sphere reflection test
 			_shereMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x00)));
 			_shereMaterial.gloss = 90;
 			_shereMaterial.specular = 4;
@@ -531,7 +557,6 @@ package
 			
 			// create terrain
 			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(_bitmaps[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
-			//_terrain.geometry.scaleUV(150,150)
 			_view.scene.addChild(_terrain);
 			
 			// weapon referency
@@ -584,13 +609,15 @@ package
 		
 		private function initListeners(e:Event=null):void
 		{
+           
 			_isRender = true;
 			log(message());
 			if (e != null) {
+                removeGrayPauseEffect();
 				stage.removeEventListener(MouseEvent.MOUSE_OVER, initListeners);
 			}
 			// add render loop
-			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			_stage3DProxy.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			// add key listeners
 			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
@@ -604,9 +631,11 @@ package
 		
 		private function stopListeners():void
 		{
-			_isRender = false;
+            grayPauseEffect();
+			//_isRender = false;
+           
 			log("&#47;&#33;&#92; PAUSE");
-			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			_stage3DProxy.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
@@ -618,8 +647,32 @@ package
 			// mouse come back
 			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
 		}
-		
-		
+        
+		private function removeGrayPauseEffect():void
+		{
+            _topPause.graphics.clear();
+            removeChild(_topPause);
+            _capture = null
+            
+        }
+        
+		private function grayPauseEffect():void
+		{
+            _capture2 = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x10ffffff);
+            //_stage3DProxy.stage3D.context3D
+           // _view.stage3DProxy.context3D.drawToBitmapData(_capture2);
+          //  _capture2.draw(_view, null, null, null, new Rectangle(200, 200), false);
+           /* _capture = addChild(new Bitmap(new BitmapData(465, 465, false, 0x000000))) as Bitmap ;
+            */
+           // _capture.applyFilter(_capture, _capture.rect, new Point(), grayScale());
+			_topPause = new Sprite();
+            addChild(_topPause);
+            _topPause.graphics.beginBitmapFill(_capture2, null, false, false);
+            _topPause.graphics.drawRect(0, 0, stage.width, stage.height);
+            _topPause.graphics.endFill();
+            
+        }
+        
 		//-------------------------------------------------------------------------------
 		//       LOAD binary files
 		//-------------------------------------------------------------------------------
@@ -786,7 +839,7 @@ package
 			_view.scene.addChild(_bigBall);
 			_bigBall.position = new Vector3D( -300, _terrain.getHeightAt( -200, -100) +120);
 			// global reflection methode
-			initReflection();
+			//initReflection();
 			
 			// add some box for fun 
 			var num:int = 100;
@@ -1090,6 +1143,8 @@ package
 		 */
 		private function onResize(event:Event=null):void
 		{
+            _stage3DProxy.width = stage.stageWidth;
+            _stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
@@ -1348,21 +1403,26 @@ package
 		
 		
 		
-		// AUTOUR NOTE 
+		// AUTHOR NOTE 
 		// Now you can choose you physics engine or don't use physics 
-		// juste disable part you don't whant !!
+		// juste disable part you don't whant
 		
 		//-------------------------------------------------------------------------------
 		//
 		//       no PHYSICS engines    
 		//
 		//-------------------------------------------------------------------------------
-		/*
+		
 		private function initPhysicsEngine(name:String = 'none'):void 
 		{
 		
 		}
-		*/
+        
+		private function grayScale():ColorMatrixFilter
+		{
+			var elements:Array = [0.33, 0.33, 0.33, 0, 0, 0.33, 0.33, 0.33, 0, 0, 0.33, 0.33, 0.33, 0, 0, 0, 0, 0, 1, 0];
+			return new ColorMatrixFilter(elements);
+		}
 		//-------------------------------------------------------------------------------
 		//
 		//       JIGLIB PHYSICS engines    
@@ -1380,7 +1440,7 @@ package
 		//
 		//-------------------------------------------------------------------------------
 		
-		private function initPhysicsEngine(name:String = 'Physics'):void 
+		/*private function initPhysicsEngine(name:String = 'Physics'):void 
 		{
 			_physics = AwayPhysics.getInstance();
 			
@@ -1399,7 +1459,7 @@ package
 			for (var i:int = 0; i < _cubeVector.length; i++) {
 				_physics.addObject(_cubeVector[i], { stop:isUnactif, w: 150, h: 300, d: 150, mass: 1, pos: _cubeVector[i].position });
 			}
-		}
+		}*/
 		
 		
 		

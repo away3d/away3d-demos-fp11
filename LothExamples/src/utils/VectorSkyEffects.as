@@ -5,13 +5,12 @@ package utils
 	import flash.filters.*;
 	import flash.geom.*;
 	
-	
 	public class VectorSkyEffects extends Sprite
 	{
 		/**
 		 * create vector sky
 		 */
-		static public function vectorSky(zenithColor:uint, horizonColor:uint, nadirColor:uint, quality:uint = 8, bitmaps:Vector.<BitmapData>=null, blend:String="overlay"):BitmapCubeTexture
+		static public function vectorSky(zenithColor:uint, horizonColor:uint, nadirColor:uint, quality:uint = 8, bitmaps:Vector.<BitmapData> = null, blend:String = "overlay"):BitmapCubeTexture
 		{
 			var xl:uint = 128 * quality;
 			var pinch:uint = xl / 3.6;
@@ -53,28 +52,34 @@ package utils
 			
 			var skyFinal:BitmapCubeTexture
 			
-			if (bitmaps!=null) {
+			if (bitmaps != null)
+			{
 				var s:Sprite
 				var h:Bitmap
 				var n:BitmapData
 				var newMap:Vector.<BitmapData> = new Vector.<BitmapData>(6);
-				var listing:Array = [2,5, 1, 0, 4, 3];
+				var listing:Array = [2, 5, 1, 0, 4, 3];
 				
-				for (var i:int = 0; i < 6;i++){
+				for (var i:int = 0; i < 6; i++)
+				{
 					s = new Sprite();
 					h = new Bitmap(bitmaps[listing[i]]);
 					newMap[i] = new BitmapData(1024, 1024, false, 0x00);
 					
-					if (i == 0 || i == 1 || i == 4 || i == 5) s.addChild(new Bitmap(side));
-					else if (i == 2) s.addChild(new Bitmap(top));
-					else  s.addChild(new Bitmap(floor));
+					if (i == 0 || i == 1 || i == 4 || i == 5)
+						s.addChild(new Bitmap(side));
+					else if (i == 2)
+						s.addChild(new Bitmap(top));
+					else
+						s.addChild(new Bitmap(floor));
 					s.addChild(h);
 					h.blendMode = blend;
 					newMap[i].draw(s);
 				}
 				skyFinal = new BitmapCubeTexture(newMap[0], newMap[1], newMap[2], newMap[3], newMap[4], newMap[5]);
 			}
-			else {
+			else
+			{
 				skyFinal = new BitmapCubeTexture(side, side, top, floor, side, side);
 			}
 			
@@ -90,8 +95,10 @@ package utils
 			var vx:uint = w >> 1;
 			var vy:uint = h >> 1;
 			
-			for (var j:uint = 0; j < h; j++) {
-				for (var i:uint = 0; i < w; i++) {
+			for (var j:uint = 0; j < h; j++)
+			{
+				for (var i:uint = 0; i < w; i++)
+				{
 					var BCol:Number = 127 + (i - vx) / (vx) * 127 * (1 - Math.pow((j - vy) / (vy), 2));
 					var GCol:Number = 127 + (j - vy) / (vy) * 127 * (1 - Math.pow((i - vx) / (vx), 2));
 					b.setPixel(i, j, (GCol << 8) | BCol);
@@ -113,11 +120,11 @@ package utils
 				return 0xFFFFFF;
 			
 			var factor:Number = percent / 100;
-			var channel:Number = factor*255;
+			var channel:Number = factor * 255;
 			var rgb:Vector.<uint> = hexToRgb(color);
 			factor = 1 - factor;
 			
-			return rgbToHex(channel + rgb[0]*factor, channel + rgb[1]*factor, channel + rgb[2]*factor);
+			return rgbToHex(channel + rgb[0] * factor, channel + rgb[1] * factor, channel + rgb[2] * factor);
 		}
 		
 		/**
@@ -134,7 +141,7 @@ package utils
 			var factor:Number = 1 - (percent / 100);
 			var rgb:Vector.<uint> = hexToRgb(color);
 			
-			return rgbToHex(rgb[0]*factor, rgb[1]*factor, rgb[2]*factor);
+			return rgbToHex(rgb[0] * factor, rgb[1] * factor, rgb[2] * factor);
 		}
 		
 		/**
