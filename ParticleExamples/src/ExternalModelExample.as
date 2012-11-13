@@ -1,47 +1,34 @@
 package
 {
-	import away3d.animators.data.ParticlePropertiesMode;
-	import away3d.animators.data.ParticleProperties;
-	import away3d.animators.nodes.ParticleOscillatorNode;
-	import away3d.animators.nodes.ParticleRotationalVelocityNode;
-	import away3d.animators.nodes.ParticlePositionNode;
-	import away3d.animators.nodes.ParticleVelocityNode;
-	import away3d.animators.ParticleAnimationSet;
-	import away3d.animators.ParticleAnimator;
-	import away3d.containers.View3D;
-	import away3d.controllers.HoverController;
-	import away3d.core.base.Geometry;
-	import away3d.debug.AwayStats;
-	import away3d.entities.Mesh;
-	import away3d.events.AssetEvent;
-	import away3d.library.assets.AssetType;
-	import away3d.lights.DirectionalLight;
-	import away3d.lights.PointLight;
-	import away3d.loaders.AssetLoader;
-	import away3d.loaders.parsers.Max3DSParser;
-	import away3d.loaders.parsers.OBJParser;
-	import away3d.materials.ColorMaterial;
-	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.materials.methods.FogMethod;
-	import away3d.materials.TextureMaterial;
-	import away3d.primitives.PlaneGeometry;
-	import away3d.primitives.SkyBox;
-	import away3d.textures.BitmapCubeTexture;
-	import away3d.tools.helpers.data.ParticleGeometryTransform;
-	import away3d.tools.helpers.ParticleGeometryHelper;
-	import away3d.utils.Cast;
-	import flash.display.Sprite;
-	import flash.display.StageAlign;
-	import flash.display.StageScaleMode;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.geom.Matrix3D;
-	import flash.geom.Vector3D;
+	import flash.display.*;
+	import flash.events.*;
+	import flash.geom.*;
+	
+	import away3d.animators.*;
+	import away3d.animators.data.*;
+	import away3d.animators.nodes.*;
+	import away3d.containers.*;
+	import away3d.controllers.*;
+	import away3d.core.base.*;
+	import away3d.debug.*;
+	import away3d.entities.*;
+	import away3d.events.*;
+	import away3d.library.assets.*;
+	import away3d.lights.*;
+	import away3d.loaders.*;
+	import away3d.loaders.parsers.*;
+	import away3d.materials.*;
+	import away3d.materials.lightpickers.*;
+	import away3d.materials.methods.*;
+	import away3d.primitives.*;
+	import away3d.textures.*;
+	import away3d.tools.helpers.*;
+	import away3d.tools.helpers.data.*;
+	import away3d.utils.*;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class ExternalModelExample extends Sprite
 	{
-		
 		[Embed(source="/../embeds/snow_diffuse.png")]
 		private var SnowDiffuse:Class;
 		
@@ -181,12 +168,11 @@ package
 			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet,transforms);
 			
 			
-			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet.loop = true;
+			var animationSet:ParticleAnimationSet = new ParticleAnimationSet(true, true);
 			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, -100, 0)));
-			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
-			animationSet.addAnimation(new ParticleOscillatorNode(ParticlePropertiesMode.LOCAL));
-			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_STATIC));
+			animationSet.addAnimation(new ParticleOscillatorNode(ParticlePropertiesMode.LOCAL_STATIC));
+			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animationSet.initParticleFunc = initParticleParam;
 			
 			var material:ColorMaterial = new ColorMaterial();

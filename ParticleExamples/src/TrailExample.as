@@ -100,13 +100,10 @@ package
 			var geometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet, setTransforms);
 			
 			
-			var animation:ParticleAnimationSet = new ParticleAnimationSet();
-			animation.loop = true;
-			animation.hasDuration = true;
-			animation.hasDelay = true;
+			var animation:ParticleAnimationSet = new ParticleAnimationSet(true, true);
 			
 			animation.addAnimation(new ParticleBillboardNode());
-			animation.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animation.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animation.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
 			animation.addAnimation(new ParticleFollowNode(true, false));
 			

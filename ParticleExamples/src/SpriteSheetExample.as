@@ -85,12 +85,10 @@ package
 			
 			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
-			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet.loop = true;
-			animationSet.hasDelay = true;
+			var animationSet:ParticleAnimationSet = new ParticleAnimationSet(true, true, true);
 			
 			animationSet.addAnimation(new ParticleBillboardNode());;
-			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animationSet.addAnimation(new ParticleSpriteSheetNode(ParticlePropertiesMode.GLOBAL, true, false, 3, 2, 1));
 			
 			animationSet.initParticleFunc = initParticleParam;

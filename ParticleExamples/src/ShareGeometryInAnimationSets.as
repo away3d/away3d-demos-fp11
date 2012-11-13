@@ -88,10 +88,9 @@ package
 			var particleGeometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
 			
-			var animationSet1:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet1.loop = true;
+			var animationSet1:ParticleAnimationSet = new ParticleAnimationSet(true, true);
 			animationSet1.addAnimation(new ParticleBillboardNode());
-			animationSet1.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet1.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animationSet1.addAnimation(new ParticleAccelerationNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, -500, 0)));
 			animationSet1.initParticleFunc = initParticleParam1;
 			
@@ -107,11 +106,10 @@ package
 			
 			
 			
-			var animationSet2:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet2.loop = true;
+			var animationSet2:ParticleAnimationSet = new ParticleAnimationSet(true, true);
 			animationSet2.addAnimation(new ParticleBillboardNode());
 			animationSet2.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0,700,0)));
-			animationSet2.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
+			animationSet2.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animationSet2.initParticleFunc = initParticleParam2;
 			
 			var material2:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(Light));

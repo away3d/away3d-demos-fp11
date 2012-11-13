@@ -218,10 +218,9 @@ package
 			
 			var particleGeometry2:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet2);
 			
-			var redAnimationSet:ParticleAnimationSet = new ParticleAnimationSet();
-			redAnimationSet.hasDuration = true;
-			redAnimationSet.addAnimation(new ParticleBezierCurveNode(ParticlePropertiesMode.LOCAL));
-			redAnimationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
+			var redAnimationSet:ParticleAnimationSet = new ParticleAnimationSet(true);
+			redAnimationSet.addAnimation(new ParticleBezierCurveNode(ParticlePropertiesMode.LOCAL_STATIC));
+			redAnimationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_STATIC));
 			
 			redAnimationSet.initParticleFunc = initRedParticleParam;
 			
@@ -238,9 +237,8 @@ package
 			
 			
 			var whiteAnimationSet:ParticleAnimationSet = new ParticleAnimationSet();
-			whiteAnimationSet.hasDuration = false;
-			whiteAnimationSet.addAnimation(new ParticleBezierCurveNode(ParticlePropertiesMode.LOCAL));
-			whiteAnimationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
+			whiteAnimationSet.addAnimation(new ParticleBezierCurveNode(ParticlePropertiesMode.LOCAL_STATIC));
+			whiteAnimationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_STATIC));
 			whiteAnimationSet.initParticleFunc = initWhiteParticleParam;
 			
 			var whiteMaterial:ColorMaterial = new ColorMaterial(0xBEBEBE);

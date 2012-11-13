@@ -118,16 +118,15 @@ package
 			var particleGeometry:ParticleGeometry = ParticleGeometryHelper.generateGeometry(geometrySet);
 			
 			//create the particle animation set
-			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet.loop = true;
+			var animationSet:ParticleAnimationSet = new ParticleAnimationSet(true, true);
 			
 			//add some animations which can control the particles:
 			//the global animations can be set directly, because they influence all the particles with the same factor
 			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.GLOBAL, new Vector3D(0, 100, 0)));
 			animationSet.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, true, false, new ColorTransform(1, 0, 0), new ColorTransform(0, 0, 1), 4));
 			//no need to set the local animations here, because they influence all the particle with different factors.
-			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
-			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_STATIC));
+			animationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			
 			//set the initParticleFunc. It will be invoke for the local property initialization of every particle
 			animationSet.initParticleFunc = initParticleParam;

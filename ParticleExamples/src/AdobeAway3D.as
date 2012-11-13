@@ -1,31 +1,23 @@
 package
 {
-	import away3d.animators.data.ParticleProperties;
-	import away3d.animators.data.ParticlePropertiesMode;
-	import away3d.animators.nodes.ParticlePositionNode;
-	import away3d.animators.nodes.ParticleVelocityNode;
-	import away3d.animators.ParticleAnimationSet;
-	import away3d.animators.ParticleAnimator;
-	import away3d.containers.View3D;
-	import away3d.controllers.HoverController;
-	import away3d.core.base.Geometry;
-	import away3d.debug.AwayStats;
-	import away3d.entities.Mesh;
-	import away3d.lights.PointLight;
-	import away3d.materials.ColorMaterial;
-	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.primitives.CubeGeometry;
-	import away3d.primitives.PlaneGeometry;
-	import away3d.tools.helpers.ParticleGeometryHelper;
-	import flash.display.BitmapData;
-	import flash.display.Sprite;
-	import flash.display.StageAlign;
-	import flash.display.StageScaleMode;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.events.TimerEvent;
-	import flash.geom.Vector3D;
-	import flash.utils.Timer;
+	import flash.display.*;
+	import flash.events.*;
+	import flash.geom.*;
+	import flash.utils.*;
+	
+	import away3d.animators.*;
+	import away3d.animators.data.*;
+	import away3d.animators.nodes.*;
+	import away3d.containers.*;
+	import away3d.controllers.*;
+	import away3d.core.base.*;
+	import away3d.debug.*;
+	import away3d.entities.*;
+	import away3d.lights.*;
+	import away3d.materials.*;
+	import away3d.materials.lightpickers.*;
+	import away3d.primitives.*;
+	import away3d.tools.helpers.*;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class AdobeAway3D extends Sprite
@@ -164,9 +156,8 @@ package
 			
 			//create the particle animation set
 			var animationSet:ParticleAnimationSet = new ParticleAnimationSet();
-			animationSet.hasDuration = false;
-			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
-			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL));
+			animationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
+			animationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_STATIC));
 			
 			animationSet.initParticleFunc = initParticleParam;
 			
