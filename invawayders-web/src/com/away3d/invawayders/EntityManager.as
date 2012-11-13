@@ -48,7 +48,7 @@ package com.away3d.invawayders
 			game.addEntity( gameEntity );
 			return gameEntity;
 		}
-
+		
 		public function createEntity( x : Number, y : Number, z : Number, velocity : Vector3D, archetypeId:uint, subTypeId:uint = 0 ) : Entity
 		{
 			var archetype : ArchetypeBase = ArchetypeLibrary.getArchetype(archetypeId);
@@ -153,11 +153,10 @@ package com.away3d.invawayders
 						var explosionAnimationSet:ParticleAnimationSet = (archetype as ExplosionArchetype).particleAnimationSet;
 						
 						if (!explosionAnimationSet) {
-							explosionAnimationSet = explosionArchetype.particleAnimationSet = new ParticleAnimationSet();
+							explosionAnimationSet = explosionArchetype.particleAnimationSet = new ParticleAnimationSet(true);
 							explosionAnimationSet.addAnimation(new ParticleBillboardNode());
-							explosionAnimationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL));
+							explosionAnimationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 							explosionAnimationSet.initParticleFunc = initParticleFuncExplosion;
-							explosionAnimationSet.hasDuration = true;
 						}
 						
 						//generate the particle geometry vector
@@ -213,12 +212,11 @@ package com.away3d.invawayders
 						var fragmentsAnimationSet:ParticleAnimationSet = (archetype as FragmentsArchetype).particleAnimationSet;
 						
 						if (!fragmentsAnimationSet) {
-							fragmentsAnimationSet = (archetype as FragmentsArchetype).particleAnimationSet = new ParticleAnimationSet();
+							fragmentsAnimationSet = (archetype as FragmentsArchetype).particleAnimationSet = new ParticleAnimationSet(true);
 							fragmentsAnimationSet.addAnimation(new ParticlePositionNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
 							fragmentsAnimationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
 							fragmentsAnimationSet.addAnimation(new ParticleRotationalVelocityNode(ParticlePropertiesMode.LOCAL_DYNAMIC));
 							fragmentsAnimationSet.initParticleFunc = initParticleFuncFragments;
-							fragmentsAnimationSet.hasDuration = true;
 						}
 						
 						particleMeshes = fragmentsArchetype.particleMeshes = new Vector.<Mesh>();
@@ -243,7 +241,7 @@ package com.away3d.invawayders
 							
 							//generate the particle animator
 							particleAnimator = new ParticleAnimator(fragmentsAnimationSet);
-							(particleAnimator.getAnimationStateByName("ParticlePositionNode2") as ParticlePositionState).setPositions(frame);
+							(particleAnimator.getAnimationStateByName("ParticlePositionLocalDynamic") as ParticlePositionState).setPositions(frame);
 							particleMesh.animator = particleAnimator;
 						}
 					}

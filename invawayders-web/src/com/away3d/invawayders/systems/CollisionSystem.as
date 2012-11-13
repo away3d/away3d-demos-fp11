@@ -39,7 +39,7 @@ package com.away3d.invawayders.systems
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.ProjectileNode")]
 		public var projectileNodes : NodeList;
-
+		
 		override public function update( time : Number ) : void
 		{
 			time *= 1000;
@@ -238,8 +238,8 @@ package com.away3d.invawayders.systems
 			}
 			
 			//apply new velocities and rotational velocities to animator
-			(particleMesh.animator.getAnimationStateByName("ParticleVelocityNode2") as ParticleVelocityState).setVelocities(particleVelocities);
-			(particleMesh.animator.getAnimationStateByName("ParticleRotationalVelocityNode2") as ParticleRotationalVelocityState).setRotationalVelocities(particleRotationalVelocities);
+			(particleMesh.animator.getAnimationStateByName("ParticleVelocityLocalDynamic") as ParticleVelocityState).setVelocities(particleVelocities);
+			(particleMesh.animator.getAnimationStateByName("ParticleRotationalVelocityLocalDynamic") as ParticleRotationalVelocityState).setRotationalVelocities(particleRotationalVelocities);
 			
 			//start the animation
 			(particleMesh.animator as ParticleAnimator).start();
