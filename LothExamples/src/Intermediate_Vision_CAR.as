@@ -1,42 +1,45 @@
 /*
 
-AWD file loading example in Away3d
+   AWD file loading example in Away3d
 
-Demonstrates:
+   Demonstrates:
 
-How to use the Loader3D object to load an embedded internal awd model.
-How to limite size of AWD export by using away3d clone.
-How to set custom material by using mesh name 
+   How to use the Loader3D object to load an embedded internal awd model.
+   How to limite size of AWD export by using away3d clone.
+   How to set custom material by using mesh name
 
-Code, model and map by LoTh
-3dflashlo@gmail.com
-http://3dflashlo.wordpress.com
+   Code, model and map by LoTh
+   3dflashlo@gmail.com
+   http://3dflashlo.wordpress.com
 
-This code is distributed under the MIT License
+   This code is distributed under the MIT License
 
-Copyright (c)
+   Copyright (c)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the �Software�), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the �Software�), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED �AS IS�, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+   THE SOFTWARE IS PROVIDED �AS IS�, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   THE SOFTWARE.
 
-*/
+ */
 package
 {
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
+	import away3d.events.Stage3DEvent;
 	import away3d.loaders.parsers.AWD2Parser;
 	import away3d.cameras.lenses.*;
 	import away3d.containers.*;
@@ -65,21 +68,27 @@ package
 	import flash.ui.*;
 	import flash.utils.setTimeout;
 	
+	import utils.PixelBlenderEffects;
 	import utils.VectorSkyEffects;
+	import utils.BitmapMapper;
 	
-	[SWF(backgroundColor="#333338", frameRate="60", quality="LOW")]
+	[SWF(backgroundColor="#333338",frameRate="60",quality="LOW")]
+	
 	public class Intermediate_Vision_CAR extends Sprite
 	{
 		//signature swf
-		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
+		[Embed(source="/../embeds/signature.swf",symbol="Signature")]
 		public var SignatureSwf:Class;
 		
 		private static const SCALE:int = 1;
 		
+		private var _stage3DProxy:Stage3DProxy;
+		private var _manager:Stage3DManager;
+		
 		private var assetsRoot:String = "assets/vision/";
-		private var textureStrings:Vector.<String>;
+		private var _bitmapStrings:Vector.<String>;
 		private var textureBitmapData:Vector.<BitmapData>;
-		private var n:uint = 0;
+		private var _num:uint = 0;
 		
 		private var sunColor:uint = 0xAAAAA9;
 		private var sunAmbient:Number = 0.0;
@@ -88,7 +97,7 @@ package
 		private var skyColor:uint = 0x333338;
 		private var skyAmbient:Number = 0.1;
 		private var skyDiffuse:Number = 0.0;
-		private var skySpecular:Number = 1.3//0.5;
+		private var skySpecular:Number = 1.3 //0.5;
 		private var fogColor:uint = 0x333338;
 		private var zenithColor:uint = 0x445465;
 		private var fogNear:Number = 1000;
@@ -97,7 +106,7 @@ package
 		//engine variables
 		private var _view:View3D;
 		private var _stats:AwayStats;
-		private var _signature:Sprite;
+		
 		private var _lightPicker:StaticLightPicker;
 		private var _cameraController:HoverController;
 		
@@ -154,8 +163,12 @@ package
 		private var _isReflection:Boolean = false;
 		private var _isResize:Boolean;
 		private var _cloneActif:Boolean;
+		private var _isRender:Boolean;
 		
 		private var _text:TextField;
+		private var _signature:Sprite;
+		private var _capture:BitmapData;
+		private var _topPause:Sprite;
 		
 		/**
 		 * Constructor
@@ -163,25 +176,47 @@ package
 		public function Intermediate_Vision_CAR()
 		{
 			textureBitmapData = new Vector.<BitmapData>();
-			textureStrings = new Vector.<String>();
+			_bitmapStrings = new Vector.<String>();
 			
 			// terrain map
-			textureStrings.push("sand.jpg");
+			_bitmapStrings.push("sand.jpg");
 			
-			init();
+			if (stage)
+				init();
+			else
+				addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
 		}
 		
 		/**
 		 * Global initialise function
 		 */
-		private function init():void
+		private function init(e:Event = null):void
 		{
+			removeEventListener(Event.ADDED_TO_STAGE, init);
+			
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+			stage.color = 0x000000;
+			stage.frameRate = 60;
+			
+			_manager = Stage3DManager.getInstance(stage);
+			_stage3DProxy = _manager.getFreeStage3DProxy();
+			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated, false, 0, true);
+		}
+		
+		private function onContextCreated(e:Stage3DEvent):void
+		{
+			_stage3DProxy.removeEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
+			_stage3DProxy.color = 0x000000;
+			_stage3DProxy.antiAlias = 4;
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			initEngine();
 			initText();
 			initLights();
 			
 			// kickoff asset loading
-			load(textureStrings[n]);
+			load(_bitmapStrings[_num]);
 		}
 		
 		/**
@@ -207,7 +242,6 @@ package
 			addChild(_text);
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//
 		//       3D ENGINE INIT 
@@ -216,15 +250,9 @@ package
 		
 		private function initEngine():void
 		{
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
-			stage.frameRate = 60;
-			
-			//create the view
 			_view = new View3D();
-			_view.forceMouseMove = true;
-			_view.backgroundColor = skyColor;
-			_view.antiAlias = 4;
+			_view.stage3DProxy = _stage3DProxy;
+			_view.shareContext = true;
 			addChild(_view);
 			
 			//create custom lens
@@ -253,7 +281,6 @@ package
 			_stats.y = 2;
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       LIGHTS
 		//-------------------------------------------------------------------------------
@@ -265,7 +292,7 @@ package
 			_sunLight = new DirectionalLight(-0.5, -1, 0.3);
 			_sunLight.color = sunColor;
 			_sunLight.ambientColor = sunColor;
-			_sunLight.ambient = 0//sunAmbient;
+			_sunLight.ambient = 0 //sunAmbient;
 			_sunLight.diffuse = sunDiffuse;
 			_sunLight.specular = sunSpecular;
 			
@@ -275,9 +302,9 @@ package
 			
 			//create a light for ambient effect that mimics the sky
 			_skyLight = new PointLight();
-			_skyLight.color = zenithColor//skyColor;
-			_skyLight.ambientColor = zenithColor//skyColor;
-			_skyLight.ambient = 0;//skyAmbient;
+			_skyLight.color = zenithColor //skyColor;
+			_skyLight.ambientColor = zenithColor //skyColor;
+			_skyLight.ambient = 0;
 			_skyLight.diffuse = skyDiffuse;
 			_skyLight.specular = skySpecular;
 			_skyLight.y = 300;
@@ -296,14 +323,15 @@ package
 			
 			//create light picker for materials
 			_lightPicker = new StaticLightPicker([_sunLight, _skyLight, _skyProbe]);
+			
+			stage.addEventListener(Event.RESIZE, onResize);
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//       SKY
 		//-------------------------------------------------------------------------------
 		
-		private function randomSky():void 
+		private function randomSky():void
 		{
 			zenithColor = 0xFFFFFF * Math.random();
 			fogColor = 0xFFFFFF * Math.random();
@@ -316,17 +344,18 @@ package
 			_view.scene.addChild(_sky);
 			
 			// test rim Light methode slow down engine
-			for (var i:int=0; i < _materials.length; i++ ) {
+			for (var i:int = 0; i < _materials.length; i++)
+			{
 				_materials[i].removeMethod(_rimLightMethod);
 			}
 			
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2.5, RimLightMethod.ADD);
 			
-			for ( i = 0; i < _materials.length; i++ ) {
+			for (i = 0; i < _materials.length; i++)
+			{
 				_materials[i].addMethod(_rimLightMethod);
 			}
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//
@@ -349,7 +378,6 @@ package
 			//create global fog method
 			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
 			
-			
 			// create ground texture
 			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[0]));
 			_groundMaterial.gloss = 100;
@@ -359,12 +387,12 @@ package
 			_materials[0] = _groundMaterial;
 			
 			// create car material
-			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x010101)))
+			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x010101)))
 			_carWhiteMat.gloss = 100;
 			_carWhiteMat.specular = 0.9;
 			_materials[1] = _carWhiteMat;
 			
-			_carBlackMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x090702)));
+			_carBlackMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x090702)));
 			_carBlackMat.gloss = 10;
 			_carBlackMat.specular = 0.3;
 			_materials[2] = _carBlackMat;
@@ -387,25 +415,25 @@ package
 			_carLightMat3.specular = 0.9;
 			_materials[5] = _carLightMat3;
 			
-			_carWheelMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x050301)));
+			_carWheelMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x050301)));
 			_carWheelMat.gloss = 100;
 			_carWheelMat.specular = 0.5;
 			_carWheelMat.bothSides = true;
 			_materials[6] = _carWheelMat;
 			
-			_carBlackDoubleMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x090702)));
+			_carBlackDoubleMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x090702)));
 			_carBlackDoubleMat.gloss = 10;
 			_carBlackDoubleMat.specular = 0.9;
 			_carBlackDoubleMat.bothSides = true;
 			_materials[7] = _carBlackDoubleMat;
 			
-			_carCromeMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x404040)));
+			_carCromeMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x404040)));
 			_carCromeMat.gloss = 10;
 			_carCromeMat.specular = 0.9;
 			_carCromeMat.bothSides = true;
 			_materials[8] = _carCromeMat;
 			
-			_carGlassMat =  new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x99010101)));
+			_carGlassMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x99010101)));
 			_carGlassMat.gloss = 60;
 			_carGlassMat.specular = 1;
 			_carGlassMat.alphaBlending = true;
@@ -414,35 +442,38 @@ package
 			_materials[9] = _carGlassMat;
 			
 			// apply light and effect for all material
-			for (var i:int; i < _materials.length; i++ ) {
+			for (var i:int; i < _materials.length; i++)
+			{
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].diffuseLightSources = LightSources.PROBES;
 				_materials[i].specularLightSources = LightSources.LIGHTS;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
-				if (i != 0)_materials[i].addMethod(_rimLightMethod);
+				if (i != 0)
+					_materials[i].addMethod(_rimLightMethod);
 			}
 			
 			// global reflection methode
-			if (_isReflection) initReflection();
+			if (_isReflection)
+				initReflection();
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//       REFLECTION
 		//-------------------------------------------------------------------------------
 		
-		private function initReflectionCube() : void
+		private function initReflectionCube():void
 		{
-			_reflectionTexture = new CubeReflectionTexture(128*2);
+			_reflectionTexture = new CubeReflectionTexture(128 * 2);
 			_reflectionTexture.farPlaneDistance = fogFar;
 			_reflectionTexture.nearPlaneDistance = 250;
 			_reflectionTexture.position = new Vector3D(0, 200, 0);
 		}
 		
-		private function initReflection() : void
+		private function initReflection():void
 		{
-			if (_isReflection) return;
+			if (_isReflection)
+				return;
 			_isReflection = true;
 			initReflectionCube();
 			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
@@ -459,7 +490,6 @@ package
 			_materials[9].addMethod(_fresnelMethod2);
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       3D OBJECT 
 		//-------------------------------------------------------------------------------
@@ -472,11 +502,11 @@ package
 			_view.scene.addChild(_sky);
 			
 			// basic ground
-			_ground = new Mesh(new PlaneGeometry(fogFar*2, fogFar*2), _groundMaterial);
+			_ground = new Mesh(new PlaneGeometry(fogFar * 2, fogFar * 2), _groundMaterial);
 			_ground.geometry.scaleUV(60, 60);
 			_ground.y = 0;
 			_ground.castsShadows = false;
-			_view.scene.addChild(_ground); 
+			_view.scene.addChild(_ground);
 			
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
@@ -484,20 +514,43 @@ package
 			load("vision.awd");
 		}
 		
+		//-------------------------------------------------------------------------------
+		//
+		//       OO RENDER LOOP   
+		//
+		//-------------------------------------------------------------------------------
+		
+		private function onEnterFrame(event:Event = null):void
+		{
+			if (_sunLight.ambient < 0.5)
+				_sunLight.ambient += 0.01;
+			
+			_cameraController.lookAtPosition = new Vector3D(0, _cameraHeight, 0);
+			_cameraController.update();
+			
+			// update reflection
+			if (_isReflection)
+				_reflectionTexture.render(_view);
+			
+			// update view
+			_view.render();
+		}
 		
 		//-------------------------------------------------------------------------------
 		//       GLOBAL LISTENER
 		//-------------------------------------------------------------------------------
 		
-		private function initListeners(e:Event=null):void
+		private function initListeners(e:Event = null):void
 		{
+			_isRender = true;
 			message();
-			if (e != null) {
+			if (e != null)
+			{
+				removeGrayPauseEffect();
 				stage.removeEventListener(MouseEvent.MOUSE_OVER, initListeners);
-				stage.removeEventListener(Event.RESIZE, onResize);
 			}
 			// add render loop
-			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			_stage3DProxy.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			// add key listeners
 			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
@@ -511,8 +564,10 @@ package
 		
 		private function stopListeners():void
 		{
+			_isRender = false;
+			grayPauseEffect();
 			log("&#47;&#33;&#92; PAUSE");
-			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			_stage3DProxy.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
@@ -527,25 +582,35 @@ package
 		}
 		
 		//-------------------------------------------------------------------------------
-		//
-		//       OO RENDER LOOP   
-		//
+		//       PAUSE effect
 		//-------------------------------------------------------------------------------
 		
-		private function onEnterFrame(event:Event=null):void
+		private function grayPauseEffect():void
 		{
-			if (_sunLight.ambient < 0.5)_sunLight.ambient += 0.01;
+			_capture = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x991D1D1D);
 			
-			_cameraController.lookAtPosition = new Vector3D(0, _cameraHeight,0);
-			_cameraController.update();
+			// damn no way to copy view !!!
+			//_capture.draw(_view.stage3DProxy.context3D.)
+			//_view.renderer.
+			// _stage3DProxy.context3D.drawToBitmapData
+			//_stage3DProxy.context3D.drawToBitmapData(_capture);
+			//_view.renderer.swapBackBuffer = true;
 			
-			// update reflection
-			if (_isReflection) _reflectionTexture.render(_view);
-			
-			// update view
-			_view.render();
+			// add Black and white effect
+			_capture.applyFilter(_capture, _capture.rect, new Point(), BitmapMapper.grayScale());
+			_topPause = new Sprite();
+			addChild(_topPause);
+			_topPause.graphics.beginBitmapFill(_capture, null, false, false);
+			_topPause.graphics.drawRect(0, 0, stage.width, stage.height);
+			_topPause.graphics.endFill();
 		}
 		
+		private function removeGrayPauseEffect():void
+		{
+			_topPause.graphics.clear();
+			removeChild(_topPause);
+			_capture = null;
+		}
 		
 		//-------------------------------------------------------------------------------
 		//        LOADING FUNCTION
@@ -559,7 +624,8 @@ package
 			var loader:URLLoader = new URLLoader();
 			loader.dataFormat = URLLoaderDataFormat.BINARY;
 			
-			switch (url.substring(url.length - 3)) {
+			switch (url.substring(url.length - 3))
+			{
 				case "AWD": 
 				case "awd": 
 					loader.addEventListener(Event.COMPLETE, parseAWD, false, 0, true);
@@ -582,7 +648,8 @@ package
 			var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
 			if (P != 100)
 				log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
-			else {
+			else
+			{
 				
 			}
 		}
@@ -602,7 +669,7 @@ package
 		/**
 		 * Bitmap find
 		 */
-		private function parseBitmap(e:Event):void 
+		private function parseBitmap(e:Event):void
 		{
 			var urlLoader:URLLoader = e.target as URLLoader;
 			var loader:Loader = new Loader();
@@ -619,12 +686,15 @@ package
 			textureBitmapData.push(e.target.content.bitmapData);
 			loader.unload();
 			loader = null;
-			n++;
+			_num++;
 			
-			if (n < textureStrings.length){
+			if (_num < _bitmapStrings.length)
+			{
 				// load next bitmap
-				load(textureStrings[n]);
-			} else {
+				load(_bitmapStrings[_num]);
+			}
+			else
+			{
 				
 				// Init material and objects
 				initMaterials();
@@ -652,12 +722,13 @@ package
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
-			if (event.asset.assetType == AssetType.MESH) {
+			if (event.asset.assetType == AssetType.MESH)
+			{
 				var mesh:Mesh = event.asset as Mesh;
-				if(mesh.name!='top' && mesh.name!='bottom') _vision.push(mesh);
+				if (mesh.name != 'top' && mesh.name != 'bottom')
+					_vision.push(mesh);
 			}
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//
@@ -674,72 +745,131 @@ package
 			var mesh:Mesh;
 			
 			// fake empty mesh
-			_visionCar = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0)); 
+			_visionCar = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
 			_sit = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
 			_wheel = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
 			_door = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
 			
-			for (var i:int = 0; i < _vision.length; i++) {
+			for (var i:int = 0; i < _vision.length; i++)
+			{
 				mesh = _vision[i];
 				
 				// apply texture by mesh name
-				if (mesh.name.substring(0, 5) == 'glass' || mesh.name == 'door_glass') { mesh.material = _carGlassMat; mesh.castsShadows = false; }
-				else if (mesh.name == 'crome' || mesh.name == 'Bouchon') mesh.material = _carCromeMat;
-				else if (mesh.name == 'frontLightContour') mesh.material = _carLightMat3;
-				else if (mesh.name == 'frontLight') mesh.material = _carLightMat1;
-				else if (mesh.name == 'light_red') mesh.material = _carLightMat2;
-				else if (mesh.name == 'interiorSymetrie' || mesh.name == 'chassisPlus' || mesh.name == 'chassisSymetrie' || mesh.name == 'wheel_j2' || mesh.name == 'sitColor' || mesh.name=='radiateur') 
+				if (mesh.name.substring(0, 5) == 'glass' || mesh.name == 'door_glass')
+				{
+					mesh.material = _carGlassMat;
+					mesh.castsShadows = false;
+				}
+				else if (mesh.name == 'crome' || mesh.name == 'Bouchon')
+					mesh.material = _carCromeMat;
+				else if (mesh.name == 'frontLightContour')
+					mesh.material = _carLightMat3;
+				else if (mesh.name == 'frontLight')
+					mesh.material = _carLightMat1;
+				else if (mesh.name == 'light_red')
+					mesh.material = _carLightMat2;
+				else if (mesh.name == 'interiorSymetrie' || mesh.name == 'chassisPlus' || mesh.name == 'chassisSymetrie' || mesh.name == 'wheel_j2' || mesh.name == 'sitColor' || mesh.name == 'radiateur')
 					mesh.material = _carBlackMat;
-				else if (mesh.name == 'door') mesh.material = _carBlackDoubleMat;
-				else if (mesh.name == 'wheel') mesh.material = _carWheelMat;
-				else mesh.material = _carWhiteMat;
+				else if (mesh.name == 'door')
+					mesh.material = _carBlackDoubleMat;
+				else if (mesh.name == 'wheel')
+					mesh.material = _carWheelMat;
+				else
+					mesh.material = _carWhiteMat;
 				
 				// dispatch car parts
-				if (mesh.name.substring(0, 3) == 'sit') _sit.addChild(mesh);
-				else if (mesh.name.substring(0, 5) == 'wheel') _wheel.addChild(mesh);
-				else if (mesh.name.substring(0, 4) == 'door' ) _door.addChild(mesh);
-					// steering wheel
-				else if (mesh.name == 'steering') { mesh.position =  new Vector3D( -70, 123, 96); }
-					
-				else _visionCar.addChild(mesh);
+				if (mesh.name.substring(0, 3) == 'sit')
+					_sit.addChild(mesh);
+				else if (mesh.name.substring(0, 5) == 'wheel')
+					_wheel.addChild(mesh);
+				else if (mesh.name.substring(0, 4) == 'door')
+					_door.addChild(mesh);
+				// steering wheel
+				else if (mesh.name == 'steering')
+				{
+					mesh.position = new Vector3D(-70, 123, 96);
+				}
+				
+				else
+					_visionCar.addChild(mesh);
 			}
 			
 			// clone sit
 			_sits = new Vector.<Mesh>(4);
 			
-			for (i = 0; i < 4; i++) {
+			for (i = 0; i < 4; i++)
+			{
 				_sits[i] = Mesh(_sit.clone());
-				if (i == 0) { _sits[i].x = -70; _sits[i].z = 125; }
-				else if (i == 1) { _sits[i].x = -70; }
-				else if (i == 2) { _sits[i].x = 70; _sits[i].z = 125; }
-				else if (i == 3) { _sits[i].x = 70; }
+				if (i == 0)
+				{
+					_sits[i].x = -70;
+					_sits[i].z = 125;
+				}
+				else if (i == 1)
+				{
+					_sits[i].x = -70;
+				}
+				else if (i == 2)
+				{
+					_sits[i].x = 70;
+					_sits[i].z = 125;
+				}
+				else if (i == 3)
+				{
+					_sits[i].x = 70;
+				}
 				_visionCar.addChild(_sits[i]);
 			}
 			
 			// clone door
 			_doors = new Vector.<Mesh>(2);
 			
-			for (i = 0; i < 2; i++) {
+			for (i = 0; i < 2; i++)
+			{
 				_doors[i] = Mesh(_door.clone());
-				if (i == 0) { _doors[i].x = 0; _doors[i].z = 0; }
-				else if (i == 1) { _doors[i].scaleX = -1 }
+				if (i == 0)
+				{
+					_doors[i].x = 0;
+					_doors[i].z = 0;
+				}
+				else if (i == 1)
+				{
+					_doors[i].scaleX = -1
+				}
 				_visionCar.addChild(_doors[i]);
 			}
 			
 			// clone wheel
 			_wheels = new Vector.<Mesh>(4);
 			
-			for (i = 0; i < 4; i++) {
+			for (i = 0; i < 4; i++)
+			{
 				_wheels[i] = Mesh(_wheel.clone());
-				if (i == 0) { _wheels[i].x = -138; _wheels[i].z = 237; }
-				else if (i == 1) { _wheels[i].x = -138; _wheels[i].z = -237; }
-				else if (i == 2) { _wheels[i].x = 138; _wheels[i].z = 237; _wheels[i].rotationY = 180; }
-				else if (i == 3) { _wheels[i].x = 138; _wheels[i].z = -237; _wheels[i].rotationY = 180; }
+				if (i == 0)
+				{
+					_wheels[i].x = -138;
+					_wheels[i].z = 237;
+				}
+				else if (i == 1)
+				{
+					_wheels[i].x = -138;
+					_wheels[i].z = -237;
+				}
+				else if (i == 2)
+				{
+					_wheels[i].x = 138;
+					_wheels[i].z = 237;
+					_wheels[i].rotationY = 180;
+				}
+				else if (i == 3)
+				{
+					_wheels[i].x = 138;
+					_wheels[i].z = -237;
+					_wheels[i].rotationY = 180;
+				}
 				_wheels[i].y = 60;
 				_visionCar.addChild(_wheels[i]);
 			}
-			
-			
 			
 			// finaly add vision car mesh
 			_view.scene.addChild(_visionCar)
@@ -749,19 +879,22 @@ package
 			initListeners();
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       CLONE
 		//-------------------------------------------------------------------------------
 		
-		private function makeClone(n:int=4):void {
-			if (!_cloneActif) {
+		private function makeClone(n:int = 4):void
+		{
+			if (!_cloneActif)
+			{
 				_cloneActif = true;
 				var g:Mesh;
 				var decalx:int = -(n * 400) / 2;
 				var decalz:int = -(n * 900) / 2;
-				for (var j:int = 1; j < n; j++) {
-					for (var i:int = 1; i < n; i++) {
+				for (var j:int = 1; j < n; j++)
+				{
+					for (var i:int = 1; i < n; i++)
+					{
 						g = Mesh(_visionCar.clone());
 						g.x = decalx + (400 * i);
 						g.z = (decalz + (900 * j));
@@ -772,7 +905,6 @@ package
 			}
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       KEYBOARD
 		//-------------------------------------------------------------------------------
@@ -782,7 +914,8 @@ package
 		 */
 		private function onKeyDown(event:KeyboardEvent):void
 		{
-			switch (event.keyCode) {
+			switch (event.keyCode)
+			{
 				case Keyboard.B: 
 					makeClone();
 					break;
@@ -795,7 +928,7 @@ package
 				case Keyboard.V: 
 					initReflection();
 					break;
-				
+			
 			}
 		}
 		
@@ -804,10 +937,10 @@ package
 		 */
 		private function onKeyUp(event:KeyboardEvent):void
 		{
-			switch (event.keyCode) {
+			switch (event.keyCode)
+			{
 			}
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//       STAGE AND MOUSE
@@ -816,11 +949,14 @@ package
 		/**
 		 * stage full screen
 		 */
-		private function fullScreen(e:Event=null):void
+		private function fullScreen(e:Event = null):void
 		{
-			if (stage.displayState == StageDisplayState.NORMAL) {
+			if (stage.displayState == StageDisplayState.NORMAL)
+			{
 				stage.displayState = StageDisplayState.FULL_SCREEN;
-			} else {
+			}
+			else
+			{
 				stage.displayState = StageDisplayState.NORMAL;
 			}
 		}
@@ -828,13 +964,16 @@ package
 		/**
 		 * stage listener and mouse control
 		 */
-		private function onResize(event:Event=null):void
+		private function onResize(event:Event = null):void
 		{
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
 			_signature.y = stage.stageHeight - _signature.height;
-			onEnterFrame();
+			if (!_isRender)
+				onEnterFrame();
 		}
 		
 		private function onStageMouseDown(e:MouseEvent):void
@@ -857,7 +996,8 @@ package
 		
 		private function onStageMouseMove(e:MouseEvent):void
 		{
-			if (_mouseMove) {
+			if (_mouseMove)
+			{
 				_cameraController.panAngle += (e.stageX - _prevMouseX);
 				_cameraController.tiltAngle += (e.stageY - _prevMouseY);
 			}
@@ -885,6 +1025,6 @@ package
 		{
 			_text.htmlText = t;
 		}
-		
+	
 	}
 }
