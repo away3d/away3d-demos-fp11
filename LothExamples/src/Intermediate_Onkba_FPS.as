@@ -88,7 +88,8 @@ package
 		public var SignatureSwf:Class;
 		
 		private static const FARVIEW:Number = 20000;
-		private static const SCALE:int = 2;
+        private static const MOUNTAIGN_TOP:Number = 4816;
+		private static const SCALE:Number = 2;
 		
 		private var assetsRoot:String = "assets/onkba/";
 		private var textureStrings:Vector.<String>;
@@ -459,7 +460,7 @@ package
 			_terrainMaterial.addMethod(_fogMethode);
 			_materials[5] = _terrainMaterial;
 			
-			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0x99ff0000)));
+			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee220000)));
 			_boxMaterial.gloss = 10;
 			_boxMaterial.specular = 0.1;
             _boxMaterial.alphaBlending = true;
@@ -491,7 +492,7 @@ package
 			_view.scene.addChild(_sky);
 			
 			//create mountain like terrain
-			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(textureBitmapData[9]), FARVIEW * 2, 600, FARVIEW * 2, 250, 250);
+			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(textureBitmapData[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
 			_view.scene.addChild(_terrain);
 			
 			// weapon referency
@@ -674,7 +675,7 @@ package
 				
 				// play default idle animation
 				//if (animationNode.name == ANIM_BREATHE) jumpDown()//stop();
-                if (animationNode.name == "JumpDown") jumpDown()//stop();
+                if (animationNode.name == "JumpDown") jumpDown();
                 
                 // disable animation loop 
                 for ( i = 0; i< WEAPON.length; i++ ) {
@@ -688,13 +689,13 @@ package
 				// Onkba character
 				if (mesh.name == "Onkba") {
 					_hero = mesh;
-					_hero.material = _heroMaterial;
-					_hero.scale(SCALE);
+					
 				}
 				
 				// weapons resources
 				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (mesh.name == WEAPON[i] + 'Test') {
+                        if (i == 2) {mesh.rotationY = -5; mesh.rotationZ = -2;}// decal for machine
 						if (i == 3) {mesh.rotationY = -5; mesh.rotationZ = -2;}// decal for sniper
 						mesh.material = _gunMaterial;
 						_weapons[i] = mesh;
@@ -714,21 +715,22 @@ package
 			
 			//apply our animator to our mesh
 			_hero.animator = animator;
-			
+			_hero.material = _heroMaterial;
+			_hero.scale(SCALE);
+            
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0xff0000));
-			
 			
 			_hero.addChild(_heroWeapon);
 			
 			_player.addChild(_hero);
 			_hero.rotationY = 180;
-			_hero.y = -55;
+			_hero.y = -(41*SCALE) + (3*SCALE);
 			
 			// Optional dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
 			_heroPieces.scale(SCALE);
-			_heroPieces.y = -55;
+			_heroPieces.y = -(41*SCALE) + (3*SCALE);
 			_player.addChild(_heroPieces);
 			_heroPieces.rotationY = 180;
 			addHeroEye();
@@ -1219,24 +1221,39 @@ package
 		
 		
 		//-------------------------------------------------------------------------------
+        //
 		//       ++ PHYSICS engines    
+        //
 		//-------------------------------------------------------------------------------
 		
 		protected function LoadSwf(name:String = "Physics"):void {
 			_physics = PhysicsEngine.getInstance();
+            
+            // debug mode no use if trangleCollision 
+            //_physics.addDebug(_view);
+            
+            // add terrain to physic collision 
 			_physics.addTriangleCollision(_terrain);
+            
+            // add basic infinie plane
 			//_physics.addObject(null, { type:'plane' } );
-			
+            
+            // add player character physics 
+			_physics.addCharacter(_player);
+            
+            // add some box for fun 
 			var mesh:Mesh;
 			var size:int;
+            var isUnactif:Boolean = true;
 			for (var i:int = 0; i < 50; i++) {
-				size = 100 + (Math.random() * 10);
+				size =50 + (Math.random() * 100);
 				mesh = new Mesh(new CubeGeometry(size, size, size), _boxMaterial);
 				_view.scene.addChild(mesh);
-				_physics.addObject(mesh, {w: size, h: size, d: size, mass: 1, pos: new Vector3D(300, 60 * i, -100)});
+                if (i == 49) isUnactif = false;
+				_physics.addObject(mesh, {stop:isUnactif, w: size, h: size, d: size, mass: 0.01, pos: new Vector3D(300, _terrain.getHeightAt(300, -100) +(151 * (i+1)), -100)});
 			}
 			
-			_physics.addCharacter(_player)
+			
 		}
 		
 	}

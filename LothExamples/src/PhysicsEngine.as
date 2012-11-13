@@ -1,5 +1,6 @@
 package {
 	import awayphysics.collision.shapes.AWPCapsuleShape;
+    import awayphysics.debug.AWPDebugDraw;
 	import awayphysics.dynamics.character.AWPKinematicCharacterController;
 	import awayphysics.collision.shapes.AWPBvhTriangleMeshShape;
 	import awayphysics.collision.dispatch.AWPCollisionObject;
@@ -115,6 +116,9 @@ package {
 				}
 				
 			}
+            
+            //debug update
+            if (_isDebug) _debugDraw.debugDrawWorld();
 		}
 		
 		//-------------------------------------------------------------------------------
@@ -152,24 +156,27 @@ package {
 					break;
 			}
 			switch (phyType) {
-				case 'rigidbody': 
-					body = new AWPRigidBody(shape, m, o.mass || 10);
+				case "rigidbody": 
+					body = new AWPRigidBody(shape, m, o.mass || 1);
 					body.friction = o.friction || 0.5;
 					body.restitution = o.restitution || 0.0;
+                    // position rotation
 					body.position = o.pos || new Vector3D();
 					body.rotation = o.rot || new Vector3D();
 					if (o.stop) body.activationState = 2; // static at start
 					physicsWorld.addRigidBody(body);
-					_rigid.push(body);
+					if (body.mass != 0)_rigid.push(body);
+                    else _static.push(body);
 					break;
-				case 'collision': 
+				case "collision": 
 					bodyC = new AWPCollisionObject(shape, m);
 					bodyC.friction = o.friction || 0.5;
 					bodyC.restitution = o.restitution || 0.0;
 					bodyC.position = o.pos || new Vector3D();
 					bodyC.rotation = o.rot || new Vector3D();
 					physicsWorld.addCollisionObject(bodyC);
-					_static.push(bodyC)
+					_static.push(bodyC);
+                    break;
 			}
 		}
 		
@@ -200,7 +207,10 @@ package {
 		
 		public function addCharacter(container:*):void {
 			// create character shape and controller
-			var shape:AWPCapsuleShape = new AWPCapsuleShape(40, 40);
+			//var shape:AWPCapsuleShape = new AWPCapsuleShape(20, 40);
+            container.y = -10;
+            
+            var shape:AWPBoxShape =  new AWPBoxShape(60, 164, 40);//new AWPCapsuleShape(20, 40);
 			var ghostObject:AWPGhostObject = new AWPGhostObject(shape, container);
 			ghostObject.collisionFlags = AWPCollisionFlags.CF_CHARACTER_OBJECT;
 			ghostObject.addEventListener(AWPEvent.COLLISION_ADDED, characterCollisionAdded);
@@ -254,23 +264,25 @@ package {
 			keyUp = c
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       Debug 
 		//-------------------------------------------------------------------------------
-		
-		/*  public function addPhysicsDebugPhy(view:*):void {
-		if (_debugDraw)
-		return;
-		var _debugDraw = new AWPDebugDraw(view, world);
-		_debugDraw.debugMode = AWPDebugDraw.DBG_DrawCollisionShapes;
+		private var _isDebug:Boolean = false;
+        private var _debugDraw:AWPDebugDraw;
+        
+		public function addDebug(view:*):void 
+        {
+            if (_isDebug) return;
+            _debugDraw = new AWPDebugDraw(view, physicsWorld);
+            _debugDraw.debugMode = AWPDebugDraw.DBG_DrawCollisionShapes;
+            _isDebug = true;
 		}
-		
-		public function removeDebug():void {
-		if (_debugDraw) {
-		_debugDraw.debugMode = AWPDebugDraw.DBG_NoDebug;
-		}
-		}*/
+        
+		public function removeDebug():void 
+        {
+            if (_isDebug) _debugDraw.debugMode = AWPDebugDraw.DBG_NoDebug;
+        }
+        
 		
 	}
 	
