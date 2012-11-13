@@ -48,6 +48,7 @@ package
 	import away3d.animators.SkeletonAnimationSet;
 	import away3d.animators.nodes.SkeletonClipNode;
 	import away3d.animators.transitions.CrossfadeTransition;
+	import away3d.extrusions.Elevation;
 	
 	import away3d.loaders.parsers.AWD2Parser;
 	import away3d.cameras.lenses.*;
@@ -77,8 +78,6 @@ package
 	import flash.ui.*;
 	
 	import utils.VectorSkyEffects;
-	//import utils.Terrain;
-	
 	
 	[SWF(backgroundColor="#333338", frameRate="60", quality="LOW")]
 	public class Intermediate_Onkba_FPS extends Sprite
@@ -87,7 +86,8 @@ package
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const SCALE:int = 1;
+		private static const FARVIEW:Number = 20000;
+		private static const SCALE:int = 2;
 		
 		private var assetsRoot:String = "assets/onkba/";
 		private var textureStrings:Vector.<String>;
@@ -105,7 +105,7 @@ package
 		private var fogColor:uint = 0x333338;
 		private var zenithColor:uint = 0x445465;
 		private var fogNear:Number = 1000;
-		private var fogFar:Number = 128 * 32 * 2;
+		
 		
 		//engine variables
 		private var _view:View3D;
@@ -130,14 +130,15 @@ package
 		//Materials
 		private var _materials:Vector.<TextureMaterial>;
 		private var _groundMaterial:TextureMaterial;
+		private var _terrainMaterial:TextureMaterial;
+        private var _boxMaterial:TextureMaterial;
 		private var _heroMaterial:TextureMaterial;
 		private var _gunMaterial:TextureMaterial;
 		private var _eyesClosedMaterial:TextureMaterial;
 		private var _eyesOpenMaterial:TextureMaterial;
 		
-		// Terrain utils
-		//private var _terrain:Terrain;
-		private var ground:Mesh;
+		//terrain
+		private var _terrain:Elevation;
 		
 		//animation variables
 		private var transition:CrossfadeTransition = new CrossfadeTransition(0.3);
@@ -169,8 +170,9 @@ package
 		private var isMoving:Boolean;
 		
 		//scene objects
-		private var _hero:Mesh;
+		private var _player:ObjectContainer3D;
 		private var _heroPieces:ObjectContainer3D;
+		private var _hero:Mesh;
 		private var _heroWeapon:Mesh;
 		private var _weapons:Vector.<Mesh>;
 		private var _bonesVector:Vector.<Mesh>;
@@ -196,6 +198,10 @@ package
 		
 		private var _text:TextField;
 		
+		//awayPhysics engine
+		private var _physics:PhysicsEngine;
+		
+		
 		/**
 		 * Constructor
 		 */
@@ -204,11 +210,13 @@ package
 			textureBitmapData = new Vector.<BitmapData>();
 			textureStrings = new Vector.<String>();
 			// terrain map
-			textureStrings.push("rock.jpg", "arid.jpg", "sand.jpg");
+			textureStrings.push("rock.jpg", "arid.jpg", "sand.jpg" );
 			// hero map
 			textureStrings.push("onkba_diffuse.png", "onkba_normals.jpg", "onkba_lightmap.jpg");
 			// gun map
 			textureStrings.push("gun_diffuse.jpg", "gun_normals.jpg", "gun_lightmap.jpg");
+			
+			textureStrings.push("height.png");
 			
 			init();
 		}
@@ -234,6 +242,7 @@ package
 		{
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
+			
 			//create the view
 			_view = new View3D();
 			_view.forceMouseMove = true;
@@ -242,17 +251,22 @@ package
 			addChild(_view);
 			
 			//create custom lens
-			_view.camera.lens = new PerspectiveLens(60);
-			_view.camera.lens.far = fogFar;
+			_view.camera.lens = new PerspectiveLens(70);
+			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 1;
 			
 			//setup controller to be used on the camera
-			_cameraController = new HoverController(_view.camera, null, 180, 0, 100, 10, 90);
+			_cameraController = new HoverController(_view.camera, null, 180, 0, 300, 10, 90);
 			_cameraController.tiltAngle = 0;
-			_cameraController.panAngle = 180;
+			_cameraController.panAngle = 220;
 			_cameraController.minTiltAngle = -60;
 			_cameraController.maxTiltAngle = 60;
 			_cameraController.autoUpdate = false;
+			
+			//setup the player container 
+			_player = new ObjectContainer3D();
+			_player.y = 200;
+			_view.scene.addChild(_player);
 			
 			//add signature
 			addChild(_signature = new SignatureSwf());
@@ -273,13 +287,13 @@ package
 		private function initText():void
 		{
 			_text = new TextField();
-            var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
-            format.letterSpacing = 1;
-            format.leftMargin = 5;
+			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
+			format.letterSpacing = 1;
+			format.leftMargin = 5;
 			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
 			_text.gridFitType = GridFitType.PIXEL;
-            _text.y = 3;
+			_text.y = 3;
 			_text.width = 300;
 			_text.height = 250;
 			_text.selectable = false;
@@ -310,8 +324,8 @@ package
 			
 			//create a light for ambient effect that mimics the sky
 			_skyLight = new PointLight();
-			_skyLight.color = zenithColor//skyColor;
-			_skyLight.ambientColor = zenithColor//skyColor;
+			_skyLight.color = zenithColor;
+			_skyLight.ambientColor = zenithColor;
 			_skyLight.ambient = skyAmbient;
 			_skyLight.diffuse = skyDiffuse;
 			_skyLight.specular = skySpecular;
@@ -383,9 +397,8 @@ package
 			//create Rim light method
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
 			
-			
 			//create global fog method
-			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
+			_fogMethode = new FogMethod(fogNear, FARVIEW, fogColor);
 			
 			//create the hero material
 			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[3]));
@@ -434,7 +447,21 @@ package
 			_groundMaterial.repeat = true;
 			_materials[4] = _groundMaterial;
 			
+			var terrainMethod:TerrainDiffuseMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(textureBitmapData[1]), Cast.bitmapTexture(textureBitmapData[2]), Cast.bitmapTexture(textureBitmapData[0])], Cast.bitmapTexture(textureBitmapData[9]), [1, 50, 150, 100]);
 			
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[9]));
+			//_terrainMaterial.diffuseMethod = terrainMethod;
+			_terrainMaterial.specular = .2;
+			_terrainMaterial.addMethod(_fogMethode);
+			_materials[5] = _terrainMaterial;
+			
+			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0x99ff0000)));
+			_boxMaterial.gloss = 10;
+			_boxMaterial.specular = 0.1;
+            _boxMaterial.alphaBlending = true;
+			_boxMaterial.addMethod(_fogMethode);
+			_materials[6] = _boxMaterial;
+            
 			// apply light and effect for all material
 			for (var i:int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
@@ -459,37 +486,9 @@ package
 			_sky = new SkyBox(_skyMap);
 			_view.scene.addChild(_sky);
 			
-			// optional terrain
-			/*_terrain = new Terrain({b0:textureBitmapData[0], b1:textureBitmapData[1], b2:textureBitmapData[2], repeat:60});
-			_view.scene.addChild(Terrain.ground);
-			_view.scene.addChild(Terrain.water);
-			Terrain.terrainMaterial.lightPicker = _lightPicker;
-			Terrain.waterMaterial.lightPicker = _lightPicker;
-			Terrain.terrainMaterial.addMethod(_fogMethode);
-			Terrain.waterMaterial.addMethod(_fogMethode);
-			Terrain.terrainMaterial.shadowMethod = _shadowMethod;
-			Terrain.waterMaterial.shadowMethod = _shadowMethod;
-			
-			Terrain.terrainMaterial.diffuseLightSources = LightSources.PROBES;
-			Terrain.terrainMaterial.specularLightSources = LightSources.LIGHTS;
-			Terrain.terrainMaterial.ambient = 0.85;
-			Terrain.waterMaterial.diffuseLightSources = LightSources.PROBES;
-			Terrain.waterMaterial.specularLightSources = LightSources.LIGHTS;
-			Terrain.waterMaterial.ambient = 0.85;
-			
-			_materials[4] = Terrain.terrainMaterial;
-			_materials[5] = Terrain.waterMaterial;*/
-			
-			// Terrain.terrainMaterial.addMethod(_rimLightMethod);
-			// Terrain.waterMaterial.addMethod(_rimLightMethod);
-			
-			// basic ground
-			ground = new Mesh(new PlaneGeometry(fogFar*2, fogFar*2), _groundMaterial);
-			ground.geometry.scaleUV(100, 100);
-			ground.y = -3;
-			ground.castsShadows = false;
-			_view.scene.addChild(ground); 
-			
+			//create mountain like terrain
+			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(textureBitmapData[9]), FARVIEW * 2, 600, FARVIEW * 2, 250, 250);
+			_view.scene.addChild(_terrain);
 			
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);
@@ -526,7 +525,6 @@ package
 			stage.addEventListener(Event.RESIZE, onResize);
 		}
 		
-		
 		//-------------------------------------------------------RENDER LOOP
 		
 		/**
@@ -536,8 +534,6 @@ package
 		{
 			// update character animation
 			if (_hero) {
-				_hero.rotationY += currentRotationInc;
-				
 				// update eyes
 				if (_dynamicsEyes) updateEyes();
 				// update bones
@@ -547,22 +543,13 @@ package
 				if (animator.globalPose.numJointPoses >= 22) {
 					_heroWeapon.transform = animator.globalPose.jointPoses[22].toMatrix3D();
 				}
-				
-				// update camera
-				_cameraController.lookAtPosition = new Vector3D(_hero.x, _cameraHeight, _hero.z);
-				_cameraController.update();
-				
-				//update light
-				// _skyLight.position = _view.camera.position;
 			}
 			
-			if (_isResize) {
-				_view.width = stage.stageWidth;
-				_view.height = stage.stageHeight;
-				_stats.x = stage.stageWidth - _stats.width;
-				_signature.y = stage.stageHeight - _signature.height;
-				_isResize = false;
-			}
+			// update camera
+			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y+_cameraHeight, _player.z);
+			_cameraController.update();
+			
+			if (_physics)_physics.update();
 			
 			//update view
 			_view.render();
@@ -604,7 +591,7 @@ package
 				log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
 			else {
 				_text.text = "ONKBA FPS\n\n";
-                _text.appendText("Cursor keys / WSAD / ZSQD - move\n");
+				_text.appendText("Cursor keys / WSAD / ZSQD - move\n");
 				_text.appendText("SHIFT - hold down to run\n");
 				_text.appendText("O - next weapon\n");
 				_text.appendText("R - reload weapon\n");
@@ -614,8 +601,6 @@ package
 				_text.appendText("N - random sky\n");
 				_text.appendText("P - xray bones\n");
 				_text.appendText("B - clone\n");
-				
-				
 			}
 		}
 		
@@ -722,13 +707,23 @@ package
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0xff0000));
 			
-			_view.scene.addChild(_hero);
+			
 			_hero.addChild(_heroWeapon);
 			
-			_hero.y = 0// Terrain.getHeightAt();
+			_player.addChild(_hero);
+			_hero.rotationY = 180;
+			_hero.y = -55;
 			
 			// Optional dynamic eyes ball
+			_heroPieces = new ObjectContainer3D();
+			_heroPieces.scale(SCALE);
+			_heroPieces.y = -55;
+			_player.addChild(_heroPieces);
+			_heroPieces.rotationY = 180;
 			addHeroEye();
+			
+			
+			LoadSwf();
 		}
 		
 		//-------------------------------------------------------KEYBOARD FUNCTION
@@ -832,24 +827,8 @@ package
 			currentAnim = anim;
 			animator.playbackSpeed = RELOAD_SPEED;
 			animator.play(currentAnim, transition);
-			//animator.
-			// animator.phase(1);
-			// animator.skeleton.addEventListener(
-			//animator.addEventListener(AnimatorEvent.STOP, animationTest)
-			//   animator.skeleton.l
-			//  this.addEventListener(Event.ENTER_FRAME, animationTest);
-		}
-		
-		/**
-		 * only one animation
-		 */
-		private function animationTest(e:Event):void
-		{
-			//  log('grr'+animator.getAnimationState(animator.activeAnimation))
-			// if (animator.time > 7000) { 
-			//      this.removeEventListener(Event.ENTER_FRAME, animationTest);
-			stop();
-			//   }
+			
+			// ! \\ probleme play animation only on loop
 		}
 		
 		
@@ -870,21 +849,23 @@ package
 				case Keyboard.W: 
 				case Keyboard.Z: //fr
 					updateMovement(movementDirection = 1);
+					if (_physics){_physics.key_forward(true);}
 					break;
 				case Keyboard.DOWN: 
 				case Keyboard.S: 
 					updateMovement(movementDirection = -1);
+					if (_physics){_physics.key_Reverse(true);}
 					break;
 				case Keyboard.LEFT: 
 				case Keyboard.A: 
 				case Keyboard.Q: //fr
-					//currentRotationInc = -ROTATION_SPEED;
 					updateMovementSide(1);
+					if (_physics){_physics.key_Left(true);}
 					break;
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
-					// currentRotationInc = ROTATION_SPEED;
-					updateMovementSide(-1);
+					updateMovementSide( -1);
+					if (_physics){_physics.key_Right(true);}
 					break;
 				case Keyboard.R: 
 					reload();
@@ -909,6 +890,9 @@ package
 					else {isCrouch = true; _cameraHeight = 25;}
 					stop();
 					break;
+				case Keyboard.SPACE: 
+					if (_physics){_physics.key_Jump(true);}
+					break;
 			}
 		}
 		
@@ -928,6 +912,7 @@ package
 				case Keyboard.Z: //fr
 				case Keyboard.DOWN: 
 				case Keyboard.S:
+					if (_physics) { _physics.key_forward(false); _physics.key_Reverse(false);  }
 					stop();
 					break;
 				case Keyboard.LEFT: 
@@ -936,12 +921,16 @@ package
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
 					currentRotationInc = 0;
+					if (_physics) { _physics.key_Left(false); _physics.key_Right(false); }
 					stop();
+					break;
+				case Keyboard.SPACE: 
+					if (_physics){_physics.key_Jump(false);}
 					break;
 			}
 		}
 		
-		//--------------------------------------------------------------------- OTHER
+		//--------------------------------------------------------------------- STAGE AND MOUSE
 		
 		/**
 		 * stage full screen
@@ -959,7 +948,10 @@ package
 		 */
 		private function onResize(event:Event=null):void
 		{
-			_isResize = true;
+			_view.width = stage.stageWidth;
+			_view.height = stage.stageHeight;
+			_stats.x = stage.stageWidth - _stats.width;
+			_signature.y = stage.stageHeight - _signature.height;
 		}
 		
 		private function onStageMouseDown(e:MouseEvent):void
@@ -990,8 +982,6 @@ package
 		private function onStageMouseWheel(e:MouseEvent):void
 		{
 			_cameraController.distance -= e.delta * 5;
-			
-			//_cameraHeight = (_cameraController.distance < 50)? (50 - _cameraController.distance)/2 : 0;
 			
 			if (_cameraController.distance < 50)
 				_cameraController.distance = 50;
@@ -1036,15 +1026,14 @@ package
 		}
 		
 		
-		//--------------------------------------------------------------------- DYNAMIC EYES BALL
+		//-------------------------------------------------------------------------------
+		//       EYES dynamic    
+		//-------------------------------------------------------------------------------
 		
 		public function addHeroEye():void
 		{
 			var eyeGeometry:Geometry = new SphereGeometry(1, 32, 24);
 			eyeGeometry.scaleUV(2, 1);
-			
-			_heroPieces = new ObjectContainer3D();
-			_view.scene.addChild(_heroPieces);
 			
 			_eyes = new ObjectContainer3D();
 			_eyeR = new Mesh(eyeGeometry, _eyesOpenMaterial);
@@ -1086,7 +1075,6 @@ package
 		
 		private function updateEyes():void
 		{
-			_heroPieces.transform = _hero.transform;
 			// get the head bone
 			if (animator.globalPose.numJointPoses >= 11) {
 				_eyes.transform = animator.globalPose.jointPoses[11].toMatrix3D();
@@ -1108,8 +1096,9 @@ package
 			}
 		}
 		
-		
-		//-------------------------------------------------------SEE BONES
+		//-------------------------------------------------------------------------------
+		//       XRAY view for bone debug    
+		//-------------------------------------------------------------------------------
 		
 		private function xRay():void 
 		{
@@ -1171,6 +1160,27 @@ package
 			}
 		}
 		
+		
+		//-------------------------------------------------------------------------------
+		//       ++ PHYSICS engines    
+		//-------------------------------------------------------------------------------
+		
+		protected function LoadSwf(name:String = "Physics"):void {
+			_physics = PhysicsEngine.getInstance();
+			_physics.addTriangleCollision(_terrain);
+			//_physics.addObject(null, { type:'plane' } );
+			
+			var mesh:Mesh;
+			var size:int;
+			for (var i:int = 0; i < 50; i++) {
+				size = 100 + (Math.random() * 10);
+				mesh = new Mesh(new CubeGeometry(size, size, size), _boxMaterial);
+				_view.scene.addChild(mesh);
+				_physics.addObject(mesh, {w: size, h: size, d: size, mass: 1, pos: new Vector3D(300, 60 * i, -100)});
+			}
+			
+			_physics.addCharacter(_player)
+		}
 		
 	}
 }
