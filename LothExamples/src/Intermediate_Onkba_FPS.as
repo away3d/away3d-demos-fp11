@@ -87,7 +87,7 @@ package
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const FARVIEW:Number = 20000;
+		private static const FARVIEW:Number = 50000;
         private static const MOUNTAIGN_TOP:Number = 4816;
 		private static const SCALE:Number = 2;
 		
@@ -324,7 +324,7 @@ package
 			_sunLight.specular = sunSpecular;
 			
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.1);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.02);
 			_view.scene.addChild(_sunLight);
 			
 			//create a light for ambient effect that mimics the sky
@@ -397,7 +397,7 @@ package
 			
 			//create global shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			_shadowMethod.epsilon = .0007;
+			_shadowMethod.epsilon = .0005;
 			
 			//create Rim light method
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
@@ -456,7 +456,8 @@ package
 			
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[9]));
 			//_terrainMaterial.diffuseMethod = terrainMethod;
-			_terrainMaterial.specular = .2;
+            _terrainMaterial.gloss = 11;
+			_terrainMaterial.specular = .25;
 			_terrainMaterial.addMethod(_fogMethode);
 			_materials[5] = _terrainMaterial;
 			
