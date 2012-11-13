@@ -76,7 +76,8 @@ package
 	import flash.net.*;
 	import flash.text.*;
 	import flash.ui.*;
-	
+	import flash.utils.setTimeout;
+    
 	import utils.VectorSkyEffects;
 	
 	[SWF(backgroundColor="#333338", frameRate="60", quality="LOW")]
@@ -164,11 +165,13 @@ package
 		private const WALK_SPEED:Number = 1;
 		private const BREATHE_SPEED:Number = 0.7;
 		private const RELOAD_SPEED:Number = 1;
-		
+		private const JUMP_SPEED:Number = 1;
+        
 		private var isCrouch:Boolean = false;
-		private var isRunning:Boolean;
-		private var isMoving:Boolean;
-		
+		private var isRunning:Boolean = false;
+		private var isMoving:Boolean = false;
+		private var isJump:Boolean = true;
+        
 		//scene objects
 		private var _player:ObjectContainer3D;
 		private var _heroPieces:ObjectContainer3D;
@@ -656,9 +659,10 @@ package
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
+            var i:int
 			if (event.asset.assetType == AssetType.SKELETON) {
 				// Create a new skeleton animation set (! 3 joints per vertex for awd exporter in 3dsmax)
-				animationSet = new SkeletonAnimationSet(3);
+				animationSet = new SkeletonAnimationSet(4);
 				// Wrap our skeleton animation set in an animator object and add our sequence objects
 				animator = new SkeletonAnimator(animationSet, event.asset as Skeleton);
 				
@@ -667,9 +671,15 @@ package
 				var animationNode:SkeletonClipNode = event.asset as SkeletonClipNode;
 				animationSet.addAnimation(animationNode.name, animationNode);
 				
-				//play the default idle animation
-				if (animationNode.name == ANIM_BREATHE) stop();
-				
+				// play default idle animation
+				//if (animationNode.name == ANIM_BREATHE) jumpDown()//stop();
+                if (animationNode.name == "JumpDown") jumpDown()//stop();
+                
+                // disable animation loop 
+                for ( i = 0; i< WEAPON.length; i++ ) {
+                if (animationNode.name == WEAPON[i] + "JumpDown") animationNode.looping = false;
+				if (animationNode.name == WEAPON[i] + "Reload") animationNode.looping = false;
+                }
 			} else if (event.asset.assetType == AssetType.MESH) {
 				
 				var mesh:Mesh = event.asset as Mesh;
@@ -682,7 +692,7 @@ package
 				}
 				
 				// weapons resources
-				for (var i:int = 0; i < WEAPON.length; i++ ) {
+				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (mesh.name == WEAPON[i] + 'Test') {
 						if (i == 3) {mesh.rotationY = -5; mesh.rotationZ = -2;}// decal for sniper
 						mesh.material = _gunMaterial;
@@ -763,7 +773,10 @@ package
 			}
 		}
 		
-		//-------------------------------------------------------CHARACTER ANIMATION
+        
+		//-------------------------------------------------------------------------------
+		//       CHARACTER ANIMATION
+		//-------------------------------------------------------------------------------
 		
 		/**
 		 * Character breath animation
@@ -771,6 +784,16 @@ package
 		private function stop():void
 		{
 			isMoving = false;
+            isJump = false;
+            
+            var anim:String;
+			if (isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
+			else anim = WEAPON[currentWeapon] + ANIMATION[0];
+            
+            
+            if (currentAnim == anim) return;
+            
+            currentAnim = anim;
 			animator.playbackSpeed = BREATHE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
 			else currentAnim = WEAPON[currentWeapon] + ANIMATION[0];
@@ -786,10 +809,10 @@ package
 			
 			//update animator sequence
 			var anim:String = isRunning ? ANIM_RUN : ANIM_WALK;
+            
+			if (currentAnim == anim) return;
 			
-			if (currentAnim == anim)
-				return;
-			
+            if(_physics) _physics.characterSpeed(isRunning ? 3 : 1)
 			animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
@@ -826,12 +849,42 @@ package
 			
 			currentAnim = anim;
 			animator.playbackSpeed = RELOAD_SPEED;
-			animator.play(currentAnim, transition);
-			
-			// ! \\ probleme play animation only on loop
+			animator.play(currentAnim, transition, 0);
 		}
 		
-		
+		/**
+		 * Character jump up animation
+		 */
+		private function jumpUp():void
+		{
+            isJump = true;
+			var anim:String;
+			anim = WEAPON[currentWeapon] + 'JumpDown';
+			
+			//if (currentAnim == anim)  return;
+			
+			currentAnim = anim;
+			animator.playbackSpeed = -JUMP_SPEED;
+			animator.play(currentAnim, transition, 0);
+            
+            setTimeout(jumpDown, 260);
+		}
+        
+        /**
+		 * Character jump down animation
+		 */
+        private function jumpDown():void
+		{
+			var anim:String;
+			anim = WEAPON[currentWeapon] + 'JumpDown';
+			
+			if (!isJump)  return;
+			
+			currentAnim = anim;
+			animator.playbackSpeed = JUMP_SPEED;
+			animator.play(currentAnim,null, 0);
+            setTimeout(stop, 200);
+		}
 		//--------------------------------------------------------------------- KEYBORD
 		
 		/**
@@ -891,7 +944,10 @@ package
 					stop();
 					break;
 				case Keyboard.SPACE: 
-					if (_physics){_physics.key_Jump(true);}
+                    if (!isJump) {
+                        jumpUp();
+                        if (_physics) { _physics.key_Jump(true); }
+                    }
 					break;
 			}
 		}

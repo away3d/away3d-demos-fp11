@@ -73,7 +73,7 @@ package {
 			physicsWorld = AWPDynamicsWorld.getInstance();
 			physicsWorld.initWithDbvtBroadphase();
 			physicsWorld.collisionCallbackOn = true;
-			physicsWorld.gravity = new Vector3D(0, -2, 0);
+			physicsWorld.gravity = new Vector3D(0, -4, 0);
 			physicsWorld.scaling = worldScale;
 			_rigid = new Vector.<AWPRigidBody>;
 			_static = new Vector.<AWPCollisionObject>;
@@ -205,7 +205,11 @@ package {
 			ghostObject.collisionFlags = AWPCollisionFlags.CF_CHARACTER_OBJECT;
 			ghostObject.addEventListener(AWPEvent.COLLISION_ADDED, characterCollisionAdded);
 			character = new AWPKinematicCharacterController(ghostObject, 0.1);
+            
 			physicsWorld.addCharacter(character);
+            character.jumpSpeed = 10;
+            character.fallSpeed = 100;
+           // character.maxJumpHeight = 1000;
 			character.warp(new Vector3D(0, 200, 0));
 		}
 		
@@ -214,10 +218,14 @@ package {
 				var body:AWPRigidBody = AWPRigidBody(event.collisionObject);
 				var force:Vector3D = event.manifoldPoint.normalWorldOnB.clone();
 				force.scaleBy(-30);
-				body.applyForce(force, event.manifoldPoint.localPointB);
+				//body.applyForce(force, event.manifoldPoint.localPointB);
 			}
 		}
-		
+        
+		public function characterSpeed(n:Number):void {
+            walkSpeed = n;
+		}
+        
 		public function key_forward(c:Boolean):void {
 			keyForward = c;
 			if (!c) {
@@ -235,7 +243,7 @@ package {
 		}
 		
 		public function key_Left(c:Boolean):void {
-			keyLeft = c
+			keyLeft = c;
 		}
 		
 		public function key_Right(c:Boolean):void {
