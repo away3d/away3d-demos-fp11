@@ -39,7 +39,7 @@ package {
 		
 		// character
 		private var character:AWPKinematicCharacterController;
-		public var characterMove:Boolean = false;
+		private var characterMove:Boolean = false;
 		private var keyRight:Boolean = false;
 		private var keyLeft:Boolean = false;
 		private var keyForward:Boolean = false;
@@ -73,7 +73,7 @@ package {
 			physicsWorld = AWPDynamicsWorld.getInstance();
 			physicsWorld.initWithDbvtBroadphase();
 			physicsWorld.collisionCallbackOn = true;
-			physicsWorld.gravity = new Vector3D(0, -4, 0);
+			physicsWorld.gravity = new Vector3D(0, -9.8, 0);
 			physicsWorld.scaling = worldScale;
 			_rigid = new Vector.<AWPRigidBody>;
 			_static = new Vector.<AWPCollisionObject>;

@@ -170,6 +170,7 @@ package
 		private var isCrouch:Boolean = false;
 		private var isRunning:Boolean = false;
 		private var isMoving:Boolean = false;
+        private var isSideMove:Boolean = false;
 		private var isJump:Boolean = true;
         
 		//scene objects
@@ -783,8 +784,9 @@ package
 		 */
 		private function stop():void
 		{
-			isMoving = false;
-            isJump = false;
+			/*isMoving = false;
+            isSideMove = false;
+            isJump = false;*/
             
             var anim:String;
 			if (isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
@@ -824,7 +826,7 @@ package
 		 */
 		private function updateMovementSide(dir:Number):void
 		{
-			isMoving = true;
+			isSideMove = true;
 			var anim:String;
 			
 			if (dir > 0) anim = 'WalkL';
@@ -860,8 +862,8 @@ package
             isJump = true;
 			var anim:String;
 			anim = WEAPON[currentWeapon] + 'JumpDown';
-			
-			//if (currentAnim == anim)  return;
+            
+			if (currentAnim == anim)  return;
 			
 			currentAnim = anim;
 			animator.playbackSpeed = -JUMP_SPEED;
@@ -878,12 +880,10 @@ package
 			var anim:String;
 			anim = WEAPON[currentWeapon] + 'JumpDown';
 			
-			if (!isJump)  return;
-			
 			currentAnim = anim;
 			animator.playbackSpeed = JUMP_SPEED;
-			animator.play(currentAnim,null, 0);
-            setTimeout(stop, 200);
+			animator.play(currentAnim, transition, 0);
+            setTimeout(stop, 260);
 		}
 		//--------------------------------------------------------------------- KEYBORD
 		
@@ -895,8 +895,7 @@ package
 			switch (event.keyCode) {
 				case Keyboard.SHIFT: 
 					isRunning = true;
-					if (isMoving)
-						updateMovement(movementDirection);
+					if (isMoving) updateMovement(movementDirection);
 					break;
 				case Keyboard.UP: 
 				case Keyboard.W: 
@@ -912,12 +911,12 @@ package
 				case Keyboard.LEFT: 
 				case Keyboard.A: 
 				case Keyboard.Q: //fr
-					updateMovementSide(1);
+					if (!isMoving)updateMovementSide(1);
 					if (_physics){_physics.key_Left(true);}
 					break;
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
-					updateMovementSide( -1);
+					if (!isMoving)updateMovementSide( -1);
 					if (_physics){_physics.key_Right(true);}
 					break;
 				case Keyboard.R: 
@@ -968,6 +967,7 @@ package
 				case Keyboard.Z: //fr
 				case Keyboard.DOWN: 
 				case Keyboard.S:
+                    isMoving = false;
 					if (_physics) { _physics.key_forward(false); _physics.key_Reverse(false);  }
 					stop();
 					break;
@@ -976,11 +976,12 @@ package
 				case Keyboard.Q: //fr
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
-					currentRotationInc = 0;
+                    isSideMove = false;
 					if (_physics) { _physics.key_Left(false); _physics.key_Right(false); }
 					stop();
 					break;
-				case Keyboard.SPACE: 
+				case Keyboard.SPACE:
+                    isJump = false;;
 					if (_physics){_physics.key_Jump(false);}
 					break;
 			}
