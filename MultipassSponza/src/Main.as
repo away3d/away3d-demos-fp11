@@ -97,16 +97,28 @@ package
 		[Embed(source="/../embeds/textures/sky/hourglass_south.jpg")]
 		public static var EnvPosZ : Class;
 		
-		[Embed(source="/../embeds/textures/fire.jpg")]
+		[Embed(source="/../embeds/textures/sky/cubetexture/hourglass_cubemap.atf", mimeType="application/octet-stream")]
+		public static var SkyMapCubeTexture : Class;
+		
+		
+		//[Embed(source="/../embeds/textures/fire.jpg")]
+		[Embed(source="/../embeds/textures/fire.atf", mimeType="application/octet-stream")]
 		public static var FlameTexture : Class;
 		
-		private var _skyMap:BitmapCubeTexture;
+		//private var _skyMap:ATFCubeTexture;
+		//private var _skyMap:BitmapCubeTexture;
 		private var _assetsRoot:String = "assets/";
 		
 		private var materialNameStrings:Vector.<String> = Vector.<String>(["arch",            "Material__298",  "bricks",            "ceiling",            "chain",             "column_a",          "column_b",          "column_c",          "fabric_g",              "fabric_c",         "fabric_f",               "details",          "fabric_d",             "fabric_a",        "fabric_e",              "flagpole",          "floor",            "16___Default","Material__25","roof",       "leaf",           "vase",         "vase_hanging",     "Material__57",   "vase_round"]);
-		private var diffuseTextureStrings:Vector.<String> = Vector.<String>(["arch_diff.jpg", "background.jpg", "bricks_a_diff.jpg", "ceiling_a_diff.jpg", "chain_texture.png", "column_a_diff.jpg", "column_b_diff.jpg", "column_c_diff.jpg", "curtain_blue_diff.jpg", "curtain_diff.jpg", "curtain_green_diff.jpg", "details_diff.jpg", "fabric_blue_diff.jpg", "fabric_diff.jpg", "fabric_green_diff.jpg", "flagpole_diff.jpg", "floor_a_diff.jpg", "gi_flag.jpg", "lion.jpg", "roof_diff.jpg", "thorn_diff.png", "vase_dif.jpg", "vase_hanging.jpg", "vase_plant.png", "vase_round.jpg"]);
-		private var normalTextureStrings:Vector.<String> = Vector.<String>(["arch_ddn.jpg", "background_ddn.jpg", "bricks_a_ddn.jpg", null,                "chain_texture_ddn.jpg", "column_a_ddn.jpg", "column_b_ddn.jpg", "column_c_ddn.jpg", null,                   null,               null,                     null,               null,                   null,              null,                    null,                null,               null,          "lion2_ddn.jpg", null,       "thorn_ddn.jpg", "vase_ddn.jpg",  null,               null,             "vase_round_ddn.jpg"]);
-		private var specularTextureStrings:Vector.<String> = Vector.<String>(["arch_spec.jpg", null,            "bricks_a_spec.jpg", "ceiling_a_spec.jpg", null,                "column_a_spec.jpg", "column_b_spec.jpg", "column_c_spec.jpg", "curtain_spec.jpg",      "curtain_spec.jpg", "curtain_spec.jpg",       "details_spec.jpg", "fabric_spec.jpg",      "fabric_spec.jpg", "fabric_spec.jpg",       "flagpole_spec.jpg", "floor_a_spec.jpg", null,          null,       null,            "thorn_spec.jpg", null,           null,               "vase_plant_spec.jpg", "vase_round_spec.jpg"]);
+		
+		private var diffuseTextureStrings:Vector.<String> = Vector.<String>(["arch_diff.atf", "background.atf", "bricks_a_diff.atf", "ceiling_a_diff.atf", "chain_texture.atf", "column_a_diff.atf", "column_b_diff.atf", "column_c_diff.atf", "curtain_blue_diff.atf", "curtain_diff.atf", "curtain_green_diff.atf", "details_diff.atf", "fabric_blue_diff.atf", "fabric_diff.atf", "fabric_green_diff.atf", "flagpole_diff.atf", "floor_a_diff.atf", "gi_flag.atf", "lion.atf", "roof_diff.atf", "thorn_diff.atf", "vase_dif.atf", "vase_hanging.atf", "vase_plant.atf", "vase_round.atf"]);
+		private var normalTextureStrings:Vector.<String> = Vector.<String>(["arch_ddn.atf", "background_ddn.atf", "bricks_a_ddn.atf", null,                "chain_texture_ddn.atf", "column_a_ddn.atf", "column_b_ddn.atf", "column_c_ddn.atf", null,                   null,               null,                     null,               null,                   null,              null,                    null,                null,               null,          "lion2_ddn.atf", null,       "thorn_ddn.atf", "vase_ddn.atf",  null,               null,             "vase_round_ddn.atf"]);
+		private var specularTextureStrings:Vector.<String> = Vector.<String>(["arch_spec.atf", null,            "bricks_a_spec.atf", "ceiling_a_spec.atf", null,                "column_a_spec.atf", "column_b_spec.atf", "column_c_spec.atf", "curtain_spec.atf",      "curtain_spec.atf", "curtain_spec.atf",       "details_spec.atf", "fabric_spec.atf",      "fabric_spec.atf", "fabric_spec.atf",       "flagpole_spec.atf", "floor_a_spec.atf", null,          null,       null,            "thorn_spec.atf", null,           null,               "vase_plant_spec.atf", "vase_round_spec.atf"]);
+		
+		//private var diffuseTextureStrings:Vector.<String> = Vector.<String>(["arch_diff.jpg", "background.jpg", "bricks_a_diff.jpg", "ceiling_a_diff.jpg", "chain_texture.png", "column_a_diff.jpg", "column_b_diff.jpg", "column_c_diff.jpg", "curtain_blue_diff.jpg", "curtain_diff.jpg", "curtain_green_diff.jpg", "details_diff.jpg", "fabric_blue_diff.jpg", "fabric_diff.jpg", "fabric_green_diff.jpg", "flagpole_diff.jpg", "floor_a_diff.jpg", "gi_flag.jpg", "lion.jpg", "roof_diff.jpg", "thorn_diff.png", "vase_dif.jpg", "vase_hanging.jpg", "vase_plant.png", "vase_round.jpg"]);
+		//private var normalTextureStrings:Vector.<String> = Vector.<String>(["arch_ddn.jpg", "background_ddn.jpg", "bricks_a_ddn.jpg", null,                "chain_texture_ddn.jpg", "column_a_ddn.jpg", "column_b_ddn.jpg", "column_c_ddn.jpg", null,                   null,               null,                     null,               null,                   null,              null,                    null,                null,               null,          "lion2_ddn.jpg", null,       "thorn_ddn.jpg", "vase_ddn.jpg",  null,               null,             "vase_round_ddn.jpg"]);
+		//private var specularTextureStrings:Vector.<String> = Vector.<String>(["arch_spec.jpg", null,            "bricks_a_spec.jpg", "ceiling_a_spec.jpg", null,                "column_a_spec.jpg", "column_b_spec.jpg", "column_c_spec.jpg", "curtain_spec.jpg",      "curtain_spec.jpg", "curtain_spec.jpg",       "details_spec.jpg", "fabric_spec.jpg",      "fabric_spec.jpg", "fabric_spec.jpg",       "flagpole_spec.jpg", "floor_a_spec.jpg", null,          null,       null,            "thorn_spec.jpg", null,           null,               "vase_plant_spec.jpg", "vase_round_spec.jpg"]);
+		
 		private var textureDictionary:Dictionary = new Dictionary();
 		private var multiMaterialDictionary:Dictionary = new Dictionary();
 		private var singleMaterialDictionary:Dictionary = new Dictionary();
@@ -300,6 +312,7 @@ package
 			initGUI();
 			initListeners();
 			
+			
 			//count textures
 			n = 0;
 			loadingTextureStrings = diffuseTextureStrings;
@@ -318,6 +331,9 @@ package
 			stage.scaleMode = StageScaleMode.NO_SCALE;
             stage.align = StageAlign.TOP_LEFT;
             
+			
+			Debug.active = true;
+			
 			//create the view
 			_view = new View3D();
 			_view.camera.y = 150;
@@ -361,11 +377,12 @@ package
          */
 		private function initLights():void
 		{
+			
 			_cascadeShadowMapper = new CascadeShadowMapper(3);
 			_cascadeShadowMapper.lightOffset = 10000;
 			_directionalLight = new DirectionalLight(-1, -15, 1);
 			_directionalLight.shadowMapper = _cascadeShadowMapper;
-			_directionalLight.castsShadows = true;
+			_directionalLight.castsShadows = false;
 			_directionalLight.color = 0xeedddd;
 			_directionalLight.ambient = .35;
 			_directionalLight.ambientColor = 0x808090;
@@ -388,6 +405,7 @@ package
 			
 			_lightPicker = new StaticLightPicker(_lights);
 			_baseShadowMethod = new FilteredShadowMapMethod(_directionalLight);
+			
 			_fogMethod = new FogMethod(0, 4000, 0x9090e7);
 			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
 		}
@@ -398,10 +416,12 @@ package
 		private function initMaterials():void
 		{
 			//create skybox texture map
-			_skyMap = new BitmapCubeTexture(Cast.bitmapData(EnvPosX), Cast.bitmapData(EnvNegX), Cast.bitmapData(EnvPosY), Cast.bitmapData(EnvNegY), Cast.bitmapData(EnvPosZ), Cast.bitmapData(EnvNegZ));
+			//_skyMap = new BitmapCubeTexture(Cast.bitmapData(EnvPosX), Cast.bitmapData(EnvNegX), Cast.bitmapData(EnvPosY), Cast.bitmapData(EnvNegY), Cast.bitmapData(EnvPosZ), Cast.bitmapData(EnvNegZ));
+			//_skyMap = new ATFCubeTexture(new SkyMapCubeTexture());
 			
 			//create flame material
-			_flameMaterial = new TextureMaterial(Cast.bitmapTexture(FlameTexture));
+			//_flameMaterial = new TextureMaterial(Cast.bitmapTexture(FlameTexture));
+			_flameMaterial = new TextureMaterial(new ATFTexture(new FlameTexture()));
 			_flameMaterial.blendMode = BlendMode.ADD;
 			_flameMaterial.animateUVs = true;
 			
@@ -413,7 +433,7 @@ package
         private function initObjects():void
 		{
 			//create skybox
-            _view.scene.addChild(new SkyBox(_skyMap));
+            //_view.scene.addChild(new SkyBox(_skyMap));
 			
 			//create flame meshes
 			_flameGeometry = new PlaneGeometry(40, 80, 1, 1, false, true);
@@ -545,6 +565,7 @@ package
          */
         private function load(url:String):void
 		{
+			trace("load url "+url);
             var loader:URLLoader = new URLLoader();
             loader.dataFormat = URLLoaderDataFormat.BINARY;
 			
@@ -561,12 +582,26 @@ package
                     loader.addEventListener(Event.COMPLETE, parseBitmap);
 					url = "textures/" + url;
                     break;
+				case "atf": 
+					_currentTexture++;
+					_loadingText = "Loading Textures";
+                    loader.addEventListener(Event.COMPLETE, onATFComplete);
+					url = "textures/atf/" + url;
+                    break;
             }
 			
-            loader.addEventListener(ProgressEvent.PROGRESS, loadProgress, false, 0, true);
-            loader.load(new URLRequest(_assetsRoot + url));
+            //loader.addEventListener(ProgressEvent.PROGRESS, loadProgress, false, 0, true);
+			//loader.addEventListener(IOErrorEvent.IO_ERROR, loadIOError);
+			var urlReq:URLRequest = new URLRequest(_assetsRoot+url);
+ 			loader.load(urlReq);
+			
         }
         
+		private function loadIOError(event:IOErrorEvent):void
+		{
+			trace("loadIOError "+event);
+		}
+		
         /**
          * Display current load
          */
@@ -580,6 +615,44 @@ package
 			}
         }
         
+		//--------------------------------------------------------------------- ATF PARSE
+		
+		private function onATFComplete(e:Event):void
+		{
+            var loader:URLLoader = URLLoader(e.target);
+            loader.removeEventListener(Event.COMPLETE, onATFComplete);
+			
+			if (!textureDictionary[loadingTextureStrings[n]])
+			{
+				textureDictionary[loadingTextureStrings[n]] = new ATFTexture(loader.data);
+			}
+				
+            loader.data = null;
+            loader.close();
+			loader = null;
+			
+			
+			//skip null textures
+			while (n++ < loadingTextureStrings.length - 1)
+				if (loadingTextureStrings[n])
+					break;
+			
+			//switch to next teture set
+            if (n < loadingTextureStrings.length) {
+                load(loadingTextureStrings[n]);
+			} else if (loadingTextureStrings == diffuseTextureStrings) {
+				n = 0;
+				loadingTextureStrings = normalTextureStrings;
+				load(loadingTextureStrings[n]);
+			} else if (loadingTextureStrings == normalTextureStrings) {
+				n = 0;
+				loadingTextureStrings = specularTextureStrings;
+				load(loadingTextureStrings[n]);
+			} else {
+            	load("sponza.awd");
+            }
+        }
+		
         //--------------------------------------------------------------------- BITMAP DISPLAY
         
         private function parseBitmap(e:Event):void 
@@ -657,6 +730,8 @@ package
 			}
 		}
 		
+		private var oneMaterial:Boolean = false;
+		
         /**
          * Triggered once all resources are loaded
          */
@@ -690,6 +765,7 @@ package
 					
 					//create singlepass material
 					singleMaterial = new TextureMaterial(textureDictionary[textureName]);
+					
 					singleMaterial.name = name;
 					singleMaterial.lightPicker = _lightPicker;
 					singleMaterial.addMethod(_fogMethod);
@@ -722,8 +798,13 @@ package
 					//create multipass material
 					multiMaterial = new TextureMultiPassMaterial(textureDictionary[textureName]);
 					multiMaterial.name = name;
-					multiMaterial.lightPicker = _lightPicker;
-					multiMaterial.shadowMethod = _cascadeMethod;
+					//if(!oneMaterial)
+					//{
+						//trace("MATERIAL NAME "+name);
+						multiMaterial.lightPicker = _lightPicker;
+						multiMaterial.shadowMethod = _cascadeMethod;
+					//	oneMaterial = true;
+					//}
 					multiMaterial.addMethod(_fogMethod);
 					multiMaterial.mipmap = true;
 					multiMaterial.repeat = true;
