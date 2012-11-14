@@ -72,11 +72,12 @@ package
 	import away3d.materials.methods.*;
 	import away3d.primitives.*;
 	import away3d.textures.*;
+	import away3d.tools.commands.*;
 	import away3d.utils.*;
 	
 	import uk.co.soulwire.gui.*;
 	
-	[SWF(frameRate="60", backgroundColor = "#0", width="960", height="480")]
+	[SWF(frameRate="60", backgroundColor = "#000000")]
 	public class Main extends Sprite
 	{
 		//signature swf
@@ -107,6 +108,7 @@ package
 		private var textureDictionary:Dictionary = new Dictionary();
 		private var multiMaterialDictionary:Dictionary = new Dictionary();
 		private var singleMaterialDictionary:Dictionary = new Dictionary();
+		private var meshVectorDictionary:Dictionary = new Dictionary();
 		private var _meshes:Vector.<Mesh> = new Vector.<Mesh>();
 		private var loadingTextureStrings:Vector.<String>;
 		private var n:uint = 0;
@@ -114,8 +116,11 @@ package
 		private var _flameData:Vector.<FlameVO> = Vector.<FlameVO>([new FlameVO(new Vector3D(-625, 165, 219), 0xffaa44), new FlameVO(new Vector3D(485, 165, 219), 0xffaa44), new FlameVO(new Vector3D(-625, 165, -148), 0xffaa44), new FlameVO(new Vector3D(485, 165, -148), 0xffaa44)]);
 		private var _view:View3D;
 		private var _cameraController:FirstPersonController;
-		private var _signature:Sprite;
 		private var _awayStats:AwayStats;
+		
+		//signature variables
+		private var Signature:Sprite;
+		private var SignatureBitmap:Bitmap;
 		
 		private var gui:SimpleGUI;
 		
@@ -332,8 +337,13 @@ package
 			_lights = new Array();
 			
 			
-            //add signature
-			addChild(_signature = new SignatureSwf());
+			//add signature
+			Signature = Sprite(new SignatureSwf());
+			SignatureBitmap = new Bitmap(new BitmapData(Signature.width, Signature.height, true, 0));
+			stage.quality = StageQuality.HIGH;
+			SignatureBitmap.bitmapData.draw(Signature);
+			stage.quality = StageQuality.LOW;
+			addChild(SignatureBitmap);
             
             //add stats
             addChild(_awayStats = new AwayStats(_view));
@@ -586,10 +596,8 @@ package
         private function loadProgress(e:ProgressEvent):void
 		{
             var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
-            if (P != 100)
+            if (P != 100) {
                 log(_loadingText + '\n' + ((_loadingText = "Loading Model")? int((e.bytesLoaded / 1024) << 0) + 'kb | ' + int((e.bytesTotal / 1024) << 0) + 'kb' : _currentTexture + ' | ' + _numTextures));
-            else {
-	            _text.visible = false;
 			}
         }
         
@@ -635,7 +643,6 @@ package
         
         private function parseBitmap(e:Event):void 
 		{
-            log("Parsing Data");
             var urlLoader:URLLoader = e.target as URLLoader;
             var loader:Loader = new Loader();
             loader.loadBytes(urlLoader.data);
@@ -683,6 +690,7 @@ package
          */
         private function parseAWD(e:Event):void
 		{
+			log("Parsing Data");
             var loader:URLLoader = e.target as URLLoader;
             var loader3d:Loader3D = new Loader3D(false);
 			var context:AssetLoaderContext = new AssetLoaderContext();
@@ -713,6 +721,10 @@ package
          */
         private function onResourceComplete(e:LoaderEvent):void
 		{
+			var merge:Merge = new Merge(false, false, true);
+				
+			_text.visible = false;
+			
             var loader3d:Loader3D = e.target as Loader3D;
             loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
             loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
@@ -734,8 +746,17 @@ package
 				var normalTextureName:String;
 				var specularTextureName:String;
 				
+				var meshVector:Vector.<Mesh> = meshVectorDictionary[name];
+				
 				//store single pass materials for use later
 				var singleMaterial:TextureMaterial = singleMaterialDictionary[name];
+				
+				if (!meshVector) {
+					//create mesh vector
+					meshVector = new Vector.<Mesh>();
+					
+					meshVectorDictionary[name] = meshVector;
+				}
 				
 				if (!singleMaterial) {
 					
@@ -764,6 +785,7 @@ package
 						singleMaterial.specularMap = textureDictionary[specularTextureName];
 					
 					singleMaterialDictionary[name] = singleMaterial;
+					
 				}
 
 				//store multi pass materials for use later
@@ -803,9 +825,24 @@ package
 				//default to multipass material
 				mesh.material = multiMaterial;
 				
+				meshVector.push(mesh);
 				_view.scene.addChild(mesh);
 			}
 			
+			/*
+			for each (name in materialNameStrings) {
+				var meshVector:Vector.<Mesh> = meshVectorDictionary[name];
+				
+				if (!meshVector)
+					continue;
+				trace(multiMaterialDictionary[name]);
+				var mesh:Mesh = new Mesh(new Geometry(), multiMaterialDictionary[name]);
+				
+				merge.applyToMeshes(mesh, meshVector);
+				
+				_view.scene.addChild(mesh);
+			}
+			*/
 			initMaterials();
 			initObjects();
         }
@@ -958,7 +995,7 @@ package
 			_text.x = (stage.stageWidth - _text.width)/2;
 			_text.y = (stage.stageHeight - _text.height)/2;
 			
-			_signature.y = stage.stageHeight - _signature.height;
+			SignatureBitmap.y = stage.stageHeight - Signature.height;
 			
 			_awayStats.x = stage.stageWidth - _awayStats.width;
 		}
