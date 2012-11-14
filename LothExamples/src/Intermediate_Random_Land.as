@@ -17,7 +17,7 @@
    Copyright (c)
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
-   of this software and associated documentation files (the �Software�), to deal
+   of this software and associated documentation files (the “Software”), to deal
    in the Software without restriction, including without limitation the rights
    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
    copies of the Software, and to permit persons to whom the Software is
@@ -26,7 +26,7 @@
    The above copyright notice and this permission notice shall be included in
    all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED �AS IS�, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -183,9 +183,8 @@ package
 		private var _debugRay:Boolean;
 		private var _isRender:Boolean;
 		
-		private var _signature:Sprite;
 		private var _text:TextField;
-		
+		private var _signature:Sprite;
 		private var _capture:BitmapData;
 		private var _topPause:Sprite;
 		
@@ -495,7 +494,6 @@ package
 		
 		private function initListeners(e:Event = null):void
 		{
-			
 			_isRender = true;
 			log(message());
 			if (e != null)
@@ -540,7 +538,7 @@ package
 		
 		private function grayPauseEffect():void
 		{
-			_capture = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x30ff0000);
+			_capture = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x991D1D1D);
 			
 			// damn no way to copy view !!!
 			//_capture.draw(_view.stage3DProxy.context3D.)
@@ -896,7 +894,7 @@ package
 			addChild(_text);
 		}
 		
-		public function message():String
+		private function message():String
 		{
 			var mes:String = "RANDOM LAND\n\n";
 			mes += "ARROW.WSAD.ZSQD - move\n";

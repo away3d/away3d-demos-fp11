@@ -1,40 +1,40 @@
 /*
 
-ONKBA FPS
+   ONKBA FPS
 
-Demonstrates:
+   Demonstrates:
 
-How to use the Loader3D object to load an embedded internal awd model.
-How to create character interaction in physic world
-How to set custom material on a model.
+   How to use the Loader3D object to load an embedded internal awd model.
+   How to create character interaction in physic world
+   How to set custom material on a model.
 
-Code, model and map by LoTh
-3dflashlo@gmail.com
-http://3dflashlo.wordpress.com
+   Code, model and map by LoTh
+   3dflashlo@gmail.com
+   http://3dflashlo.wordpress.com
 
-This code is distributed under the MIT License
+   This code is distributed under the MIT License
 
-Copyright (c)
+   Copyright (c)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the �Software�), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the “Software”), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED �AS IS�, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   THE SOFTWARE.
 
-*/
+ */
 package
 {
 	import away3d.extrusions.Elevation;
@@ -154,7 +154,7 @@ package
 		private var _heroWeapon:Mesh;
 		private var _bigBall:Mesh;
 		private var _hero:Mesh;
-		
+		private var _hero2:Mesh;
 		// materials
 		private var _boxMaterial:TextureMaterial;
 		private var _gunMaterial:TextureMaterial;
@@ -216,7 +216,7 @@ package
 		private var _prevMouseX:Number;
 		private var _prevMouseY:Number;
 		private var _mouseMove:Boolean;
-		private var _cameraHeight:Number = 40;
+		private var _cameraHeight:Number = -100//40;
 		
 		// demo testing
 		private var _isIntro:Boolean = true;
@@ -228,10 +228,10 @@ package
 		
 		private var _signature:Sprite;
 		private var _text:TextField;
-		private var _capture:Bitmap;
-        private var _capture2:BitmapData;
+        private var _capture:BitmapData;
         private var _topPause:Sprite;
-		// !! optional physics engine
+        
+		// optional physics engine
 		private var _physics:Object;
 		
 		/**
@@ -341,7 +341,6 @@ package
 			stage.addEventListener(Event.RESIZE, onResize);
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       LIGHTS
 		//-------------------------------------------------------------------------------
@@ -365,7 +364,6 @@ package
 			// create light picker for materials
 			_lightPicker = new StaticLightPicker([_sunLight, _skyProbe]);
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//       SKY
@@ -404,7 +402,6 @@ package
 			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2.5, RimLightMethod.ADD);
 			for ( i = 0; i < _materials.length; i++ ) { _materials[i].addMethod(_rimLightMethod); }
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//
@@ -517,7 +514,6 @@ package
 			}
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       REFLECTION
 		//-------------------------------------------------------------------------------
@@ -542,7 +538,6 @@ package
 			_materials[4].addMethod(_fresnelMethod);
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       3D OBJECT 
 		//-------------------------------------------------------------------------------
@@ -566,7 +561,6 @@ package
 			// load Onkba character with weapons
 			load("onkba_fps.awd");
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//
@@ -632,8 +626,7 @@ package
 		private function stopListeners():void
 		{
             grayPauseEffect();
-			//_isRender = false;
-           
+			_isRender = false;
 			log("&#47;&#33;&#92; PAUSE");
 			_stage3DProxy.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
@@ -658,7 +651,7 @@ package
         
 		private function grayPauseEffect():void
 		{
-            _capture2 = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x10ffffff);
+            _capture = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x991D1D1D);
             //_stage3DProxy.stage3D.context3D
            // _view.stage3DProxy.context3D.drawToBitmapData(_capture2);
           //  _capture2.draw(_view, null, null, null, new Rectangle(200, 200), false);
@@ -667,10 +660,9 @@ package
            // _capture.applyFilter(_capture, _capture.rect, new Point(), grayScale());
 			_topPause = new Sprite();
             addChild(_topPause);
-            _topPause.graphics.beginBitmapFill(_capture2, null, false, false);
+            _topPause.graphics.beginBitmapFill(_capture, null, false, false);
             _topPause.graphics.drawRect(0, 0, stage.width, stage.height);
             _topPause.graphics.endFill();
-            
         }
         
 		//-------------------------------------------------------------------------------
@@ -777,7 +769,7 @@ package
 				if (mesh.name == "Onkba") {
 					_hero = mesh;
 				}
-				
+                
 				// Weapons object
 				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (mesh.name == WEAPON[i] + 'Test') {
@@ -802,7 +794,7 @@ package
 			var loader3d:Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
-			var posY:Number = (38 * SCALE);
+			var posY:Number = (96 * SCALE);
 			
 			_transition = new CrossfadeTransition(0.3);
 			
@@ -816,9 +808,10 @@ package
 			_hero.addChild(_heroWeapon);
 			
 			_player.addChild(_hero);
+            
 			_hero.rotationY = 180;
-			_hero.y = -posY;
-			
+			_hero.y =  -posY//_terrain.getHeightAt(0, 0)-200; //-posY;
+            
 			// Optional dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
 			_heroPieces.scale(SCALE);
@@ -1072,8 +1065,8 @@ package
 					fullScreen();
 					break;
 				case Keyboard.C: 
-					if (isCrouch) { isCrouch = false; _cameraHeight = 40; }
-					else {isCrouch = true; _cameraHeight = 15;}
+					if (isCrouch) { isCrouch = false; _cameraHeight = -100; }
+					else {isCrouch = true; _cameraHeight = -150;}
 					stop();
 					break;
 				case Keyboard.SPACE: 
@@ -1418,11 +1411,6 @@ package
 		
 		}
         
-		private function grayScale():ColorMatrixFilter
-		{
-			var elements:Array = [0.33, 0.33, 0.33, 0, 0, 0.33, 0.33, 0.33, 0, 0, 0.33, 0.33, 0.33, 0, 0, 0, 0, 0, 1, 0];
-			return new ColorMatrixFilter(elements);
-		}
 		//-------------------------------------------------------------------------------
 		//
 		//       JIGLIB PHYSICS engines    
