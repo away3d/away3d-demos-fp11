@@ -1,25 +1,24 @@
 package {
-	import awayphysics.collision.shapes.AWPCapsuleShape;
-	import awayphysics.debug.AWPDebugDraw;
 	import awayphysics.dynamics.character.AWPKinematicCharacterController;
 	import awayphysics.collision.shapes.AWPBvhTriangleMeshShape;
 	import awayphysics.collision.dispatch.AWPCollisionObject;
 	import awayphysics.collision.shapes.AWPStaticPlaneShape;
 	import awayphysics.collision.shapes.AWPCollisionShape;
 	import awayphysics.collision.dispatch.AWPGhostObject;
+	import awayphysics.collision.shapes.AWPCapsuleShape;
 	import awayphysics.collision.shapes.AWPSphereShape;
 	import awayphysics.collision.shapes.AWPBoxShape;
 	import awayphysics.dynamics.AWPDynamicsWorld;
 	import awayphysics.data.AWPCollisionFlags;
 	import awayphysics.dynamics.AWPRigidBody;
+	import awayphysics.debug.AWPDebugDraw;
 	import awayphysics.events.AWPEvent;
 	
 	import flash.display.DisplayObject;
+	import flash.display.Sprite;
 	import flash.geom.Vector3D;
 	import flash.geom.Matrix3D;
 	import flash.events.Event;
-	import flash.display.Sprite;
-	
 	
 	/**
 	 * AwayPhysics
@@ -29,16 +28,16 @@ package {
 	 */
 	
 	public class PhysicsEngine extends Sprite {
+		protected static const _timeStep:Number = 1.0 / 30;
+		protected static const worldScale:Number = 10;
 		
 		// physics engine
 		private static var Singleton:PhysicsEngine;
 		protected static var physicsWorld:AWPDynamicsWorld;
-		protected static const _timeStep:Number = 1.0 / 30;
-		protected static const worldScale:Number = 10;
+		
+		// collection
 		private static var _rigid:Vector.<AWPRigidBody>
-		private static var _static:Vector.<AWPCollisionObject>
-		private var _isDebug:Boolean = false;
-		private var _debugDraw:AWPDebugDraw;
+		private static var _static:Vector.<AWPCollisionObject>;
 		
 		// ground
 		private var _terrainBody:AWPCollisionObject;
@@ -46,26 +45,29 @@ package {
 		
 		// character
 		private var character:AWPKinematicCharacterController;
+		private var walkDirection:Vector3D = new Vector3D();
 		private var characterMove:Boolean = false;
-		private var keyRight:Boolean = false;
-		private var keyLeft:Boolean = false;
 		private var keyForward:Boolean = false;
 		private var keyReverse:Boolean = false;
+		private var keyRight:Boolean = false;
+		private var keyLeft:Boolean = false;
 		private var keyUp:Boolean = false;
-		private var walkDirection:Vector3D = new Vector3D();
 		private var walkSpeed:Number = 1;
 		private var chRotation:Number = 0;
 		
+		// debug
+		private var _isDebug:Boolean = false;
+		private var _debugDraw:AWPDebugDraw;
 		
-		public function PhysicsEngine() {
-		}
+		public function PhysicsEngine() { }
 		
 		
 		//-------------------------------------------------------------------------------
 		//       Singleton
 		//-------------------------------------------------------------------------------
 		
-		public static function getInstance():PhysicsEngine {
+		public static function getInstance():PhysicsEngine 
+		{
 			if (Singleton == null) {
 				Singleton = new PhysicsEngine();
 				PhysicsEngine.init();
@@ -78,7 +80,8 @@ package {
 		//       Physics World init
 		//-------------------------------------------------------------------------------
 		
-		public static function init(e:Event = null):void {
+		public static function init(e:Event = null):void
+		{
 			physicsWorld = AWPDynamicsWorld.getInstance();
 			physicsWorld.initWithDbvtBroadphase();
 			physicsWorld.collisionCallbackOn = true;
@@ -93,7 +96,8 @@ package {
 		//       Physics Update
 		//-------------------------------------------------------------------------------
 		
-		public function update():void {
+		public function update():void 
+		{
 			physicsWorld.step(_timeStep);
 			if (character) {
 				if (keyLeft && character.onGround()) {
@@ -135,7 +139,8 @@ package {
 		//       Add body to simulation
 		//-------------------------------------------------------------------------------
 		
-		public function addRigid(body:AWPRigidBody):void {
+		public function addRigid(body:AWPRigidBody):void 
+		{
 			physicsWorld.addRigidBody(body);
 		}
 		
@@ -144,7 +149,8 @@ package {
 		//       Primitive object rigidbody
 		//-------------------------------------------------------------------------------
 		
-		public function addObject(m:*, O:Object):void {
+		public function addObject(m:*, O:Object):void 
+		{
 			var o:Object = O || new Object();
 			var type:String = o.type || "cube";
 			var phyType:String = o.phyType || "rigidbody";
@@ -196,7 +202,8 @@ package {
 		//       Triangle mesh import
 		//-------------------------------------------------------------------------------
 		
-		public function addSimplePlane():void {
+		public function addSimplePlane():void 
+		{
 			var shape:AWPStaticPlaneShape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));;
 			_planeBody = new AWPCollisionObject(shape, null);
 			physicsWorld.addCollisionObject(_planeBody, 1, -1);
@@ -213,60 +220,67 @@ package {
 			physicsWorld.addCollisionObject(_terrainBody, 1, -1);
 		}
 		
-		public function addTriangleCollision(O:Object = null):void {
+		public function addTriangleCollision(O:Object = null):void 
+		{
 			var o:Object = O || new Object();
 			var shape:AWPBvhTriangleMeshShape = new AWPBvhTriangleMeshShape(o.geometry);
 			var body:AWPCollisionObject = new AWPCollisionObject(shape, null);
 			physicsWorld.addCollisionObject(body, 1, -1);
 		}
 		
-		public function addTriangleRigidbody(O:Object = null):void {
-			var o:Object = O || new Object();
-			var shape:AWPBvhTriangleMeshShape = new AWPBvhTriangleMeshShape(o.geometry);
-			var body:AWPRigidBody = new AWPRigidBody(shape, o.mesh, 0);
-			physicsWorld.addRigidBody(body);
-			var matr:Matrix3D = new Matrix3D();
-			matr.position = o.position || new Vector3D();
-			body.transform = matr;
-		}
+		/*public function addTriangleRigidbody(O:Object = null):void {
+		var o:Object = O || new Object();
+		var shape:AWPBvhTriangleMeshShape = new AWPBvhTriangleMeshShape(o.geometry);
+		var body:AWPRigidBody = new AWPRigidBody(shape, o.mesh, 0);
+		physicsWorld.addRigidBody(body);
+		var matr:Matrix3D = new Matrix3D();
+		matr.position = o.position || new Vector3D();
+		body.transform = matr;
+		}*/
 		
 		
 		//-------------------------------------------------------------------------------
+		//
 		//       Character 
+		//
 		//-------------------------------------------------------------------------------
 		
-		public function addCharacter(container:*):void {
+		public function addCharacter(container:*):void 
+		{
 			// create character shape and controller
-			//var shape:AWPCapsuleShape = new AWPCapsuleShape(20, 40);
-			container.y = -10;
-			
-			var shape:AWPBoxShape =  new AWPBoxShape(60, 164, 40);//new AWPCapsuleShape(20, 40);
+			//var shape:AWPBoxShape =  new AWPBoxShape(60, 164, 40);
+			var shape:AWPCapsuleShape = new AWPCapsuleShape(41, 81);
 			var ghostObject:AWPGhostObject = new AWPGhostObject(shape, container);
+			ghostObject.friction = 0.3;
 			ghostObject.collisionFlags = AWPCollisionFlags.CF_CHARACTER_OBJECT;
 			ghostObject.addEventListener(AWPEvent.COLLISION_ADDED, characterCollisionAdded);
-			character = new AWPKinematicCharacterController(ghostObject, 0.1);
+			character = new AWPKinematicCharacterController(ghostObject, 0.5);
 			
 			physicsWorld.addCharacter(character);
+			
 			character.jumpSpeed = 10;
-			character.fallSpeed = 100;
-			character.maxJumpHeight = 200;
+			character.fallSpeed = 10;
+			character.maxJumpHeight = 10000;
 			character.warp(new Vector3D(0, 200, 0));
 		}
 		
-		private function characterCollisionAdded(event:AWPEvent):void {
+		private function characterCollisionAdded(event:AWPEvent):void 
+		{
 			if (!(event.collisionObject.collisionFlags & AWPCollisionFlags.CF_STATIC_OBJECT)) {
 				var body:AWPRigidBody = AWPRigidBody(event.collisionObject);
 				var force:Vector3D = event.manifoldPoint.normalWorldOnB.clone();
-				force.scaleBy(-30);
-				//body.applyForce(force, event.manifoldPoint.localPointB);
+				force.scaleBy(-10);
+				body.applyForce(force, event.manifoldPoint.localPointB);
 			}
 		}
 		
-		public function characterSpeed(n:Number):void {
+		public function characterSpeed(n:Number):void 
+		{
 			walkSpeed = n;
 		}
 		
-		public function key_forward(c:Boolean):void {
+		public function key_forward(c:Boolean):void 
+		{
 			keyForward = c;
 			if (!c) {
 				walkDirection.scaleBy(0);
@@ -274,7 +288,8 @@ package {
 			}
 		}
 		
-		public function key_Reverse(c:Boolean):void {
+		public function key_Reverse(c:Boolean):void 
+		{
 			keyReverse = c
 			if (!c) {
 				walkDirection.scaleBy(0);
@@ -282,15 +297,18 @@ package {
 			}
 		}
 		
-		public function key_Left(c:Boolean):void {
+		public function key_Left(c:Boolean):void
+		{
 			keyLeft = c;
 		}
 		
-		public function key_Right(c:Boolean):void {
+		public function key_Right(c:Boolean):void 
+		{
 			keyRight = c
 		}
 		
-		public function key_Jump(c:Boolean):void {
+		public function key_Jump(c:Boolean):void 
+		{
 			keyUp = c
 		}
 		
