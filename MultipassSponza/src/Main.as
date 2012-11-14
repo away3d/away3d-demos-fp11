@@ -76,7 +76,7 @@ package
 	
 	import uk.co.soulwire.gui.*;
 	
-	[SWF(frameRate="60", backgroundColor="#000000")]
+	[SWF(frameRate="60", backgroundColor = "#0", width="960", height="480")]
 	public class Main extends Sprite
 	{
 		//signature swf
@@ -911,6 +911,8 @@ package
 				case Keyboard.D:
 					_strafeAcceleration = 0;
 					break;
+				case Keyboard.F:
+					stage.displayState = StageDisplayState.FULL_SCREEN;
 			}
 		}
 		
