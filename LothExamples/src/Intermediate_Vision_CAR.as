@@ -71,6 +71,7 @@ package
 	import utils.PixelBlenderEffects;
 	import utils.VectorSkyEffects;
 	import utils.BitmapMapper;
+	import utils.CarMove;
 	
 	[SWF(backgroundColor="#333338",frameRate="60",quality="LOW")]
 	
@@ -170,6 +171,8 @@ package
 		private var _capture:BitmapData;
 		private var _topPause:Sprite;
 		
+		private var _mover:CarMove;
+		
 		/**
 		 * Constructor
 		 */
@@ -217,29 +220,6 @@ package
 			
 			// kickoff asset loading
 			load(_bitmapStrings[_num]);
-		}
-		
-		/**
-		 * Create an instructions overlay
-		 */
-		private function initText():void
-		{
-			_text = new TextField();
-			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
-			format.letterSpacing = 1;
-			format.leading = 2;
-			format.leftMargin = 5;
-			_text.defaultTextFormat = format;
-			_text.antiAliasType = AntiAliasType.ADVANCED;
-			_text.gridFitType = GridFitType.PIXEL;
-			_text.y = 3;
-			_text.width = 300;
-			_text.height = 250;
-			_text.selectable = false;
-			_text.mouseEnabled = true;
-			_text.wordWrap = true;
-			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
-			addChild(_text);
 		}
 		
 		//-------------------------------------------------------------------------------
@@ -525,7 +505,22 @@ package
 			if (_sunLight.ambient < 0.5)
 				_sunLight.ambient += 0.01;
 			
-			_cameraController.lookAtPosition = new Vector3D(0, _cameraHeight, 0);
+			CarMove.update();
+			if (_visionCar)
+			{
+				_visionCar.position = new Vector3D(CarMove.position.x * 10, 0, CarMove.position.z * 10);
+				_visionCar.rotationY = CarMove.angle + 180;
+				// wheels steering
+				_wheels[1].rotationY = CarMove.steering * 25;
+				_wheels[3].rotationY = 180 + (CarMove.steering * 25);
+				// wheels rotation
+				_wheels[0].rotationX -= CarMove.speed * 6;
+				_wheels[1].rotationX -= CarMove.speed * 6;
+				_wheels[2].rotationX += CarMove.speed * 6;
+				_wheels[3].rotationX += CarMove.speed * 6;
+			}
+			
+			_cameraController.lookAtPosition = new Vector3D(_visionCar.position.x, _cameraHeight, _visionCar.position.z);
 			_cameraController.update();
 			
 			// update reflection
@@ -543,7 +538,7 @@ package
 		private function initListeners(e:Event = null):void
 		{
 			_isRender = true;
-			message();
+			log(message());
 			if (e != null)
 			{
 				removeGrayPauseEffect();
@@ -655,18 +650,6 @@ package
 		}
 		
 		/**
-		 * Display demo instruction
-		 */
-		private function message():void
-		{
-			_text.text = "VISION CAR\n\n";
-			_text.appendText("I - full screen\n");
-			_text.appendText("V - reflection\n");
-			_text.appendText("N - random sky\n");
-			_text.appendText("B - clone\n");
-		}
-		
-		/**
 		 * Bitmap find
 		 */
 		private function parseBitmap(e:Event):void
@@ -741,6 +724,8 @@ package
 			var loader3d:Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
+			
+			//var f:CarMove = new CarMove();
 			
 			var mesh:Mesh;
 			
@@ -873,10 +858,14 @@ package
 			
 			// finaly add vision car mesh
 			_view.scene.addChild(_visionCar)
-			_visionCar.rotationY = 22.5;
+			_visionCar.rotationY = 0 //22.5;
 			
-			message();
+			log(message());
 			initListeners();
+		
+			//_mover = new CarMove();
+			//addChild(_mover);
+		
 		}
 		
 		//-------------------------------------------------------------------------------
@@ -916,6 +905,25 @@ package
 		{
 			switch (event.keyCode)
 			{
+				case Keyboard.UP: 
+				case Keyboard.W: 
+				case Keyboard.Z: //fr
+					CarMove.up(true);
+					break;
+				case Keyboard.DOWN: 
+				case Keyboard.S: 
+					CarMove.down(true);
+					break;
+				case Keyboard.LEFT: 
+				case Keyboard.A: 
+				case Keyboard.Q: //fr
+					CarMove.left(true);
+					break;
+				case Keyboard.RIGHT: 
+				case Keyboard.D: 
+					CarMove.right(true);
+					break;
+				
 				case Keyboard.B: 
 					makeClone();
 					break;
@@ -939,6 +947,22 @@ package
 		{
 			switch (event.keyCode)
 			{
+				case Keyboard.UP: 
+				case Keyboard.W: 
+				case Keyboard.Z: //fr
+				case Keyboard.DOWN: 
+				case Keyboard.S: 
+					CarMove.up(false);
+					CarMove.down(false);
+					break;
+				case Keyboard.LEFT: 
+				case Keyboard.A: 
+				case Keyboard.Q: //fr
+				case Keyboard.RIGHT: 
+				case Keyboard.D: 
+					CarMove.right(false);
+					CarMove.left(false);
+					break;
 			}
 		}
 		
@@ -1018,9 +1042,41 @@ package
 				_cameraController.distance = 2000;
 		}
 		
-		/**
-		 * log for display info
-		 */
+		//-------------------------------------------------------------------------------
+		//       Interface   
+		//-------------------------------------------------------------------------------
+		
+		private function initText():void
+		{
+			_text = new TextField();
+			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
+			format.letterSpacing = 1;
+			format.leading = 2;
+			format.leftMargin = 5;
+			_text.defaultTextFormat = format;
+			_text.antiAliasType = AntiAliasType.ADVANCED;
+			_text.gridFitType = GridFitType.PIXEL;
+			_text.y = 3;
+			_text.width = 300;
+			_text.height = 250;
+			_text.selectable = false;
+			_text.mouseEnabled = true;
+			_text.wordWrap = true;
+			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
+			addChild(_text);
+		}
+		
+		private function message():String
+		{
+			var mes:String = "VISION CAR\n\n";
+			mes += "ARROW.WSAD.ZSQD - move\n";
+			mes += "V - reflection\n";
+			mes += "I - full screen\n";
+			mes += "N - random sky\n";
+			mes += "B - clone\n";
+			return mes;
+		}
+		
 		private function log(t:String):void
 		{
 			_text.htmlText = t;
