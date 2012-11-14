@@ -204,6 +204,7 @@ package
 		private var _cameraHeight:Number = 40;
 		
 		private var _isIntro:Boolean = true;
+        private var _isReflection:Boolean = false;
 		private var _isResize:Boolean;
 		private var _cloneActif:Boolean;
 		private var _dynamicsEyes:Boolean;
@@ -435,13 +436,6 @@ package
 			//create global fog method
 			_fogMethode = new FogMethod(fogNear, FARVIEW / 2, fogColor);
 			
-			// global reflection methode
-			initReflectionCube()
-			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
-			_fresnelMethod.normalReflectance = .6;
-			_fresnelMethod.fresnelPower = 0.6;
-			_fresnelMethod.alpha = 0.3;
-			
 			//create the hero material
 			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[3]));
 			_heroMaterial.normalMap = Cast.bitmapTexture(textureBitmapData[4]);
@@ -452,7 +446,6 @@ package
 			_heroMaterial.bothSides = false;
 			_heroMaterial.alphaThreshold = 0.9;
 			_heroMaterial.alphaPremultiplied = true;
-			_heroMaterial.addMethod(_fresnelMethod);
 			_materials[0] = _heroMaterial;
 			
 			//create the gun material
@@ -462,9 +455,8 @@ package
 			_gunMaterial.lightPicker = _lightPicker;
 			_gunMaterial.gloss = 16;
 			_gunMaterial.specular = 0.6;
-			// reflection
-			_gunMaterial.addMethod(_fresnelMethod);
 			_materials[1] = _gunMaterial;
+            
 			// create eye ball close material
 			var b:BitmapData;
 			b = new BitmapData(64, 64, false, 0xA13D1E);
@@ -477,8 +469,6 @@ package
 			b = new BitmapData(256/2, 256/2, false);
 			b.draw(textureBitmapData[3], new Matrix(1, 0, 0, 1, -283/2, -197/2));
 			_eyesOpenMaterial = new TextureMaterial(Cast.bitmapTexture(b));
-			// reflection
-			//_eyesOpenMaterial.addMethod(_fresnelMethod);
 			_eyesOpenMaterial.gloss = 100;
 			_eyesOpenMaterial.specular = 0.8;
 			_eyesOpenMaterial.repeat = true;
@@ -516,9 +506,11 @@ package
 				_materials[i].specularLightSources = LightSources.LIGHTS;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 0.85;
-                
                 if (i != 5) _materials[i].addMethod(_rimLightMethod);
 			}
+            
+            // global reflection methode
+            if (_isReflection) initReflection();
 		}
 		
 		/**
@@ -533,7 +525,21 @@ package
 			// center the reflection at (0, 100, 0) where our reflective object will be
 			_reflectionTexture.position = new Vector3D(0, 200, 0);
 		}
-		
+        
+		private function initReflection() : void
+		{
+            if (_isReflection) return;
+            _isReflection = true;
+            initReflectionCube();
+            _fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
+            _fresnelMethod.normalReflectance = 0.3;
+            _fresnelMethod.fresnelPower = 0.5;
+            _fresnelMethod.alpha = 0.3;
+            
+            _materials[0].addMethod(_fresnelMethod);
+            _materials[1].addMethod(_fresnelMethod);
+        }
+        
 		//-------------------------------------------------------3D OBJECTS
 		
 		/**
@@ -608,9 +614,10 @@ package
 				}
 			}
 			// update reflection
-			_reflectionTexture.position = _player.position; 
-			_reflectionTexture.render(_view);
-			
+            if (_isReflection) {
+                _reflectionTexture.position = _player.position;
+                _reflectionTexture.render(_view);
+			}
 			// update camera
 			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y+_cameraHeight, _player.z);
 			_cameraController.update();
@@ -664,6 +671,7 @@ package
 				_text.appendText("C - crouch\n");
 				_text.appendText("\n");
 				_text.appendText("U - physics debug !\n")
+                _text.appendText("V - reflection !\n")
 				_text.appendText("I - full screen\n");
 				_text.appendText("N - random sky\n");
 				_text.appendText("P - xray bones\n");
@@ -992,6 +1000,9 @@ package
 					break;
 				case Keyboard.N: 
 					randomSky();
+					break;
+                case Keyboard.V: 
+					initReflection();
 					break;
 				case Keyboard.U: 
 					debugPhysics();
