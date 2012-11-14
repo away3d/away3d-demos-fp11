@@ -84,25 +84,11 @@ package
     	public var SignatureSwf:Class;
 		
 		//skybox
-		[Embed(source="/../embeds/textures/sky/hourglass_east.jpg")]
-		public static var EnvNegX : Class;
-		[Embed(source="/../embeds/textures/sky/hourglass_west.jpg")]
-		public static var EnvPosX : Class;
-		[Embed(source="/../embeds/textures/sky/hourglass_down.jpg")]
-		public static var EnvNegY : Class;
-		[Embed(source="/../embeds/textures/sky/hourglass_up.jpg")]
-		public static var EnvPosY : Class;
-		[Embed(source="/../embeds/textures/sky/hourglass_north.jpg")]
-		public static var EnvNegZ : Class;
-		[Embed(source="/../embeds/textures/sky/hourglass_south.jpg")]
-		public static var EnvPosZ : Class;
-		
 		[Embed(source="/../embeds/textures/sky/cubetexture/hourglass_cubemap2.atf", mimeType="application/octet-stream")]
 		public static var SkyMapCubeTexture : Class;
 		private var _skyMap:ATFCubeTexture;
 		
 		
-		//[Embed(source="/../embeds/textures/fire.jpg")]
 		[Embed(source="/../embeds/textures/fire.atf", mimeType="application/octet-stream")]
 		public static var FlameTexture : Class;
 		
@@ -329,6 +315,7 @@ package
 		{
 			stage.scaleMode = StageScaleMode.NO_SCALE;
             stage.align = StageAlign.TOP_LEFT;
+			stage.quality = StageQuality.LOW;
             
 			
 			//Debug.active = true;
