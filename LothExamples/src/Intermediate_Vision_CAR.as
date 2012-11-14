@@ -149,7 +149,7 @@ package
 		private var _prevMouseY:Number;
 		private var _mouseMove:Boolean;
 		private var _cameraHeight:Number = 50;
-        
+		
 		private var _isReflection:Boolean = false;
 		private var _isResize:Boolean;
 		private var _cloneActif:Boolean;
@@ -185,8 +185,35 @@ package
 		}
 		
 		/**
-		 * Initialise the engine
+		 * Create an instructions overlay
 		 */
+		private function initText():void
+		{
+			_text = new TextField();
+			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
+			format.letterSpacing = 1;
+			format.leading = 2;
+			format.leftMargin = 5;
+			_text.defaultTextFormat = format;
+			_text.antiAliasType = AntiAliasType.ADVANCED;
+			_text.gridFitType = GridFitType.PIXEL;
+			_text.y = 3;
+			_text.width = 300;
+			_text.height = 250;
+			_text.selectable = false;
+			_text.mouseEnabled = true;
+			_text.wordWrap = true;
+			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
+			addChild(_text);
+		}
+		
+		
+		//-------------------------------------------------------------------------------
+		//
+		//       3D ENGINE INIT 
+		//
+		//-------------------------------------------------------------------------------
+		
 		private function initEngine():void
 		{
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -226,34 +253,10 @@ package
 		}
 		
 		
-		/**
-		 * Create an instructions overlay
-		 */
-		private function initText():void
-		{
-			_text = new TextField();
-			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
-			format.letterSpacing = 1;
-			format.leading = 2;
-			format.leftMargin = 5;
-			_text.defaultTextFormat = format;
-			_text.antiAliasType = AntiAliasType.ADVANCED;
-			_text.gridFitType = GridFitType.PIXEL;
-			_text.y = 3;
-			_text.width = 300;
-			_text.height = 250;
-			_text.selectable = false;
-			_text.mouseEnabled = true;
-			_text.wordWrap = true;
-			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
-			addChild(_text);
-		}
+		//-------------------------------------------------------------------------------
+		//       LIGHTS
+		//-------------------------------------------------------------------------------
 		
-		//-------------------------------------------------------LIGHT
-		
-		/**
-		 * Initialise the lights
-		 */
 		private function initLights():void
 		{
 			//create a light for shadows that mimics the sun's position in the skybox
@@ -291,16 +294,15 @@ package
 			
 			//create light picker for materials
 			_lightPicker = new StaticLightPicker([_sunLight, _skyLight, _skyProbe]);
-			//_lightPicker = new StaticLightPicker([_sunLight, _skyLight]);
 		}
 		
 		
-		//-------------------------------------------------------SKY
+		//-------------------------------------------------------------------------------
+		//       SKY
+		//-------------------------------------------------------------------------------
 		
-		/** 
-		 * Genarate random sky 
-		 */
-		private function randomSky():void {
+		private function randomSky():void 
+		{
 			zenithColor = 0xFFFFFF * Math.random();
 			fogColor = 0xFFFFFF * Math.random();
 			
@@ -324,11 +326,12 @@ package
 		}
 		
 		
-		//-------------------------------------------------------MATERIALS
+		//-------------------------------------------------------------------------------
+		//
+		//       MATERIAL
+		//
+		//-------------------------------------------------------------------------------
 		
-		/**
-		 * Initialise the scene materials
-		 */
 		private function initMaterials():void
 		{
 			_materials = new Vector.<TextureMaterial>();
@@ -420,49 +423,48 @@ package
 				_materials[i].ambient = 1;
 				if (i != 0)_materials[i].addMethod(_rimLightMethod);
 			}
-            
-            // global reflection methode
-            if (_isReflection) initReflection();
+			
+			// global reflection methode
+			if (_isReflection) initReflection();
 		}
 		
-		/**
-		 * Initialized the ReflectionCubeTexture that will contain the environment map render
-		 */
+		
+		//-------------------------------------------------------------------------------
+		//       REFLECTION
+		//-------------------------------------------------------------------------------
+		
 		private function initReflectionCube() : void
 		{
-			// create the cube with a dimension of 128
 			_reflectionTexture = new CubeReflectionTexture(128*2);
 			_reflectionTexture.farPlaneDistance = fogFar;
 			_reflectionTexture.nearPlaneDistance = 250;
-			// center the reflection at (0, 100, 0) where our reflective object will be
 			_reflectionTexture.position = new Vector3D(0, 200, 0);
 		}
-        
+		
 		private function initReflection() : void
 		{
-            if (_isReflection) return;
-            _isReflection = true;
-            initReflectionCube();
-            _fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
-            _fresnelMethod.normalReflectance = .5;
-            _fresnelMethod.fresnelPower = 0.5;
-            _fresnelMethod.alpha = 0.2;
-            _fresnelMethod2 = new FresnelEnvMapMethod(_reflectionTexture);
-            _fresnelMethod2.normalReflectance = 1;
-            _fresnelMethod2.fresnelPower = 0.3;
-            _fresnelMethod2.alpha = 0.6;
-            
-            _materials[1].addMethod(_fresnelMethod);
-            _materials[8].addMethod(_fresnelMethod2);
-            _materials[9].addMethod(_fresnelMethod2);
-            
-        }
-        
-		//-------------------------------------------------------3D OBJECTS
+			if (_isReflection) return;
+			_isReflection = true;
+			initReflectionCube();
+			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
+			_fresnelMethod.normalReflectance = .5;
+			_fresnelMethod.fresnelPower = 0.5;
+			_fresnelMethod.alpha = 0.2;
+			_fresnelMethod2 = new FresnelEnvMapMethod(_reflectionTexture);
+			_fresnelMethod2.normalReflectance = 1;
+			_fresnelMethod2.fresnelPower = 0.3;
+			_fresnelMethod2.alpha = 0.6;
+			
+			_materials[1].addMethod(_fresnelMethod);
+			_materials[8].addMethod(_fresnelMethod2);
+			_materials[9].addMethod(_fresnelMethod2);
+		}
 		
-		/**
-		 * Initialise the scene objects
-		 */
+		
+		//-------------------------------------------------------------------------------
+		//       3D OBJECT 
+		//-------------------------------------------------------------------------------
+		
 		private function initObjects():void
 		{
 			//create skybox
@@ -481,11 +483,11 @@ package
 			load("vision.awd");
 		}
 		
-		//-------------------------------------------------------GLOBAL LISTENERS
 		
-		/**
-		 * Initialise the listeners
-		 */
+		//-------------------------------------------------------------------------------
+		//       GLOBAL LISTENER
+		//-------------------------------------------------------------------------------
+		
 		private function initListeners():void
 		{
 			//add render loop
@@ -507,11 +509,12 @@ package
 		}
 		
 		
-		//-------------------------------------------------------RENDER LOOP
+		//-------------------------------------------------------------------------------
+		//
+		//       OO RENDER LOOP   
+		//
+		//-------------------------------------------------------------------------------
 		
-		/**
-		 * Render loop
-		 */
 		private function onEnterFrame(event:Event):void
 		{
 			if (_sunLight.ambient < 0.5)_sunLight.ambient += 0.01;
@@ -522,20 +525,14 @@ package
 			// update reflection
 			if (_isReflection) _reflectionTexture.render(_view);
 			
-			if (_isResize) {
-				_view.width = stage.stageWidth;
-				_view.height = stage.stageHeight;
-				_stats.x = stage.stageWidth - _stats.width;
-				_signature.y = stage.stageHeight - _signature.height;
-				_isResize = false;
-			}
-			
 			// update view
 			_view.render();
 		}
 		
 		
-		//-------------------------------------------------------LOADING SIDE
+		//-------------------------------------------------------------------------------
+		//        LOADING FUNCTION
+		//-------------------------------------------------------------------------------
 		
 		/**
 		 * Global binary file loader
@@ -571,10 +568,10 @@ package
 			else {
 				_text.text =  "VISION CAR\n\n";
 				_text.appendText("I - full screen\n");
-                _text.appendText("V - reflection\n");
+				_text.appendText("V - reflection\n");
 				_text.appendText("N - random sky\n");
 				_text.appendText("B - clone\n");
-                
+				
 			}
 		}
 		
@@ -636,15 +633,18 @@ package
 			}
 		}
 		
-		/**
-		 * Check if all resource loaded
-		 */
+		
+		//-------------------------------------------------------------------------------
+		//
+		//       CAR DEFINE AND PLACE
+		//
+		//-------------------------------------------------------------------------------
+		
 		private function onResourceComplete(e:LoaderEvent):void
 		{
 			var loader3d:Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
-			
 			
 			var mesh:Mesh;
 			
@@ -721,11 +721,11 @@ package
 			_visionCar.rotationY = 22.5;
 		}
 		
-		//-------------------------------------------------------KEYBOARD FUNCTION
 		
-		/**
-		 * Test some Clones
-		 */
+		//-------------------------------------------------------------------------------
+		//       CLONE
+		//-------------------------------------------------------------------------------
+		
 		private function makeClone(n:int=4):void {
 			if (!_cloneActif) {
 				_cloneActif = true;
@@ -744,7 +744,10 @@ package
 			}
 		}
 		
-		//--------------------------------------------------------------------- KEYBORD
+		
+		//-------------------------------------------------------------------------------
+		//       KEYBOARD
+		//-------------------------------------------------------------------------------
 		
 		/**
 		 * Key down listener for animation
@@ -761,10 +764,10 @@ package
 				case Keyboard.I: 
 					fullScreen();
 					break;
-                case Keyboard.V: 
+				case Keyboard.V: 
 					initReflection();
 					break;
-                    
+				
 			}
 		}
 		
@@ -777,12 +780,16 @@ package
 			}
 		}
 		
-		//--------------------------------------------------------------------- OTHER
+		
+		//-------------------------------------------------------------------------------
+		//       STAGE AND MOUSE
+		//-------------------------------------------------------------------------------
 		
 		/**
 		 * stage full screen
 		 */
-		private function fullScreen(e:Event=null):void {
+		private function fullScreen(e:Event=null):void
+		{
 			if (stage.displayState == StageDisplayState.NORMAL) {
 				stage.displayState = StageDisplayState.FULL_SCREEN;
 			} else {
@@ -795,7 +802,10 @@ package
 		 */
 		private function onResize(event:Event=null):void
 		{
-			_isResize = true;
+			_view.width = stage.stageWidth;
+			_view.height = stage.stageHeight;
+			_stats.x = stage.stageWidth - _stats.width;
+			_signature.y = stage.stageHeight - _signature.height;
 		}
 		
 		private function onStageMouseDown(e:MouseEvent):void
