@@ -53,7 +53,7 @@ package utils
 			
 			var skyFinal:BitmapCubeTexture
 			
-			if (bitmaps) {
+			if (bitmaps!=null) {
 				var s:Sprite
 				var h:Bitmap
 				var n:BitmapData

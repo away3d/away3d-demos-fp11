@@ -287,7 +287,8 @@ package
 		{
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-			
+			stage.frameRate = 60;
+            
 			// create the view
 			_view = new View3D();
 			_view.forceMouseMove = true;
@@ -546,9 +547,8 @@ package
 		private function initObjects():void
 		{
 			//create skybox
-			_sky = new SkyBox(_skyMap);
-			_view.scene.addChild(_sky);
-			
+            randomSky();
+            
 			//create mountain like terrain
 			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(textureBitmapData[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
 			_view.scene.addChild(_terrain);
@@ -561,8 +561,6 @@ package
 			
 			// Now load Onkba character and weapons
 			load("onkba_fps.awd");
-			
-			randomSky();
 		}
 		
 		
@@ -748,7 +746,9 @@ package
 			} else if (event.asset.assetType == AssetType.ANIMATION_NODE) {
 				//add each animation node to the animation set (! see sequenceFPS.txt in res)
 				var animationNode:SkeletonClipNode = event.asset as SkeletonClipNode;
-				animationSet.addAnimation(animationNode.name, animationNode);
+                animationSet.addAnimation(animationNode);
+                //log(animationNode.name);
+				//animationSet.addAnimation(animationNode.name, animationNode);
 				
 				// play default idle animation
 				//if (animationNode.name == ANIM_BREATHE) jumpDown()//stop();
@@ -855,6 +855,7 @@ package
 						g = Mesh(_hero.clone());
 						g.x = decal + (100 * i);
 						g.z = (decal + (100 * j));
+                        g.y = _terrain.getHeightAt(g.x, g.z);
 						if (g.x != 0 || g.z != 0)
 							_view.scene.addChild(g);
 					}
@@ -876,7 +877,6 @@ package
 			if (isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
 			else anim = WEAPON[currentWeapon] + ANIMATION[0];
 			
-			
 			if (currentAnim == anim) return;
 			
 			currentAnim = anim;
@@ -892,8 +892,6 @@ package
 		private function updateMovement(dir:Number):void
 		{
 			isMoving = true;
-			
-			//update animator sequence
 			var anim:String = isRunning ? ANIM_RUN : ANIM_WALK;
 			
 			if (currentAnim == anim) return;
@@ -1347,6 +1345,7 @@ package
 			
 			
 		}
+        
 		private function debugPhysics():void {
 			_physics.addDebug(_view);
 		}

@@ -219,11 +219,12 @@ package
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			stage.frameRate = 60;
+            
 			//create the view
 			_view = new View3D();
 			_view.forceMouseMove = true;
 			_view.backgroundColor = skyColor;
-			_view.antiAlias = 8;
+			_view.antiAlias = 4;
 			addChild(_view);
 			
 			//create custom lens
@@ -259,6 +260,7 @@ package
 		
 		private function initLights():void
 		{
+            log("Light")
 			//create a light for shadows that mimics the sun's position in the skybox
 			_sunLight = new DirectionalLight(-0.5, -1, 0.3);
 			_sunLight.color = sunColor;
@@ -334,11 +336,12 @@ package
 		
 		private function initMaterials():void
 		{
+           
 			_materials = new Vector.<TextureMaterial>();
 			
 			//create gobal specular method
-			_specularMethod = new FresnelSpecularMethod();
-			_specularMethod.normalReflectance = 0.3;
+			//_specularMethod = new FresnelSpecularMethod();
+			//_specularMethod.normalReflectance = 0.3;
 			
 			//create global shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
@@ -347,10 +350,10 @@ package
 			//create Rim light method
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
 			
-			
-			
+            
 			//create global fog method
 			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
+            
 			
 			// create ground texture
 			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[0]));
@@ -360,6 +363,7 @@ package
 			_groundMaterial.repeat = true;
 			_materials[0] = _groundMaterial;
 			
+            // create car material
 			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x010101)))
 			_carWhiteMat.gloss = 100;
 			_carWhiteMat.specular = 0.9;
@@ -411,9 +415,9 @@ package
 			_carGlassMat.specular = 1;
 			_carGlassMat.alphaBlending = true;
 			_carGlassMat.bothSides = true;
-			_carGlassMat.specularMethod = _specularMethod;
+			//_carGlassMat.specularMethod = _specularMethod;
 			_materials[9] = _carGlassMat;
-			
+            
 			// apply light and effect for all material
 			for (var i:int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
@@ -448,12 +452,12 @@ package
 			initReflectionCube();
 			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
 			_fresnelMethod.normalReflectance = .5;
-			_fresnelMethod.fresnelPower = 0.5;
-			_fresnelMethod.alpha = 0.2;
+			_fresnelMethod.fresnelPower = 0.6;
+			_fresnelMethod.alpha = 0.4;
 			_fresnelMethod2 = new FresnelEnvMapMethod(_reflectionTexture);
 			_fresnelMethod2.normalReflectance = 1;
-			_fresnelMethod2.fresnelPower = 0.3;
-			_fresnelMethod2.alpha = 0.6;
+			_fresnelMethod2.fresnelPower = 0.8;
+			_fresnelMethod2.alpha = 0.9;
 			
 			_materials[1].addMethod(_fresnelMethod);
 			_materials[8].addMethod(_fresnelMethod2);
@@ -467,6 +471,7 @@ package
 		
 		private function initObjects():void
 		{
+            
 			//create skybox
 			_sky = new SkyBox(_skyMap);
 			_view.scene.addChild(_sky);
@@ -480,6 +485,7 @@ package
 			
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
+            
 			load("vision.awd");
 		}
 		
@@ -571,7 +577,6 @@ package
 				_text.appendText("V - reflection\n");
 				_text.appendText("N - random sky\n");
 				_text.appendText("B - clone\n");
-				
 			}
 		}
 		
@@ -601,6 +606,7 @@ package
 				// load next bitmap
 				load(textureStrings[n]);
 			} else {
+                
 				// Init material and objects
 				initMaterials();
 				initObjects();
@@ -627,7 +633,7 @@ package
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
-			if (event.asset.assetType == AssetType.MESH) {
+            if (event.asset.assetType == AssetType.MESH) {
 				var mesh:Mesh = event.asset as Mesh;
 				if(mesh.name!='top' && mesh.name!='bottom') _vision.push(mesh);
 			}
