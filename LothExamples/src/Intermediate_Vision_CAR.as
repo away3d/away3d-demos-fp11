@@ -149,7 +149,8 @@ package
 		private var _prevMouseY:Number;
 		private var _mouseMove:Boolean;
 		private var _cameraHeight:Number = 50;
-		
+        
+		private var _isReflection:Boolean = false;
 		private var _isResize:Boolean;
 		private var _cloneActif:Boolean;
 		
@@ -233,6 +234,7 @@ package
 			_text = new TextField();
 			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
 			format.letterSpacing = 1;
+			format.leading = 2;
 			format.leftMargin = 5;
 			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
@@ -342,16 +344,8 @@ package
 			//create Rim light method
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
 			
-			// global reflection methode
-			initReflectionCube()
-			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
-			_fresnelMethod.normalReflectance = .5;
-			_fresnelMethod.fresnelPower = 0.5;
-			_fresnelMethod.alpha = 0.2; 
-			_fresnelMethod2 = new FresnelEnvMapMethod(_reflectionTexture);
-			_fresnelMethod2.normalReflectance = 1;
-			_fresnelMethod2.fresnelPower = 0.3;
-			_fresnelMethod2.alpha = 0.6 
+			
+			
 			//create global fog method
 			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
 			
@@ -366,8 +360,6 @@ package
 			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x010101)))
 			_carWhiteMat.gloss = 100;
 			_carWhiteMat.specular = 0.9;
-			_carWhiteMat.addMethod(_fresnelMethod);
-			
 			_materials[1] = _carWhiteMat;
 			
 			_carBlackMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x090702)));
@@ -409,7 +401,6 @@ package
 			_carCromeMat.gloss = 10;
 			_carCromeMat.specular = 0.9;
 			_carCromeMat.bothSides = true;
-			_carCromeMat.addMethod(_fresnelMethod2);
 			_materials[8] = _carCromeMat;
 			
 			_carGlassMat =  new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x99010101)));
@@ -417,8 +408,7 @@ package
 			_carGlassMat.specular = 1;
 			_carGlassMat.alphaBlending = true;
 			_carGlassMat.bothSides = true;
-			//_carGlassMat.specularMethod = _specularMethod;
-			_carGlassMat.addMethod(_fresnelMethod2);
+			_carGlassMat.specularMethod = _specularMethod;
 			_materials[9] = _carGlassMat;
 			
 			// apply light and effect for all material
@@ -430,6 +420,9 @@ package
 				_materials[i].ambient = 1;
 				if (i != 0)_materials[i].addMethod(_rimLightMethod);
 			}
+            
+            // global reflection methode
+            if (_isReflection) initReflection();
 		}
 		
 		/**
@@ -444,7 +437,27 @@ package
 			// center the reflection at (0, 100, 0) where our reflective object will be
 			_reflectionTexture.position = new Vector3D(0, 200, 0);
 		}
-		
+        
+		private function initReflection() : void
+		{
+            if (_isReflection) return;
+            _isReflection = true;
+            initReflectionCube();
+            _fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
+            _fresnelMethod.normalReflectance = .5;
+            _fresnelMethod.fresnelPower = 0.5;
+            _fresnelMethod.alpha = 0.2;
+            _fresnelMethod2 = new FresnelEnvMapMethod(_reflectionTexture);
+            _fresnelMethod2.normalReflectance = 1;
+            _fresnelMethod2.fresnelPower = 0.3;
+            _fresnelMethod2.alpha = 0.6;
+            
+            _materials[1].addMethod(_fresnelMethod);
+            _materials[8].addMethod(_fresnelMethod2);
+            _materials[9].addMethod(_fresnelMethod2);
+            
+        }
+        
 		//-------------------------------------------------------3D OBJECTS
 		
 		/**
@@ -507,7 +520,7 @@ package
 			_cameraController.update();
 			
 			// update reflection
-			_reflectionTexture.render(_view);
+			if (_isReflection) _reflectionTexture.render(_view);
 			
 			if (_isResize) {
 				_view.width = stage.stageWidth;
@@ -558,8 +571,10 @@ package
 			else {
 				_text.text =  "VISION CAR\n\n";
 				_text.appendText("I - full screen\n");
+                _text.appendText("V - reflection\n");
 				_text.appendText("N - random sky\n");
 				_text.appendText("B - clone\n");
+                
 			}
 		}
 		
@@ -746,6 +761,10 @@ package
 				case Keyboard.I: 
 					fullScreen();
 					break;
+                case Keyboard.V: 
+					initReflection();
+					break;
+                    
 			}
 		}
 		

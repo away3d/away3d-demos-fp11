@@ -5,7 +5,7 @@ package com.away3d.invawayders.systems
 	import com.away3d.invawayders.nodes.*;
 	
 	import net.richardlord.ash.core.*;
-
+	
 	public class MovementSystem extends System
 	{
 		[Inject]
@@ -13,7 +13,7 @@ package com.away3d.invawayders.systems
 		
 		[Inject(nodeType="com.away3d.invawayders.nodes.MovementNode")]
 		public var movementNodes : NodeList;
-
+		
 		override public function update( time : Number ) : void
 		{
 			var movementNode : MovementNode;

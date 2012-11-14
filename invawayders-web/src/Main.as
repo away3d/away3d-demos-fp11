@@ -2,7 +2,6 @@ package
 {
 	import away3d.entities.Mesh;
 	import away3d.materials.SkyBoxMaterial;
-	import away3d.materials.TextureMaterial;
 	import com.away3d.invawayders.*;
 	import com.away3d.invawayders.components.*;
 	import com.away3d.invawayders.utils.*;

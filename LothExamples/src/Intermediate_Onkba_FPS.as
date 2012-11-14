@@ -77,7 +77,7 @@ package
 	import flash.text.*;
 	import flash.ui.*;
 	import flash.utils.setTimeout;
-    
+	
 	import utils.VectorSkyEffects;
 	
 	[SWF(backgroundColor="#333338", frameRate="60", quality="LOW")]
@@ -87,8 +87,8 @@ package
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const FARVIEW:Number = 50000;
-        private static const MOUNTAIGN_TOP:Number = 4816;
+		private static const FARVIEW:Number = 30000;
+		private static const MOUNTAIGN_TOP:Number = 2000;
 		private static const SCALE:Number = 2;
 		
 		private var assetsRoot:String = "assets/onkba/";
@@ -116,33 +116,40 @@ package
 		private var _lightPicker:StaticLightPicker;
 		private var _cameraController:HoverController;
 		
-		//light variables
+		// light variables
 		private var _sunLight:DirectionalLight;
 		private var _skyLight:PointLight;
 		private var _skyProbe:LightProbe;
 		private var _sky:SkyBox;
 		
+		// material methode
 		private var _fogMethode:FogMethod;
 		private var _specularMethod:FresnelSpecularMethod;
 		private var _shadowMethod:NearShadowMapMethod;
 		private var _rimLightMethod:RimLightMethod;
-		// Sky
-		private var _skyMap:BitmapCubeTexture;
+		// reflection methode
+		private var _reflectionTexture:CubeReflectionTexture;
+		private var _fresnelMethod:FresnelEnvMapMethod;
 		
-		//Materials
+		// sky
+		private var _skyMap:BitmapCubeTexture;
+		private var _skyBitmaps:Vector.<BitmapData>;
+		private var _blendmodes:Array = ["add", "darken", "hardlight", "lighten",  "multiply",  "overlay",  "screen", "subtract"];
+		
+		// materials
 		private var _materials:Vector.<TextureMaterial>;
 		private var _groundMaterial:TextureMaterial;
 		private var _terrainMaterial:TextureMaterial;
-        private var _boxMaterial:TextureMaterial;
+		private var _boxMaterial:TextureMaterial;
 		private var _heroMaterial:TextureMaterial;
 		private var _gunMaterial:TextureMaterial;
 		private var _eyesClosedMaterial:TextureMaterial;
 		private var _eyesOpenMaterial:TextureMaterial;
 		
-		//terrain
+		// terrain
 		private var _terrain:Elevation;
 		
-		//animation variables
+		// hero animation variables
 		private var transition:CrossfadeTransition = new CrossfadeTransition(0.3);
 		private var animator:SkeletonAnimator;
 		private var animationSet:SkeletonAnimationSet;
@@ -167,13 +174,13 @@ package
 		private const BREATHE_SPEED:Number = 0.7;
 		private const RELOAD_SPEED:Number = 1;
 		private const JUMP_SPEED:Number = 1;
-        
+		
 		private var isCrouch:Boolean = false;
 		private var isRunning:Boolean = false;
 		private var isMoving:Boolean = false;
-        private var isSideMove:Boolean = false;
+		private var isSideMove:Boolean = false;
 		private var isJump:Boolean = true;
-        
+		
 		//scene objects
 		private var _player:ObjectContainer3D;
 		private var _heroPieces:ObjectContainer3D;
@@ -194,8 +201,10 @@ package
 		private var _prevMouseX:Number;
 		private var _prevMouseY:Number;
 		private var _mouseMove:Boolean;
-		private var _cameraHeight:Number = 50;
+		private var _cameraHeight:Number = 40;
 		
+		private var _isIntro:Boolean = true;
+        private var _isReflection:Boolean = false;
 		private var _isResize:Boolean;
 		private var _cloneActif:Boolean;
 		private var _dynamicsEyes:Boolean;
@@ -221,7 +230,10 @@ package
 			// gun map
 			textureStrings.push("gun_diffuse.jpg", "gun_normals.jpg", "gun_lightmap.jpg");
 			
-			textureStrings.push("height.png");
+			textureStrings.push("height.png", "height_n.jpg");
+			
+			// sky map Bitmap overlay
+			textureStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
 			
 			init();
 		}
@@ -256,15 +268,15 @@ package
 			addChild(_view);
 			
 			//create custom lens
-			_view.camera.lens = new PerspectiveLens(70);
+			_view.camera.lens = new PerspectiveLens(60);
 			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 1;
 			
 			//setup controller to be used on the camera
-			_cameraController = new HoverController(_view.camera, null, 180, 0, 300, 10, 90);
-			_cameraController.tiltAngle = 0;
-			_cameraController.panAngle = 220;
-			_cameraController.minTiltAngle = -60;
+			_cameraController = new HoverController(_view.camera, null, 22, 0, 500, 10, 90);
+			_cameraController.tiltAngle = 10;
+			_cameraController.panAngle = 22;
+			_cameraController.minTiltAngle = -10;
 			_cameraController.maxTiltAngle = 60;
 			_cameraController.autoUpdate = false;
 			
@@ -294,6 +306,7 @@ package
 			_text = new TextField();
 			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
 			format.letterSpacing = 1;
+			format.leading = 2;
 			format.leftMargin = 5;
 			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
@@ -343,8 +356,6 @@ package
 			_view.scene.addChild(_skyLight);
 			
 			//generate cube texture for sky and probe
-			_skyMap = VectorSkyEffects.vectorSky(zenithColor, fogColor, fogColor, 8);
-			
 			_skyProbe = new LightProbe(_skyMap);
 			_view.scene.addChild(_skyProbe);
 			
@@ -359,18 +370,38 @@ package
 		 * Genarate random sky 
 		 */
 		private function randomSky():void {
-			zenithColor = 0xFFFFFF * Math.random();
-			fogColor = 0xFFFFFF * Math.random();
 			
-			_skyMap = VectorSkyEffects.vectorSky(zenithColor, fogColor, fogColor, 8);
+			var i:int = 0;
+			var blend:String = "overlay";
+			if (!_isIntro) {
+				zenithColor = 0xFFFFFF * Math.random();
+				fogColor = 0xFFFFFF * Math.random();
+				blend = _blendmodes[uint(Math.random() * _blendmodes.length)];
+			}
+			
+			// add real bitmap
+			if (_skyBitmaps == null) {
+				_skyBitmaps = new Vector.<BitmapData>(6);
+				for (i = 0; i < 6; i++) {
+					_skyBitmaps[i] = textureBitmapData[11 + i];
+				}
+			}
+			if (_sky) {  
+				_view.scene.removeChild(_sky);
+				_sky.dispose();
+			}
+			
+			_skyMap = VectorSkyEffects.vectorSky(zenithColor, fogColor, fogColor, 8, _skyBitmaps, blend);
+			
 			_fogMethode.fogColor = fogColor;
 			_skyProbe.diffuseMap = _skyMap;
-			_sky.dispose();
+			
+			
 			_sky = new SkyBox(_skyMap);
 			_view.scene.addChild(_sky);
 			
 			// test rim Light methode slow down engine
-			for (var i:int=0; i < _materials.length; i++ ) {
+			for ( i=0; i < _materials.length; i++ ) {
 				_materials[i].removeMethod(_rimLightMethod);
 			}
 			
@@ -403,15 +434,15 @@ package
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
 			
 			//create global fog method
-			_fogMethode = new FogMethod(fogNear, FARVIEW, fogColor);
+			_fogMethode = new FogMethod(fogNear, FARVIEW / 2, fogColor);
 			
 			//create the hero material
 			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[3]));
 			_heroMaterial.normalMap = Cast.bitmapTexture(textureBitmapData[4]);
 			
 			_heroMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(textureBitmapData[5])));
-			_heroMaterial.gloss = 10;
-			_heroMaterial.specular = 0.6;
+			_heroMaterial.gloss = 16;
+			_heroMaterial.specular = 0.5;
 			_heroMaterial.bothSides = false;
 			_heroMaterial.alphaThreshold = 0.9;
 			_heroMaterial.alphaPremultiplied = true;
@@ -424,8 +455,8 @@ package
 			_gunMaterial.lightPicker = _lightPicker;
 			_gunMaterial.gloss = 16;
 			_gunMaterial.specular = 0.6;
-			
 			_materials[1] = _gunMaterial;
+            
 			// create eye ball close material
 			var b:BitmapData;
 			b = new BitmapData(64, 64, false, 0xA13D1E);
@@ -434,13 +465,12 @@ package
 			_eyesClosedMaterial.specular = 0.6;
 			_materials[2] = _eyesClosedMaterial;
 			
-			// create eye ball open material
+			// create eye ball from bitmap diffuse onkba
 			b = new BitmapData(256/2, 256/2, false);
 			b.draw(textureBitmapData[3], new Matrix(1, 0, 0, 1, -283/2, -197/2));
 			_eyesOpenMaterial = new TextureMaterial(Cast.bitmapTexture(b));
-			_eyesOpenMaterial.addMethod(new EnvMapMethod(_skyMap, 0.5));
-			_eyesOpenMaterial.gloss = 300;
-			_eyesOpenMaterial.specular = 5;
+			_eyesOpenMaterial.gloss = 100;
+			_eyesOpenMaterial.specular = 0.8;
 			_eyesOpenMaterial.repeat = true;
 			_materials[3] = _eyesOpenMaterial;
 			
@@ -452,22 +482,23 @@ package
 			_groundMaterial.repeat = true;
 			_materials[4] = _groundMaterial;
 			
-			var terrainMethod:TerrainDiffuseMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(textureBitmapData[1]), Cast.bitmapTexture(textureBitmapData[2]), Cast.bitmapTexture(textureBitmapData[0])], Cast.bitmapTexture(textureBitmapData[9]), [1, 50, 150, 100]);
+			//var terrainMethod:TerrainDiffuseMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(textureBitmapData[1]), Cast.bitmapTexture(textureBitmapData[2]), Cast.bitmapTexture(textureBitmapData[0])], Cast.bitmapTexture(textureBitmapData[9]), [1, 1, 1, 1]);
 			
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[9]));
 			//_terrainMaterial.diffuseMethod = terrainMethod;
-            _terrainMaterial.gloss = 11;
+			_terrainMaterial.normalMap = Cast.bitmapTexture(textureBitmapData[10]);
+			_terrainMaterial.gloss = 20;
 			_terrainMaterial.specular = .25;
 			_terrainMaterial.addMethod(_fogMethode);
 			_materials[5] = _terrainMaterial;
 			
-			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee220000)));
+			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee885500)));//ee220000
 			_boxMaterial.gloss = 10;
 			_boxMaterial.specular = 0.1;
-            _boxMaterial.alphaBlending = true;
+			_boxMaterial.alphaBlending = true;
 			_boxMaterial.addMethod(_fogMethode);
 			_materials[6] = _boxMaterial;
-            
+			
 			// apply light and effect for all material
 			for (var i:int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
@@ -475,12 +506,40 @@ package
 				_materials[i].specularLightSources = LightSources.LIGHTS;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 0.85;
-				_materials[i].addMethod(_rimLightMethod);
-				// _materials[i].specularMethod = _specularMethod;
+                if (i != 5) _materials[i].addMethod(_rimLightMethod);
 			}
+            
+            // global reflection methode
+            if (_isReflection) initReflection();
 		}
 		
-		
+		/**
+		 * Initialized the ReflectionCubeTexture that will contain the environment map render
+		 */
+		private function initReflectionCube() : void
+		{
+			// create the cube with a dimension of 128
+			_reflectionTexture = new CubeReflectionTexture(128*2);
+			_reflectionTexture.farPlaneDistance = FARVIEW;
+			_reflectionTexture.nearPlaneDistance = 250;
+			// center the reflection at (0, 100, 0) where our reflective object will be
+			_reflectionTexture.position = new Vector3D(0, 200, 0);
+		}
+        
+		private function initReflection() : void
+		{
+            if (_isReflection) return;
+            _isReflection = true;
+            initReflectionCube();
+            _fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
+            _fresnelMethod.normalReflectance = 0.3;
+            _fresnelMethod.fresnelPower = 0.5;
+            _fresnelMethod.alpha = 0.3;
+            
+            _materials[0].addMethod(_fresnelMethod);
+            _materials[1].addMethod(_fresnelMethod);
+        }
+        
 		//-------------------------------------------------------3D OBJECTS
 		
 		/**
@@ -504,6 +563,8 @@ package
 			
 			// Now load Onkba character and weapons
 			load("onkba_fps.awd");
+			
+			randomSky();
 		}
 		
 		//-------------------------------------------------------GLOBAL LISTENERS
@@ -540,6 +601,8 @@ package
 		{
 			// update character animation
 			if (_hero) {
+				if ( _cameraController.distance > 300 && _isIntro) { _cameraController.distance -= 10; }
+				else  _isIntro = false;
 				// update eyes
 				if (_dynamicsEyes) updateEyes();
 				// update bones
@@ -550,7 +613,11 @@ package
 					_heroWeapon.transform = animator.globalPose.jointPoses[22].toMatrix3D();
 				}
 			}
-			
+			// update reflection
+            if (_isReflection) {
+                _reflectionTexture.position = _player.position;
+                _reflectionTexture.render(_view);
+			}
 			// update camera
 			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y+_cameraHeight, _player.z);
 			_cameraController.update();
@@ -603,6 +670,8 @@ package
 				_text.appendText("R - reload weapon\n");
 				_text.appendText("C - crouch\n");
 				_text.appendText("\n");
+				_text.appendText("U - physics debug !\n")
+                _text.appendText("V - reflection !\n")
 				_text.appendText("I - full screen\n");
 				_text.appendText("N - random sky\n");
 				_text.appendText("P - xray bones\n");
@@ -662,7 +731,7 @@ package
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
-            var i:int
+			var i:int
 			if (event.asset.assetType == AssetType.SKELETON) {
 				// Create a new skeleton animation set (! 3 joints per vertex for awd exporter in 3dsmax)
 				animationSet = new SkeletonAnimationSet(4);
@@ -676,32 +745,33 @@ package
 				
 				// play default idle animation
 				//if (animationNode.name == ANIM_BREATHE) jumpDown()//stop();
-                if (animationNode.name == "JumpDown") jumpDown();
-                
-                // disable animation loop 
-                for ( i = 0; i< WEAPON.length; i++ ) {
-                if (animationNode.name == WEAPON[i] + "JumpDown") animationNode.looping = false;
-				if (animationNode.name == WEAPON[i] + "Reload") animationNode.looping = false;
-                }
-			} else if (event.asset.assetType == AssetType.MESH) {
+				if (animationNode.name == "JumpDown") jumpDown();
 				
+				// disable animation loop 
+				for ( i = 0; i< WEAPON.length; i++ ) {
+					if (animationNode.name == WEAPON[i] + "JumpDown") animationNode.looping = false;
+					if (animationNode.name == WEAPON[i] + "Reload") animationNode.looping = false;
+				}
+			} else if (event.asset.assetType == AssetType.MESH) {
 				var mesh:Mesh = event.asset as Mesh;
 				
 				// Onkba character
 				if (mesh.name == "Onkba") {
 					_hero = mesh;
-					
 				}
 				
 				// weapons resources
 				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (mesh.name == WEAPON[i] + 'Test') {
-                        if (i == 2) {mesh.rotationY = -5; mesh.rotationZ = -2;}// decal for machine
-						if (i == 3) {mesh.rotationY = -5; mesh.rotationZ = -2;}// decal for sniper
+						if (i == 1) { mesh.rotationY = -5; mesh.rotationZ = 0; mesh.rotationX = 0; mesh.z = 1.6;  mesh.y =-4.2;  }// decal for gun
+						if (i == 2) { mesh.rotationY = -5; mesh.rotationZ = -2; mesh.rotationX = 0; mesh.z = 1.6; mesh.y =-5; }// decal for machine
+						if (i == 3) { mesh.rotationY = -5; mesh.rotationZ = -5;  mesh.rotationX = 0; mesh.z = 1.8; mesh.y = -4.6; }// decal for sniper
+						if (i == 5) {mesh.rotationY = 10; mesh.rotationZ = 0;}// decal for bazooka
 						mesh.material = _gunMaterial;
 						_weapons[i] = mesh;
 					}
 				}
+				
 			}
 		}
 		
@@ -713,12 +783,12 @@ package
 			var loader3d:Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
-			
+			var posY:Number = (38 * SCALE);
 			//apply our animator to our mesh
 			_hero.animator = animator;
 			_hero.material = _heroMaterial;
 			_hero.scale(SCALE);
-            
+			
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0xff0000));
 			
@@ -726,18 +796,18 @@ package
 			
 			_player.addChild(_hero);
 			_hero.rotationY = 180;
-			_hero.y = -(41*SCALE) + (3*SCALE);
+			_hero.y = -posY;
 			
 			// Optional dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
 			_heroPieces.scale(SCALE);
-			_heroPieces.y = -(41*SCALE) + (3*SCALE);
+			_heroPieces.y = -posY;
 			_player.addChild(_heroPieces);
 			_heroPieces.rotationY = 180;
 			addHeroEye();
 			
-			
-			LoadSwf();
+			// away3d physics 
+			initPhysicsEngine();
 		}
 		
 		//-------------------------------------------------------KEYBOARD FUNCTION
@@ -777,7 +847,7 @@ package
 			}
 		}
 		
-        
+		
 		//-------------------------------------------------------------------------------
 		//       CHARACTER ANIMATION
 		//-------------------------------------------------------------------------------
@@ -788,17 +858,17 @@ package
 		private function stop():void
 		{
 			/*isMoving = false;
-            isSideMove = false;
-            isJump = false;*/
-            
-            var anim:String;
+			isSideMove = false;
+			isJump = false;*/
+			
+			var anim:String;
 			if (isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
 			else anim = WEAPON[currentWeapon] + ANIMATION[0];
-            
-            
-            if (currentAnim == anim) return;
-            
-            currentAnim = anim;
+			
+			
+			if (currentAnim == anim) return;
+			
+			currentAnim = anim;
 			animator.playbackSpeed = BREATHE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
 			else currentAnim = WEAPON[currentWeapon] + ANIMATION[0];
@@ -814,10 +884,10 @@ package
 			
 			//update animator sequence
 			var anim:String = isRunning ? ANIM_RUN : ANIM_WALK;
-            
+			
 			if (currentAnim == anim) return;
 			
-            if(_physics) _physics.characterSpeed(isRunning ? 3 : 1)
+			if(_physics) _physics.characterSpeed(isRunning ? 3 : 1)
 			animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
@@ -862,23 +932,23 @@ package
 		 */
 		private function jumpUp():void
 		{
-            isJump = true;
+			isJump = true;
 			var anim:String;
 			anim = WEAPON[currentWeapon] + 'JumpDown';
-            
+			
 			if (currentAnim == anim)  return;
 			
 			currentAnim = anim;
 			animator.playbackSpeed = -JUMP_SPEED;
 			animator.play(currentAnim, transition, 0);
-            
-            setTimeout(jumpDown, 260);
+			
+			setTimeout(jumpDown, 260);
 		}
-        
-        /**
+		
+		/**
 		 * Character jump down animation
 		 */
-        private function jumpDown():void
+		private function jumpDown():void
 		{
 			var anim:String;
 			anim = WEAPON[currentWeapon] + 'JumpDown';
@@ -886,7 +956,7 @@ package
 			currentAnim = anim;
 			animator.playbackSpeed = JUMP_SPEED;
 			animator.play(currentAnim, transition, 0);
-            setTimeout(stop, 260);
+			setTimeout(stop, 260);
 		}
 		//--------------------------------------------------------------------- KEYBORD
 		
@@ -931,6 +1001,12 @@ package
 				case Keyboard.N: 
 					randomSky();
 					break;
+                case Keyboard.V: 
+					initReflection();
+					break;
+				case Keyboard.U: 
+					debugPhysics();
+					break;
 				case Keyboard.P: 
 					xRay();
 					break;
@@ -941,15 +1017,15 @@ package
 					fullScreen();
 					break;
 				case Keyboard.C: 
-					if (isCrouch) { isCrouch = false; _cameraHeight = 50; }
-					else {isCrouch = true; _cameraHeight = 25;}
+					if (isCrouch) { isCrouch = false; _cameraHeight = 40; }
+					else {isCrouch = true; _cameraHeight = 15;}
 					stop();
 					break;
 				case Keyboard.SPACE: 
-                    if (!isJump) {
-                        jumpUp();
-                        if (_physics) { _physics.key_Jump(true); }
-                    }
+					if (!isJump) {
+						jumpUp();
+						if (_physics) { _physics.key_Jump(true); }
+					}
 					break;
 			}
 		}
@@ -970,7 +1046,7 @@ package
 				case Keyboard.Z: //fr
 				case Keyboard.DOWN: 
 				case Keyboard.S:
-                    isMoving = false;
+					isMoving = false;
 					if (_physics) { _physics.key_forward(false); _physics.key_Reverse(false);  }
 					stop();
 					break;
@@ -979,12 +1055,12 @@ package
 				case Keyboard.Q: //fr
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
-                    isSideMove = false;
+					isSideMove = false;
 					if (_physics) { _physics.key_Left(false); _physics.key_Right(false); }
 					stop();
 					break;
 				case Keyboard.SPACE:
-                    isJump = false;;
+					isJump = false;;
 					if (_physics){_physics.key_Jump(false);}
 					break;
 			}
@@ -1222,40 +1298,36 @@ package
 		
 		
 		//-------------------------------------------------------------------------------
-        //
+		//
 		//       ++ PHYSICS engines    
-        //
+		//
 		//-------------------------------------------------------------------------------
 		
-		protected function LoadSwf(name:String = "Physics"):void {
+		private function initPhysicsEngine(name:String = "Physics"):void {
 			_physics = PhysicsEngine.getInstance();
-            
-            // debug mode no use if trangleCollision 
-            //_physics.addDebug(_view);
-            
-            // add terrain to physic collision 
-			_physics.addTriangleCollision(_terrain);
-            
-            // add basic infinie plane
-			//_physics.addObject(null, { type:'plane' } );
-            
-            // add player character physics 
+			
+			// add terrain to physic collision 
+			_physics.addTerrain(_terrain);
+			
+			// add player character physics 
 			_physics.addCharacter(_player);
-            
-            // add some box for fun 
+			
+			// add some box for fun 
 			var mesh:Mesh;
 			var size:int;
-            var isUnactif:Boolean = true;
+			var isUnactif:Boolean = true;
 			for (var i:int = 0; i < 50; i++) {
 				size =50 + (Math.random() * 100);
 				mesh = new Mesh(new CubeGeometry(size, size, size), _boxMaterial);
 				_view.scene.addChild(mesh);
-                if (i == 49) isUnactif = false;
+				if (i == 49) isUnactif = false;
 				_physics.addObject(mesh, {stop:isUnactif, w: size, h: size, d: size, mass: 0.01, pos: new Vector3D(300, _terrain.getHeightAt(300, -100) +(151 * (i+1)), -100)});
 			}
 			
 			
 		}
-		
+		private function debugPhysics():void {
+			_physics.addDebug(_view);
+		}
 	}
 }
