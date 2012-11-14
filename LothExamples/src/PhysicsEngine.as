@@ -1,6 +1,6 @@
 package {
 	import awayphysics.collision.shapes.AWPCapsuleShape;
-    import awayphysics.debug.AWPDebugDraw;
+	import awayphysics.debug.AWPDebugDraw;
 	import awayphysics.dynamics.character.AWPKinematicCharacterController;
 	import awayphysics.collision.shapes.AWPBvhTriangleMeshShape;
 	import awayphysics.collision.dispatch.AWPCollisionObject;
@@ -37,6 +37,12 @@ package {
 		protected static const worldScale:Number = 10;
 		private static var _rigid:Vector.<AWPRigidBody>
 		private static var _static:Vector.<AWPCollisionObject>
+		private var _isDebug:Boolean = false;
+		private var _debugDraw:AWPDebugDraw;
+		
+		// ground
+		private var _terrainBody:AWPCollisionObject;
+		private var _planeBody:AWPCollisionObject;
 		
 		// character
 		private var character:AWPKinematicCharacterController;
@@ -54,6 +60,7 @@ package {
 		public function PhysicsEngine() {
 		}
 		
+		
 		//-------------------------------------------------------------------------------
 		//       Singleton
 		//-------------------------------------------------------------------------------
@@ -65,6 +72,7 @@ package {
 			}
 			return Singleton;
 		}
+		
 		
 		//-------------------------------------------------------------------------------
 		//       Physics World init
@@ -79,6 +87,7 @@ package {
 			_rigid = new Vector.<AWPRigidBody>;
 			_static = new Vector.<AWPCollisionObject>;
 		}
+		
 		
 		//-------------------------------------------------------------------------------
 		//       Physics Update
@@ -116,10 +125,11 @@ package {
 				}
 				
 			}
-            
-            //debug update
-            if (_isDebug) _debugDraw.debugDrawWorld();
+			
+			//debug update
+			if (_isDebug) _debugDraw.debugDrawWorld();
 		}
+		
 		
 		//-------------------------------------------------------------------------------
 		//       Add body to simulation
@@ -128,6 +138,7 @@ package {
 		public function addRigid(body:AWPRigidBody):void {
 			physicsWorld.addRigidBody(body);
 		}
+		
 		
 		//-------------------------------------------------------------------------------
 		//       Primitive object rigidbody
@@ -160,13 +171,13 @@ package {
 					body = new AWPRigidBody(shape, m, o.mass || 1);
 					body.friction = o.friction || 0.5;
 					body.restitution = o.restitution || 0.0;
-                    // position rotation
+					// position rotation
 					body.position = o.pos || new Vector3D();
 					body.rotation = o.rot || new Vector3D();
 					if (o.stop) body.activationState = 2; // static at start
 					physicsWorld.addRigidBody(body);
 					if (body.mass != 0)_rigid.push(body);
-                    else _static.push(body);
+					else _static.push(body);
 					break;
 				case "collision": 
 					bodyC = new AWPCollisionObject(shape, m);
@@ -176,13 +187,31 @@ package {
 					bodyC.rotation = o.rot || new Vector3D();
 					physicsWorld.addCollisionObject(bodyC);
 					_static.push(bodyC);
-                    break;
+					break;
 			}
 		}
+		
 		
 		//-------------------------------------------------------------------------------
 		//       Triangle mesh import
 		//-------------------------------------------------------------------------------
+		
+		public function addSimplePlane():void {
+			var shape:AWPStaticPlaneShape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));;
+			_planeBody = new AWPCollisionObject(shape, null);
+			physicsWorld.addCollisionObject(_planeBody, 1, -1);
+		}
+		
+		public function addTerrain(O:Object = null):void
+		{
+			var o:Object = O || new Object();
+			var shape:AWPBvhTriangleMeshShape 
+			if (!_terrainBody) {
+				shape = new AWPBvhTriangleMeshShape(o.geometry);
+				_terrainBody = new AWPCollisionObject(shape, null);
+			}
+			physicsWorld.addCollisionObject(_terrainBody, 1, -1);
+		}
 		
 		public function addTriangleCollision(O:Object = null):void {
 			var o:Object = O || new Object();
@@ -201,6 +230,7 @@ package {
 			body.transform = matr;
 		}
 		
+		
 		//-------------------------------------------------------------------------------
 		//       Character 
 		//-------------------------------------------------------------------------------
@@ -208,18 +238,18 @@ package {
 		public function addCharacter(container:*):void {
 			// create character shape and controller
 			//var shape:AWPCapsuleShape = new AWPCapsuleShape(20, 40);
-            container.y = -10;
-            
-            var shape:AWPBoxShape =  new AWPBoxShape(60, 164, 40);//new AWPCapsuleShape(20, 40);
+			container.y = -10;
+			
+			var shape:AWPBoxShape =  new AWPBoxShape(60, 164, 40);//new AWPCapsuleShape(20, 40);
 			var ghostObject:AWPGhostObject = new AWPGhostObject(shape, container);
 			ghostObject.collisionFlags = AWPCollisionFlags.CF_CHARACTER_OBJECT;
 			ghostObject.addEventListener(AWPEvent.COLLISION_ADDED, characterCollisionAdded);
 			character = new AWPKinematicCharacterController(ghostObject, 0.1);
-            
+			
 			physicsWorld.addCharacter(character);
-            character.jumpSpeed = 10;
-            character.fallSpeed = 100;
-           // character.maxJumpHeight = 1000;
+			character.jumpSpeed = 10;
+			character.fallSpeed = 100;
+			character.maxJumpHeight = 200;
 			character.warp(new Vector3D(0, 200, 0));
 		}
 		
@@ -231,11 +261,11 @@ package {
 				//body.applyForce(force, event.manifoldPoint.localPointB);
 			}
 		}
-        
+		
 		public function characterSpeed(n:Number):void {
-            walkSpeed = n;
+			walkSpeed = n;
 		}
-        
+		
 		public function key_forward(c:Boolean):void {
 			keyForward = c;
 			if (!c) {
@@ -264,25 +294,42 @@ package {
 			keyUp = c
 		}
 		
+		
 		//-------------------------------------------------------------------------------
 		//       Debug 
 		//-------------------------------------------------------------------------------
-		private var _isDebug:Boolean = false;
-        private var _debugDraw:AWPDebugDraw;
-        
+		
 		public function addDebug(view:*):void 
-        {
-            if (_isDebug) return;
-            _debugDraw = new AWPDebugDraw(view, physicsWorld);
-            _debugDraw.debugMode = AWPDebugDraw.DBG_DrawCollisionShapes;
-            _isDebug = true;
+		{
+			if (_isDebug) { removeDebug(); }
+			if (_terrainBody) removeTerrain();
+			_debugDraw = new AWPDebugDraw(view, physicsWorld);
+			
+			_debugDraw.debugMode = AWPDebugDraw.DBG_DrawCollisionShapes;
+			_isDebug = true;
 		}
-        
+		
 		public function removeDebug():void 
-        {
-            if (_isDebug) _debugDraw.debugMode = AWPDebugDraw.DBG_NoDebug;
-        }
-        
+		{
+			_debugDraw.debugMode = AWPDebugDraw.DBG_NoDebug;
+			_debugDraw.debugDrawWorld();
+			removePlane();
+			_isDebug = false;
+		}
+		
+		private function removeTerrain():void 
+		{
+			if(_terrainBody) physicsWorld.removeCollisionObject(_terrainBody);
+			// add basic infinie plane
+			addSimplePlane();
+		}
+		
+		private function removePlane():void 
+		{
+			physicsWorld.removeCollisionObject(_planeBody);
+			// add basic infinie plane
+			addTerrain();
+		}
 		
 	}
 	
