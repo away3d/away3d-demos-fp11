@@ -525,7 +525,10 @@ package
 			
 			// update reflection
 			if (_isReflection)
+			{
+				_reflectionTexture.position = _visionCar.position.add(new Vector3D(0, 250, 0));
 				_reflectionTexture.render(_view);
+			}
 			
 			// update view
 			_view.render();
