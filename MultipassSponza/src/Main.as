@@ -97,16 +97,15 @@ package
 		[Embed(source="/../embeds/textures/sky/hourglass_south.jpg")]
 		public static var EnvPosZ : Class;
 		
-		[Embed(source="/../embeds/textures/sky/cubetexture/hourglass_cubemap.atf", mimeType="application/octet-stream")]
+		[Embed(source="/../embeds/textures/sky/cubetexture/hourglass_cubemap2.atf", mimeType="application/octet-stream")]
 		public static var SkyMapCubeTexture : Class;
+		private var _skyMap:ATFCubeTexture;
 		
 		
 		//[Embed(source="/../embeds/textures/fire.jpg")]
 		[Embed(source="/../embeds/textures/fire.atf", mimeType="application/octet-stream")]
 		public static var FlameTexture : Class;
 		
-		//private var _skyMap:ATFCubeTexture;
-		//private var _skyMap:BitmapCubeTexture;
 		private var _assetsRoot:String = "assets/";
 		
 		private var materialNameStrings:Vector.<String> = Vector.<String>(["arch",            "Material__298",  "bricks",            "ceiling",            "chain",             "column_a",          "column_b",          "column_c",          "fabric_g",              "fabric_c",         "fabric_f",               "details",          "fabric_d",             "fabric_a",        "fabric_e",              "flagpole",          "floor",            "16___Default","Material__25","roof",       "leaf",           "vase",         "vase_hanging",     "Material__57",   "vase_round"]);
@@ -332,7 +331,7 @@ package
             stage.align = StageAlign.TOP_LEFT;
             
 			
-			Debug.active = true;
+			//Debug.active = true;
 			
 			//create the view
 			_view = new View3D();
@@ -416,8 +415,7 @@ package
 		private function initMaterials():void
 		{
 			//create skybox texture map
-			//_skyMap = new BitmapCubeTexture(Cast.bitmapData(EnvPosX), Cast.bitmapData(EnvNegX), Cast.bitmapData(EnvPosY), Cast.bitmapData(EnvNegY), Cast.bitmapData(EnvPosZ), Cast.bitmapData(EnvNegZ));
-			//_skyMap = new ATFCubeTexture(new SkyMapCubeTexture());
+			_skyMap = new ATFCubeTexture(new SkyMapCubeTexture());
 			
 			//create flame material
 			//_flameMaterial = new TextureMaterial(Cast.bitmapTexture(FlameTexture));
@@ -433,7 +431,7 @@ package
         private function initObjects():void
 		{
 			//create skybox
-            //_view.scene.addChild(new SkyBox(_skyMap));
+            _view.scene.addChild(new SkyBox(_skyMap));
 			
 			//create flame meshes
 			_flameGeometry = new PlaneGeometry(40, 80, 1, 1, false, true);
@@ -590,19 +588,13 @@ package
                     break;
             }
 			
-            //loader.addEventListener(ProgressEvent.PROGRESS, loadProgress, false, 0, true);
-			//loader.addEventListener(IOErrorEvent.IO_ERROR, loadIOError);
+            loader.addEventListener(ProgressEvent.PROGRESS, loadProgress, false, 0, true);
 			var urlReq:URLRequest = new URLRequest(_assetsRoot+url);
  			loader.load(urlReq);
 			
         }
         
-		private function loadIOError(event:IOErrorEvent):void
-		{
-			trace("loadIOError "+event);
-		}
-		
-        /**
+		/**
          * Display current load
          */
         private function loadProgress(e:ProgressEvent):void
@@ -730,9 +722,7 @@ package
 			}
 		}
 		
-		private var oneMaterial:Boolean = false;
-		
-        /**
+		/**
          * Triggered once all resources are loaded
          */
         private function onResourceComplete(e:LoaderEvent):void
@@ -798,13 +788,8 @@ package
 					//create multipass material
 					multiMaterial = new TextureMultiPassMaterial(textureDictionary[textureName]);
 					multiMaterial.name = name;
-					//if(!oneMaterial)
-					//{
-						//trace("MATERIAL NAME "+name);
-						multiMaterial.lightPicker = _lightPicker;
-						multiMaterial.shadowMethod = _cascadeMethod;
-					//	oneMaterial = true;
-					//}
+					multiMaterial.lightPicker = _lightPicker;
+					multiMaterial.shadowMethod = _cascadeMethod;
 					multiMaterial.addMethod(_fogMethod);
 					multiMaterial.mipmap = true;
 					multiMaterial.repeat = true;
