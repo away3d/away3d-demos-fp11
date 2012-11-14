@@ -1,0 +1,111 @@
+# Sequences for FPS character ONKBA
+# This file was written by loth
+# AWD Export option : no material , joints per vertex 3
+#
+#--------------------FALL
+FallBack 0 19
+FallBackMid 20 39
+FallFace 40 59
+FallFaceBack 60 79
+FallRight 80 99
+FallRightMid 100 119
+FallLeft 120 139
+FallLeftMid 140 159
+
+#--------------------DRIVE
+IdleDrive 160 189
+
+#---------------------MOUVE
+JumpDown 191 209
+Idle 210 234
+Walk 235 259
+WalkR 260 279
+WalkL 280 299
+Run 300 318
+TrowGrenade 319 355
+CrouchIdle 356 380
+CrouchWalk 381 405
+CrouchGrenade 406 442
+WaterIdle 443 462
+WaterSwim 463 492
+
+#----------------------GUN
+GunStandBack 493 522
+GunStandFace 523 552
+GunJumpDown 553 572
+GunIdle 573 597
+GunWalk 598 622
+GunWalkR 623 642
+GunWalkL 643 662
+GunRun 663 681
+GunReload 682 731
+GunCrouchIdle 732 756
+GunCrouchWalk 757 781
+GunCrouchReload 782 831
+GunWaterIdle 832 851
+GunWaterSwim 852 881
+
+#--------------------MACHINE GUN
+MachineStandBack 882 911
+MachineStandFace 912 942
+MachineJumpDown 943 961
+MachineIdle 962 986
+MachineWalk 987 1011
+MachineWalkR 1012 1031
+MachineWalkL 1032 1051
+MachineRun 1052 1070
+MachineReload 1071 1120
+MachineCrouchIdle 1121 1145
+MachineCrouchWalk 1146 1170
+MachineCrouchReload 1171 1220
+MachineWaterIdle 1221 1241
+MachineWaterSwim 1242 1270
+
+#--------------------SNIPER
+SniperStandBack 1271 1300
+SniperStandFace 1301 1331
+SniperJumpDown 1332 1351
+SniperIdle 1352 1375
+SniperWalk 1376 1400
+SniperWalkR 1401 1420
+SniperWalkL 1421 1440
+SniperRun 1441 1459
+SniperReload 1460 1509
+SniperCrouchIdle 1510 1534
+SniperCrouchWalk 1535 1559
+SniperCrouchReload 1560 1609
+SniperWaterIdle 1610 1630
+SniperWaterSwim 1631 1659
+
+#--------------------GATLING GUN
+GatlingStandBack 1660 1689
+GatlingStandFace 1690 1719
+GatlingJumpDown 1720 1739
+GatlingIdle 1740 1764
+GatlingWalk 1765 1789
+GatlingWalkR 1790 1809
+GatlingWalkL 1810 1829 
+GatlingRun 1830 1848 
+GatlingReload 1849 1898 
+GatlingCrouchIdle 1899 1923 
+GatlingCrouchWalk 1924 1948
+GatlingCrouchReload 1949 1950
+GatlingWaterIdle 1951 2018
+GatlingWaterSwim 2019 2048
+
+#--------------------BAZOOKA
+BazookaStandBack 2049 2078
+BazookaStandFace 2079 2108
+BazookaJumpDown 2019 2128
+BazookaIdle 2129 2153
+BazookaWalk 2154 2178
+BazookaWalkR 2179 2198
+BazookaWalkL 2199 2218
+BazookaRun 2219 2237
+BazookaReload 2238 2287
+BazookaCrouchIdle 2288 2312
+BazookaCrouchWalk 2313 2337
+BazookaCrouchReload 2338 2387
+BazookaWaterIdle 2388 2408
+BazookaWaterSwim 2409 2437
+
