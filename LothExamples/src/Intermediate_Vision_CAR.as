@@ -219,7 +219,7 @@ package
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			stage.frameRate = 60;
-            
+			
 			//create the view
 			_view = new View3D();
 			_view.forceMouseMove = true;
@@ -260,7 +260,7 @@ package
 		
 		private function initLights():void
 		{
-            log("Light")
+			log("Light")
 			//create a light for shadows that mimics the sun's position in the skybox
 			_sunLight = new DirectionalLight(-0.5, -1, 0.3);
 			_sunLight.color = sunColor;
@@ -336,7 +336,7 @@ package
 		
 		private function initMaterials():void
 		{
-           
+			
 			_materials = new Vector.<TextureMaterial>();
 			
 			//create gobal specular method
@@ -350,10 +350,10 @@ package
 			//create Rim light method
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
 			
-            
+			
 			//create global fog method
 			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
-            
+			
 			
 			// create ground texture
 			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[0]));
@@ -363,7 +363,7 @@ package
 			_groundMaterial.repeat = true;
 			_materials[0] = _groundMaterial;
 			
-            // create car material
+			// create car material
 			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x010101)))
 			_carWhiteMat.gloss = 100;
 			_carWhiteMat.specular = 0.9;
@@ -417,7 +417,7 @@ package
 			_carGlassMat.bothSides = true;
 			//_carGlassMat.specularMethod = _specularMethod;
 			_materials[9] = _carGlassMat;
-            
+			
 			// apply light and effect for all material
 			for (var i:int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
@@ -471,7 +471,7 @@ package
 		
 		private function initObjects():void
 		{
-            
+			
 			//create skybox
 			_sky = new SkyBox(_skyMap);
 			_view.scene.addChild(_sky);
@@ -485,7 +485,7 @@ package
 			
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
-            
+			
 			load("vision.awd");
 		}
 		
@@ -606,7 +606,7 @@ package
 				// load next bitmap
 				load(textureStrings[n]);
 			} else {
-                
+				
 				// Init material and objects
 				initMaterials();
 				initObjects();
@@ -633,7 +633,7 @@ package
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
-            if (event.asset.assetType == AssetType.MESH) {
+			if (event.asset.assetType == AssetType.MESH) {
 				var mesh:Mesh = event.asset as Mesh;
 				if(mesh.name!='top' && mesh.name!='bottom') _vision.push(mesh);
 			}
