@@ -37,10 +37,6 @@
  */
 package
 {
-	import away3d.extrusions.Elevation;
-	import away3d.core.managers.Stage3DManager;
-	import away3d.core.managers.Stage3DProxy;
-	import away3d.events.Stage3DEvent;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
@@ -54,6 +50,8 @@ package
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.textures.CubeReflectionTexture;
 	import away3d.containers.ObjectContainer3D;
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.textures.BitmapCubeTexture;
@@ -65,6 +63,7 @@ package
 	import away3d.primitives.CubeGeometry;
 	import away3d.lights.DirectionalLight;
 	import away3d.materials.LightSources;
+	import away3d.extrusions.Elevation;
 	import away3d.events.MouseEvent3D;
 	import away3d.events.LoaderEvent;
 	import away3d.containers.View3D;
@@ -72,13 +71,12 @@ package
 	import away3d.lights.LightProbe;
 	import away3d.primitives.SkyBox;
 	import away3d.entities.Sprite3D;
+	import away3d.events.Stage3DEvent;
 	import away3d.events.AssetEvent;
 	import away3d.loaders.Loader3D;
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
 	
 	import flash.filters.ColorMatrixFilter;
 	import flash.display.StageDisplayState;
@@ -95,6 +93,7 @@ package
 	import flash.text.GridFitType;
 	import flash.utils.setTimeout;
 	import flash.text.TextFormat;
+	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.display.Loader;
 	import flash.net.URLRequest;
@@ -104,6 +103,7 @@ package
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.ui.Keyboard;
+	import flash.geom.Point;
 	
 	import utils.PixelBlenderEffects;
 	import utils.VectorSkyEffects;
@@ -114,7 +114,7 @@ package
 		[Embed(source="/../embeds/signature.swf",symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const ASSETS_ROOT:String = "assets/onkba/";
+		private static const ASSETS_ROOT:String = "assets/";
 		private static const MOUNTAIGN_TOP:Number = 2000;
 		private static const FARVIEW:Number = 30000;
 		private static const FOGNEAR:Number = 0;
@@ -195,10 +195,11 @@ package
 		{
 			_bitmaps = new Vector.<BitmapData>();
 			_bitmapStrings = new Vector.<String>();
+			
+			// sky map Bitmap overlay
+			_bitmapStrings.push("sky3/negy.jpg", "sky3/posy.jpg", "sky3/posx.jpg", "sky3/negz.jpg", "sky3/posz.jpg", "sky3/negx.jpg");
 			// terrain map
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
-			// sky map Bitmap overlay
-			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
 			
 			if (stage)
 				init();
@@ -329,7 +330,7 @@ package
 				_skyBitmaps = new Vector.<BitmapData>(6);
 				for (i = 0; i < 6; i++)
 				{
-					_skyBitmaps[i] = _bitmaps[3 + i];
+					_skyBitmaps[i] = _bitmaps[i];
 				}
 			}
 			if (_sky)
@@ -368,7 +369,7 @@ package
 			_materials = new Vector.<TextureMaterial>();
 			
 			var tiles:Array = [1, 100, 100, 100];
-			var sTexture:Array = [Cast.bitmapTexture(_bitmaps[0]), Cast.bitmapTexture(_bitmaps[1]), Cast.bitmapTexture(_bitmaps[2])];
+			var sTexture:Array = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
 			_terrainMethod = new TerrainDiffuseMethod(sTexture, Cast.bitmapTexture(BitmapMapper.ground), tiles);
 			
 			// global shadow method
@@ -464,7 +465,7 @@ package
 		
 		//-------------------------------------------------------------------------------
 		//
-		//       OO RENDER LOOP   
+		//   oo  RENDER LOOP   
 		//
 		//-------------------------------------------------------------------------------
 		
@@ -489,7 +490,7 @@ package
 		}
 		
 		//-------------------------------------------------------------------------------
-		//       GLOBAL LISTENER
+		//   >>  GLOBAL LISTENER
 		//-------------------------------------------------------------------------------
 		
 		private function initListeners(e:Event = null):void
@@ -533,7 +534,7 @@ package
 		}
 		
 		//-------------------------------------------------------------------------------
-		//       PAUSE effect
+		//   ||  PAUSE render
 		//-------------------------------------------------------------------------------
 		
 		private function grayPauseEffect():void
@@ -879,8 +880,8 @@ package
 			_text = new TextField();
 			var format:TextFormat = new TextFormat("Verdana", 9, 0xdddddd);
 			format.letterSpacing = 1;
-			format.leading = 1;
 			format.leftMargin = 5;
+			format.leading = 1;
 			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
 			_text.gridFitType = GridFitType.PIXEL;

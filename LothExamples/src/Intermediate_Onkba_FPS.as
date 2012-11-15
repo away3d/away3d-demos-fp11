@@ -43,9 +43,7 @@ package
 	import away3d.animators.SkeletonAnimationSet;
 	import away3d.animators.nodes.SkeletonClipNode;
 	import away3d.animators.transitions.CrossfadeTransition;
-    import away3d.core.managers.Stage3DManager;
-    import away3d.core.managers.Stage3DProxy;
-    import away3d.events.Stage3DEvent;
+   
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
@@ -59,6 +57,8 @@ package
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.textures.CubeReflectionTexture;
 	import away3d.containers.ObjectContainer3D;
+    import away3d.core.managers.Stage3DManager;
+    import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.textures.BitmapCubeTexture;
@@ -77,13 +77,12 @@ package
 	import away3d.lights.LightProbe;
 	import away3d.primitives.SkyBox;
 	import away3d.entities.Sprite3D;
+    import away3d.events.Stage3DEvent;
 	import away3d.events.AssetEvent;
 	import away3d.loaders.Loader3D;
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
-    import flash.geom.Point;
-    import flash.geom.Rectangle;
     
 	import flash.filters.ColorMatrixFilter;
 	import flash.display.StageDisplayState;
@@ -95,7 +94,6 @@ package
 	import flash.text.AntiAliasType;
 	import flash.display.LoaderInfo;
 	import flash.display.BitmapData;
-    import flash.display.Bitmap;
 	import flash.display.StageAlign;
 	import flash.events.MouseEvent;
 	import flash.text.GridFitType;
@@ -103,13 +101,16 @@ package
 	import flash.text.TextFormat;
 	import flash.text.TextField;
 	import flash.display.Loader;
+    import flash.display.Bitmap;
 	import flash.net.URLRequest; 
 	import flash.display.Sprite;
+    import flash.geom.Rectangle;
 	import flash.net.URLLoader;
 	import flash.geom.Vector3D;
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.ui.Keyboard;
+    import flash.geom.Point;
 	
 	import utils.VectorSkyEffects;
 	import utils.BitmapMapper;
@@ -119,7 +120,7 @@ package
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const ASSETS_ROOT:String = "assets/onkba/";
+		private static const ASSETS_ROOT:String = "assets/";
 		private static const MOUNTAIGN_TOP:Number = 2000;
 		private static const FARVIEW:Number = 30000;
 		private static const FOGNEAR:Number = 0;
@@ -244,9 +245,9 @@ package
 			// terrain map
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg" );
 			// hero map
-			_bitmapStrings.push("onkba_diffuse.png", "onkba_normals.jpg", "onkba_lightmap.jpg");
+			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
 			// gun map
-			_bitmapStrings.push("weapon_diffuse.jpg", "weapon_normals.jpg", "weapon_lightmap.jpg");
+			_bitmapStrings.push("onkba/weapon_diffuse.jpg", "onkba/weapon_normals.jpg", "onkba/weapon_lightmap.jpg");
 			
 			// terrain map
 			_bitmapStrings.push("height.png");
@@ -255,7 +256,7 @@ package
 			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
 			
 			// bazooka map
-			_bitmapStrings.push("weapon2_diffuse.jpg", "weapon2_normals.jpg", "weapon2_lightmap.jpg");
+			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
 			
 			_bitmapStrings.push("height_n.jpg");
 			
@@ -476,7 +477,6 @@ package
 			_terrainMaterial.diffuseMethod = _terrainMethod;
 			_terrainMaterial.gloss = 20;
 			_terrainMaterial.specular = .25;
-			//_terrainMaterial.repeat = true;
 			_terrainMaterial.addMethod(_fogMethode);
 			_materials[5] = _terrainMaterial;
 			
@@ -559,12 +559,12 @@ package
 			_weapons[0] = new Mesh(new CubeGeometry(1,1,1), null);
 			
 			// load Onkba character with weapons
-			load("onkba_fps.awd");
+			load("onkba/onkba_fps.awd");
 		}
 		
 		//-------------------------------------------------------------------------------
 		//
-		//       OO RENDER LOOP   
+		//   oo  RENDER LOOP   
 		//
 		//-------------------------------------------------------------------------------
 		
@@ -596,9 +596,8 @@ package
 			_view.render();
 		}
 		
-		
 		//-------------------------------------------------------------------------------
-		//       GLOBAL LISTENER
+		//   >>  GLOBAL LISTENER
 		//-------------------------------------------------------------------------------
 		
 		private function initListeners(e:Event=null):void
@@ -649,6 +648,10 @@ package
             
         }
         
+		//-------------------------------------------------------------------------------
+		//   ||  PAUSE render
+		//-------------------------------------------------------------------------------
+		
 		private function grayPauseEffect():void
 		{
             _capture = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x991D1D1D);
@@ -898,7 +901,6 @@ package
 			}
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       CHARACTER ANIMATION
 		//-------------------------------------------------------------------------------
@@ -1002,7 +1004,6 @@ package
 			else {_animator.play(currentAnim, _transition, 0);
 				setTimeout(stop, 260);}
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//   ||oo||   KEYBOARD
@@ -1214,7 +1215,6 @@ package
 			_eyeLook.position = new Vector3D(e.localPosition.z + 6, e.localPosition.x, e.localPosition.y + 10);
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       EYES dynamic    
 		//-------------------------------------------------------------------------------
@@ -1358,8 +1358,8 @@ package
 			_text = new TextField();
 			var format:TextFormat = new TextFormat("Verdana", 9, 0xdddddd);
 			format.letterSpacing = 1;
+            format.leftMargin = 5;
 			format.leading = 1;
-			format.leftMargin = 5;
 			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
 			_text.gridFitType = GridFitType.PIXEL;

@@ -37,36 +37,74 @@
  */
 package
 {
+	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
+	import away3d.materials.methods.FilteredShadowMapMethod;
+	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.FresnelSpecularMethod;
+	import away3d.materials.methods.TerrainDiffuseMethod;
+	import away3d.materials.methods.FresnelEnvMapMethod;
+	import away3d.materials.methods.NearShadowMapMethod;
+	import away3d.controllers.FirstPersonController;
+	import away3d.materials.methods.LightMapMethod;
+	import away3d.materials.methods.RimLightMethod;
+	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.textures.CubeReflectionTexture;
+	import away3d.containers.ObjectContainer3D;
 	import away3d.core.managers.Stage3DManager;
 	import away3d.core.managers.Stage3DProxy;
-	import away3d.events.Stage3DEvent;
+	import away3d.materials.methods.FogMethod;
+	import away3d.controllers.HoverController;
+	import away3d.textures.BitmapCubeTexture;
 	import away3d.loaders.parsers.AWD2Parser;
-	import away3d.cameras.lenses.*;
-	import away3d.containers.*;
-	import away3d.controllers.*;
-	import away3d.core.base.*;
-	import away3d.debug.*;
-	import away3d.entities.*;
-	import away3d.events.*;
-	import away3d.library.assets.*;
-	import away3d.lights.*;
-	import away3d.lights.shadowmaps.*;
-	import away3d.loaders.*;
-	import away3d.materials.*;
-	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.materials.methods.*;
-	import away3d.primitives.*;
-	import away3d.textures.*;
-	import away3d.utils.*;
+	import away3d.materials.TextureMaterial;
+	import away3d.materials.ColorMaterial;
+	import away3d.primitives.SphereGeometry;
+	import away3d.primitives.PlaneGeometry;
+	import away3d.library.assets.AssetType;
+	import away3d.primitives.CubeGeometry;
+	import away3d.lights.DirectionalLight;
+	import away3d.materials.LightSources;
+	import away3d.events.MouseEvent3D;
+	import away3d.events.LoaderEvent;
+	import away3d.containers.View3D;
+	import away3d.lights.PointLight;
+	import away3d.lights.LightProbe;
+	import away3d.primitives.SkyBox;
+	import away3d.entities.Sprite3D;
+	import away3d.events.Stage3DEvent;
+	import away3d.events.AssetEvent;
+	import away3d.loaders.Loader3D;
+	import away3d.debug.AwayStats;
+	import away3d.entities.Mesh;
+	import away3d.utils.Cast;
 	
-	import flash.display.*;
-	import flash.events.*;
-	import flash.filters.*;
-	import flash.geom.*;
-	import flash.net.*;
-	import flash.text.*;
-	import flash.ui.*;
+	import flash.filters.ColorMatrixFilter;
+	import flash.display.StageDisplayState;
+	import flash.filters.DropShadowFilter;
+	import flash.net.URLLoaderDataFormat;
+	import flash.display.StageScaleMode;
+	import flash.events.ProgressEvent;
+	import flash.events.KeyboardEvent;
+	import flash.text.AntiAliasType;
+	import flash.display.LoaderInfo;
+	import flash.display.BitmapData;
+	import flash.display.StageAlign;
+	import flash.events.MouseEvent;
+	import flash.text.GridFitType;
 	import flash.utils.setTimeout;
+	import flash.text.TextFormat;
+	import flash.text.TextField;
+	import flash.display.Loader;
+	import flash.display.Bitmap;
+	import flash.net.URLRequest;
+	import flash.display.Sprite;
+	import flash.geom.Rectangle;
+	import flash.net.URLLoader;
+	import flash.geom.Vector3D;
+	import flash.events.Event;
+	import flash.geom.Matrix;
+	import flash.ui.Keyboard;
+	import flash.geom.Point;
 	
 	import utils.PixelBlenderEffects;
 	import utils.VectorSkyEffects;
@@ -81,14 +119,13 @@ package
 		[Embed(source="/../embeds/signature.swf",symbol="Signature")]
 		public var SignatureSwf:Class;
 		
+		private static const ASSETS_ROOT:String = "assets/";
 		private static const SCALE:int = 1;
 		
 		private var _stage3DProxy:Stage3DProxy;
 		private var _manager:Stage3DManager;
-		
-		private var assetsRoot:String = "assets/vision/";
 		private var _bitmapStrings:Vector.<String>;
-		private var textureBitmapData:Vector.<BitmapData>;
+		private var _bitmaps:Vector.<BitmapData>;
 		private var _num:uint = 0;
 		
 		private var sunColor:uint = 0xAAAAA9;
@@ -115,7 +152,6 @@ package
 		private var _sunLight:DirectionalLight;
 		private var _skyLight:PointLight;
 		private var _skyProbe:LightProbe;
-		private var _sky:SkyBox;
 		
 		private var _reflectionTexture:CubeReflectionTexture;
 		private var _fresnelMethod:FresnelEnvMapMethod;
@@ -124,8 +160,11 @@ package
 		private var _specularMethod:FresnelSpecularMethod;
 		private var _shadowMethod:NearShadowMapMethod;
 		private var _rimLightMethod:RimLightMethod;
-		// Sky
+		// sky
+		private var _sky:SkyBox;
 		private var _skyMap:BitmapCubeTexture;
+		private var _skyBitmaps:Vector.<BitmapData>;
+		private var _blendmodes:Array = ["add", "darken", "hardlight", "lighten", "multiply", "overlay", "screen", "subtract"];
 		
 		//Materials
 		private var _materials:Vector.<TextureMaterial>;
@@ -161,6 +200,7 @@ package
 		private var _mouseMove:Boolean;
 		private var _cameraHeight:Number = 50;
 		
+		private var _isIntro:Boolean = true;
 		private var _isReflection:Boolean = false;
 		private var _isResize:Boolean;
 		private var _cloneActif:Boolean;
@@ -178,11 +218,14 @@ package
 		 */
 		public function Intermediate_Vision_CAR()
 		{
-			textureBitmapData = new Vector.<BitmapData>();
+			_bitmaps = new Vector.<BitmapData>();
 			_bitmapStrings = new Vector.<String>();
 			
+			// sky map Bitmap overlay
+			_bitmapStrings.push("sky2/negy.jpg", "sky2/posy.jpg", "sky2/posx.jpg", "sky2/negz.jpg", "sky2/posz.jpg", "sky2/negx.jpg");
+			
 			// terrain map
-			_bitmapStrings.push("sand.jpg");
+			_bitmapStrings.push("sand.jpg", "sand_n.jpg", "sand_l.jpg");
 			
 			if (stage)
 				init();
@@ -313,24 +356,42 @@ package
 		
 		private function randomSky():void
 		{
-			zenithColor = 0xFFFFFF * Math.random();
-			fogColor = 0xFFFFFF * Math.random();
+			var i:uint = 0;
+			var blend:String = "overlay";
+			if (!_isIntro)
+			{
+				skyColor = 0xFFFFFF * Math.random();
+				fogColor = 0xFFFFFF * Math.random();
+				blend = _blendmodes[uint(Math.random() * _blendmodes.length)];
+			}
 			
-			_skyMap = VectorSkyEffects.vectorSky(zenithColor, fogColor, fogColor, 8);
+			// add real sky bitmap
+			if (_skyBitmaps == null)
+			{
+				_skyBitmaps = new Vector.<BitmapData>(6);
+				for (i = 0; i < 6; i++)
+				{
+					_skyBitmaps[i] = _bitmaps[i];
+				}
+			}
+			if (_sky)
+			{
+				_view.scene.removeChild(_sky);
+				_sky.dispose();
+			}
+			
+			_skyMap = VectorSkyEffects.vectorSky(skyColor, fogColor, fogColor, 8, _skyBitmaps, blend);
 			_fogMethode.fogColor = fogColor;
-			//_skyProbe.diffuseMap = _skyMap;
-			_sky.dispose();
+			_skyProbe.diffuseMap = _skyMap;
 			_sky = new SkyBox(_skyMap);
 			_view.scene.addChild(_sky);
 			
 			// test rim Light methode slow down engine
-			for (var i:int = 0; i < _materials.length; i++)
+			for (i = 0; i < _materials.length; i++)
 			{
 				_materials[i].removeMethod(_rimLightMethod);
 			}
-			
-			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2.5, RimLightMethod.ADD);
-			
+			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2.5, RimLightMethod.ADD);
 			for (i = 0; i < _materials.length; i++)
 			{
 				_materials[i].addMethod(_rimLightMethod);
@@ -359,7 +420,9 @@ package
 			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
 			
 			// create ground texture
-			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[0]));
+			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
+			_groundMaterial.normalMap = Cast.bitmapTexture(_bitmaps[7]);
+			_groundMaterial.specularMap = Cast.bitmapTexture(_bitmaps[8]);
 			_groundMaterial.gloss = 100;
 			_groundMaterial.specular = 0.1;
 			_groundMaterial.addMethod(_fogMethode);
@@ -491,12 +554,12 @@ package
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
 			
-			load("vision.awd");
+			load("vision/vision.awd");
 		}
 		
 		//-------------------------------------------------------------------------------
 		//
-		//       OO RENDER LOOP   
+		//   oo  RENDER LOOP   
 		//
 		//-------------------------------------------------------------------------------
 		
@@ -535,7 +598,7 @@ package
 		}
 		
 		//-------------------------------------------------------------------------------
-		//       GLOBAL LISTENER
+		//   >>  GLOBAL LISTENER
 		//-------------------------------------------------------------------------------
 		
 		private function initListeners(e:Event = null):void
@@ -580,7 +643,7 @@ package
 		}
 		
 		//-------------------------------------------------------------------------------
-		//       PAUSE effect
+		//   ||  PAUSE render
 		//-------------------------------------------------------------------------------
 		
 		private function grayPauseEffect():void
@@ -635,7 +698,7 @@ package
 			}
 			
 			loader.addEventListener(ProgressEvent.PROGRESS, loadProgress, false, 0, true);
-			loader.load(new URLRequest(assetsRoot + url));
+			loader.load(new URLRequest(ASSETS_ROOT + url));
 		}
 		
 		/**
@@ -669,7 +732,7 @@ package
 		{
 			var loader:Loader = LoaderInfo(e.target).loader;
 			loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, onBitmapComplete);
-			textureBitmapData.push(e.target.content.bitmapData);
+			_bitmaps.push(e.target.content.bitmapData);
 			loader.unload();
 			loader = null;
 			_num++;
@@ -684,6 +747,10 @@ package
 				
 				// Init material and objects
 				initMaterials();
+				
+				// create skybox
+				randomSky();
+				
 				initObjects();
 			}
 		}
@@ -860,15 +927,12 @@ package
 			}
 			
 			// finaly add vision car mesh
-			_view.scene.addChild(_visionCar)
-			_visionCar.rotationY = 0 //22.5;
+			_view.scene.addChild(_visionCar);
 			
 			log(message());
 			initListeners();
-		
-			//_mover = new CarMove();
-			//addChild(_mover);
-		
+			
+			_isIntro = false;
 		}
 		
 		//-------------------------------------------------------------------------------
@@ -926,7 +990,7 @@ package
 				case Keyboard.D: 
 					CarMove.right(true);
 					break;
-				
+				// options
 				case Keyboard.B: 
 					makeClone();
 					break;
@@ -939,7 +1003,6 @@ package
 				case Keyboard.V: 
 					initReflection();
 					break;
-			
 			}
 		}
 		
@@ -1054,8 +1117,8 @@ package
 			_text = new TextField();
 			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
 			format.letterSpacing = 1;
-			format.leading = 2;
 			format.leftMargin = 5;
+			format.leading = 1;
 			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
 			_text.gridFitType = GridFitType.PIXEL;
