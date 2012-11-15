@@ -148,6 +148,7 @@ package
 		// materials
 		private var _boxMaterial:TextureMaterial;
 		private var _gunMaterial:TextureMaterial;
+		private var _gunMaterial2:TextureMaterial;
 		private var _boneMaterial:TextureMaterial;
 		private var _heroMaterial:TextureMaterial;
 		private var _shereMaterial:TextureMaterial;
@@ -235,10 +236,14 @@ package
 			// gun map
 			_bitmapStrings.push("weapon_diffuse.jpg", "weapon_normals.jpg", "weapon_lightmap.jpg");
 			
+			// terrain map
 			_bitmapStrings.push("height.png");
 			
 			// sky map Bitmap overlay
 			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
+			
+			// bazooka map
+			_bitmapStrings.push("weapon2_diffuse.jpg", "weapon2_normals.jpg", "weapon2_lightmap.jpg");
 			
 			init();
 		}
@@ -463,6 +468,14 @@ package
 			_boneMaterial.specular = 0.1;
 			_boneMaterial.alphaBlending = true;
 			_materials[7] = _boneMaterial;
+			
+			// 8- bazooka
+			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[16]));
+			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[17]);
+			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[18]);
+			_gunMaterial2.gloss = 20;
+			_gunMaterial2.specular = 0.8;
+			_materials[8] = _gunMaterial2;
 			
 			// for all material
 			for (var i:int; i < _materials.length; i++ ) {
@@ -716,7 +729,9 @@ package
 						if (i == 2) { mesh.rotationY = -5; mesh.rotationZ = -2; mesh.rotationX = 0; mesh.z = 1.6; mesh.y =-5; }// decal for machine
 						if (i == 3) { mesh.rotationY = -5; mesh.rotationZ = -5;  mesh.rotationX = 0; mesh.z = 1.8; mesh.y = -4.6; }// decal for sniper
 						if (i == 5) {mesh.rotationY = 6; mesh.rotationZ = -6; mesh.x = 5; mesh.y =2;mesh.z =-4}// decal for bazooka
-						mesh.material = _gunMaterial;
+						
+						if (i != 5) mesh.material = _gunMaterial;
+						else mesh.material = _gunMaterial2;
 						_weapons[i] = mesh;
 					}
 				}
