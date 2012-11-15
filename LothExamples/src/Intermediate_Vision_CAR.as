@@ -8,7 +8,7 @@ How to use the Loader3D object to load an embedded internal awd model.
 How to limite size of AWD export by using away3d clone.
 How to set custom material by using mesh name 
 
-Code and Model by LoTH
+Code, model and map by LoTh
 3dflashlo@gmail.com
 http://3dflashlo.wordpress.com
 
@@ -63,6 +63,7 @@ package
 	import flash.net.*;
 	import flash.text.*;
 	import flash.ui.*;
+	import flash.utils.setTimeout;
 	
 	import utils.VectorSkyEffects;
 	
@@ -178,7 +179,6 @@ package
 			initEngine();
 			initText();
 			initLights();
-			initListeners();
 			
 			// kickoff asset loading
 			load(textureStrings[n]);
@@ -339,17 +339,12 @@ package
 			
 			_materials = new Vector.<TextureMaterial>();
 			
-			//create gobal specular method
-			//_specularMethod = new FresnelSpecularMethod();
-			//_specularMethod.normalReflectance = 0.3;
-			
 			//create global shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0007;
 			
 			//create Rim light method
 			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
-			
 			
 			//create global fog method
 			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
@@ -494,26 +489,42 @@ package
 		//       GLOBAL LISTENER
 		//-------------------------------------------------------------------------------
 		
-		private function initListeners():void
+		private function initListeners(e:Event=null):void
 		{
-			//add render loop
+			message();
+			if (e != null) {
+				stage.removeEventListener(MouseEvent.MOUSE_OVER, initListeners);
+				stage.removeEventListener(Event.RESIZE, onResize);
+			}
+			// add render loop
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			
-			//add key listeners
+			// add key listeners
 			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-			
-			//navigation
+			// navigation
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
-			stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseLeave);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
-			
-			//add resize event
-			stage.addEventListener(Event.RESIZE, onResize);
 		}
 		
+		private function stopListeners():void
+		{
+			log("&#47;&#33;&#92; PAUSE");
+			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseLeave);
+			stage.removeEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
+			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+			
+			// mouse come back
+			stage.addEventListener(Event.RESIZE, onResize);
+			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
+		}
 		
 		//-------------------------------------------------------------------------------
 		//
@@ -521,7 +532,7 @@ package
 		//
 		//-------------------------------------------------------------------------------
 		
-		private function onEnterFrame(event:Event):void
+		private function onEnterFrame(event:Event=null):void
 		{
 			if (_sunLight.ambient < 0.5)_sunLight.ambient += 0.01;
 			
@@ -572,12 +583,20 @@ package
 			if (P != 100)
 				log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
 			else {
-				_text.text =  "VISION CAR\n\n";
-				_text.appendText("I - full screen\n");
-				_text.appendText("V - reflection\n");
-				_text.appendText("N - random sky\n");
-				_text.appendText("B - clone\n");
+				
 			}
+		}
+		
+		/**
+		 * Display demo instruction
+		 */
+		private function message():void
+		{
+			_text.text = "VISION CAR\n\n";
+			_text.appendText("I - full screen\n");
+			_text.appendText("V - reflection\n");
+			_text.appendText("N - random sky\n");
+			_text.appendText("B - clone\n");
 		}
 		
 		/**
@@ -725,6 +744,9 @@ package
 			// finaly add vision car mesh
 			_view.scene.addChild(_visionCar)
 			_visionCar.rotationY = 22.5;
+			
+			message();
+			initListeners();
 		}
 		
 		
@@ -812,6 +834,7 @@ package
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
 			_signature.y = stage.stageHeight - _signature.height;
+			onEnterFrame();
 		}
 		
 		private function onStageMouseDown(e:MouseEvent):void
@@ -821,9 +844,15 @@ package
 			_mouseMove = true;
 		}
 		
+		private function onStageMouseUp(e:Event):void
+		{
+			_mouseMove = false;
+		}
+		
 		private function onStageMouseLeave(e:Event):void
 		{
 			_mouseMove = false;
+			stopListeners();
 		}
 		
 		private function onStageMouseMove(e:MouseEvent):void
@@ -856,7 +885,6 @@ package
 		{
 			_text.htmlText = t;
 		}
-		
 		
 	}
 }

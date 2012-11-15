@@ -8,13 +8,7 @@ How to use the Loader3D object to load an embedded internal awd model.
 How to create character interaction in physic world
 How to set custom material on a model.
 
-Code by Rob Bateman and LoTh
-rob@infiniteturtles.co.uk
-http://www.infiniteturtles.co.uk
-3dflashlo@gmail.com
-http://3dflashlo.wordpress.com
-
-Model and Map by LoTH
+Code, model and map by LoTh
 3dflashlo@gmail.com
 http://3dflashlo.wordpress.com
 
@@ -43,154 +37,163 @@ THE SOFTWARE.
 */
 package
 {
+	import away3d.extrusions.Elevation;
 	import away3d.animators.data.Skeleton;
 	import away3d.animators.SkeletonAnimator;
 	import away3d.animators.SkeletonAnimationSet;
 	import away3d.animators.nodes.SkeletonClipNode;
 	import away3d.animators.transitions.CrossfadeTransition;
-	import away3d.extrusions.Elevation;
-	
-	import away3d.loaders.parsers.AWD2Parser;
-	import away3d.cameras.lenses.*;
-	import away3d.containers.*;
-	import away3d.controllers.*;
-	import away3d.core.base.*;
-	import away3d.debug.*;
-	import away3d.entities.*;
-	import away3d.events.*;
-	import away3d.library.assets.*;
-	import away3d.lights.*;
-	import away3d.lights.shadowmaps.*;
-	import away3d.loaders.*;
-	import away3d.materials.*;
+	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
+	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.materials.methods.*;
-	import away3d.primitives.*;
-	import away3d.textures.*;
-	import away3d.utils.*;
+	import away3d.materials.methods.FresnelSpecularMethod;
+	import away3d.materials.methods.TerrainDiffuseMethod;
+	import away3d.materials.methods.FresnelEnvMapMethod; 
+	import away3d.materials.methods.NearShadowMapMethod;
+	import away3d.controllers.FirstPersonController;
+	import away3d.materials.methods.LightMapMethod;
+	import away3d.materials.methods.RimLightMethod;
+	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.textures.CubeReflectionTexture;
+	import away3d.containers.ObjectContainer3D;
+	import away3d.materials.methods.FogMethod;
+	import away3d.controllers.HoverController;
+	import away3d.textures.BitmapCubeTexture;
+	import away3d.loaders.parsers.AWD2Parser;
+	import away3d.materials.TextureMaterial;
+	import away3d.primitives.SphereGeometry;
+	import away3d.primitives.PlaneGeometry;
+	import away3d.library.assets.AssetType;
+	import away3d.primitives.CubeGeometry;
+	import away3d.lights.DirectionalLight;
+	import away3d.materials.LightSources;
+	import away3d.events.MouseEvent3D;
+	import away3d.events.LoaderEvent;
+	import away3d.containers.View3D;
+	import away3d.lights.PointLight;
+	import away3d.lights.LightProbe;
+	import away3d.primitives.SkyBox;
+	import away3d.entities.Sprite3D;
+	import away3d.events.AssetEvent;
+	import away3d.loaders.Loader3D;
+	import away3d.debug.AwayStats;
+	import away3d.entities.Mesh;
+	import away3d.utils.Cast;
 	
-	import flash.display.*;
-	import flash.events.*;
-	import flash.filters.*;
-	import flash.geom.*;
-	import flash.net.*;
-	import flash.text.*;
-	import flash.ui.*;
+	import flash.display.StageDisplayState;
+	import flash.filters.DropShadowFilter;
+	import flash.net.URLLoaderDataFormat;
+	import flash.display.StageScaleMode;
+	import flash.events.ProgressEvent;
+	import flash.events.KeyboardEvent;
+	import flash.text.AntiAliasType;
+	import flash.display.LoaderInfo;
+	import flash.display.BitmapData;
+	import flash.display.StageAlign;
+	import flash.events.MouseEvent;
+	import flash.text.GridFitType;
 	import flash.utils.setTimeout;
+	import flash.text.TextFormat;
+	import flash.text.TextField;
+	import flash.display.Loader;
+	import flash.net.URLRequest; 
+	import flash.display.Sprite;
+	import flash.net.URLLoader;
+	import flash.geom.Vector3D;
+	import flash.events.Event;
+	import flash.geom.Matrix;
+	import flash.ui.Keyboard;
 	
 	import utils.VectorSkyEffects;
 	
-	[SWF(backgroundColor="#333338", frameRate="60", quality="LOW")]
+	[SWF(backgroundColor="000000", frameRate="60", quality="LOW")]
 	public class Intermediate_Onkba_FPS extends Sprite
 	{
-		// signature swf
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const FARVIEW:Number = 30000;
+		private static const ASSETS_ROOT:String = "assets/onkba/";
 		private static const MOUNTAIGN_TOP:Number = 2000;
+		private static const FARVIEW:Number = 30000;
+		private static const FOGNEAR:Number = 500;
 		private static const SCALE:Number = 2;
 		
-		private var assetsRoot:String = "assets/onkba/";
-		private var textureStrings:Vector.<String>;
-		private var textureBitmapData:Vector.<BitmapData>;
-		private var n:uint = 0;
-		
+		// start colors
 		private var sunColor:uint = 0xAAAAA9;
-		private var sunAmbient:Number = 0.5;
-		private var sunDiffuse:Number = 0.0;
-		private var sunSpecular:Number = 1.3;
-		private var skyColor:uint = 0x333338;
-		private var skyAmbient:Number = 0.1;
-		private var skyDiffuse:Number = 0.0;
-		private var skySpecular:Number = 1.3;
 		private var fogColor:uint = 0x333338;
-		private var zenithColor:uint = 0x445465;
-		private var fogNear:Number = 1000;
+		private var skyColor:uint = 0x445465;
 		
+		// bitmaps
+		private var _bitmapStrings:Vector.<String>;
+		private var _bitmaps:Vector.<BitmapData>;
+		private var _num:uint; 
 		
 		// engine variables
 		private var _view:View3D;
 		private var _stats:AwayStats;
-		private var _signature:Sprite;
 		private var _lightPicker:StaticLightPicker;
 		private var _cameraController:HoverController;
-		
-		// light variables
+		// scene objects
+		private var _heroPieces:ObjectContainer3D;
 		private var _sunLight:DirectionalLight;
-		private var _skyLight:PointLight;
+		private var _player:ObjectContainer3D;
+		private var _weapons:Vector.<Mesh>;
+		private var _bonesFx:Vector.<Mesh>;
 		private var _skyProbe:LightProbe;
-		private var _sky:SkyBox;
+		private var _terrain:Elevation;
+		private var _heroWeapon:Mesh;
+		private var _bigBall:Mesh;
+		private var _hero:Mesh;
 		
-		// material methode
-		private var _fogMethode:FogMethod;
+		// materials
+		private var _boxMaterial:TextureMaterial;
+		private var _gunMaterial:TextureMaterial;
+		private var _boneMaterial:TextureMaterial;
+		private var _heroMaterial:TextureMaterial;
+		private var _shereMaterial:TextureMaterial;
+		private var _terrainMaterial:TextureMaterial;
+		private var _eyesOpenMaterial:TextureMaterial;
+		private var _eyesClosedMaterial:TextureMaterial;
+		private var _materials:Vector.<TextureMaterial>;
+		// methodes
+		private var _reflectionTexture:CubeReflectionTexture;
 		private var _specularMethod:FresnelSpecularMethod;
+		private var _terrainMethod:TerrainDiffuseMethod;
+		private var _fresnelMethod:FresnelEnvMapMethod;
 		private var _shadowMethod:NearShadowMapMethod;
 		private var _rimLightMethod:RimLightMethod;
-		private var _terrainMethod:TerrainDiffuseMethod 
-		// reflection methode
-		private var _reflectionTexture:CubeReflectionTexture;
-		private var _fresnelMethod:FresnelEnvMapMethod;
+		private var _fogMethode:FogMethod;
 		
 		// sky
+		private var _sky:SkyBox;
 		private var _skyMap:BitmapCubeTexture;
 		private var _skyBitmaps:Vector.<BitmapData>;
 		private var _blendmodes:Array = ["add", "darken", "hardlight", "lighten",  "multiply",  "overlay",  "screen", "subtract"];
 		
-		// materials
-		private var _materials:Vector.<TextureMaterial>;
-		private var _groundMaterial:TextureMaterial;
-		private var _terrainMaterial:TextureMaterial;
-		private var _boxMaterial:TextureMaterial;
-		private var _heroMaterial:TextureMaterial;
-		private var _gunMaterial:TextureMaterial;
-		private var _eyesClosedMaterial:TextureMaterial;
-		private var _eyesOpenMaterial:TextureMaterial;
-		
-		// terrain
-		private var _terrain:Elevation;
-		
 		// hero animation variables
-		private var transition:CrossfadeTransition = new CrossfadeTransition(0.3);
-		private var animator:SkeletonAnimator;
-		private var animationSet:SkeletonAnimationSet;
-		private var currentRotationInc:Number=0;
-		private var movementDirection:Number;
-		
-		private var currentAnim:String;
-		private var currentWeapon:int = 0;
-		
-		private const WEAPON:Array = ['', 'Gun', 'Machine', 'Sniper', 'Gatling', 'Bazooka']
-		private const AMMO:Array = ['', '', '', '', '', 'Rocket']
-		private const ANIMATION:Array = ['Idle', 'Walk', 'WalkL', 'WalkR', 'Run', 'CrouchIdle', 'CrouchWalk', 'Reload', 'WaterIdle', 'WaterSwim', 'StandBack', 'StandFace', 'JumpDown'];
-		
-		// animation 
-		private const ANIM_BREATHE:String = "Idle";
-		private const ANIM_WALK:String = "Walk";
-		private const ANIM_RUN:String = "Run";
-		
+		private const ANIMATION:Array = ["Idle", "Walk", "WalkL", "WalkR", "Run", "CrouchIdle", "CrouchWalk", "Reload", "WaterIdle", "WaterSwim", "StandBack", "StandFace", "JumpDown"];
+		private const WEAPON:Array = ["", "Gun", "Machine", "Sniper", "Gatling", "Bazooka"];
+		private const AMMO:Array = ["", "", "", "", "", "Rocket"];
+		private var _animationSet:SkeletonAnimationSet;
+		private var _transition:CrossfadeTransition;
+		private var _animator:SkeletonAnimator;
 		private const ROTATION_SPEED:Number = 3;
-		private const RUN_SPEED:Number = 1;
-		private const WALK_SPEED:Number = 1;
-		private const BREATHE_SPEED:Number = 0.7;
 		private const RELOAD_SPEED:Number = 1;
+		private const IDLE_SPEED:Number = 0.7;
 		private const JUMP_SPEED:Number = 1;
+		private const WALK_SPEED:Number = 1;
+		private const RUN_SPEED:Number = 1;
+		private var movementDirection:Number;
+		private var currentAnim:String;
+		private var currentWeapon:uint;
+		// animation phase
+		private var isSideMove:Boolean;
+		private var isRunning:Boolean;
+		private var isCrouch:Boolean;
+		private var isMoving:Boolean;
+		private var isJump:Boolean;
 		
-		private var isCrouch:Boolean = false;
-		private var isRunning:Boolean = false;
-		private var isMoving:Boolean = false;
-		private var isSideMove:Boolean = false;
-		private var isJump:Boolean = true;
-		
-		// scene objects
-		private var _player:ObjectContainer3D;
-		private var _heroPieces:ObjectContainer3D;
-		private var _hero:Mesh;
-		private var _heroWeapon:Mesh;
-		private var _weapons:Vector.<Mesh>;
-		private var _bonesVector:Vector.<Mesh>;
-		
-		// advanced eye
+		// hero dynamique eye
 		private var _eyePosition:Vector3D; 
 		private var _eyes:ObjectContainer3D;
 		private var _eyeLook:Mesh;
@@ -204,37 +207,38 @@ package
 		private var _mouseMove:Boolean;
 		private var _cameraHeight:Number = 40;
 		
+		// demo testing
 		private var _isIntro:Boolean = true;
-		private var _isReflection:Boolean = false;
-		private var _isResize:Boolean;
-		private var _cloneActif:Boolean;
+		private var _isReflection:Boolean;
 		private var _dynamicsEyes:Boolean;
+		private var _cloneActif:Boolean;
 		private var _debugRay:Boolean;
+		private var _isRender:Boolean;
 		
+		private var _signature:Sprite;
 		private var _text:TextField;
 		
 		// awayPhysics
 		private var _physics:PhysicsEngine;
-		
 		
 		/**
 		 * Constructor
 		 */
 		public function Intermediate_Onkba_FPS()
 		{
-			textureBitmapData = new Vector.<BitmapData>();
-			textureStrings = new Vector.<String>();
+			_bitmaps = new Vector.<BitmapData>();
+			_bitmapStrings = new Vector.<String>();
 			// terrain map
-			textureStrings.push("rock.jpg", "arid.jpg", "sand.jpg" );
+			_bitmapStrings.push("arid.jpg", "arid_n.jpg", "arid_l.jpg" );
 			// hero map
-			textureStrings.push("onkba_diffuse.png", "onkba_normals.jpg", "onkba_lightmap.jpg");
+			_bitmapStrings.push("onkba_diffuse.png", "onkba_normals.jpg", "onkba_lightmap.jpg");
 			// gun map
-			textureStrings.push("gun_diffuse.jpg", "gun_normals.jpg", "gun_lightmap.jpg");
+			_bitmapStrings.push("weapon_diffuse.jpg", "weapon_normals.jpg", "weapon_lightmap.jpg");
 			
-			textureStrings.push("height.png", "height_n.jpg");
+			_bitmapStrings.push("height.png");
 			
 			// sky map Bitmap overlay
-			textureStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
+			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
 			
 			init();
 		}
@@ -247,33 +251,9 @@ package
 			initEngine();
 			initText();
 			initLights();
-			initListeners();
 			
 			// kickoff asset loading
-			load(textureStrings[n]);
-		}
-		
-		/**
-		 * Create an instructions overlay
-		 */
-		private function initText():void
-		{
-			_text = new TextField();
-			var format:TextFormat = new TextFormat("Verdana", 9, 0xFFFFFF);
-			format.letterSpacing = 1;
-			format.leading = 2;
-			format.leftMargin = 5;
-			_text.defaultTextFormat = format;
-			_text.antiAliasType = AntiAliasType.ADVANCED;
-			_text.gridFitType = GridFitType.PIXEL;
-			_text.y = 3;
-			_text.width = 300;
-			_text.height = 250;
-			_text.selectable = false;
-			_text.mouseEnabled = true;
-			_text.wordWrap = true;
-			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
-			addChild(_text);
+			load(_bitmapStrings[_num]);
 		}
 		
 		
@@ -291,8 +271,7 @@ package
 			
 			// create the view
 			_view = new View3D();
-			_view.forceMouseMove = true;
-			_view.backgroundColor = skyColor;
+			_view.backgroundColor = 0x00;
 			_view.antiAlias = 4;
 			addChild(_view);
 			
@@ -324,6 +303,8 @@ package
 			_stats.x = stage.stageWidth - _stats.width - 5;
 			_stats.alpha = 0.5;
 			_stats.y = 2;
+			
+			stage.addEventListener(Event.RESIZE, onResize);
 		}
 		
 		
@@ -333,38 +314,22 @@ package
 		
 		private function initLights():void
 		{
-			// create a light for shadows that mimics the sun's position in the skybox
 			_sunLight = new DirectionalLight(-0.5, -1, 0.3);
 			_sunLight.color = sunColor;
 			_sunLight.ambientColor = sunColor;
-			_sunLight.ambient = sunAmbient;
-			_sunLight.diffuse = sunDiffuse;
-			_sunLight.specular = sunSpecular;
+			_sunLight.ambient = 0;
+			_sunLight.diffuse = 0;
+			_sunLight.specular = 1;
 			_sunLight.castsShadows = true;
 			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.02);
 			_view.scene.addChild(_sunLight);
-			
-			// create a light for ambient effect that mimics the sky
-			_skyLight = new PointLight();
-			_skyLight.color = zenithColor;
-			_skyLight.ambientColor = zenithColor;
-			_skyLight.ambient = skyAmbient;
-			_skyLight.diffuse = skyDiffuse;
-			_skyLight.specular = skySpecular;
-			_skyLight.y = 300;
-			_skyLight.x = -300;
-			_skyLight.z = 500;
-			
-			_skyLight.radius = 1000;
-			_skyLight.fallOff = 2500;
-			_view.scene.addChild(_skyLight);
 			
 			// generate cube texture for sky and probe
 			_skyProbe = new LightProbe(_skyMap);
 			_view.scene.addChild(_skyProbe);
 			
 			// create light picker for materials
-			_lightPicker = new StaticLightPicker([_sunLight, _skyLight, _skyProbe]);
+			_lightPicker = new StaticLightPicker([_sunLight, _skyProbe]);
 		}
 		
 		
@@ -377,7 +342,7 @@ package
 			var i:uint = 0;
 			var blend:String = "overlay";
 			if (!_isIntro) {
-				zenithColor = 0xFFFFFF * Math.random();
+				skyColor = 0xFFFFFF * Math.random();
 				fogColor = 0xFFFFFF * Math.random();
 				blend = _blendmodes[uint(Math.random() * _blendmodes.length)];
 			}
@@ -386,7 +351,7 @@ package
 			if (_skyBitmaps == null) {
 				_skyBitmaps = new Vector.<BitmapData>(6);
 				for (i = 0; i < 6; i++) {
-					_skyBitmaps[i] = textureBitmapData[11 + i];
+					_skyBitmaps[i] = _bitmaps[10 + i];
 				}
 			}
 			if (_sky) {  
@@ -394,7 +359,7 @@ package
 				_sky.dispose();
 			}
 			
-			_skyMap = VectorSkyEffects.vectorSky(zenithColor, fogColor, fogColor, 8, _skyBitmaps, blend);
+			_skyMap = VectorSkyEffects.vectorSky(skyColor, fogColor, fogColor, 8, _skyBitmaps, blend);
 			_fogMethode.fogColor = fogColor;
 			_skyProbe.diffuseMap = _skyMap;
 			_sky = new SkyBox(_skyMap);
@@ -402,7 +367,7 @@ package
 			
 			// test rim Light methode slow down engine
 			for ( i=0; i < _materials.length; i++ ) { _materials[i].removeMethod(_rimLightMethod); }
-			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2.5, RimLightMethod.ADD);
+			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2.5, RimLightMethod.ADD);
 			for ( i = 0; i < _materials.length; i++ ) { _materials[i].addMethod(_rimLightMethod); }
 		}
 		
@@ -419,42 +384,35 @@ package
 			
 			// global terrain methode probleme no render ?
 			var tiles:Array = [1, 10, 10, 10];
-			var sTexture:Array = [Cast.bitmapTexture(textureBitmapData[1]), Cast.bitmapTexture(textureBitmapData[2]), Cast.bitmapTexture(textureBitmapData[0])];
-			_terrainMethod = new TerrainDiffuseMethod(sTexture, Cast.bitmapTexture(textureBitmapData[9]) , tiles);
-			
-			// gobal specular method
-			_specularMethod = new FresnelSpecularMethod();
-			_specularMethod.normalReflectance = 0.6;
+			var sTexture:Array = [Cast.bitmapTexture(_bitmaps[1]), Cast.bitmapTexture(_bitmaps[2]), Cast.bitmapTexture(_bitmaps[0])];
+			_terrainMethod = new TerrainDiffuseMethod(sTexture, Cast.bitmapTexture(_bitmaps[9]) , tiles);
 			
 			// global shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0005;
 			
 			// global Rim light method
-			_rimLightMethod = new RimLightMethod(zenithColor, 0.5, 2, RimLightMethod.ADD);
+			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
 			
 			// global fog method
-			_fogMethode = new FogMethod(fogNear, FARVIEW / 2, fogColor);
-			
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW / 2, fogColor);
 			
 			// 0- hero
-			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[3]));
-			_heroMaterial.normalMap = Cast.bitmapTexture(textureBitmapData[4]);
-			_heroMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(textureBitmapData[5])));
-			_heroMaterial.gloss = 16;
+			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[3]));
+			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[4]);
+			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[5]);
+			_heroMaterial.gloss = 25;
 			_heroMaterial.specular = 0.5;
-			_heroMaterial.bothSides = false;
 			_heroMaterial.alphaThreshold = 0.9;
 			_heroMaterial.alphaPremultiplied = true;
 			_materials[0] = _heroMaterial;
 			
 			// 1- weapon
-			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[6]));
-			_gunMaterial.normalMap = Cast.bitmapTexture(textureBitmapData[7]);
-			_gunMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(textureBitmapData[8])));
-			_gunMaterial.lightPicker = _lightPicker;
-			_gunMaterial.gloss = 16;
-			_gunMaterial.specular = 0.6;
+			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
+			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[7]);
+			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[8]);
+			_gunMaterial.gloss = 20;
+			_gunMaterial.specular = 0.8;
 			_materials[1] = _gunMaterial;
 			
 			// 2- eye ball close
@@ -467,50 +425,54 @@ package
 			
 			// 3- eye ball open from bitmap diffuse onkba
 			b = new BitmapData(256/2, 256/2, false);
-			b.draw(textureBitmapData[3], new Matrix(1, 0, 0, 1, -283/2, -197/2));
+			b.draw(_bitmaps[3], new Matrix(1, 0, 0, 1, -283/2, -197/2));
 			_eyesOpenMaterial = new TextureMaterial(Cast.bitmapTexture(b));
 			_eyesOpenMaterial.gloss = 100;
 			_eyesOpenMaterial.specular = 0.8;
-			_eyesOpenMaterial.repeat = true;
 			_materials[3] = _eyesOpenMaterial;
 			
 			// 4- ground
-			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[1]));
-			_groundMaterial.gloss = 10;
-			_groundMaterial.specular = 0.1;
-			_groundMaterial.addMethod(_fogMethode);
-			_groundMaterial.repeat = true;
-			_materials[4] = _groundMaterial;
+			_shereMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64,false, 0x00)));
+			_shereMaterial.gloss = 90;
+			_shereMaterial.specular = 4;
+			_shereMaterial.repeat = true;
+			_shereMaterial.addMethod(_fogMethode);
+			_materials[4] = _shereMaterial;
 			
 			// 5- terrain
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(textureBitmapData[9]));
-			//_terrainMaterial.diffuseMethod = _terrainMethod;
-			_terrainMaterial.normalMap = Cast.bitmapTexture(textureBitmapData[10]);
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[0]));
+			_terrainMaterial.normalMap = Cast.bitmapTexture(_bitmaps[1]);
 			_terrainMaterial.gloss = 20;
 			_terrainMaterial.specular = .25;
+			_terrainMaterial.repeat = true;
 			_terrainMaterial.addMethod(_fogMethode);
+			//_terrainMaterial.diffuseMethod = (_terrainMethod);
 			_materials[5] = _terrainMaterial;
 			
 			// 6- simulation box 
-			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee885500)));//ee220000
+			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee885500)));
 			_boxMaterial.gloss = 10;
 			_boxMaterial.specular = 0.1;
 			_boxMaterial.alphaBlending = true;
 			_boxMaterial.addMethod(_fogMethode);
 			_materials[6] = _boxMaterial;
 			
-			// apply light and effect for all material
+			// 7- Xray bones 
+			_boneMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee00ff00)));
+			_boneMaterial.gloss = 10;
+			_boneMaterial.specular = 0.1;
+			_boneMaterial.alphaBlending = true;
+			_materials[7] = _boneMaterial;
+			
+			// for all material
 			for (var i:int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].diffuseLightSources = LightSources.PROBES;
 				_materials[i].specularLightSources = LightSources.LIGHTS;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 0.85;
-				if (i != 5) _materials[i].addMethod(_rimLightMethod);
+				if (i != 5 || i!=3 || i!=2) _materials[i].addMethod(_rimLightMethod);
 			}
-			
-			// global reflection methode
-			if (_isReflection) initReflection();
 		}
 		
 		
@@ -522,8 +484,8 @@ package
 		{
 			_reflectionTexture = new CubeReflectionTexture(128*2);
 			_reflectionTexture.farPlaneDistance = FARVIEW;
-			_reflectionTexture.nearPlaneDistance = 250;
-			_reflectionTexture.position = new Vector3D(0, 40, 0);
+			_reflectionTexture.nearPlaneDistance = 50;
+			_reflectionTexture.position = new Vector3D(0, 0, 0);
 		}
 		
 		private function initReflection() : void
@@ -532,11 +494,10 @@ package
 			_isReflection = true;
 			initReflectionCube();
 			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
-			_fresnelMethod.normalReflectance = 0.3;
-			_fresnelMethod.fresnelPower = 0.5;
-			_fresnelMethod.alpha = 0.3;
-			_materials[0].addMethod(_fresnelMethod);
-			_materials[1].addMethod(_fresnelMethod);
+			_fresnelMethod.normalReflectance = 0.9;
+			_fresnelMethod.fresnelPower = 1;
+			_fresnelMethod.alpha = 0.5;
+			_materials[4].addMethod(_fresnelMethod);
 		}
 		
 		
@@ -544,48 +505,25 @@ package
 		//       3D OBJECT 
 		//-------------------------------------------------------------------------------
 		
-		private function initObjects():void
+		private function initAfterBitmapLoad():void
 		{
-			//create skybox
+			// create material
+			initMaterials();
+			
+			// create skybox
 			randomSky();
 			
-			//create mountain like terrain
-			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(textureBitmapData[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
+			// create terrain
+			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(_bitmaps[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
+			_terrain.geometry.scaleUV(150, 150);
 			_view.scene.addChild(_terrain);
 			
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);
-			
-			// fake mesh if no weapon 
 			_weapons[0] = new Mesh(new CubeGeometry(1,1,1), null);
 			
-			// Now load Onkba character and weapons
+			// load Onkba character with weapons
 			load("onkba_fps.awd");
-		}
-		
-		
-		//-------------------------------------------------------------------------------
-		//       GLOBAL LISTENER
-		//-------------------------------------------------------------------------------
-		
-		private function initListeners():void
-		{
-			//add render loop
-			addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			
-			//add key listeners
-			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-			
-			//navigation
-			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
-			stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
-			stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseLeave);
-			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
-			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
-			
-			//add resize event
-			stage.addEventListener(Event.RESIZE, onResize);
 		}
 		
 		
@@ -595,55 +533,85 @@ package
 		//
 		//-------------------------------------------------------------------------------
 		
-		private function onEnterFrame(event:Event):void
+		private function onEnterFrame(event:Event = null):void
 		{
-			// physic
+			if (_sunLight.ambient < 0.5)_sunLight.ambient += 0.01;
+			
 			if (_physics)_physics.update();
 			
-			// character animation
 			if (_hero) {
-				
-				// eyes
 				if (_dynamicsEyes) updateEyes();
-				
-				// bones
 				if (_debugRay) updateBones();
-				
 				// hand bone for weapon
-				if (animator.globalPose.numJointPoses >= 22) {
-					_heroWeapon.transform = animator.globalPose.jointPoses[22].toMatrix3D();
+				if (_animator.globalPose.numJointPoses >= 22) {
+					_heroWeapon.transform = _animator.globalPose.jointPoses[22].toMatrix3D();
 				}
 			}
 			
-			// camera
 			if ( _cameraController.distance > 300 && _isIntro) _cameraController.distance --; 
 			else  _isIntro = false;
 			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y+_cameraHeight, _player.z);
 			_cameraController.update();
 			
-			// reflection
 			if (_isReflection) {
-				_reflectionTexture.position = _player.position;
+				_reflectionTexture.position = _bigBall.position;
 				_reflectionTexture.render(_view);
 			}
 			
-			// view
 			_view.render();
 		}
 		
 		
 		//-------------------------------------------------------------------------------
-		//       LOADING FUNCTION
+		//       GLOBAL LISTENER
 		//-------------------------------------------------------------------------------
 		
-		/**
-		 * Global binary file loader
-		 */
+		private function initListeners(e:Event=null):void
+		{
+			_isRender = true;
+			log(message());
+			if (e != null) {
+				stage.removeEventListener(MouseEvent.MOUSE_OVER, initListeners);
+			}
+			// add render loop
+			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			// add key listeners
+			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+			// navigation
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
+			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+		}
+		
+		private function stopListeners():void
+		{
+			_isRender = false;
+			log("&#47;&#33;&#92; PAUSE");
+			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseLeave);
+			stage.removeEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
+			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+			
+			// mouse come back
+			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
+		}
+		
+		
+		//-------------------------------------------------------------------------------
+		//       LOAD binary files
+		//-------------------------------------------------------------------------------
+		
 		private function load(url:String):void
 		{
 			var loader:URLLoader = new URLLoader();
 			loader.dataFormat = URLLoaderDataFormat.BINARY;
-			
 			switch (url.substring(url.length - 3)) {
 				case "AWD": 
 				case "awd": 
@@ -654,71 +622,50 @@ package
 					loader.addEventListener(Event.COMPLETE, parseBitmap, false, 0, true);
 					break;
 			}
-			
 			loader.addEventListener(ProgressEvent.PROGRESS, loadProgress, false, 0, true);
-			loader.load(new URLRequest(assetsRoot + url));
+			loader.load(new URLRequest(ASSETS_ROOT + url));
 		}
 		
-		/**
-		 * Display current load progress
-		 */
 		private function loadProgress(e:ProgressEvent):void
 		{
 			var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
-			if (P != 100)
-				log('Load : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko\n');
-			else {
-				_text.text = "ONKBA FPS\n\n";
-				_text.appendText("Cursor keys / WSAD / ZSQD - move\n");
-				_text.appendText("SHIFT - hold down to run\n");
-				_text.appendText("O - next weapon\n");
-				_text.appendText("R - reload weapon\n");
-				_text.appendText("C - crouch\n");
-				_text.appendText("\n");
-				_text.appendText("U - physics debug !\n")
-				_text.appendText("V - reflection !\n")
-				_text.appendText("I - full screen\n");
-				_text.appendText("N - random sky\n");
-				_text.appendText("P - xray bones\n");
-				_text.appendText("B - clone\n");
-			}
+			log("<font size='16'>"+"Load : " + P + " % | " + int((e.bytesLoaded / 1024) << 0) + " ko</font>");
 		}
 		
-		/**
-		 * Bitmap find
-		 */
+		
+		//-------------------------------------------------------------------------------
+		//      Bitmaps Loading
+		//-------------------------------------------------------------------------------
+		
 		private function parseBitmap(e:Event):void 
 		{
-			var urlLoader:URLLoader = e.target as URLLoader;
+			var urlLoader:URLLoader = URLLoader(e.target);
 			var loader:Loader = new Loader();
 			loader.loadBytes(urlLoader.data);
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onBitmapComplete, false, 0, true);
-			urlLoader.removeEventListener(Event.COMPLETE, parseBitmap);
 			urlLoader.removeEventListener(ProgressEvent.PROGRESS, loadProgress);
+			urlLoader.removeEventListener(Event.COMPLETE, parseBitmap);
 		}
 		
 		private function onBitmapComplete(e:Event):void
 		{
+			_num++;
+			_bitmaps.push(e.target.content.bitmapData);
+			// Clean loader
 			var loader:Loader = LoaderInfo(e.target).loader;
 			loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, onBitmapComplete);
-			textureBitmapData.push(e.target.content.bitmapData);
 			loader.unload();
 			loader = null;
-			n++;
-			
-			if (n < textureStrings.length){
-				// load next bitmap
-				load(textureStrings[n]);
-			} else {
-				// Init material and objects
-				initMaterials();
-				initObjects();
-			}
+			// Load next
+			if (_num < _bitmapStrings.length) load(_bitmapStrings[_num]);
+			else initAfterBitmapLoad();
 		}
 		
-		/**
-		 * AWD find
-		 */
+		
+		//-------------------------------------------------------------------------------
+		//       AWD loading
+		//-------------------------------------------------------------------------------
+		
 		private function parseAWD(e:Event):void
 		{
 			var loader:URLLoader = e.target as URLLoader;
@@ -732,77 +679,69 @@ package
 		}
 		
 		/**
-		 * Listener function for AWD asset complete event on loader
+		 *  AWD asset complete event on loader
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
 			var i:int
 			if (event.asset.assetType == AssetType.SKELETON) {
-				// Create a new skeleton animation set (! 3 joints per vertex for awd exporter in 3dsmax)
-				animationSet = new SkeletonAnimationSet(4);
-				// Wrap our skeleton animation set in an animator object and add our sequence objects
-				animator = new SkeletonAnimator(animationSet, event.asset as Skeleton);
+				// Create a new skeleton animation set with 4 joints per vertex
+				// and Wrap in an animator object 
+				_animationSet = new SkeletonAnimationSet(4);
+				_animator = new SkeletonAnimator(_animationSet, event.asset as Skeleton);
 				
 			} else if (event.asset.assetType == AssetType.ANIMATION_NODE) {
-				//add each animation node to the animation set (! see sequenceFPS.txt in res)
+				// Add each animation node to the animation set 
+				// for detail see sequenceFPS.txt in /3dsmax
 				var animationNode:SkeletonClipNode = event.asset as SkeletonClipNode;
-				animationSet.addAnimation(animationNode);
-				//log(animationNode.name);
-				//animationSet.addAnimation(animationNode.name, animationNode);
-				
-				// play default idle animation
-				//if (animationNode.name == ANIM_BREATHE) jumpDown()//stop();
-				if (animationNode.name == "JumpDown") jumpDown();
-				
+				_animationSet.addAnimation(animationNode);
 				// disable animation loop 
 				for ( i = 0; i< WEAPON.length; i++ ) {
 					if (animationNode.name == WEAPON[i] + "JumpDown") animationNode.looping = false;
 					if (animationNode.name == WEAPON[i] + "Reload") animationNode.looping = false;
 				}
+				
 			} else if (event.asset.assetType == AssetType.MESH) {
 				var mesh:Mesh = event.asset as Mesh;
 				
-				// Onkba character
+				// Onkba object
 				if (mesh.name == "Onkba") {
 					_hero = mesh;
 				}
 				
-				// weapons resources
+				// Weapons object
 				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (mesh.name == WEAPON[i] + 'Test') {
 						if (i == 1) { mesh.rotationY = -5; mesh.rotationZ = 0; mesh.rotationX = 0; mesh.z = 1.6;  mesh.y =-4.2;  }// decal for gun
 						if (i == 2) { mesh.rotationY = -5; mesh.rotationZ = -2; mesh.rotationX = 0; mesh.z = 1.6; mesh.y =-5; }// decal for machine
 						if (i == 3) { mesh.rotationY = -5; mesh.rotationZ = -5;  mesh.rotationX = 0; mesh.z = 1.8; mesh.y = -4.6; }// decal for sniper
-						if (i == 5) {mesh.rotationY = 10; mesh.rotationZ = 0;}// decal for bazooka
+						if (i == 5) {mesh.rotationY = 6; mesh.rotationZ = -6; mesh.x = 5; mesh.y =2;mesh.z =-4}// decal for bazooka
 						mesh.material = _gunMaterial;
 						_weapons[i] = mesh;
 					}
 				}
-				
 			}
 		}
 		
-		
-		//-------------------------------------------------------------------------------
-		//
-		//       CHARACTER DEFINE AND PLACE
-		//
-		//-------------------------------------------------------------------------------
-		
+		/**
+		 *  AWD resource complete event on loader
+		 */
 		private function onResourceComplete(e:LoaderEvent):void
 		{
 			var loader3d:Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
 			var posY:Number = (38 * SCALE);
-			//apply our animator to our mesh
-			_hero.animator = animator;
+			
+			_transition = new CrossfadeTransition(0.3);
+			
+			//apply our _animator to our mesh
+			_hero.animator = _animator;
 			_hero.material = _heroMaterial;
 			_hero.scale(SCALE);
 			
 			// add weapon container
-			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0xff0000));
-			
+			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1),null);
 			_hero.addChild(_heroWeapon);
 			
 			_player.addChild(_hero);
@@ -817,7 +756,16 @@ package
 			_heroPieces.rotationY = 180;
 			addHeroEye();
 			
-			// away3d physics 
+			
+			if (_isIntro) {
+				isJump = true;
+				_animator.playbackSpeed = -JUMP_SPEED;
+				jumpDown();
+			}
+			
+			log(message());
+			initListeners();
+			// start away3d physics 
 			initPhysicsEngine();
 		}
 		
@@ -829,9 +777,9 @@ package
 		/**
 		 * Weapons collection
 		 */
-		private function switchWeapon():void
+		private function switchWeapon(next:Boolean=true):void
 		{
-			currentWeapon++;
+			if (next) currentWeapon++;
 			if (currentWeapon > 5) currentWeapon = 0;
 			for (var i:int; i < _heroWeapon.numChildren; i++ ) {
 				_heroWeapon.removeChild(_heroWeapon.getChildAt(i));
@@ -880,10 +828,10 @@ package
 			if (currentAnim == anim) return;
 			
 			currentAnim = anim;
-			animator.playbackSpeed = BREATHE_SPEED;
+			_animator.playbackSpeed = IDLE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
 			else currentAnim = WEAPON[currentWeapon] + ANIMATION[0];
-			animator.play(currentAnim, transition);
+			_animator.play(currentAnim, _transition);
 		}
 		
 		/**
@@ -892,15 +840,15 @@ package
 		private function updateMovement(dir:Number):void
 		{
 			isMoving = true;
-			var anim:String = isRunning ? ANIM_RUN : ANIM_WALK;
+			var anim:String = isRunning ? "Run" : "Walk";
 			
 			if (currentAnim == anim) return;
 			
 			if(_physics) _physics.characterSpeed(isRunning ? 3 : 1)
-			animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
+			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
-			animator.play(currentAnim, transition);
+			_animator.play(currentAnim, _transition);
 		}
 		
 		/**
@@ -916,9 +864,8 @@ package
 			
 			if (isCrouch) return
 			else currentAnim = WEAPON[currentWeapon] + anim;
-			animator.play(currentAnim, transition);
+			_animator.play(currentAnim, _transition);
 		}
-		
 		
 		/**
 		 * Character reload animation
@@ -932,8 +879,8 @@ package
 			if (currentAnim == anim)  return;
 			
 			currentAnim = anim;
-			animator.playbackSpeed = RELOAD_SPEED;
-			animator.play(currentAnim, transition, 0);
+			_animator.playbackSpeed = RELOAD_SPEED;
+			_animator.play(currentAnim, _transition, 0);
 		}
 		
 		/**
@@ -948,8 +895,8 @@ package
 			if (currentAnim == anim)  return;
 			
 			currentAnim = anim;
-			animator.playbackSpeed = -JUMP_SPEED;
-			animator.play(currentAnim, transition, 0);
+			_animator.playbackSpeed = -JUMP_SPEED;
+			_animator.play(currentAnim, _transition, 0);
 			
 			setTimeout(jumpDown, 260);
 		}
@@ -963,14 +910,15 @@ package
 			anim = WEAPON[currentWeapon] + 'JumpDown';
 			
 			currentAnim = anim;
-			animator.playbackSpeed = JUMP_SPEED;
-			animator.play(currentAnim, transition, 0);
-			setTimeout(stop, 260);
+			_animator.playbackSpeed = JUMP_SPEED;
+			if (_isIntro) { _animator.play(currentAnim, null, 1); _animator.playbackSpeed = 0.2; setTimeout(stop, 3000); }
+			else {_animator.play(currentAnim, _transition, 0);
+				setTimeout(stop, 260);}
 		}
 		
 		
 		//-------------------------------------------------------------------------------
-		//       KEYBOARD
+		//   ||oo||   KEYBOARD
 		//-------------------------------------------------------------------------------
 		
 		/**
@@ -1105,6 +1053,7 @@ package
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
 			_signature.y = stage.stageHeight - _signature.height;
+			if(!_isRender) onEnterFrame();
 		}
 		
 		private function onStageMouseDown(e:MouseEvent):void
@@ -1114,9 +1063,15 @@ package
 			_mouseMove = true;
 		}
 		
+		private function onStageMouseUp(e:Event):void
+		{
+			_mouseMove = false;
+		}
+		
 		private function onStageMouseLeave(e:Event):void
 		{
 			_mouseMove = false;
+			stopListeners();
 		}
 		
 		private function onStageMouseMove(e:MouseEvent):void
@@ -1170,14 +1125,6 @@ package
 			_eyeLook.position = new Vector3D(e.localPosition.z + 6, e.localPosition.x, e.localPosition.y + 10);
 		}
 		
-		/**
-		 * log for display info
-		 */
-		private function log(t:String):void
-		{
-			_text.htmlText = t;
-		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//       EYES dynamic    
@@ -1185,7 +1132,7 @@ package
 		
 		public function addHeroEye():void
 		{
-			var eyeGeometry:Geometry = new SphereGeometry(1, 32, 24);
+			var eyeGeometry:SphereGeometry = new SphereGeometry(1, 32, 24);
 			eyeGeometry.scaleUV(2, 1);
 			
 			_eyes = new ObjectContainer3D();
@@ -1200,13 +1147,13 @@ package
 			_eyeR.y = 1.75;
 			_eyeL.y = -1.75;
 			_heroPieces.addChild(_eyes);
-			_eyeLook = new Mesh(new PlaneGeometry(0.3, 0.3, 1, 1), new ColorMaterial(0xFFFFFF, 1));
+			_eyeLook = new Mesh(new PlaneGeometry(0.3, 0.3, 1, 1), new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0xffffff))));
 			_eyeLook.rotationX = 90;
 			_eyeLook.visible = false;
-			var h:ColorMaterial = new ColorMaterial(0xFFFFFF, 1);
-			var zone:Mesh = new Mesh(new PlaneGeometry(12, 6, 1, 1), h);
+			var mat:TextureMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, true, 0x00ffffff)));
+			mat.alphaBlending = true;
+			var zone:Mesh = new Mesh(new PlaneGeometry(12, 6, 1, 1), mat );
 			zone.castsShadows = false;
-			zone.material.blendMode = BlendMode.MULTIPLY;
 			zone.addEventListener(MouseEvent3D.MOUSE_MOVE, onMeshMouseMove);
 			zone.addEventListener(MouseEvent3D.MOUSE_OVER, onMeshMouseOver);
 			zone.addEventListener(MouseEvent3D.MOUSE_OUT, onMeshMouseOut);
@@ -1229,8 +1176,8 @@ package
 		private function updateEyes():void
 		{
 			// get the head bone
-			if (animator.globalPose.numJointPoses >= 11) {
-				_eyes.transform = animator.globalPose.jointPoses[11].toMatrix3D();
+			if (_animator.globalPose.numJointPoses >= 11) {
+				_eyes.transform = _animator.globalPose.jointPoses[11].toMatrix3D();
 			}
 			// look 
 			_eyeR.lookAt(_eyeLook.position.add(new Vector3D(0, 1.4, 0)), new Vector3D(0, 1, 1));
@@ -1261,27 +1208,25 @@ package
 			if (!_debugRay) {
 				_debugRay = true;
 				_heroMaterial.alpha = 0.5;
-				var material:ColorMaterial =  new ColorMaterial(0x00ff00);
-				material.lightPicker = _lightPicker;
-				_bonesVector = new Vector.<Mesh>(animator.globalPose.numJointPoses);
-				var mref0:Mesh = new Mesh(new CubeGeometry(3, 0.3, 0.3), material);
-				var mref:Mesh = new Mesh(new CubeGeometry(0.7,0.7,0.7), material);
+				_bonesFx = new Vector.<Mesh>(_animator.globalPose.numJointPoses);
+				var mref0:Mesh = new Mesh(new CubeGeometry(3, 0.3, 0.3), _boneMaterial);
+				var mref:Mesh = new Mesh(new CubeGeometry(0.7,0.7,0.7), _boneMaterial);
 				mref.addChild(mref0); mref0.x = 1.5;
-				for (var i:int = 0; i <animator.globalPose.numJointPoses; i++) {
+				for (var i:int = 0; i <_animator.globalPose.numJointPoses; i++) {
 					m = Mesh(mref.clone());
 					j =  new Sprite3D(materialBones( "bone " + i ), 4, 4);
 					_hero.addChild(m);
 					m.addChild(j);
-					_bonesVector[i] = m;
+					_bonesFx[i] = m;
 				}
 			} else { 
 				_debugRay = false;
 				_heroMaterial.alpha = 1;
-				for ( i = 0; i <_bonesVector.length; i++) {
-					m = _bonesVector[i];
+				for ( i = 0; i <_bonesFx.length; i++) {
+					m = _bonesFx[i];
 					_hero.removeChild(m);
 					m.dispose();
-					_bonesVector[i] = null;
+					_bonesFx[i] = null;
 				}
 			}
 		}
@@ -1309,11 +1254,56 @@ package
 		
 		private function updateBones():void
 		{
-			for (var i:int = 0; i <animator.globalPose.numJointPoses; i++) {
-				_bonesVector[i].transform = animator.globalPose.jointPoses[i].toMatrix3D();
+			for (var i:int = 0; i <_animator.globalPose.numJointPoses; i++) {
+				_bonesFx[i].transform = _animator.globalPose.jointPoses[i].toMatrix3D();
 			}
 		}
 		
+		
+		//-------------------------------------------------------------------------------
+		//       Interface   
+		//-------------------------------------------------------------------------------
+		
+		private function initText():void
+		{
+			_text = new TextField();
+			var format:TextFormat = new TextFormat("Verdana", 9, 0xdddddd);
+			format.letterSpacing = 1;
+			format.leading = 1;
+			format.leftMargin = 5;
+			_text.defaultTextFormat = format;
+			_text.antiAliasType = AntiAliasType.ADVANCED;
+			_text.gridFitType = GridFitType.PIXEL;
+			_text.y = 5;
+			_text.width = 300;
+			_text.height = 250;
+			_text.wordWrap = true;
+			_text.selectable = false;
+			_text.mouseEnabled = true;
+			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
+			addChild(_text);
+		}
+		
+		public function message():String
+		{
+			var mes:String = "ONKBA FPS\n\n";
+			mes += "ARROW.WSAD.ZSQD - move\n";
+			mes += "SHIFT - hold to run\n";
+			mes += "R - reload weapon\n";
+			mes += "O - next weapon\n";
+			mes += "C - crouch\n\n";
+			mes += "U - physics debug\n";
+			mes += "I - full screen\n";
+			mes += "N - random sky\n";
+			mes += "P - xray bones\n";
+			mes += "B - clone\n";
+			return mes;
+		}
+		
+		private function log(t:String):void
+		{
+			_text.htmlText = t;
+		}
 		
 		//-------------------------------------------------------------------------------
 		//
@@ -1329,7 +1319,13 @@ package
 			_physics.addTerrain(_terrain);
 			
 			// add player character physics 
-			_physics.addCharacter(_player);
+			_physics.addCharacter(_player, new Vector3D(0, 400, 0));
+			
+			_bigBall = new Mesh(new SphereGeometry(120, 60, 40), _shereMaterial);
+			_physics.addObject(_bigBall, { type:'sphere', r: 120, mass: 1, pos: new Vector3D(-300, _terrain.getHeightAt(-200, -100) +120, -0)});
+			_view.scene.addChild(_bigBall);
+			// global reflection methode
+			initReflection();
 			
 			// add some box for fun 
 			var mesh:Mesh;
@@ -1340,10 +1336,8 @@ package
 				mesh = new Mesh(new CubeGeometry(size, size, size), _boxMaterial);
 				_view.scene.addChild(mesh);
 				if (i == 49) isUnactif = false;
-				_physics.addObject(mesh, {stop:isUnactif, w: size, h: size, d: size, mass: 1, pos: new Vector3D(300, _terrain.getHeightAt(300, -100) +(151 * (i+1)), -100)});
+				_physics.addObject(mesh, {stop:isUnactif, w: size, h: size, d: size, mass: 1, pos: new Vector3D(200, _terrain.getHeightAt(300, -100) +(151 * (i+1)), -0)});
 			}
-			
-			
 		}
 		
 		private function debugPhysics():void {

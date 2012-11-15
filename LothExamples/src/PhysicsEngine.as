@@ -1,10 +1,16 @@
 package {
+	import awayphysics.dynamics.vehicle.AWPWheelInfo;
+	import awayphysics.dynamics.vehicle.AWPVehicleTuning;
+	import awayphysics.dynamics.vehicle.AWPRaycastVehicle;
+	
 	import awayphysics.dynamics.character.AWPKinematicCharacterController;
 	import awayphysics.collision.shapes.AWPBvhTriangleMeshShape;
 	import awayphysics.collision.dispatch.AWPCollisionObject;
 	import awayphysics.collision.shapes.AWPStaticPlaneShape;
+	import awayphysics.collision.shapes.AWPConvexHullShape;
 	import awayphysics.collision.shapes.AWPCollisionShape;
-	import awayphysics.collision.dispatch.AWPGhostObject;
+	import awayphysics.collision.dispatch.AWPGhostObject; 
+	import awayphysics.collision.shapes.AWPCompoundShape;
 	import awayphysics.collision.shapes.AWPCapsuleShape;
 	import awayphysics.collision.shapes.AWPSphereShape;
 	import awayphysics.collision.shapes.AWPBoxShape;
@@ -245,7 +251,7 @@ package {
 		//
 		//-------------------------------------------------------------------------------
 		
-		public function addCharacter(container:*):void 
+		public function addCharacter(container:*, position:Vector3D = null):void 
 		{
 			// create character shape and controller
 			//var shape:AWPBoxShape =  new AWPBoxShape(60, 164, 40);
@@ -261,7 +267,7 @@ package {
 			character.jumpSpeed = 10;
 			character.fallSpeed = 10;
 			character.maxJumpHeight = 10000;
-			character.warp(new Vector3D(0, 200, 0));
+			character.warp(position || new Vector3D(0, 200, 0));
 		}
 		
 		private function characterCollisionAdded(event:AWPEvent):void 
