@@ -629,7 +629,7 @@ package
 		private function loadProgress(e:ProgressEvent):void
 		{
 			var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
-			log("<font size='16'>"+"Load : " + P + " % | " + int((e.bytesLoaded / 1024) << 0) + " ko</font>");
+			log("<font size='16'>" + "Load : " + P + " % | " + int((e.bytesLoaded / 1024) << 0) + " ko</font>");
 		}
 		
 		
