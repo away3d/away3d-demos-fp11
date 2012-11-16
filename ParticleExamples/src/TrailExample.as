@@ -100,12 +100,13 @@ package
 			var geometry:Geometry = ParticleGeometryHelper.generateGeometry(geometrySet, setTransforms);
 			
 			
-			var animation:ParticleAnimationSet = new ParticleAnimationSet(true, true);
+			var animation:ParticleAnimationSet = new ParticleAnimationSet(true, true, true);
 			
 			animation.addAnimation(new ParticleBillboardNode());
 			animation.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			animation.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
-			animation.addAnimation(new ParticleFollowNode(true, false));
+			var followNode:ParticleFollowNode = new ParticleFollowNode(true, false);
+			animation.addAnimation(followNode);
 			
 			animation.initParticleFunc = initParticleParam;
 			
@@ -115,7 +116,7 @@ package
 			particleMesh.animator = animator;
 			animator.start();
 			_view.scene.addChild(particleMesh);
-			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode")).followTarget = followTrarget1;
+			ParticleFollowState(animator.getAnimationState(followNode)).followTarget = followTrarget1;
 			
 			var clone:Mesh = particleMesh.clone() as Mesh;
 			clone.y = 300;
@@ -123,7 +124,7 @@ package
 			clone.animator = animator;
 			animator.start();
 			_view.scene.addChild(clone);
-			ParticleFollowState(animator.getAnimationStateByName("ParticleFollowNode")).followTarget = followTrarget2;
+			ParticleFollowState(animator.getAnimationState(followNode)).followTarget = followTrarget2;
 		}
 		
 		private function initParticleParam(param:ParticleProperties):void
