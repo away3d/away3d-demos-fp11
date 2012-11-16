@@ -33,12 +33,12 @@ package {
 	 * Compact engine by Loth
 	 */
 	
-	public class PhysicsEngine extends Sprite {
+	public class AwayPhysics extends Sprite {
 		protected static const _timeStep:Number = 1.0 / 30;
 		protected static const worldScale:Number = 10;
 		
 		// physics engine
-		private static var Singleton:PhysicsEngine;
+		private static var Singleton:AwayPhysics;
 		protected static var physicsWorld:AWPDynamicsWorld;
 		
 		// collection
@@ -65,18 +65,18 @@ package {
 		private var _isDebug:Boolean = false;
 		private var _debugDraw:AWPDebugDraw;
 		
-		public function PhysicsEngine() { }
+		public function AwayPhysics() { }
 		
 		
 		//-------------------------------------------------------------------------------
 		//       Singleton
 		//-------------------------------------------------------------------------------
 		
-		public static function getInstance():PhysicsEngine 
+		public static function getInstance():AwayPhysics 
 		{
 			if (Singleton == null) {
-				Singleton = new PhysicsEngine();
-				PhysicsEngine.init();
+				Singleton = new AwayPhysics();
+				AwayPhysics.init();
 			}
 			return Singleton;
 		}

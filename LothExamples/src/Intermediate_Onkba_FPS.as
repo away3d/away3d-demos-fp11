@@ -134,6 +134,7 @@ package
 		private var _lightPicker:StaticLightPicker;
 		private var _cameraController:HoverController;
 		// scene objects
+		private var _cubeVector:Vector.<Mesh>;
 		private var _heroPieces:ObjectContainer3D;
 		private var _sunLight:DirectionalLight;
 		private var _player:ObjectContainer3D;
@@ -219,8 +220,8 @@ package
 		private var _signature:Sprite;
 		private var _text:TextField;
 		
-		// awayPhysics
-		private var _physics:PhysicsEngine;
+		// !! optional physics engine
+		private var _physics:Object;
 		
 		/**
 		 * Constructor
@@ -230,7 +231,7 @@ package
 			_bitmaps = new Vector.<BitmapData>();
 			_bitmapStrings = new Vector.<String>();
 			// terrain map
-			_bitmapStrings.push("arid.jpg", "arid_n.jpg", "arid_l.jpg" );
+			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg" );
 			// hero map
 			_bitmapStrings.push("onkba_diffuse.png", "onkba_normals.jpg", "onkba_lightmap.jpg");
 			// gun map
@@ -244,6 +245,8 @@ package
 			
 			// bazooka map
 			_bitmapStrings.push("weapon2_diffuse.jpg", "weapon2_normals.jpg", "weapon2_lightmap.jpg");
+			
+			_bitmapStrings.push("height_n.jpg");
 			
 			init();
 		}
@@ -387,9 +390,8 @@ package
 		{
 			_materials = new Vector.<TextureMaterial>();
 			
-			// global terrain methode probleme no render ?
-			var tiles:Array = [1, 10, 10, 10];
-			var sTexture:Array = [Cast.bitmapTexture(_bitmaps[1]), Cast.bitmapTexture(_bitmaps[2]), Cast.bitmapTexture(_bitmaps[0])];
+			var tiles:Array = [1, 100, 100, 100];
+			var sTexture:Array = [Cast.bitmapTexture(_bitmaps[0]), Cast.bitmapTexture(_bitmaps[1]), Cast.bitmapTexture(_bitmaps[2])];
 			_terrainMethod = new TerrainDiffuseMethod(sTexture, Cast.bitmapTexture(_bitmaps[9]) , tiles);
 			
 			// global shadow method
@@ -445,17 +447,18 @@ package
 			_materials[4] = _shereMaterial;
 			
 			// 5- terrain
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[0]));
-			_terrainMaterial.normalMap = Cast.bitmapTexture(_bitmaps[1]);
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
+			
+			_terrainMaterial.normalMap = Cast.bitmapTexture(_bitmaps[19]);
+			_terrainMaterial.diffuseMethod = _terrainMethod;
 			_terrainMaterial.gloss = 20;
 			_terrainMaterial.specular = .25;
-			_terrainMaterial.repeat = true;
+			//_terrainMaterial.repeat = true;
 			_terrainMaterial.addMethod(_fogMethode);
-			//_terrainMaterial.diffuseMethod = (_terrainMethod);
 			_materials[5] = _terrainMaterial;
 			
 			// 6- simulation box 
-			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee885500)));
+			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64,64, true, 0xee100000)));
 			_boxMaterial.gloss = 10;
 			_boxMaterial.specular = 0.1;
 			_boxMaterial.alphaBlending = true;
@@ -528,7 +531,7 @@ package
 			
 			// create terrain
 			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(_bitmaps[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
-			_terrain.geometry.scaleUV(150, 150);
+			//_terrain.geometry.scaleUV(150,150)
 			_view.scene.addChild(_terrain);
 			
 			// weapon referency
@@ -778,8 +781,31 @@ package
 				jumpDown();
 			}
 			
+			// big ball
+			_bigBall = new Mesh(new SphereGeometry(120, 60, 40), _shereMaterial);
+			_view.scene.addChild(_bigBall);
+			_bigBall.position = new Vector3D( -300, _terrain.getHeightAt( -200, -100) +120);
+			// global reflection methode
+			initReflection();
+			
+			// add some box for fun 
+			var num:int = 100;
+			var mesh:Mesh, posX:Number, posZ:Number;
+			_cubeVector = new Vector.<Mesh>(num);
+			for (var i:int = 0; i < num; i++) {
+				posX = Number(-(FARVIEW*0.5) + (Math.random() * FARVIEW));
+				posZ = Number(-(FARVIEW*0.5) + (Math.random() * FARVIEW));
+				mesh = new Mesh(new CubeGeometry(150, 300, 150), _boxMaterial);
+				mesh.position =  new Vector3D(posX, _terrain.getHeightAt(posX, posZ) +(150), posZ);
+				
+				_view.scene.addChild(mesh);
+				_cubeVector[i] = mesh;
+			}
+			
 			log(message());
 			initListeners();
+			
+			
 			// start away3d physics 
 			initPhysicsEngine();
 		}
@@ -981,7 +1007,7 @@ package
 					initReflection();
 					break;
 				case Keyboard.U: 
-					debugPhysics();
+					if(_physics) _physics.addDebug(_view);
 					break;
 				case Keyboard.P: 
 					xRay();
@@ -1320,15 +1346,43 @@ package
 			_text.htmlText = t;
 		}
 		
+		
+		
+		// AUTOUR NOTE 
+		// Now you can choose you physics engine or don't use physics 
+		// juste disable part you don't whant !!
+		
 		//-------------------------------------------------------------------------------
 		//
-		//       ++ PHYSICS engines    
+		//       no PHYSICS engines    
+		//
+		//-------------------------------------------------------------------------------
+		/*
+		private function initPhysicsEngine(name:String = 'none'):void 
+		{
+		
+		}
+		*/
+		//-------------------------------------------------------------------------------
+		//
+		//       JIGLIB PHYSICS engines    
+		//
+		//-------------------------------------------------------------------------------
+		/*
+		private function initPhysicsEngine(name:String = 'Physics'):void 
+		{
+		
+		}
+		*/
+		//-------------------------------------------------------------------------------
+		//
+		//       AWAY PHYSICS engines    
 		//
 		//-------------------------------------------------------------------------------
 		
 		private function initPhysicsEngine(name:String = 'Physics'):void 
 		{
-			_physics = PhysicsEngine.getInstance();
+			_physics = AwayPhysics.getInstance();
 			
 			// add terrain to physic collision 
 			_physics.addTerrain(_terrain);
@@ -1336,28 +1390,17 @@ package
 			// add player character physics 
 			_physics.addCharacter(_player, new Vector3D(0, 400, 0));
 			
-			_bigBall = new Mesh(new SphereGeometry(120, 60, 40), _shereMaterial);
-			_physics.addObject(_bigBall, { type:'sphere', r: 120, mass: 1, pos: new Vector3D(-300, _terrain.getHeightAt(-200, -100) +120, -0)});
-			_view.scene.addChild(_bigBall);
-			// global reflection methode
-			initReflection();
+			// add the big ball
+			_physics.addObject(_bigBall, { type:'sphere', r: 120, mass: 1, pos: _bigBall.position } );
 			
-			// add some box for fun 
-			var mesh:Mesh;
+			// add all cubes
 			var size:int;
-			var isUnactif:Boolean = true;
-			for (var i:int = 0; i < 50; i++) {
-				size =50 + (Math.random() * 100);
-				mesh = new Mesh(new CubeGeometry(size, size, size), _boxMaterial);
-				_view.scene.addChild(mesh);
-				if (i == 49) isUnactif = false;
-				_physics.addObject(mesh, {stop:isUnactif, w: size, h: size, d: size, mass: 1, pos: new Vector3D(200, _terrain.getHeightAt(300, -100) +(151 * (i+1)), -0)});
+			var isUnactif:Boolean = false;
+			for (var i:int = 0; i < _cubeVector.length; i++) {
+				_physics.addObject(_cubeVector[i], { stop:isUnactif, w: 150, h: 300, d: 150, mass: 1, pos: _cubeVector[i].position });
 			}
 		}
 		
-		private function debugPhysics():void {
-			_physics.addDebug(_view);
-		}
 		
 		
 	}
