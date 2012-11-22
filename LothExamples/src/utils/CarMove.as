@@ -174,7 +174,7 @@
 					_steering = 0;
 				}
 			}
-			// prevent steering drift (left)
+				// prevent steering drift (left)
 			else if (_steering < 0)
 			{
 				// check if steering value is really low, set to 0
@@ -193,7 +193,7 @@
 			// rotate
 			_angle += _steering * _speed;
 		}
-	
+		
 	}
-
+	
 }

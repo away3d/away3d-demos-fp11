@@ -1,40 +1,40 @@
 /*
 
-   ONKBA FPS
+ONKBA FPS
 
-   Demonstrates:
+Demonstrates:
 
-   How to use the Loader3D object to load an embedded internal awd model.
-   How to create character interaction in physic world
-   How to set custom material on a model.
+How to use the Loader3D object to load an embedded internal awd model.
+How to create character interaction in physic world
+How to set custom material on a model.
 
-   Code, model and map by LoTh
-   3dflashlo@gmail.com
-   http://3dflashlo.wordpress.com
+Code, model and map by LoTh
+3dflashlo@gmail.com
+http://3dflashlo.wordpress.com
 
-   This code is distributed under the MIT License
+This code is distributed under the MIT License
 
-   Copyright (c)
+Copyright (c)
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy
-   of this software and associated documentation files (the “Software”), to deal
-   in the Software without restriction, including without limitation the rights
-   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-   copies of the Software, and to permit persons to whom the Software is
-   furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in
-   all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-   THE SOFTWARE.
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
- */
+*/
 package
 {
 	import away3d.extrusions.Elevation;
@@ -43,7 +43,7 @@ package
 	import away3d.animators.SkeletonAnimationSet;
 	import away3d.animators.nodes.SkeletonClipNode;
 	import away3d.animators.transitions.CrossfadeTransition;
-   
+	
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
@@ -57,8 +57,8 @@ package
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.textures.CubeReflectionTexture;
 	import away3d.containers.ObjectContainer3D;
-    import away3d.core.managers.Stage3DManager;
-    import away3d.core.managers.Stage3DProxy;
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.textures.BitmapCubeTexture;
@@ -77,14 +77,14 @@ package
 	import away3d.lights.LightProbe;
 	import away3d.primitives.SkyBox;
 	import away3d.entities.Sprite3D;
-    import away3d.events.Stage3DEvent;
+	import away3d.events.Stage3DEvent;
 	import away3d.events.AssetEvent;
 	import away3d.loaders.Loader3D;
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
-    
-    import flash.events.ErrorEvent;
+	
+	import flash.events.ErrorEvent;
 	import flash.events.IOErrorEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.filters.ColorMatrixFilter;
@@ -104,26 +104,26 @@ package
 	import flash.text.TextFormat;
 	import flash.text.TextField;
 	import flash.display.Loader;
-    import flash.display.Bitmap;
+	import flash.display.Bitmap;
 	import flash.net.URLRequest; 
 	import flash.display.Sprite;
-    import flash.geom.Rectangle;
+	import flash.geom.Rectangle;
 	import flash.net.URLLoader;
 	import flash.geom.Vector3D;
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.ui.Keyboard;
-    import flash.geom.Point;
+	import flash.geom.Point;
 	
 	import utils.VectorSkyEffects;
 	import utils.BitmapMapper;
-    
-    import physics.*;
-    
-    import com.bit101.components.Style;
-    import com.bit101.components.Component;
+	
+	import physics.*;
+	
+	import com.bit101.components.Style;
+	import com.bit101.components.Component;
 	import com.bit101.components.PushButton;
-    
+	
 	public class D_Onkba_FPS extends Sprite
 	{
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
@@ -146,8 +146,8 @@ package
 		private var _num:uint; 
 		
 		// engine variables
-        private var _stage3DProxy:Stage3DProxy;
-        private var _manager:Stage3DManager;
+		private var _stage3DProxy:Stage3DProxy;
+		private var _manager:Stage3DManager;
 		private var _view:View3D;
 		private var _stats:AwayStats;
 		private var _lightPicker:StaticLightPicker;
@@ -236,16 +236,16 @@ package
 		private var _debugRay:Boolean;
 		private var _isRender:Boolean;
 		
-        private var _currentLoadFile:String;
+		private var _currentLoadFile:String;
 		private var _signature:Sprite;
 		private var _text:TextField;
-        private var _capture:BitmapData;
-        private var _topPause:Sprite;
-        
+		private var _capture:BitmapData;
+		private var _topPause:Sprite;
+		
 		// optional physics engine
 		private var _physics:Object;
 		private var _menu:Sprite;
-        
+		
 		/**
 		 * Constructor
 		 */
@@ -253,11 +253,11 @@ package
 		{
 			_bitmaps = new Vector.<BitmapData>();
 			_bitmapStrings = new Vector.<String>();
-            // sky Bitmap
+			// sky Bitmap
 			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
 			// terrain map 6 7 8
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg" );
-            // terrain map 9 10
+			// terrain map 9 10
 			_bitmapStrings.push("height.png", "height_n.jpg");
 			// hero map 11 12 13
 			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
@@ -268,7 +268,7 @@ package
 			
 			
 			if (stage) init();
-            else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
+			else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
 		}
 		
 		/**
@@ -276,28 +276,28 @@ package
 		 */
 		private function init(e:Event=null):void
 		{
-            removeEventListener(Event.ADDED_TO_STAGE, init);
-            
-            stage.scaleMode = StageScaleMode.NO_SCALE;
+			removeEventListener(Event.ADDED_TO_STAGE, init);
+			
+			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-            stage.color = 0x060606;
+			stage.color = 0x060606;
 			stage.frameRate = 60;
-            
-            _manager = Stage3DManager.getInstance(stage);
-            _stage3DProxy = _manager.getFreeStage3DProxy();
-            _stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated, false, 0, true);
+			
+			_manager = Stage3DManager.getInstance(stage);
+			_stage3DProxy = _manager.getFreeStage3DProxy();
+			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated, false, 0, true);
 		}
-        
+		
 		private function onContextCreated(e:Stage3DEvent):void
 		{
-            _stage3DProxy.removeEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
-            _stage3DProxy.color = 0x060606;
-            _stage3DProxy.antiAlias = 4;
-            _stage3DProxy.width = stage.stageWidth;
-            _stage3DProxy.height = stage.stageHeight;
+			_stage3DProxy.removeEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
+			_stage3DProxy.color = 0x060606;
+			_stage3DProxy.antiAlias = 4;
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			initEngine();
 			initText();
-            initSetting()
+			initSetting()
 			initLights();
 			
 			// kickoff asset loading
@@ -314,8 +314,8 @@ package
 		{
 			// create the view
 			_view = new View3D();
-            _view.stage3DProxy = _stage3DProxy;
-            _view.shareContext = true;
+			_view.stage3DProxy = _stage3DProxy;
+			_view.shareContext = true;
 			addChild(_view);
 			
 			// create custom lens
@@ -605,11 +605,11 @@ package
 		
 		private function initListeners(e:Event=null):void
 		{
-           
+			
 			_isRender = true;
 			log(message());
 			if (e != null) {
-                removeGrayPauseEffect();
+				removeGrayPauseEffect();
 				stage.removeEventListener(MouseEvent.MOUSE_OVER, initListeners);
 			}
 			// add render loop
@@ -627,7 +627,7 @@ package
 		
 		private function stopListeners():void
 		{
-            grayPauseEffect();
+			grayPauseEffect();
 			_isRender = false;
 			log("&#47;&#33;&#92; PAUSE");
 			_stage3DProxy.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
@@ -642,31 +642,31 @@ package
 			// mouse come back
 			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
 		}
-        
+		
 		//-------------------------------------------------------------------------------
 		//   ||  PAUSE render
 		//-------------------------------------------------------------------------------
 		
 		private function grayPauseEffect():void
 		{
-            _capture = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x991D1D1D);
-            //_stage3DProxy.stage3D.context3D
-           // _view.stage3DProxy.context3D.drawToBitmapData(_capture2);
-          //  _capture2.draw(_view, null, null, null, new Rectangle(200, 200), false);
-           /* _capture = addChild(new Bitmap(new BitmapData(465, 465, false, 0x000000))) as Bitmap ;
-            */
-           // _capture.applyFilter(_capture, _capture.rect, new Point(), grayScale());
-            _topPause.graphics.beginBitmapFill(_capture, null, false, false);
-            _topPause.graphics.drawRect(0, 0, stage.width, stage.height);
-            _topPause.graphics.endFill();
-        }
-        
-        private function removeGrayPauseEffect():void
+			_capture = new BitmapData(_stage3DProxy.width, _stage3DProxy.height, true, 0x991D1D1D);
+			//_stage3DProxy.stage3D.context3D
+			// _view.stage3DProxy.context3D.drawToBitmapData(_capture2);
+			//  _capture2.draw(_view, null, null, null, new Rectangle(200, 200), false);
+			/* _capture = addChild(new Bitmap(new BitmapData(465, 465, false, 0x000000))) as Bitmap ;
+			*/
+			// _capture.applyFilter(_capture, _capture.rect, new Point(), grayScale());
+			_topPause.graphics.beginBitmapFill(_capture, null, false, false);
+			_topPause.graphics.drawRect(0, 0, stage.width, stage.height);
+			_topPause.graphics.endFill();
+		}
+		
+		private function removeGrayPauseEffect():void
 		{
-            _topPause.graphics.clear();
-            _capture = null;
-        }
-        
+			_topPause.graphics.clear();
+			_capture = null;
+		}
+		
 		//-------------------------------------------------------------------------------
 		//       LOAD binary files
 		//-------------------------------------------------------------------------------
@@ -783,7 +783,7 @@ package
 				if (mesh.name == "Onkba") {
 					_hero = mesh;
 				}
-                
+				
 				// Weapons object
 				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (mesh.name == WEAPON[i] + 'Test') {
@@ -822,12 +822,12 @@ package
 			_hero.addChild(_heroWeapon);
 			
 			_player.addChild(_hero);
-            
+			
 			_hero.rotationY = 180;
 			_hero.y =  -posY//_terrain.getHeightAt(0, 0)-200; //-posY;
-            
-			// Optional dynamic eyes ball
-			_heroPieces = new ObjectContainer3D();
+				
+				// Optional dynamic eyes ball
+				_heroPieces = new ObjectContainer3D();
 			_heroPieces.scale(SCALE);
 			_heroPieces.y = -posY;
 			_player.addChild(_heroPieces);
@@ -1146,13 +1146,13 @@ package
 		 */
 		private function onResize(event:Event=null):void
 		{
-            _stage3DProxy.width = stage.stageWidth;
-            _stage3DProxy.height = stage.stageHeight;
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
 			_signature.y = stage.stageHeight - _signature.height;
-            _menu.y = stage.stageHeight;
+			_menu.y = stage.stageHeight;
 			if(!_isRender) onEnterFrame();
 		}
 		
@@ -1360,34 +1360,34 @@ package
 		//-------------------------------------------------------------------------------
 		//       Interface   
 		//-------------------------------------------------------------------------------
-        
+		
 		private function initSetting():void
 		{
-            _menu = new Sprite();
-            addChild(_menu);
-            _menu.y = stage.stageHeight;
-            Style.setStyle("dark");
-            Style.BUTTON_FACE = 0x060606;
-            Style.DROPSHADOW = 0x000000;
-            Style.BACKGROUND = 0x000000;
-            Style.BUTTON_DOWN = 0x995522;
-            Style.LABEL_TEXT = 0xffffff;
-            new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
-        }
-        
-        private function showSetting(e:MouseEvent):void
-        {
+			_menu = new Sprite();
+			addChild(_menu);
+			_menu.y = stage.stageHeight;
+			Style.setStyle("dark");
+			Style.BUTTON_FACE = 0x060606;
+			Style.DROPSHADOW = 0x000000;
+			Style.BACKGROUND = 0x000000;
+			Style.BUTTON_DOWN = 0x995522;
+			Style.LABEL_TEXT = 0xffffff;
+			new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
 		}
-        
+		
+		private function showSetting(e:MouseEvent):void
+		{
+		}
+		
 		private function initText():void
 		{
-            _topPause = new Sprite();
+			_topPause = new Sprite();
 			addChild(_topPause);
-            
+			
 			_text = new TextField();
 			var format:TextFormat = new TextFormat("Helvetica", 9, 0xdddddd);
 			format.letterSpacing = 1;
-            format.leftMargin = 5;
+			format.leftMargin = 5;
 			format.leading = 1;
 			_text.defaultTextFormat = format;
 			_text.antiAliasType = AntiAliasType.ADVANCED;
@@ -1400,8 +1400,8 @@ package
 			_text.mouseEnabled = true;
 			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
 			addChild(_text);
-            
-            // add signature
+			
+			// add signature
 			addChild(_signature = new SignatureSwf());
 			_signature.y = stage.stageHeight - _signature.height;
 			_signature.x = 10;
@@ -1441,9 +1441,9 @@ package
 		
 		private function initPhysicsEngine(name:String = 'none'):void 
 		{
-		
+			
 		}
-        
+		
 		//-------------------------------------------------------------------------------
 		//
 		//       JIGLIB PHYSICS engines    
@@ -1463,23 +1463,23 @@ package
 		
 		/*private function initPhysicsEngine(name:String = 'Physics'):void 
 		{
-			_physics = AwayPhysics.getInstance();
-			
-			// add terrain to physic collision 
-			_physics.addTerrain(_terrain);
-			
-			// add player character physics 
-			_physics.addCharacter(_player, new Vector3D(0, 400, 0));
-			
-			// add the big ball
-			_physics.addObject(_bigBall, { type:'sphere', r: 120, mass: 1, pos: _bigBall.position } );
-			
-			// add all cubes
-			var size:int;
-			var isUnactif:Boolean = false;
-			for (var i:int = 0; i < _cubeVector.length; i++) {
-				_physics.addObject(_cubeVector[i], { stop:isUnactif, w: 150, h: 300, d: 150, mass: 1, pos: _cubeVector[i].position });
-			}
+		_physics = AwayPhysics.getInstance();
+		
+		// add terrain to physic collision 
+		_physics.addTerrain(_terrain);
+		
+		// add player character physics 
+		_physics.addCharacter(_player, new Vector3D(0, 400, 0));
+		
+		// add the big ball
+		_physics.addObject(_bigBall, { type:'sphere', r: 120, mass: 1, pos: _bigBall.position } );
+		
+		// add all cubes
+		var size:int;
+		var isUnactif:Boolean = false;
+		for (var i:int = 0; i < _cubeVector.length; i++) {
+		_physics.addObject(_cubeVector[i], { stop:isUnactif, w: 150, h: 300, d: 150, mass: 1, pos: _cubeVector[i].position });
+		}
 		}*/
 		
 		

@@ -111,10 +111,10 @@ package physics{
 					break;
 			}
 			/*
-			   rigid.angularVelocity.x = Math.random() * 2 - 1;
-			   rigid.angularVelocity.y = Math.random() * 2 - 1;
-			   rigid.angularVelocity.z = Math.random() * 2 - 1;
-			 */
+			rigid.angularVelocity.x = Math.random() * 2 - 1;
+			rigid.angularVelocity.y = Math.random() * 2 - 1;
+			rigid.angularVelocity.z = Math.random() * 2 - 1;
+			*/
 			rigid.addShape(shape); // can be multiple
 			rigid.setupMass(RigidBody.BODY_STATIC);
 			world.addRigidBody(rigid);
@@ -142,8 +142,8 @@ package physics{
 			inf += "ms\n" + "Physics FPS: " + fps.toFixed(2) + "\n";
 			return inf;
 		}
-	
+		
 	}
-
+	
 }
 

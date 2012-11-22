@@ -1,40 +1,40 @@
 /*
 
-   RANDOM LAND
+RANDOM LAND
 
-   Demonstrates:
+Demonstrates:
 
-   How to use the Loader3D object to load an embedded internal awd model.
-   How to create character interaction in physic world
-   How to set custom material on a model.
+How to use the Loader3D object to load an embedded internal awd model.
+How to create character interaction in physic world
+How to set custom material on a model.
 
-   Code, model and map by LoTh
-   3dflashlo@gmail.com
-   http://3dflashlo.wordpress.com
+Code, model and map by LoTh
+3dflashlo@gmail.com
+http://3dflashlo.wordpress.com
 
-   This code is distributed under the MIT License
+This code is distributed under the MIT License
 
-   Copyright (c)
+Copyright (c)
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy
-   of this software and associated documentation files (the “Software”), to deal
-   in the Software without restriction, including without limitation the rights
-   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-   copies of the Software, and to permit persons to whom the Software is
-   furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in
-   all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-   THE SOFTWARE.
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
- */
+*/
 package
 {
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
@@ -414,7 +414,7 @@ package
 				_materials[i].specularLightSources = LightSources.LIGHTS;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 0.85;
-					//if (i != 5 || i!=3 || i!=2) _materials[i].addMethod(_rimLightMethod);
+				//if (i != 5 || i!=3 || i!=2) _materials[i].addMethod(_rimLightMethod);
 			}
 		}
 		
@@ -463,7 +463,7 @@ package
 			
 			initListeners();
 			log(message());
-		
+			
 			// load Onkba character with weapons
 			//load("onkba_fps.awd");
 		}
@@ -487,9 +487,9 @@ package
 			_cameraController.update();
 			
 			/*if (_isReflection) {
-			   _reflectionTexture.position = _bigBall.position;
-			   _reflectionTexture.render(_view);
-			 }*/
+			_reflectionTexture.position = _bigBall.position;
+			_reflectionTexture.render(_view);
+			}*/
 			
 			_view.render();
 		}
@@ -659,7 +659,7 @@ package
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
-		
+			
 		}
 		
 		/**
@@ -667,7 +667,7 @@ package
 		 */
 		private function onResourceComplete(e:LoaderEvent):void
 		{
-		
+			
 		}
 		
 		//-------------------------------------------------------------------------------
@@ -864,9 +864,9 @@ package
 		 */
 		private function onMeshMouseOver(e:MouseEvent3D):void
 		{
-		/*e.target.showBounds = true;
-		   _eyeLook.visible = true;
-		 onMeshMouseMove(e);*/
+			/*e.target.showBounds = true;
+			_eyeLook.visible = true;
+			onMeshMouseMove(e);*/
 		}
 		
 		/**
@@ -874,9 +874,9 @@ package
 		 */
 		private function onMeshMouseOut(e:MouseEvent3D):void
 		{
-		/*e.target.showBounds = false;
-		   _eyeLook.visible = false;
-		 _eyeLook.position = _eyePosition;*/
+			/*e.target.showBounds = false;
+			_eyeLook.visible = false;
+			_eyeLook.position = _eyePosition;*/
 		}
 		
 		/**
@@ -950,6 +950,6 @@ package
 		{
 			_text.htmlText = t;
 		}
-	
+		
 	}
 }

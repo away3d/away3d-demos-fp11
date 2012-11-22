@@ -73,6 +73,6 @@ package utils
 			
 			return returnBitmap;
 		}
-	
+		
 	}
 }

@@ -85,7 +85,7 @@ package utils
 		
 		public function update(e:Event):void
 		{
-		
+			
 		}
 		
 		private function draw():void
@@ -97,61 +97,61 @@ package utils
 			_centerColor[1] = ground.getPixel(_pointTest[1].x, _pointTest[1].y);
 			_centerColor[2] = ground.getPixel(_pointTest[2].x, _pointTest[2].y);
 			_centerColor[3] = ground.getPixel(_pointTest[3].x, _pointTest[3].y);
-		
+			
 			// preview
-		/*
-		   _content.graphics.clear();
-		   _content.graphics.beginBitmapFill(ground, _matrix, false, false);
-		   _content.graphics.drawEllipse(0, 0, 512, 512);
-		   _content.graphics.endFill();
-		
-		   // deco
-		   _content.graphics.lineStyle(0, 0x000000, 0.3);
-		   _content.graphics.drawRect(252, 252, 8, 8);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.lineStyle(0, 0x000000, 0.1);
-		   _content.graphics.moveTo(256, 0);
-		   _content.graphics.lineTo(256, 512);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.lineStyle(0, 0x000000, 0.1);
-		   _content.graphics.moveTo(0, 256);
-		   _content.graphics.lineTo(512, 256);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.lineStyle(20, 0x000000, 0.3);
-		   _content.graphics.drawEllipse(6, 6, 500, 500);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.lineStyle(10, 0x000000, 0.75);
-		   _content.graphics.drawEllipse(3, 3, 506, 506);
-		   _content.graphics.endFill();
-		 */
+			/*
+			_content.graphics.clear();
+			_content.graphics.beginBitmapFill(ground, _matrix, false, false);
+			_content.graphics.drawEllipse(0, 0, 512, 512);
+			_content.graphics.endFill();
+			
+			// deco
+			_content.graphics.lineStyle(0, 0x000000, 0.3);
+			_content.graphics.drawRect(252, 252, 8, 8);
+			_content.graphics.endFill();
+			
+			_content.graphics.lineStyle(0, 0x000000, 0.1);
+			_content.graphics.moveTo(256, 0);
+			_content.graphics.lineTo(256, 512);
+			_content.graphics.endFill();
+			
+			_content.graphics.lineStyle(0, 0x000000, 0.1);
+			_content.graphics.moveTo(0, 256);
+			_content.graphics.lineTo(512, 256);
+			_content.graphics.endFill();
+			
+			_content.graphics.lineStyle(20, 0x000000, 0.3);
+			_content.graphics.drawEllipse(6, 6, 500, 500);
+			_content.graphics.endFill();
+			
+			_content.graphics.lineStyle(10, 0x000000, 0.75);
+			_content.graphics.drawEllipse(3, 3, 506, 506);
+			_content.graphics.endFill();
+			*/
 		}
 		
 		/*public function move(e:Event):void
-		   {
+		{
 		
-		   }
+		}
 		
-		   public static function move22(e:Event):void
-		   {
+		public static function move22(e:Event):void
+		{
 		
-		 }*/
-         
-        //-------------------------------------------------------------------------------
+		}*/
+		
+		//-------------------------------------------------------------------------------
 		//
 		//      MATH TOOL
 		//
 		//-------------------------------------------------------------------------------
-        private function velocity(angle:Number):Vector3D {
-            return new Vector3D( Math.cos(radDeg(angle)), 0, Math.sin(radDeg(angle)));
-        }
-        
+		private function velocity(angle:Number):Vector3D {
+			return new Vector3D( Math.cos(radDeg(angle)), 0, Math.sin(radDeg(angle)));
+		}
+		
 		private function degRad(r:Number):Number { return(r * (180 / Math.PI)) }
-        private function radDeg(d:Number):Number { return(d * (Math.PI / 180)) }
-        
+		private function radDeg(d:Number):Number { return(d * (Math.PI / 180)) }
+		
 		//-------------------------------------------------------------------------------
 		//
 		//       COLOR MATRIX FILTER
