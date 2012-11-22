@@ -1,6 +1,6 @@
 /*
 
-VISION CAR
+AVATAR WAR
 
 Demonstrates:
 
@@ -37,6 +37,13 @@ THE SOFTWARE.
 */
 package
 {
+	import away3d.extrusions.Elevation;
+	import away3d.animators.data.Skeleton;
+	import away3d.animators.SkeletonAnimator;
+	import away3d.animators.SkeletonAnimationSet;
+	import away3d.animators.nodes.SkeletonClipNode;
+	import away3d.animators.transitions.CrossfadeTransition;
+	
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
@@ -110,6 +117,7 @@ package
 	import flash.geom.Point;
 	
 	import utils.PixelBlenderEffects;
+	import utils.AvatarMapper;
 	import utils.VectorSkyEffects;
 	import utils.BitmapMapper;
 	import utils.CarMove;
@@ -124,8 +132,9 @@ package
 		[Embed(source="/../embeds/signature.swf",symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const ASSETS_ROOT:String = "assets/";
-		private static const SCALE:int = 1;
+		private const ASSETS_ROOT:String = "assets/";
+		private const SCALE:int = 1;
+		private var _id:uint = 0;
 		
 		private var _stage3DProxy:Stage3DProxy;
 		private var _manager:Stage3DManager;
@@ -171,23 +180,42 @@ package
 		private var _skyBitmaps:Vector.<BitmapData>;
 		private var _blendmodes:Array = ["add", "darken", "hardlight", "lighten", "multiply", "overlay", "screen", "subtract"];
 		
-		//Materials
+		// Materials
 		private var _materials:Vector.<TextureMaterial>;
 		private var _groundMaterial:TextureMaterial;
+		// Materials AVATAR
+		private var TEX_Avatar:Vector.<TextureMaterial>;
+		private var TEX_Hair:Vector.<TextureMaterial>;
+		private var TEX_Hat:Vector.<TextureMaterial>;
 		
 		// scene objects
 		private var _ground:Mesh;
 		private var _vision:Vector.<Mesh>;
 		private var _visionCar:Mesh;
 		
-		// car parts
-		private var _body:Mesh;
-		private var _wheel:Mesh;
-		private var _wheels:Vector.<Mesh>;
-		private var _door:Mesh;
-		private var _doors:Vector.<Mesh>;
-		private var _sit:Mesh;
-		private var _sits:Vector.<Mesh>;
+		// Avatar referency
+		private var _cloneStyleWoman:Vector.<Mesh>;
+		private var _cloneStyleMan:Vector.<Mesh>;
+		private var _skinMesh:Vector.<Mesh>;
+		// Hair variable
+		private var _cloneHair:Vector.<Mesh>;
+		// Avatar structure
+		private var _squeleton:Skeleton;
+		private var _animationSquel:SkeletonAnimator;
+		private var _animationSetSquel:SkeletonAnimationSet;
+		private var transition:CrossfadeTransition = new CrossfadeTransition(0.25);
+		// animation constants
+		private const SEQUENCE:Array = ['Breathe', 'Sit', 'SitWoman', 'Walk', 'Run'];
+		private const SEQUENCE_MAN:Array = ['Breathe', 'Sit', 'Walk', 'Run'];
+		private const SEQUENCE_WOMEN:Array = ['Breathe', 'SitWoman', 'WalkWoman', 'Run'];
+		private const SEQSPEED:Array = [0.4, -0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4];
+		private const ROTATION_SPEED:Number = 10;
+		private const XFADE_TIME:Number = 0.5;
+		
+		private var _clones:Vector.<Mesh>;
+		private var animators:Vector.<SkeletonAnimator>;
+		private var chromosomes:Vector.<int>;
+		private const HAIR_COLOR:Array = [0x6E4C44, 0x4F4540, 0xFC6932, 0xE8593A, 0xFFB42B, 0x9A7F60, 0x494344, 0xBBC6CB];
 		
 		//navigation
 		private var _prevMouseX:Number;
@@ -422,8 +450,41 @@ package
 			_groundMaterial.repeat = true;
 			_materials[0] = _groundMaterial;
 			
+			
+			//_____________________________________ avatar materials
+			var material:TextureMaterial
+			TEX_Avatar = new Vector.<TextureMaterial>(10);
+			
+			for (var i:uint = 0; i < 10; i++) {
+				var bitmapData:BitmapData = AvatarMapper.avatarBitmap();
+				material = new TextureMaterial(Cast.bitmapTexture(bitmapData));
+				material.normalMap = Cast.bitmapTexture(PixelBlenderEffects.normal(bitmapData));
+				//material.specularMethod = fresnelMethod;
+				material.gloss = 12;
+				material.specular = 0.5;
+				
+				material.addMethod(_fogMethode);
+				TEX_Avatar[i] = material;
+				_materials.push(material);
+			}
+			var color:uint;
+			TEX_Hair = new Vector.<TextureMaterial>(10);
+			for ( i = 0; i < 10; i++) {
+				color = HAIR_COLOR[uint(Math.random() * HAIR_COLOR.length)];
+				//material = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, color)));
+				material = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, color)));
+				//material.specularMethod = fresnelMethod;
+				material.gloss = 12;
+				material.specular = 0.5;
+				
+				material.addMethod(_fogMethode);
+				TEX_Hair[i] = material;
+				_materials.push(material);
+			}
+			
+			
 			// apply light and effect for all material
-			for (var i:int; i < _materials.length; i++)
+			for (i = 0; i < _materials.length; i++)
 			{
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].diffuseLightSources = LightSources.PROBES;
@@ -484,8 +545,11 @@ package
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 			
-			// Now load High res Vision car
-			_vision = new Vector.<Mesh>();
+			// Avatar character mesh referency
+			_skinMesh = new Vector.<Mesh>();
+			// hair style clone referency
+			_cloneStyleMan = new Vector.<Mesh>();
+			_cloneStyleWoman = new Vector.<Mesh>();
 			
 			load("avatar/avatar.awd");
 		}
@@ -501,7 +565,8 @@ package
 			if (_sunLight.ambient < 0.5)
 				_sunLight.ambient += 0.01;
 			
-			//_cameraController.lookAtPosition = new Vector3D(_visionCar.position.x, _cameraHeight, _visionCar.position.z);
+			updateClone();
+			
 			_cameraController.update();
 			
 			// update view
@@ -673,9 +738,29 @@ package
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
-			if (event.asset.assetType == AssetType.MESH)
-			{
+			var mesh:Mesh;
+			// ++ Skeleton referency same for man and woman
+			if (event.asset.assetType == AssetType.SKELETON) {
+				_squeleton = event.asset as Skeleton;
+				_animationSetSquel = new SkeletonAnimationSet(2);
+				// ++ animation by name 
+			} else if (event.asset.assetType == AssetType.ANIMATION_NODE) {
+				var animationNode:SkeletonClipNode = event.asset as SkeletonClipNode;
+				_animationSetSquel.addAnimation(animationNode);
+			}
 				
+			else if (event.asset.assetType == AssetType.MESH) {
+				mesh = Mesh(event.asset);
+				// Character Men & Woman
+				if (mesh.name.substring(0, 4) == "Skin") {
+					_skinMesh.push(mesh);
+				}
+				if (mesh.name.substring(0, 8) == "Hair_Man") {
+					_cloneStyleMan.push(mesh);
+				}
+				if (mesh.name.substring(0, 8) == "Hair_Wom") {
+					_cloneStyleWoman.push(mesh);
+				}
 			}
 		}
 		
@@ -686,10 +771,12 @@ package
 		//-------------------------------------------------------------------------------
 		
 		private function onResourceComplete(e:LoaderEvent):void
-		{
+		{ 
 			var loader3d:Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
+			
+			populate(20, 20, 60);
 			
 			log(message());
 			initListeners();
@@ -701,9 +788,110 @@ package
 		//       CLONE
 		//-------------------------------------------------------------------------------
 		
-		private function makeClone(n:int = 4):void
+		/** 
+		 * Populate Clones
+		 */
+		private function populate(n:int = 10, l:int = 10, sx:int = 50, sz:int = 50):void
 		{
+			if (!_clones) _clones = new Vector.<Mesh>(n);
+			var m:Mesh;
+			var j:int, k:int;
+			for (var i:int = 0; i < n; ++i) {
+				m = addAvatar(1.2);
+				m.z = (j * sz);
+				k = (i - (j * l));
+				m.x = -((l * sx) >> 1) + (k * sx) + (sx / 2);
+				m.y = 0//Terrain.getHeightAt(m.x, -m.z)
+				m.mouseEnabled = m.mouseChildren = false;    
+				_view.scene.addChild(m);
+				_clones[i] = m;
+				
+				if (k == l - 1)
+					j++;
+			}
+			_clones.fixed = true;
+		}
+		
+		/** Duplicate Man or Woman into Avatar with self animation */
+		public function addAvatar(Scale:Number = 1, AnimNum:int = -1):Mesh 
+		{
+			if (!animators) animators = new Vector.<SkeletonAnimator>();
+			if (!chromosomes) chromosomes = new Vector.<int>();
+			if (!_cloneHair) _cloneHair = new Vector.<Mesh>();
 			
+			// 0:man 1:woman
+			var sex:int = rand(1)+1; 
+			var hair:Mesh;
+			var skin:Mesh = _skinMesh[sex - 1].clone() as Mesh;
+			
+			// random skin material 
+			skin.material = TEX_Avatar[int(Math.random()*10)];
+			skin.scale( Scale );
+			
+			// choose random hair style;
+			if (sex == 1) hair = _cloneStyleMan[rand(_cloneStyleMan.length - 1)].clone() as Mesh;
+			else hair = _cloneStyleWoman[rand(_cloneStyleWoman.length - 1)].clone() as Mesh;
+			hair.material = TEX_Hair[int(Math.random()*10)];
+			skin.addChild(hair);
+			
+			// create new animator
+			var animator:SkeletonAnimator = new SkeletonAnimator(_animationSetSquel, _squeleton);
+			
+			// play random animation or Anim
+			var num:int
+			if (AnimNum == -1) num = int(Math.random() * 3);
+			else num = AnimNum;
+			
+			var anim:String;
+			if (sex == 1) anim = SEQUENCE_MAN[num];
+			else anim = SEQUENCE_WOMEN[num];
+			animator.playbackSpeed = SEQSPEED[num];
+			//animator.play(anim, stateTransition);
+			skin.animator = animator;
+			animator.play(anim);
+			
+			_cloneHair.push(hair);
+			animators.push(animator);
+			chromosomes.push(sex);
+			return skin;
+		}
+		
+		//-------------------------------------------------------------------------------
+		//       ANIMATION
+		//-------------------------------------------------------------------------------
+		
+		public function play(i:int, name:String, speed:Number = 0.5):void 
+		{
+			SkeletonAnimator(animators[i]).play(name, transition);
+			animators[i].playbackSpeed = speed;
+		}
+		
+		/** 
+		 * Update Hair animation to follow head bone 
+		 */
+		public function updateClone():void 
+		{
+			for (var i:uint = 0; i < animators.length; i++) {
+				_cloneHair[i].transform = animators[i].globalPose.jointPoses[15].toMatrix3D();
+			}
+		}
+		
+		public function deleteLast(skin:Mesh):void {
+			var n:int = animators.length - 1;
+			skin.removeChild(_cloneHair[n]);
+			animators[n].stop();
+			Mesh(_cloneHair[n]).dispose();
+			animators.pop();
+			_cloneHair.pop();
+			
+			if (n == 0) {
+				animators = new Vector.<SkeletonAnimator>;
+				_cloneHair = new Vector.<Mesh>;
+			}
+		}
+		
+		private static function rand(max:Number = 1, min:Number = 0):Number {
+			return Math.floor(Math.random() * (max - min + 1)) + min;
 		}
 		
 		//-------------------------------------------------------------------------------
@@ -737,7 +925,7 @@ package
 					break;
 				// options
 				case Keyboard.B: 
-					makeClone();
+					
 					break;
 				case Keyboard.N: 
 					randomSky();
@@ -904,11 +1092,9 @@ package
 		
 		private function message():String
 		{
-			var mes:String = "ARROW.WSAD.ZSQD - move\n";
-			mes += "V - reflection\n";
+			var mes:String = "";
 			mes += "I - full screen\n";
 			mes += "N - random sky\n";
-			mes += "B - clone\n";
 			return mes;
 		}
 		

@@ -43,7 +43,7 @@ package utils
 			return returnBitmap;
 		}
 		
-		static public function normalMap(sourceBitmap:BitmapData, amount:Number = 10, softSobel:Number = 1, redMultiplier:Number = -1, greeMultiplier:Number = -1):BitmapData
+		static public function normal(sourceBitmap:BitmapData, amount:Number = 10, softSobel:Number = 1, redMultiplier:Number = -1, greeMultiplier:Number = -1):BitmapData
 		{
 			var returnBitmap:BitmapData = new BitmapData(sourceBitmap.width, sourceBitmap.height, sourceBitmap.transparent, 0x0);
 			

@@ -121,11 +121,12 @@ package
 		[Embed(source="/../embeds/signature.swf",symbol="Signature")]
 		public var SignatureSwf:Class;
 		
-		private static const ASSETS_ROOT:String = "assets/";
-		private static const MOUNTAIGN_TOP:Number = 2000;
-		private static const FARVIEW:Number = 30000;
-		private static const FOGNEAR:Number = 0;
-		private static const SCALE:Number = 2;
+		private const ASSETS_ROOT:String = "assets/";
+		private const MOUNTAIGN_TOP:Number = 2000;
+		private const FARVIEW:Number = 30000;
+		private const FOGNEAR:Number = 0;
+		private const SCALE:Number = 2;
+		private var _id:uint = 0;
 		
 		// start colors
 		private var sunColor:uint = 0xAAAAA9;
@@ -390,7 +391,7 @@ package
 			// 0- terrain
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x0)));
 			
-			_terrainMaterial.normalMap = Cast.bitmapTexture(PixelBlenderEffects.normalMap(BitmapMapper.ground));
+			_terrainMaterial.normalMap = Cast.bitmapTexture(PixelBlenderEffects.normal(BitmapMapper.ground));
 			_terrainMaterial.diffuseMethod = _terrainMethod;
 			_terrainMaterial.gloss = 20;
 			_terrainMaterial.specular = .25;
@@ -464,8 +465,8 @@ package
 			initListeners();
 			log(message());
 			
-			// load Onkba character with weapons
-			//load("onkba_fps.awd");
+			// load spaceship mesh
+			//load("SpaceShip.awd"+ "?uniq=" + _id);
 		}
 		
 		//-------------------------------------------------------------------------------
