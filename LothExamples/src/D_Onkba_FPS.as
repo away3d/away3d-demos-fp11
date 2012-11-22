@@ -459,7 +459,7 @@ package
 			
 			// 3- eye ball open from bitmap diffuse onkba
 			b = new BitmapData(256/2, 256/2, false);
-			b.draw(_bitmaps[3], new Matrix(1, 0, 0, 1, -283/2, -197/2));
+			b.draw(_bitmaps[11], new Matrix(1, 0, 0, 1, -283/2, -197/2));
 			_eyesOpenMaterial = new TextureMaterial(Cast.bitmapTexture(b));
 			_eyesOpenMaterial.gloss = 100;
 			_eyesOpenMaterial.specular = 0.8;
