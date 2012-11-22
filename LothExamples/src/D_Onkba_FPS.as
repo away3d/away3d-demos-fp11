@@ -84,6 +84,9 @@ package
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
     
+    import flash.events.ErrorEvent;
+	import flash.events.IOErrorEvent;
+	import flash.events.SecurityErrorEvent;
 	import flash.filters.ColorMatrixFilter;
 	import flash.display.StageDisplayState;
 	import flash.filters.DropShadowFilter;
@@ -115,7 +118,13 @@ package
 	import utils.VectorSkyEffects;
 	import utils.BitmapMapper;
     
-	public class Intermediate_Onkba_FPS extends Sprite
+    import physics.*;
+    
+    import com.bit101.components.Style;
+    import com.bit101.components.Component;
+	import com.bit101.components.PushButton;
+    
+	public class D_Onkba_FPS extends Sprite
 	{
 		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
 		public var SignatureSwf:Class;
@@ -227,6 +236,7 @@ package
 		private var _debugRay:Boolean;
 		private var _isRender:Boolean;
 		
+        private var _currentLoadFile:String;
 		private var _signature:Sprite;
 		private var _text:TextField;
         private var _capture:BitmapData;
@@ -234,31 +244,28 @@ package
         
 		// optional physics engine
 		private var _physics:Object;
-		
+		private var _menu:Sprite;
+        
 		/**
 		 * Constructor
 		 */
-		public function Intermediate_Onkba_FPS()
+		public function D_Onkba_FPS()
 		{
 			_bitmaps = new Vector.<BitmapData>();
 			_bitmapStrings = new Vector.<String>();
-			// terrain map
-			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg" );
-			// hero map
-			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
-			// gun map
-			_bitmapStrings.push("onkba/weapon_diffuse.jpg", "onkba/weapon_normals.jpg", "onkba/weapon_lightmap.jpg");
-			
-			// terrain map
-			_bitmapStrings.push("height.png");
-			
-			// sky map Bitmap overlay
+            // sky Bitmap
 			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
-			
-			// bazooka map
+			// terrain map 6 7 8
+			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg" );
+            // terrain map 9 10
+			_bitmapStrings.push("height.png", "height_n.jpg");
+			// hero map 11 12 13
+			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
+			// gun map 14 15 16
+			_bitmapStrings.push("onkba/weapon_diffuse.jpg", "onkba/weapon_normals.jpg", "onkba/weapon_lightmap.jpg");
+			// bazooka map 17 18 19
 			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
 			
-			_bitmapStrings.push("height_n.jpg");
 			
 			if (stage) init();
             else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
@@ -273,7 +280,7 @@ package
             
             stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-            stage.color = 0x000000;
+            stage.color = 0x060606;
 			stage.frameRate = 60;
             
             _manager = Stage3DManager.getInstance(stage);
@@ -284,12 +291,13 @@ package
 		private function onContextCreated(e:Stage3DEvent):void
 		{
             _stage3DProxy.removeEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
-            _stage3DProxy.color = 0x000000;
+            _stage3DProxy.color = 0x060606;
             _stage3DProxy.antiAlias = 4;
             _stage3DProxy.width = stage.stageWidth;
             _stage3DProxy.height = stage.stageHeight;
 			initEngine();
 			initText();
+            initSetting()
 			initLights();
 			
 			// kickoff asset loading
@@ -327,11 +335,6 @@ package
 			_player = new ObjectContainer3D();
 			_player.y = 200;
 			_view.scene.addChild(_player);
-			
-			// add signature
-			addChild(_signature = new SignatureSwf());
-			_signature.y = stage.stageHeight - _signature.height;
-			_signature.x = 10;
 			
 			// add stats
 			addChild(_stats = new AwayStats(_view, false, true));
@@ -384,7 +387,7 @@ package
 			if (_skyBitmaps == null) {
 				_skyBitmaps = new Vector.<BitmapData>(6);
 				for (i = 0; i < 6; i++) {
-					_skyBitmaps[i] = _bitmaps[10 + i];
+					_skyBitmaps[i] = _bitmaps[i];
 				}
 			}
 			if (_sky) {  
@@ -415,7 +418,7 @@ package
 			_materials = new Vector.<TextureMaterial>();
 			
 			var tiles:Array = [1, 100, 100, 100];
-			var sTexture:Array = [Cast.bitmapTexture(_bitmaps[0]), Cast.bitmapTexture(_bitmaps[1]), Cast.bitmapTexture(_bitmaps[2])];
+			var sTexture:Array = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
 			_terrainMethod = new TerrainDiffuseMethod(sTexture, Cast.bitmapTexture(_bitmaps[9]) , tiles);
 			
 			// global shadow method
@@ -429,9 +432,9 @@ package
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW >> 1, fogColor);
 			
 			// 0- hero
-			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[3]));
-			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[4]);
-			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[5]);
+			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[11]));
+			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[12]);
+			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[13]);
 			_heroMaterial.gloss = 25;
 			_heroMaterial.specular = 0.5;
 			_heroMaterial.alphaThreshold = 0.9;
@@ -439,9 +442,9 @@ package
 			_materials[0] = _heroMaterial;
 			
 			// 1- weapon
-			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
-			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[7]);
-			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[8]);
+			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[14]));
+			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[15]);
+			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[16]);
 			_gunMaterial.gloss = 20;
 			_gunMaterial.specular = 0.8;
 			_materials[1] = _gunMaterial;
@@ -473,7 +476,7 @@ package
 			// 5- terrain
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
 			
-			_terrainMaterial.normalMap = Cast.bitmapTexture(_bitmaps[19]);
+			_terrainMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
 			_terrainMaterial.diffuseMethod = _terrainMethod;
 			_terrainMaterial.gloss = 20;
 			_terrainMaterial.specular = .25;
@@ -496,9 +499,9 @@ package
 			_materials[7] = _boneMaterial;
 			
 			// 8- bazooka
-			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[16]));
-			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[17]);
-			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[18]);
+			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[17]));
+			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[18]);
+			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[19]);
 			_gunMaterial2.gloss = 20;
 			_gunMaterial2.specular = 0.8;
 			_materials[8] = _gunMaterial2;
@@ -640,14 +643,6 @@ package
 			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
 		}
         
-		private function removeGrayPauseEffect():void
-		{
-            _topPause.graphics.clear();
-            removeChild(_topPause);
-            _capture = null
-            
-        }
-        
 		//-------------------------------------------------------------------------------
 		//   ||  PAUSE render
 		//-------------------------------------------------------------------------------
@@ -661,11 +656,15 @@ package
            /* _capture = addChild(new Bitmap(new BitmapData(465, 465, false, 0x000000))) as Bitmap ;
             */
            // _capture.applyFilter(_capture, _capture.rect, new Point(), grayScale());
-			_topPause = new Sprite();
-            addChild(_topPause);
             _topPause.graphics.beginBitmapFill(_capture, null, false, false);
             _topPause.graphics.drawRect(0, 0, stage.width, stage.height);
             _topPause.graphics.endFill();
+        }
+        
+        private function removeGrayPauseEffect():void
+		{
+            _topPause.graphics.clear();
+            _capture = null;
         }
         
 		//-------------------------------------------------------------------------------
@@ -674,9 +673,11 @@ package
 		
 		private function load(url:String):void
 		{
+			_currentLoadFile = url;
 			var loader:URLLoader = new URLLoader();
 			loader.dataFormat = URLLoaderDataFormat.BINARY;
-			switch (url.substring(url.length - 3)) {
+			switch (url.substring(url.length - 3))
+			{
 				case "AWD": 
 				case "awd": 
 					loader.addEventListener(Event.COMPLETE, parseAWD, false, 0, true);
@@ -686,29 +687,38 @@ package
 					loader.addEventListener(Event.COMPLETE, parseBitmap, false, 0, true);
 					break;
 			}
+			loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onErrorImage, false, 0, true);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, onErrorImage, false, 0, true);
 			loader.addEventListener(ProgressEvent.PROGRESS, loadProgress, false, 0, true);
 			loader.load(new URLRequest(ASSETS_ROOT + url));
+		}
+		
+		private function onErrorImage(e:ErrorEvent):void
+		{
+			log(e.text.toUpperCase() + " on " + _currentLoadFile);
 		}
 		
 		private function loadProgress(e:ProgressEvent):void
 		{
 			var P:int = int(e.bytesLoaded / e.bytesTotal * 100);
-			log( 'LOADING : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko');
+			log('LOADING : ' + P + ' % | ' + int((e.bytesLoaded / 1024) << 0) + ' ko');
 		}
 		
-		
 		//-------------------------------------------------------------------------------
-		//      Bitmaps Loading
+		//      Bitmaps Parser
 		//-------------------------------------------------------------------------------
 		
-		private function parseBitmap(e:Event):void 
+		private function parseBitmap(e:Event):void
 		{
 			var urlLoader:URLLoader = URLLoader(e.target);
 			var loader:Loader = new Loader();
 			loader.loadBytes(urlLoader.data);
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onBitmapComplete, false, 0, true);
+			urlLoader.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onErrorImage);
+			urlLoader.removeEventListener(IOErrorEvent.IO_ERROR, onErrorImage);
 			urlLoader.removeEventListener(ProgressEvent.PROGRESS, loadProgress);
 			urlLoader.removeEventListener(Event.COMPLETE, parseBitmap);
+			urlLoader = null;
 		}
 		
 		private function onBitmapComplete(e:Event):void
@@ -725,21 +735,22 @@ package
 			else initAfterBitmapLoad();
 		}
 		
-		
 		//-------------------------------------------------------------------------------
-		//       AWD loading
+		//       AWD Parser
 		//-------------------------------------------------------------------------------
 		
 		private function parseAWD(e:Event):void
 		{
-			var loader:URLLoader = e.target as URLLoader;
+			var urlLoader:URLLoader = e.target as URLLoader;
 			var loader3d:Loader3D = new Loader3D(false);
 			loader3d.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete, false, 0, true);
 			loader3d.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete, false, 0, true);
-			loader3d.loadData(loader.data, null, null, new AWD2Parser());
-			loader.removeEventListener(ProgressEvent.PROGRESS, loadProgress);
-			loader.removeEventListener(Event.COMPLETE, parseAWD);
-			loader = null;
+			loader3d.loadData(urlLoader.data, null, null, new AWD2Parser());
+			urlLoader.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onErrorImage);
+			urlLoader.removeEventListener(IOErrorEvent.IO_ERROR, onErrorImage);
+			urlLoader.removeEventListener(ProgressEvent.PROGRESS, loadProgress);
+			urlLoader.removeEventListener(Event.COMPLETE, parseAWD);
+			urlLoader = null;
 		}
 		
 		/**
@@ -858,7 +869,6 @@ package
 			// start away3d physics 
 			initPhysicsEngine();
 		}
-		
 		
 		//-------------------------------------------------------------------------------
 		//       CHARACTER OPTIONS
@@ -1115,7 +1125,6 @@ package
 			}
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       STAGE AND MOUSE FUNCTION
 		//-------------------------------------------------------------------------------
@@ -1143,6 +1152,7 @@ package
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
 			_signature.y = stage.stageHeight - _signature.height;
+            _menu.y = stage.stageHeight;
 			if(!_isRender) onEnterFrame();
 		}
 		
@@ -1285,7 +1295,6 @@ package
 			}
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       XRAY view for bone debug    
 		//-------------------------------------------------------------------------------
@@ -1348,15 +1357,35 @@ package
 			}
 		}
 		
-		
 		//-------------------------------------------------------------------------------
 		//       Interface   
 		//-------------------------------------------------------------------------------
-		
+        
+		private function initSetting():void
+		{
+            _menu = new Sprite();
+            addChild(_menu);
+            _menu.y = stage.stageHeight;
+            Style.setStyle("dark");
+            Style.BUTTON_FACE = 0x060606;
+            Style.DROPSHADOW = 0x000000;
+            Style.BACKGROUND = 0x000000;
+            Style.BUTTON_DOWN = 0x995522;
+            Style.LABEL_TEXT = 0xffffff;
+            new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
+        }
+        
+        private function showSetting(e:MouseEvent):void
+        {
+		}
+        
 		private function initText():void
 		{
+            _topPause = new Sprite();
+			addChild(_topPause);
+            
 			_text = new TextField();
-			var format:TextFormat = new TextFormat("Verdana", 9, 0xdddddd);
+			var format:TextFormat = new TextFormat("Helvetica", 9, 0xdddddd);
 			format.letterSpacing = 1;
             format.leftMargin = 5;
 			format.leading = 1;
@@ -1371,12 +1400,16 @@ package
 			_text.mouseEnabled = true;
 			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
 			addChild(_text);
+            
+            // add signature
+			addChild(_signature = new SignatureSwf());
+			_signature.y = stage.stageHeight - _signature.height;
+			_signature.x = 10;
 		}
 		
 		public function message():String
 		{
-			var mes:String = "ONKBA FPS\n\n";
-			mes += "ARROW.WSAD.ZSQD - move\n";
+			var mes:String = "ARROW.WSAD.ZSQD - move\n";
 			mes += "SHIFT - hold to run\n";
 			mes += "R - reload weapon\n";
 			mes += "O - next weapon\n";
@@ -1397,7 +1430,7 @@ package
 		
 		
 		// AUTHOR NOTE 
-		// Now you can choose you physics engine or don't use physics 
+		// Now you can choose you physics engine or don't use any physics 
 		// juste disable part you don't whant
 		
 		//-------------------------------------------------------------------------------

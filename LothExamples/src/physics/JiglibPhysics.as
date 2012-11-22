@@ -1,4 +1,4 @@
-package {
+package physics{
 	import awayphysics.dynamics.vehicle.AWPWheelInfo;
 	import awayphysics.dynamics.vehicle.AWPVehicleTuning;
 	import awayphysics.dynamics.vehicle.AWPRaycastVehicle;

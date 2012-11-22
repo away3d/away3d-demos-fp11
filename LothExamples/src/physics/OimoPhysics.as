@@ -1,5 +1,4 @@
-package
-{
+package physics{
 	import com.element.oimo.physics.collision.shape.ShapeConfig;
 	import com.element.oimo.physics.collision.shape.SphereShape;
 	import com.element.oimo.physics.collision.shape.BoxShape;
@@ -27,8 +26,8 @@ package
 	
 	public class OimoPhysics extends Sprite
 	{
-		private static const _timeStep:Number = 1.0 / 30;
-		private static const worldScale:Number = 10;
+		//private static const _timeStep:Number = 1.0 / 30;
+		//private static const worldScale:Number = 10;
 		
 		// physics engine
 		private static var Singleton:OimoPhysics;
@@ -60,7 +59,7 @@ package
 		//       Physics World init
 		//-------------------------------------------------------------------------------
 		
-		private static function init(e:Event = null):void
+		private function init(e:Event = null):void
 		{
 			_world = new World();
 			_rigid = new Vector.<RigidBody>;

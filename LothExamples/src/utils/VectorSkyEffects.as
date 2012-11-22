@@ -1,15 +1,60 @@
 package utils
 {
 	import away3d.textures.BitmapCubeTexture;
-	import flash.display.*;
-	import flash.filters.*;
-	import flash.geom.*;
+	
+	import flash.display.Bitmap;
+	import flash.display.Sprite;
+	import flash.display.Shape;
+	import flash.display.BitmapData;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.filters.DisplacementMapFilter;
+	import flash.geom.Matrix;
+	import flash.geom.Point;
+	import flash.geom.Vector3D;
+	
+	[SWF(width="256",height="768")]
 	
 	public class VectorSkyEffects extends Sprite
 	{
-		/**
-		 * create vector sky
-		 */
+		private static var _top:BitmapData;
+		private static var _floor:BitmapData;
+		private static var _side:BitmapData;
+		private var preview:Sprite;
+		
+		public function VectorSkyEffects()
+		{
+			// juste for preview no need in demo
+			preview = new Sprite();
+			addChild(preview);
+			preview.addEventListener(MouseEvent.CLICK, draw);
+			preview.buttonMode = true;
+			draw();
+		}
+		
+		private function draw(e:MouseEvent = null):void
+		{
+			var skyTest:BitmapCubeTexture = vectorSky(randColor(), randColor(), randColor(), 2);
+			var s:Vector.<BitmapData> = new Vector.<BitmapData>(3);
+			s[0] = _side;
+			s[1] = _top;
+			s[2] = _floor;
+			preview.graphics.clear();
+			preview.graphics.beginBitmapFill(s[1]);
+			preview.graphics.drawRect(0, 0, 256, 256);
+			preview.graphics.endFill();
+			preview.graphics.beginBitmapFill(s[0]);
+			preview.graphics.drawRect(0, 256, 256, 256);
+			preview.graphics.endFill();
+			preview.graphics.beginBitmapFill(s[2]);
+			preview.graphics.drawRect(0, 512, 256, 256);
+			preview.graphics.endFill();
+		}
+		
+		//-------------------------------------------------------------------------------
+		//       SKY VECTOR MAP
+		//-------------------------------------------------------------------------------
+		
 		static public function vectorSky(zenithColor:uint, horizonColor:uint, nadirColor:uint, quality:uint = 8, bitmaps:Vector.<BitmapData> = null, blend:String = "overlay"):BitmapCubeTexture
 		{
 			var xl:uint = 128 * quality;
@@ -17,9 +62,9 @@ package utils
 			
 			// sky color from bottom to top;
 			var color:Vector.<uint> = Vector.<uint>([lighten(nadirColor, 50), darken(nadirColor, 25), darken(nadirColor, 5), horizonColor, horizonColor, horizonColor, zenithColor, darken(zenithColor, 25)]); // clear
-			var side:BitmapData = new BitmapData(xl, xl, false, color[1]);
-			var top:BitmapData = new BitmapData(xl, xl, false, color[6]);
-			var floor:BitmapData = new BitmapData(xl, xl, false, color[1]);
+			_side = new BitmapData(xl, xl, false, color[1]);
+			_top = new BitmapData(xl, xl, false, color[6]);
+			_floor = new BitmapData(xl, xl, false, color[1]);
 			
 			// side
 			var matrix:Matrix = new Matrix();
@@ -30,7 +75,7 @@ package utils
 			g.graphics.endFill();
 			var displacement_map:DisplacementMapFilter = new DisplacementMapFilter(pinchMap(xl, xl), new Point(0, 0), 4, 2, 0, pinch, "clamp");
 			g.filters = [displacement_map];
-			side.draw(g);
+			_side.draw(g);
 			
 			// top
 			g = new Shape();
@@ -39,7 +84,7 @@ package utils
 			g.graphics.beginGradientFill('radial', [color[7], color[6]], [1, 1], [0, 255], matrix);
 			g.graphics.drawEllipse(0, 0, xl, xl);
 			g.graphics.endFill();
-			top.draw(g);
+			_top.draw(g);
 			
 			// bottom
 			g = new Shape();
@@ -48,7 +93,7 @@ package utils
 			g.graphics.beginGradientFill('radial', [color[0], color[1]], [1, 1], [0, 255], matrix);
 			g.graphics.drawEllipse(0, 0, xl, xl);
 			g.graphics.endFill();
-			floor.draw(g);
+			_floor.draw(g);
 			
 			var skyFinal:BitmapCubeTexture
 			
@@ -67,11 +112,11 @@ package utils
 					newMap[i] = new BitmapData(1024, 1024, false, 0x00);
 					
 					if (i == 0 || i == 1 || i == 4 || i == 5)
-						s.addChild(new Bitmap(side));
+						s.addChild(new Bitmap(_side));
 					else if (i == 2)
-						s.addChild(new Bitmap(top));
+						s.addChild(new Bitmap(_top));
 					else
-						s.addChild(new Bitmap(floor));
+						s.addChild(new Bitmap(_floor));
 					s.addChild(h);
 					h.blendMode = blend;
 					newMap[i].draw(s);
@@ -80,14 +125,14 @@ package utils
 			}
 			else
 			{
-				skyFinal = new BitmapCubeTexture(side, side, top, floor, side, side);
+				skyFinal = new BitmapCubeTexture(_side, _side, _top, _floor, _side, _side);
 			}
 			
 			return skyFinal;
 		}
 		
 		/**
-		 * add sphericale distortion
+		 * add sphericale distortion for side
 		 */
 		static private function pinchMap(w:uint, h:uint):BitmapData
 		{
@@ -155,6 +200,11 @@ package utils
 		static public function hexToRgb(color:uint):Vector.<uint>
 		{
 			return Vector.<uint>([(color & 0xff0000) >> 16, (color & 0x00ff00) >> 8, color & 0x0000ff]);
+		}
+		
+		public function randColor():uint
+		{
+			return uint(Math.random() * 0xffffff);
 		}
 	}
 }

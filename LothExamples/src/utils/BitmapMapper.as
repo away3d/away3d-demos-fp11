@@ -101,25 +101,8 @@ package utils
 			// preview
 		/*
 		   _content.graphics.clear();
-		
 		   _content.graphics.beginBitmapFill(ground, _matrix, false, false);
 		   _content.graphics.drawEllipse(0, 0, 512, 512);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.beginFill(ground.getPixel(_pointTest[0].x, _pointTest[0].y));
-		   _content.graphics.drawRect(470, 10, 16, 16);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.beginFill(ground.getPixel(_pointTest[1].x, _pointTest[1].y));
-		   _content.graphics.drawRect(487, 10, 16, 16);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.beginFill(ground.getPixel(_pointTest[2].x, _pointTest[2].y));
-		   _content.graphics.drawRect(470, 27, 16, 16);
-		   _content.graphics.endFill();
-		
-		   _content.graphics.beginFill(ground.getPixel(_pointTest[3].x, _pointTest[3].y));
-		   _content.graphics.drawRect(487, 27, 16, 16);
 		   _content.graphics.endFill();
 		
 		   // deco
@@ -156,7 +139,19 @@ package utils
 		   {
 		
 		 }*/
-		
+         
+        //-------------------------------------------------------------------------------
+		//
+		//      MATH TOOL
+		//
+		//-------------------------------------------------------------------------------
+        private function velocity(angle:Number):Vector3D {
+            return new Vector3D( Math.cos(radDeg(angle)), 0, Math.sin(radDeg(angle)));
+        }
+        
+		private function degRad(r:Number):Number { return(r * (180 / Math.PI)) }
+        private function radDeg(d:Number):Number { return(d * (Math.PI / 180)) }
+        
 		//-------------------------------------------------------------------------------
 		//
 		//       COLOR MATRIX FILTER
