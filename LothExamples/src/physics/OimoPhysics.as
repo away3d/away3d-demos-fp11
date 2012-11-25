@@ -1,4 +1,6 @@
 package physics {
+	import flash.geom.Vector3D;
+
 	import com.element.oimo.physics.collision.shape.ShapeConfig;
 	import com.element.oimo.physics.collision.shape.SphereShape;
 	import com.element.oimo.physics.collision.shape.BoxShape;
@@ -72,18 +74,22 @@ package physics {
 		/**
 		 * Add physic cube
 		 */
-		static public function addCube(w : uint, h : uint, d : uint, x : uint = 0, y : uint = 0, z : uint = 0) : void {
+		static public function addCube(w : Number, h : Number, d : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
 			config.position.init(x, y, z);
 			config.rotation.init();
+			config.restitution = restitution;
+			config.density = density;
+			config.friction = 2;
 			shape = new BoxShape(w, h, d, config);
 			rigid = new RigidBody();
+			rigid.linearVelocity.y = -980;
 			rigid.addShape(shape);
-			rigid.setupMass(RigidBody.BODY_STATIC);
-			config.restitution = 0;
-
+			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
+			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
+			
 			_world.addRigidBody(rigid);
 			_rigid.push(rigid);
 		}
@@ -91,75 +97,33 @@ package physics {
 		/**
 		 * Add physic sphere
 		 */
-		static public function addSphere(r : uint, x : uint = 0, y : uint = 0, z : uint = 0) : void {
+		static public function addSphere(r : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
 			config.position.init(x, y, z);
 			config.rotation.init();
+			config.restitution = restitution;
+			config.density = density;
+			config.friction = 2;
 			shape = new SphereShape(r, config);
 			rigid = new RigidBody();
+			rigid.linearVelocity.y = -980;
 			rigid.addShape(shape);
-			rigid.setupMass(RigidBody.BODY_STATIC);
-			config.restitution = 0;
+			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
+			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
 
 			_world.addRigidBody(rigid);
 			_rigid.push(rigid);
 		}
 
 		/**
-		 * Add
+		 * get position
 		 */
-		static public function addObject(y : int = 500) : void {
-			var rigid : RigidBody;
-			var shape : Shape;
-			var config : ShapeConfig = new ShapeConfig();
-			config.position.init(0, y, 0);
-			config.restitution = 0;
-
-			shape = new BoxShape(100, 100, 100, config);
-
-			rigid = new RigidBody();
-			rigid.addShape(shape);
-			// can be multiple
-
-			rigid.setupMass(RigidBody.BODY_STATIC);
-
-			/*rigid.angularVelocity.x = 0;
-			rigid.angularVelocity.y = 0;
-			rigid.angularVelocity.z = 0;*/
-			_world.addRigidBody(rigid);
-			_rigid.push(rigid);
-
-			/*var o:Object = O || new Object();
-			var type:String = o.type || "cube";
-			
-			var rigid:RigidBody;
-			var shape:Shape;
-			var config:ShapeConfig = new ShapeConfig();
-			
-			
-			config.position.init(o.pos.x || 0, o.pos.y || 0, o.pos.z || 0);
-			config.rotation.init();
-			
-			switch (type)
-			{
-			case 'sphere': 
-			shape = new SphereShape(o.r || 50, config);
-			break;
-			case 'cube': 
-			shape = new BoxShape(o.w || 100, o.h || 100, o.d || 100, config);
-			break;
-			}
-			
-			rigid.angularVelocity.x = Math.random() * 2 - 1;
-			rigid.angularVelocity.y = Math.random() * 2 - 1;
-			rigid.angularVelocity.z = Math.random() * 2 - 1;
-			
-			rigid.addShape(shape); // can be multiple
-			rigid.setupMass(RigidBody.BODY_STATIC);
-			if(_world)*/
+		static public function rigidPosition(n : uint = 0) : Vector3D {
+			return  new Vector3D(_rigid[n].position.x, _rigid[n].position.y, _rigid[n].position.z);
 		}
+
 
 		/**
 		 * Get physics world information
