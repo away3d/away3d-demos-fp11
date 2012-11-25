@@ -51,7 +51,6 @@ package {
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.textures.CubeReflectionTexture;
 	import away3d.containers.ObjectContainer3D;
-	import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
@@ -112,7 +111,6 @@ package {
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
 		// engine variables
-		private var _stage3DProxy : Stage3DProxy;
 		private var _view : View3D;
 		private var _stats : AwayStats;
 		private var _lightPicker : StaticLightPicker;
@@ -228,6 +226,29 @@ package {
 			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
+			_bitmaps = LoaderPool.bitmaps;
+		}
+
+		/**
+		 * Initialise the scene objects
+		 */
+		private function initAfterBitmapLoad() : void {
+			// create material
+			initMaterials();
+
+			// create skybox
+			randomSky();
+
+			// create terrain
+			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(_bitmaps[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
+			_view.scene.addChild(_terrain);
+
+			// weapon referency
+			_weapons = new Vector.<Mesh>(WEAPON.length);
+			_weapons[0] = new Mesh(new CubeGeometry(1, 1, 1), null);
+
+			// load Onkba character with weapons
+			LoaderPool.loadObject("onkba/onkba_fps.awd", onAssetComplete, onResourceComplete);
 		}
 
 		/**
@@ -399,31 +420,6 @@ package {
 				_materials[i].ambient = 0.85;
 				if (i != 5 || i != 3 || i != 2) _materials[i].addMethod(_rimLightMethod);
 			}
-		}
-
-		/**
-		 * Initialise the scene objects
-		 */
-		private function initAfterBitmapLoad() : void {
-			// get bitmap from loaderPool
-			_bitmaps = LoaderPool.bitmaps;
-
-			// create material
-			initMaterials();
-
-			// create skybox
-			randomSky();
-
-			// create terrain
-			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(_bitmaps[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
-			_view.scene.addChild(_terrain);
-
-			// weapon referency
-			_weapons = new Vector.<Mesh>(WEAPON.length);
-			_weapons[0] = new Mesh(new CubeGeometry(1, 1, 1), null);
-
-			// load Onkba character with weapons
-			LoaderPool.loadObject("onkba/onkba_fps.awd", onAssetComplete, onResourceComplete);
 		}
 
 		/**
@@ -914,8 +910,6 @@ package {
 		 * Stage listener for resize events
 		 */
 		private function onResize(event : Event = null) : void {
-			_stage3DProxy.width = stage.stageWidth;
-			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
@@ -1122,11 +1116,11 @@ package {
 			addChild(_menu);
 			_menu.y = stage.stageHeight;
 			Style.setStyle("dark");
-			Style.BUTTON_FACE = 0x060606;
+			Style.LABEL_TEXT = 0xffffff;
 			Style.DROPSHADOW = 0x000000;
 			Style.BACKGROUND = 0x000000;
+			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
-			Style.LABEL_TEXT = 0xffffff;
 			new PushButton(_menu, 180, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 215, -29, "WEAPON", switchWeapon).setSize(60, 30);
 		}

@@ -20,16 +20,17 @@ package utils {
 
 	/**
 	 * Loader Pool
-	 * @author Loth 2012
+	 * load binary file
+	 * @author Loth
 	 */
 	public class LoaderPool extends Sprite {
 		private static const ASSETS_ROOT : String = "assets/";
 		private static var _num : uint = 0;
-		private static var  _log : Function = null;
+		private static var _log : Function = null;
 		private static var _currentLoadFile : String;
 		private static var _finalFunction : Function;
-		private static var  _onAssetComplete : Function;
-		private static var  _onResourceComplete : Function;
+		private static var _onAssetComplete : Function;
+		private static var _onResourceComplete : Function;
 		private static var _bitmapStrings : Vector.<String>;
 		private static var _bitmaps : Vector.<BitmapData>;
 
@@ -64,12 +65,6 @@ package utils {
 			_log = v;
 		}
 
-		/**
-		 * Set the final function for bitmap load
-		 */
-		/*static public function set finalFunction(v : Function) : void {
-		_finalFunction = v;
-		}*/
 		/**
 		 * Get final bitmaps
 		 */

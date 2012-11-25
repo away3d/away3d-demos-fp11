@@ -155,6 +155,43 @@ package {
 
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
+			_bitmaps = LoaderPool.bitmaps;
+		}
+
+		/**
+		 * Initialise the scene objects
+		 */
+		private function initAfterBitmapLoad() : void {
+			// create material
+			initMaterials();
+
+			// create skybox
+			randomSky();
+
+			// create lander
+			_lander = new Lander();
+			_lander.scene = _view.scene;
+			_lander.maxElevation = MOUNTAIGN_TOP;
+			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
+			// _lander.initObjects(100, MOUNTAIGN_TOP);
+			_lander.initObjects(_terrainMaterial, 100, MOUNTAIGN_TOP, 25600);
+
+			// basic ground
+			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_ground.geometry.scaleUV(60, 60);
+			_ground.y = 30;
+			_ground.castsShadows = false;
+			_view.scene.addChild(_ground);
+
+			// create terrain
+			// _terrain = new Elevation(_terrainMaterial, Cast.bitmapData(BitmapMapper.ground), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250, 255, 0, false);
+			// _view.scene.addChild(_terrain);
+
+			initListeners();
+			log(message());
+
+			// load spaceship mesh
+			// load("SpaceShip.awd"+ "?uniq=" + _id);
 		}
 
 		/**
@@ -264,45 +301,6 @@ package {
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 0.85;
 			}
-		}
-
-		/**
-		 * Initialise the scene objects
-		 */
-		private function initAfterBitmapLoad() : void {
-			// get bitmap from pool
-			_bitmaps = LoaderPool.bitmaps;
-
-			// create material
-			initMaterials();
-
-			// create skybox
-			randomSky();
-
-			// create lander
-			_lander = new Lander();
-			_lander.scene = _view.scene;
-			_lander.maxElevation = MOUNTAIGN_TOP;
-			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			// _lander.initObjects(100, MOUNTAIGN_TOP);
-			_lander.initObjects(_terrainMaterial, 100, MOUNTAIGN_TOP, 25600);
-
-			// basic ground
-			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(60, 60);
-			_ground.y = 30;
-			_ground.castsShadows = false;
-			_view.scene.addChild(_ground);
-
-			// create terrain
-			// _terrain = new Elevation(_terrainMaterial, Cast.bitmapData(BitmapMapper.ground), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250, 255, 0, false);
-			// _view.scene.addChild(_terrain);
-
-			initListeners();
-			log(message());
-
-			// load spaceship mesh
-			// load("SpaceShip.awd"+ "?uniq=" + _id);
 		}
 
 		/**
@@ -580,11 +578,11 @@ package {
 			addChild(_menu);
 			_menu.y = stage.stageHeight;
 			Style.setStyle("dark");
-			Style.BUTTON_FACE = 0x060606;
 			Style.DROPSHADOW = 0x000000;
 			Style.BACKGROUND = 0x000000;
-			Style.BUTTON_DOWN = 0x995522;
 			Style.LABEL_TEXT = 0xffffff;
+			Style.BUTTON_FACE = 0x060606;
+			Style.BUTTON_DOWN = 0x995522;
 			new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
 		}
 

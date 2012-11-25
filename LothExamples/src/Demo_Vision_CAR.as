@@ -43,7 +43,6 @@ package {
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.textures.CubeReflectionTexture;
-	import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
@@ -94,7 +93,6 @@ package {
 		private var sunColor : uint = 0xAAAAA9;
 		private var fogColor : uint = 0x333338;
 		private var skyColor : uint = 0x445465;
-		private var _stage3DProxy : Stage3DProxy;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
 		private var sunDiffuse : Number = 0.0;
@@ -180,6 +178,30 @@ package {
 
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
+			_bitmaps = LoaderPool.bitmaps;
+		}
+
+		/**
+		 * Initialise the scene object
+		 */
+		private function initAfterBitmapLoad() : void {
+			// Init material and objects
+			initMaterials();
+
+			// create skybox
+			randomSky();
+
+			// basic ground
+			_ground = new Mesh(new PlaneGeometry(fogFar * 2, fogFar * 2), _groundMaterial);
+			_ground.geometry.scaleUV(60, 60);
+			_ground.castsShadows = false;
+			_view.scene.addChild(_ground);
+
+			// Now load High res Vision car
+			_vision = new Vector.<Mesh>();
+
+			// load vision car model
+			LoaderPool.loadObject("vision/vision.awd", onAssetComplete, onResourceComplete);
 		}
 
 		/**
@@ -357,32 +379,6 @@ package {
 			_materials[1].addMethod(_fresnelMethod);
 			_materials[8].addMethod(_fresnelMethod2);
 			_materials[9].addMethod(_fresnelMethod2);
-		}
-
-		/**
-		 * Initialise the scene object
-		 */
-		private function initAfterBitmapLoad() : void {
-			// get bitmap from loaderPool
-			_bitmaps = LoaderPool.bitmaps;
-
-			// Init material and objects
-			initMaterials();
-
-			// create skybox
-			randomSky();
-
-			// basic ground
-			_ground = new Mesh(new PlaneGeometry(fogFar * 2, fogFar * 2), _groundMaterial);
-			_ground.geometry.scaleUV(60, 60);
-			_ground.castsShadows = false;
-			_view.scene.addChild(_ground);
-
-			// Now load High res Vision car
-			_vision = new Vector.<Mesh>();
-
-			// load vision car model
-			LoaderPool.loadObject("vision/vision.awd", onAssetComplete, onResourceComplete);
 		}
 
 		/**
@@ -716,8 +712,6 @@ package {
 		 * stage listener and mouse control
 		 */
 		private function onResize(event : Event = null) : void {
-			_stage3DProxy.width = stage.stageWidth;
-			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
@@ -771,11 +765,11 @@ package {
 			addChild(_menu);
 			_menu.y = stage.stageHeight;
 			Style.setStyle("dark");
-			Style.BUTTON_FACE = 0x060606;
 			Style.DROPSHADOW = 0x000000;
 			Style.BACKGROUND = 0x000000;
-			Style.BUTTON_DOWN = 0x995522;
 			Style.LABEL_TEXT = 0xffffff;
+			Style.BUTTON_FACE = 0x060606;
+			Style.BUTTON_DOWN = 0x995522;
 			new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
 		}
 

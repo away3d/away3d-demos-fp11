@@ -1,6 +1,6 @@
 /*
 
-AVATAR WAR
+AVATAR
 
 Demonstrates:
 
@@ -188,6 +188,43 @@ package {
 			_bitmapStrings.push("weave_diffuse.jpg", "water_normals.jpg");
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
+			_bitmaps = LoaderPool.bitmaps;
+		}
+
+		/**
+		 * Initialise the scene objects
+		 */
+		private function initAfterBitmapLoad() : void {
+			// Init material and objects
+			initMaterials();
+
+			// create skybox
+			randomSky();
+
+			_lander = new Lander();
+			_lander.scene = _view.scene;
+			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
+			_lander.initObjects(_terrainMaterial, 200, MOUNTAIGN_TOP, FARVIEW);
+
+			// basic ground
+			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_ground.geometry.scaleUV(60, 60);
+			_ground.y = 100;
+			_ground.castsShadows = false;
+			_view.scene.addChild(_ground);
+
+			// create terrain
+			/*_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(BitmapMapper.ground), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250, 255, 0, false);
+			_terrain.castsShadows = false;
+			_view.scene.addChild(_terrain);*/
+
+			// Avatar character mesh referency
+			_skinMesh = new Vector.<Mesh>();
+			_cloneStyleMan = new Vector.<Mesh>();
+			_cloneStyleWoman = new Vector.<Mesh>();
+
+			// Load awd object with loaderPool
+			LoaderPool.loadObject("avatar/avatar.awd", onAssetComplete, onResourceComplete);
 		}
 
 		/**
@@ -322,45 +359,6 @@ package {
 				_materials[i].ambient = 1;
 				_materials[i].addMethod(_fogMethode);
 			}
-		}
-
-		/**
-		 * Initialise the scene objects
-		 */
-		private function initAfterBitmapLoad() : void {
-			// get bitmap from loaderPool
-			_bitmaps = LoaderPool.bitmaps;
-
-			// Init material and objects
-			initMaterials();
-
-			// create skybox
-			randomSky();
-
-			_lander = new Lander();
-			_lander.scene = _view.scene;
-			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			_lander.initObjects(_terrainMaterial, 200, MOUNTAIGN_TOP, FARVIEW);
-
-			// basic ground
-			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(60, 60);
-			_ground.y = 100;
-			_ground.castsShadows = false;
-			_view.scene.addChild(_ground);
-
-			// create terrain
-			/*_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(BitmapMapper.ground), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250, 255, 0, false);
-			_terrain.castsShadows = false;
-			_view.scene.addChild(_terrain);*/
-
-			// Avatar character mesh referency
-			_skinMesh = new Vector.<Mesh>();
-			_cloneStyleMan = new Vector.<Mesh>();
-			_cloneStyleWoman = new Vector.<Mesh>();
-
-			// Load awd object with loaderPool
-			LoaderPool.loadObject("avatar/avatar.awd", onAssetComplete, onResourceComplete);
 		}
 
 		/**
@@ -594,6 +592,9 @@ package {
 			}
 		}
 
+		/**
+		 * Remove clone
+		 */
 		public function deleteLast(skin : Mesh) : void {
 			var n : int = animators.length - 1;
 			skin.removeChild(_cloneHair[n]);
@@ -764,11 +765,11 @@ package {
 			addChild(_menu);
 			_menu.y = stage.stageHeight;
 			Style.setStyle("dark");
-			Style.BUTTON_FACE = 0x060606;
+			Style.LABEL_TEXT = 0xffffff;
 			Style.DROPSHADOW = 0x000000;
 			Style.BACKGROUND = 0x000000;
+			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
-			Style.LABEL_TEXT = 0xffffff;
 			new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
 		}
 

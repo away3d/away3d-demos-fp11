@@ -7,7 +7,7 @@ http://perso.numericable.fr/chamaslot/private/
    Complex car model with full physics or basic mouvement
 3°/ RANDOM LAND
    Infini terrain generator by perlin noise
-4°/ AVATAR WAR
+4°/ AVATAR
    Most simple human and woman model with IA simulator
    
 All demos use AWD2 format (files for 3dsmax 2012 include)
