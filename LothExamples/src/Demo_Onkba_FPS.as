@@ -95,7 +95,7 @@ package {
 	import com.bit101.components.PushButton;
 
 	[SWF(frameRate="60", backgroundColor = "#000000")]
-	public class Demo_Onkba_FPS extends Sprite {
+	public class Demo_Onkba_Fps extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 30000;
 		private const FOGNEAR : Number = 0;
@@ -181,7 +181,6 @@ package {
 		private var _cloneActif : Boolean;
 		private var _debugRay : Boolean;
 		private var _isRender : Boolean;
-		private var _signature : Sprite;
 		private var _text : TextField;
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
@@ -192,7 +191,7 @@ package {
 		/**
 		 * Constructor
 		 */
-		public function Demo_Onkba_FPS() {
+		public function Demo_Onkba_Fps() {
 			if (stage) init();
 			else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
 		}
@@ -911,7 +910,6 @@ package {
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
-			_signature.y = stage.stageHeight - _signature.height;
 			_menu.y = stage.stageHeight;
 			if (!_isRender) onEnterFrame();
 		}

@@ -128,7 +128,6 @@ package {
 		private var _isRender : Boolean;
 		// interface
 		private var _text : TextField;
-		private var _signature : Sprite;
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
 		private var _menu : Sprite;
@@ -555,7 +554,6 @@ package {
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
-			_signature.y = stage.stageHeight - _signature.height;
 			_menu.y = stage.stageHeight;
 			if (!_isRender)
 				onEnterFrame();

@@ -85,7 +85,7 @@ package {
 	import com.bit101.components.PushButton;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
-	public class Demo_Vision_CAR extends Sprite {
+	public class Demo_Vision_Car extends Sprite {
 		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xAAAAA9;
 		private var fogColor : uint = 0x333338;
@@ -141,7 +141,6 @@ package {
 		private var _cloneActif : Boolean;
 		private var _isRender : Boolean;
 		private var _text : TextField;
-		private var _signature : Sprite;
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
 		private var _menu : Sprite;
@@ -149,7 +148,7 @@ package {
 		/**
 		 * Constructor
 		 */
-		public function Demo_Vision_CAR() {
+		public function Demo_Vision_Car() {
 			if (stage) init();
 			else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
 		}
@@ -712,7 +711,6 @@ package {
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
-			_signature.y = stage.stageHeight - _signature.height;
 			_menu.y = stage.stageHeight;
 			if (!_isRender)
 				onEnterFrame();
