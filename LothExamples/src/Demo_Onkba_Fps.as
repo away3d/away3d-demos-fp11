@@ -36,7 +36,6 @@ THE SOFTWARE.
 
  */
 package {
-	import away3d.extrusions.Elevation;
 	import away3d.animators.data.Skeleton;
 	import away3d.animators.SkeletonAnimator;
 	import away3d.animators.SkeletonAnimationSet;
@@ -45,7 +44,6 @@ package {
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.materials.methods.TerrainDiffuseMethod;
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
@@ -94,12 +92,14 @@ package {
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
+	import games.Lander;
+
 	[SWF(frameRate="60", backgroundColor = "#000000")]
 	public class Demo_Onkba_Fps extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 30000;
 		private const FOGNEAR : Number = 0;
-		private const SCALE : Number = 2;
+		private const HERO_SIZE : Number = 2;
 		// start colors
 		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xAAAAA9;
@@ -114,13 +114,13 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// scene objects
+		private var _lander : Lander;
 		private var _cubeVector : Vector.<Mesh>;
 		private var _heroPieces : ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
 		private var _weapons : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
-		private var _terrain : Elevation;
 		private var _heroWeapon : Mesh;
 		private var _bigBall : Mesh;
 		private var _hero : Mesh;
@@ -137,7 +137,6 @@ package {
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
 		private var _reflectionTexture : CubeReflectionTexture;
-		private var _terrainMethod : TerrainDiffuseMethod;
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _rimLightMethod : RimLightMethod;
 		private var _fogMethode : FogMethod;
@@ -152,7 +151,7 @@ package {
 		private const IDLE_SPEED : Number = 0.7;
 		private const JUMP_SPEED : Number = 1;
 		private const WALK_SPEED : Number = 1;
-		private const RUN_SPEED : Number = 1;
+		private const RUN_SPEED : Number = 1.5;
 		private var movementDirection : Number;
 		private var currentAnim : String;
 		private var currentWeapon : uint;
@@ -173,7 +172,7 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
-		private var _cameraHeight : Number = -100;
+		private var _cameraHeight : Number = 80;
 		// demo testing
 		private var _isIntro : Boolean = true;
 		private var _isReflection : Boolean;
@@ -214,12 +213,11 @@ package {
 			_bitmapStrings = new Vector.<String>();
 			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
-			_bitmapStrings.push("height.png", "height_n.jpg");
-			// hero map 11 12 13
+			// hero map 9 10 11
 			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
-			// gun map 14 15 16
+			// gun map 12 13 14
 			_bitmapStrings.push("onkba/weapon_diffuse.jpg", "onkba/weapon_normals.jpg", "onkba/weapon_lightmap.jpg");
-			// bazooka map 17 18 19
+			// bazooka map 15 16 17
 			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
@@ -236,9 +234,11 @@ package {
 			// create skybox
 			randomSky();
 
-			// create terrain
-			_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(_bitmaps[9]), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250);
-			_view.scene.addChild(_terrain);
+			// create lander
+			_lander = new Lander();
+			_lander.scene = _view.scene;
+			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
+			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);
@@ -271,7 +271,6 @@ package {
 
 			// setup the player container
 			_player = new ObjectContainer3D();
-			_player.y = 200;
 			_view.scene.addChild(_player);
 
 			// add stats
@@ -321,10 +320,6 @@ package {
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
 
-			var tiles : Array = [1, 100, 100, 100];
-			var sTexture : Array = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
-			_terrainMethod = new TerrainDiffuseMethod(sTexture, Cast.bitmapTexture(_bitmaps[9]), tiles);
-
 			// global shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0005;
@@ -333,12 +328,12 @@ package {
 			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
 
 			// global fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW >> 1, fogColor);
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 
 			// 0- hero
-			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[11]));
-			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[12]);
-			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[13]);
+			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
+			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
 			_heroMaterial.gloss = 25;
 			_heroMaterial.specular = 0.5;
 			_heroMaterial.alphaThreshold = 0.9;
@@ -346,9 +341,9 @@ package {
 			_materials[0] = _heroMaterial;
 
 			// 1- weapon
-			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[14]));
-			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[15]);
-			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[16]);
+			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[12]));
+			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[13]);
+			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[14]);
 			_gunMaterial.gloss = 20;
 			_gunMaterial.specular = 0.8;
 			_materials[1] = _gunMaterial;
@@ -377,14 +372,10 @@ package {
 			_shereMaterial.addMethod(_fogMethode);
 			_materials[4] = _shereMaterial;
 
-			// 5- terrain
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
-
-			_terrainMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
-			_terrainMaterial.diffuseMethod = _terrainMethod;
-			_terrainMaterial.gloss = 20;
-			_terrainMaterial.specular = .25;
-			_terrainMaterial.addMethod(_fogMethode);
+			// 5 - terrain material
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x00)));
+			_terrainMaterial.gloss = 10;
+			_terrainMaterial.specular = 0.2;
 			_materials[5] = _terrainMaterial;
 
 			// 6- simulation box
@@ -403,9 +394,9 @@ package {
 			_materials[7] = _boneMaterial;
 
 			// 8- bazooka
-			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[17]));
-			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[18]);
-			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[19]);
+			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[15]));
+			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[16]);
+			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[17]);
 			_gunMaterial2.gloss = 20;
 			_gunMaterial2.specular = 0.8;
 			_materials[8] = _gunMaterial2;
@@ -414,7 +405,7 @@ package {
 			for (var i : int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
-				_materials[i].ambient = 0.85;
+				_materials[i].ambient = 1;
 				if (i != 5 || i != 3 || i != 2) _materials[i].addMethod(_rimLightMethod);
 			}
 		}
@@ -425,7 +416,11 @@ package {
 		private function onEnterFrame(event : Event = null) : void {
 			if (_sunLight.ambient < 0.5) _sunLight.ambient += 0.01;
 
-			// if (_physics)_physics.update();
+			_lander.update();
+			_player.y = _lander.getHeightAt(0, 0) + 5;
+			for (var i : int = 0; i < _cubeVector.length; i++) {
+				_cubeVector[i].y = _lander.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
+			}
 
 			if (_hero) {
 				if (_dynamicsEyes) updateEyes();
@@ -586,29 +581,24 @@ package {
 			var loader3d : Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
-			var posY : Number = (96 * SCALE);
+			// var posY : Number = (96 * HERO_SIZE);
 
 			_transition = new CrossfadeTransition(0.3);
 
 			// apply our _animator to our mesh
 			_hero.animator = _animator;
 			_hero.material = _heroMaterial;
-			_hero.scale(SCALE);
+			_hero.scale(HERO_SIZE);
 
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), null);
 			_hero.addChild(_heroWeapon);
 
 			_player.addChild(_hero);
-
 			_hero.rotationY = 180;
-			_hero.y = -posY;
-			// _terrain.getHeightAt(0, 0)-200; // -posY;
-
 			// Optional dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
-			_heroPieces.scale(SCALE);
-			_heroPieces.y = -posY;
+			_heroPieces.scale(HERO_SIZE);
 			_player.addChild(_heroPieces);
 			_heroPieces.rotationY = 180;
 			addHeroEye();
@@ -619,13 +609,6 @@ package {
 				jumpDown();
 			}
 
-			// big ball
-			_bigBall = new Mesh(new SphereGeometry(120, 60, 40), _shereMaterial);
-			_view.scene.addChild(_bigBall);
-			_bigBall.position = new Vector3D(-300, _terrain.getHeightAt(-200, -100) + 120);
-			// global reflection methode
-			// initReflection();
-
 			// add some box for fun
 			var num : int = 100;
 			var mesh : Mesh, posX : Number, posZ : Number;
@@ -634,7 +617,7 @@ package {
 				posX = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
 				posZ = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
 				mesh = new Mesh(new CubeGeometry(150, 300, 150), _boxMaterial);
-				mesh.position = new Vector3D(posX, _terrain.getHeightAt(posX, posZ) + (150), posZ);
+				mesh.position = new Vector3D(posX, _lander.getHeightAt(posX, posZ) + (150), posZ);
 
 				_view.scene.addChild(mesh);
 				_cubeVector[i] = mesh;
@@ -674,7 +657,7 @@ package {
 						g = Mesh(_hero.clone());
 						g.x = decal + (100 * i);
 						g.z = (decal + (100 * j));
-						g.y = _terrain.getHeightAt(g.x, g.z);
+						g.y = _lander.getHeightAt(g.x, g.z);
 						if (g.x != 0 || g.z != 0)
 							_view.scene.addChild(g);
 					}
@@ -691,7 +674,7 @@ package {
 			else anim = WEAPON[currentWeapon] + ANIMATION[0];
 
 			if (currentAnim == anim) return;
-
+			_lander.move(0, 0);
 			currentAnim = anim;
 			_animator.playbackSpeed = IDLE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
@@ -708,8 +691,8 @@ package {
 
 			if (currentAnim == anim) return;
 
-			// if(_physics) _physics.characterSpeed(isRunning ? 3 : 1)
 			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
+			_lander.move(0, -_animator.playbackSpeed / 20);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -724,7 +707,7 @@ package {
 
 			if (dir > 0) anim = 'WalkL';
 			else anim = 'WalkR';
-
+			_lander.move(dir / 100, 0);
 			if (isCrouch) return;
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -838,10 +821,10 @@ package {
 				case Keyboard.C:
 					if (isCrouch) {
 						isCrouch = false;
-						_cameraHeight = -100;
+						_cameraHeight = 80;
 					} else {
 						isCrouch = true;
-						_cameraHeight = -150;
+						_cameraHeight = 40;
 					}
 					stop();
 					break;
@@ -1117,8 +1100,8 @@ package {
 			Style.BACKGROUND = 0x000000;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
-			new PushButton(_menu, 180, -29, ">", showSetting).setSize(30, 30);
-			new PushButton(_menu, 215, -29, "WEAPON", switchWeapon).setSize(60, 30);
+			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
+			new PushButton(_menu, 65, -29, "WEAPON", switchWeapon).setSize(60, 30);
 		}
 
 		/**

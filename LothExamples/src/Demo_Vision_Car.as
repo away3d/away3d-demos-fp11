@@ -86,6 +86,8 @@ package {
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Vision_Car extends Sprite {
+		private const FARVIEW : Number = 8000;
+		private const FOGNEAR : Number = 0;
 		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xAAAAA9;
 		private var fogColor : uint = 0x333338;
@@ -94,8 +96,6 @@ package {
 		private var _bitmaps : Vector.<BitmapData>;
 		private var sunDiffuse : Number = 0.0;
 		private var sunSpecular : Number = 1.3;
-		private var fogNear : Number = 1000;
-		private var fogFar : Number = 128 * 32 * 2;
 		// engine variables
 		private var _view : View3D;
 		private var _stats : AwayStats;
@@ -188,7 +188,7 @@ package {
 			randomSky();
 
 			// basic ground
-			_ground = new Mesh(new PlaneGeometry(fogFar * 2, fogFar * 2), _groundMaterial);
+			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _groundMaterial);
 			_ground.geometry.scaleUV(60, 60);
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
@@ -209,7 +209,7 @@ package {
 
 			// create custom lens
 			_view.camera.lens = new PerspectiveLens(60);
-			_view.camera.lens.far = fogFar;
+			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 1;
 
 			// setup controller to be used on the camera
@@ -270,7 +270,7 @@ package {
 			_shadowMethod.epsilon = .0007;
 
 			// create global fog method
-			_fogMethode = new FogMethod(fogNear, fogFar, fogColor);
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 
 			// create ground texture
 			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
@@ -350,7 +350,7 @@ package {
 		 */
 		private function initReflectionCube() : void {
 			_reflectionTexture = new CubeReflectionTexture(128 * 2);
-			_reflectionTexture.farPlaneDistance = fogFar;
+			_reflectionTexture.farPlaneDistance = FARVIEW;
 			_reflectionTexture.nearPlaneDistance = 250;
 			_reflectionTexture.position = new Vector3D(0, 200, 0);
 		}
@@ -765,7 +765,7 @@ package {
 			Style.LABEL_TEXT = 0xffffff;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
-			new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
+			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 		}
 
 		/**

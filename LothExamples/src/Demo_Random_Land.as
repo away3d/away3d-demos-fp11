@@ -621,9 +621,9 @@ package {
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
 
-			new PushButton(_menu, 180, -29, ">", showSetting).setSize(30, 30);
-			new PushButton(_menu, 215, -29, "128", switch128).setSize(60, 30);
-			new PushButton(_menu, 215 + 65, -29, "256", switch256).setSize(60, 30);
+			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
+			new PushButton(_menu, 65, -29, "128", switch128).setSize(60, 30);
+			new PushButton(_menu, 130, -29, "256", switch256).setSize(60, 30);
 		}
 
 		private function switch128(e : Event) : void {
