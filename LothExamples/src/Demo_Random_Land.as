@@ -36,6 +36,7 @@ THE SOFTWARE.
 
  */
 package {
+	import away3d.events.MouseEvent3D;
 	import away3d.primitives.SphereGeometry;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
@@ -45,6 +46,7 @@ package {
 	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
+	import away3d.core.pick.PickingColliderType;
 	import away3d.materials.methods.SimpleWaterNormalMethod;
 	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.materials.methods.EnvMapMethod;
@@ -124,6 +126,7 @@ package {
 		private var _mouseMove : Boolean;
 		// demo testing
 		private var _isIntro : Boolean = true;
+		private var _isRotation : Boolean;
 		private var _isRender : Boolean;
 		// interface
 		private var _text : TextField;
@@ -183,23 +186,30 @@ package {
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
 			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			_lander.moveCenter(0.1, 0);
+			// _lander.moveCenter(0.1, 0);
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(40, 40);
+			_ground.mouseEnabled = true;
+			_ground.pickingCollider = PickingColliderType.BOUNDS_ONLY;
 			_ground.y = 100;
 			// _ground.castsShadows = false;
 			_view.scene.addChild(_ground);
-
+			_ground.addEventListener(MouseEvent3D.MOUSE_UP, onGroundMouseOver);
+			// _ground.addEventListener(MouseEvent3D.MOUSE_DOWN, onGroundMouseOver);
+			_ground.addEventListener(MouseEvent3D.MOUSE_MOVE, onGroundMouseOver);
 			initListeners();
 			log(message());
 
 			var spaceShip : Mesh = new Mesh(new SphereGeometry(60, 30, 20), _boxMaterial);
 			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(140, 30, 20), _boxMaterial);
 			spaceShip2.scaleY = 0.25;
-			spaceShip.addChild(spaceShip2);
-			spaceShip.y = 50;
+			spaceShip.y = 100;
+			spaceShip2.y = 100;
 			_player.addChild(spaceShip);
+			_player.addChild(spaceShip2);
+			spaceShip2.addEventListener(MouseEvent3D.MOUSE_DOWN, onShipMouseDown);
+			spaceShip2.mouseEnabled = true;
 			// load spaceship mesh
 			// load("SpaceShip.awd"+ "?uniq=" + _id);
 		}
@@ -216,7 +226,7 @@ package {
 			_view.camera.lens = new PerspectiveLens(80);
 			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 1;
-
+			_view.forceMouseMove = true;
 			// setup controller to be used on the camera
 			_cameraController = new HoverController(_view.camera, null, 22, 0, 1000, 10, 90);
 			_cameraController.tiltAngle = 10;
@@ -553,6 +563,17 @@ package {
 				onEnterFrame();
 		}
 
+		private function onGroundMouseOver(e : MouseEvent3D) : void {
+			if (_mouseMove)
+				_lander.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
+			else _lander.stop();
+		}
+
+		private function onShipMouseDown(e : MouseEvent3D) : void {
+			_mouseMove = false;
+			_isRotation = true;
+		}
+
 		private function onStageMouseDown(e : MouseEvent) : void {
 			_prevMouseX = e.stageX;
 			_prevMouseY = e.stageY;
@@ -561,6 +582,7 @@ package {
 
 		private function onStageMouseUp(e : Event) : void {
 			_mouseMove = false;
+			_isRotation = false;
 		}
 
 		private function onStageMouseLeave(e : Event) : void {
@@ -569,7 +591,7 @@ package {
 		}
 
 		private function onStageMouseMove(e : MouseEvent) : void {
-			if (_mouseMove) {
+			if (_isRotation) {
 				_cameraController.panAngle += (e.stageX - _prevMouseX);
 				_cameraController.tiltAngle += (e.stageY - _prevMouseY);
 			}
@@ -636,8 +658,8 @@ package {
 		 * Welcome message
 		 */
 		private function message() : String {
-			var mes : String = "ARROW.WSAD.ZSQD - move\n";
-			mes += "SHIFT - hold to run\n";
+			var mes : String = "Click on view for move\n";
+			mes += "Click on ship for rotation\n";
 			mes += "I - full screen\n";
 			mes += "N - random sky\n";
 			return mes;

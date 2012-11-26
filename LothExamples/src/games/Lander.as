@@ -1,11 +1,11 @@
 package games {
-	import away3d.containers.Scene3D;
 	import away3d.materials.methods.TerrainDiffuseMethod;
 	import away3d.materials.TextureMaterial;
-	import away3d.utils.Cast;
 	import away3d.primitives.PlaneGeometry;
 	import away3d.core.base.SubGeometry;
+	import away3d.containers.Scene3D;
 	import away3d.entities.Mesh;
+	import away3d.utils.Cast;
 
 	import flash.display.BitmapData;
 	import flash.filters.ColorMatrixFilter;
@@ -38,7 +38,7 @@ package games {
 		private  var _numOctaves : uint = 2;
 		private  var _offsets : Array = [];
 		private  var _complex : Number = 0.2;
-		private  var _maxSpeed : Number = 10;
+		private  var _maxSpeed : Number = 2;
 		// private  var _matrix : Matrix;
 		private var _bitmaps : Array;
 		private var _isMove : Boolean;
@@ -77,13 +77,11 @@ package games {
 			else _zoneSubdivision = Resolution - 1;
 
 			plane = new Mesh(new PlaneGeometry(_zoneDimension, _zoneDimension, _zoneSubdivision, _zoneSubdivision), Material);
-
-			// plane.mouseEnabled = true;
-			// plane.pickingCollider = PickingColliderType.BOUNDS_ONLY;
-
 			plane.geometry.convertToSeparateBuffers();
 			plane.geometry.subGeometries[0].autoDeriveVertexNormals = false;
 			plane.geometry.subGeometries[0].autoDeriveVertexTangents = false;
+			plane.mouseEnabled = false;
+			plane.mouseChildren = false;
 			plane.castsShadows = false;
 			_subGeometry = SubGeometry(plane.geometry.subGeometries[0]);
 
@@ -99,16 +97,18 @@ package games {
 					Point(_offsets[i]).y += _ease.y;
 				}
 				draw();
-				_ground00.move(-_ease.x * 40, -_ease.y * 40);
-				_ground01.move(-_ease.x * 40, -_ease.y * 40);
-				_ground02.move(-_ease.x * 40, -_ease.y * 40);
 
 				updateMaterial();
 				updateTerrain();
+
+				// stop();
 			}
 		}
 
 		private function updateMaterial() : void {
+			_ground00.move(-_ease.x * 20, -_ease.y * 20);
+			_ground01.move(-_ease.x * 20, -_ease.y * 20);
+			_ground02.move(-_ease.x * 20, -_ease.y * 20);
 			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground00.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground02.getMap())], Cast.bitmapTexture(_ground), tiles);
 			TextureMaterial(plane.material).diffuseMethod = _terrainMethod;
 			TextureMaterial(plane.material).normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground));
@@ -126,12 +126,25 @@ package games {
 			return _zoneHeight * (col / 0xffffff);
 		}
 
-		public function moveCenter(x : Number, y : Number) : void {
+		public function stop() : void {
+			if (_ease.x != 0) {
+				if (_ease.x < 0) _ease.x += 0.01;
+				else _ease.x -= 0.01;
+			}
+			if (_ease.y != 0) {
+				if (_ease.y < 0) _ease.y += 0.01;
+				else _ease.y -= 0.01;
+			}
+			if (_ease.x < 0.01 && _ease.x > -0.01 && _ease.y < 0.01 && _ease.y > -0.01) {
+				_ease = new Vector3D();
+				_isMove = false;
+			}
+		}
+
+		public function move(x : Number, y : Number) : void {
 			_isMove = true;
 			_ease.x = x;
-			// -((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1);
 			_ease.y = y;
-			// -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1);
 
 			if (_ease.x > _maxSpeed)
 				_ease.x = _maxSpeed;
@@ -141,12 +154,6 @@ package games {
 				_ease.x = -_maxSpeed;
 			if (_ease.y < -_maxSpeed)
 				_ease.y = -_maxSpeed;
-
-			/*for (var i : uint = 0; i < _numOctaves; i++) {
-			Point(_offsets[i]).x += _ease.x;
-			Point(_offsets[i]).y += _ease.y;
-			}
-			draw();*/
 		}
 
 		/**
