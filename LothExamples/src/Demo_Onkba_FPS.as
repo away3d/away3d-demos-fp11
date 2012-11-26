@@ -96,8 +96,6 @@ package {
 
 	[SWF(frameRate="60", backgroundColor = "#000000")]
 	public class Demo_Onkba_FPS extends Sprite {
-		[Embed(source="/../embeds/signature.swf", symbol="Signature")]
-		public var SignatureSwf : Class;
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 30000;
 		private const FOGNEAR : Number = 0;
@@ -1148,11 +1146,6 @@ package {
 			_text.mouseEnabled = true;
 			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
 			addChild(_text);
-
-			// add signature
-			addChild(_signature = new SignatureSwf());
-			_signature.y = stage.stageHeight - _signature.height;
-			_signature.x = 10;
 		}
 
 		/**

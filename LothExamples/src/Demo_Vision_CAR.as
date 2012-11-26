@@ -86,9 +86,6 @@ package {
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Vision_CAR extends Sprite {
-		[Embed(source="/../embeds/signature.swf",symbol="Signature")]
-		public var SignatureSwf : Class;
-		// start colors
 		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xAAAAA9;
 		private var fogColor : uint = 0x333338;
@@ -796,11 +793,6 @@ package {
 			_text.wordWrap = true;
 			_text.filters = [new DropShadowFilter(1, 45, 0x0, 1, 0, 0)];
 			addChild(_text);
-
-			// add signature
-			addChild(_signature = new SignatureSwf());
-			_signature.y = stage.stageHeight - _signature.height;
-			_signature.x = 10;
 		}
 
 		/**
