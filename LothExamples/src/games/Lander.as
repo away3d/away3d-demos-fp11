@@ -4,6 +4,7 @@ package games {
 	import away3d.materials.TextureMaterial;
 	import away3d.utils.Cast;
 	import away3d.primitives.PlaneGeometry;
+	import away3d.core.base.SubGeometry;
 	import away3d.entities.Mesh;
 
 	import flash.display.BitmapData;
@@ -14,6 +15,7 @@ package games {
 	import flash.display.Sprite;
 
 	import utils.BitmapScrolling;
+	import utils.BitmapFilterEffects;
 
 	public class Lander extends Sprite {
 		// private  var _maxHeight:Number = 100;
@@ -35,7 +37,7 @@ package games {
 		private  var _size : uint = 128;
 		private  var _height : uint = 1300;
 		private  var _seed : uint = 1973;
-		private  var _fractal : Boolean = true;
+		private  var _fractal : Boolean = false;
 		private  var _numOctaves : uint = 2;
 		private  var _offsets : Array = [];
 		private  var _complex : Number = 0.2;
@@ -77,14 +79,14 @@ package games {
 		}
 
 		public function update() : void {
-			move(0, 0.2);
-			_ground00.move(0, -(0.2 * 10));
-			_ground01.move(0, -(0.2 * 20));
-			_ground02.move(0, -(0.2 * 25));
+			move(0, 0.1);
+			_ground00.move(0, -(0.1 * 10));
+			_ground01.move(0, -(0.1 * 20));
+			_ground02.move(0, -(0.1 * 25));
 
 			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground00.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground02.getMap())], Cast.bitmapTexture(_ground), tiles);
 			TextureMaterial(plane.material).diffuseMethod = _terrainMethod;
-
+			TextureMaterial(plane.material).normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground));
 			updateTerrain();
 		}
 
@@ -108,7 +110,7 @@ package games {
 		}
 
 		public function getHeightAt(x : Number, z : Number) : Number {
-			var col : uint = _ground.getPixel((-x / planeSizeTop + .5) * (128 - 1), (-z / planeSizeTop + .5) * (128 - 1)) & 0xff;
+			var col : uint = _ground.getPixel((x / planeSizeTop + .5) * (128 - 1), (z / planeSizeTop + .5) * (128 - 1)) & 0xff;
 			return (col > _maxElevation) ? (_maxElevation / 0xff) * _height : ((col < _minElevation) ? (_minElevation / 0xff) * _height : (col / 0xff) * _height);
 		}
 
@@ -146,7 +148,6 @@ package games {
 			// get plane vertex data
 			var v : Vector.<Number> = plane.geometry.subGeometries[0].vertexData;
 			var l : int = v.length;
-			;
 			var vertex : int = 0;
 			// Counter vertex
 			var c : int;
@@ -158,27 +159,64 @@ package games {
 				// Get pixel at x and y position
 				px = _ground.getPixel(c % size, size - (c / size));
 				// Displace y position by the range
-				v[i] = 0 + ((_height * (px / 0xffffff)));
-				// - (_height >> 1));
-
-				// v[i] = getHeightAt(c % size, size - (c / size));
+				v[i] = ((_height * (px / 0xffffff)));
 				vertex++;
 			}
+			var subGeometry : SubGeometry = plane.geometry.subGeometries[0] as SubGeometry;
+			subGeometry.updateVertexData(v);
 		}
 
+		/**
+		 * sets contrast value available are -100 ~ 100 @default is 0
+		 * @param       value:int   contrast value
+		 * @return      ColorMatrixFilter
+		 */
 		public  function setContrast(value : Number) : ColorMatrixFilter {
 			value /= 100;
 			var s : Number = value + 1;
 			var o : Number = 128 * (1 - s);
 			var m : Array = new Array();
 			m = m.concat([s, 0, 0, 0, o]);
-			// red
 			m = m.concat([0, s, 0, 0, o]);
-			// green
 			m = m.concat([0, 0, s, 0, o]);
-			// blue
 			m = m.concat([0, 0, 0, 1, 0]);
-			// alpha
+			return new ColorMatrixFilter(m);
+		}
+
+		/**
+		 * sets Brightneww value available are -100 ~ 100 @default is 0
+		 * @param       value:int   contrast value
+		 * @return      ColorMatrixFilter
+		 */
+		public static function setBrightness(value : Number) : ColorMatrixFilter {
+			value = value * (255 / 250);
+			var m : Array = new Array();
+			m = m.concat([1, 0, 0, 0, value]);
+			m = m.concat([0, 1, 0, 0, value]);
+			m = m.concat([0, 0, 1, 0, value]);
+			m = m.concat([0, 0, 0, 1, 0]);
+			return new ColorMatrixFilter(m);
+		}
+
+		/**
+		 * sets saturation value available are -100 ~ 100 @default is 0
+		 * @param       value:int   saturation value
+		 * @return      ColorMatrixFilter
+		 */
+		public static function setSaturation(value : Number) : ColorMatrixFilter {
+			const lumaR : Number = 0.212671;
+			const lumaG : Number = 0.71516;
+			const lumaB : Number = 0.072169;
+			var v : Number = (value / 100) + 1;
+			var i : Number = (1 - v);
+			var r : Number = (i * lumaR);
+			var g : Number = (i * lumaG);
+			var b : Number = (i * lumaB);
+			var m : Array = new Array();
+			m = m.concat([(r + v), g, b, 0, 0]);
+			m = m.concat([r, (g + v), b, 0, 0]);
+			m = m.concat([r, g, (b + v), 0, 0]);
+			m = m.concat([0, 0, 0, 1, 0]);
 			return new ColorMatrixFilter(m);
 		}
 	}

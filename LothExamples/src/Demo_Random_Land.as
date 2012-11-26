@@ -172,8 +172,7 @@ package {
 			_lander = new Lander();
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			// _lander.initObjects(100, MOUNTAIGN_TOP);
-			_lander.initObjects(_terrainMaterial, FARVIEW, MOUNTAIGN_TOP);
+			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
@@ -181,10 +180,6 @@ package {
 			_ground.y = 30;
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
-
-			// create terrain
-			// _terrain = new Elevation(_terrainMaterial, Cast.bitmapData(BitmapMapper.ground), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250, 255, 0, false);
-			// _view.scene.addChild(_terrain);
 
 			initListeners();
 			log(message());

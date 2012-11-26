@@ -204,7 +204,7 @@ package {
 			_lander = new Lander();
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			_lander.initObjects(_terrainMaterial, FARVIEW, MOUNTAIGN_TOP);
+			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
@@ -212,11 +212,6 @@ package {
 			// _ground.y = 100;
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
-
-			// create terrain
-			/*_terrain = new Elevation(_terrainMaterial, Cast.bitmapData(BitmapMapper.ground), FARVIEW * 2, MOUNTAIGN_TOP, FARVIEW * 2, 250, 250, 255, 0, false);
-			_terrain.castsShadows = false;
-			_view.scene.addChild(_terrain);*/
 
 			// Avatar character mesh referency
 			_skinMesh = new Vector.<Mesh>();
@@ -324,7 +319,7 @@ package {
 			// 1 - terrain material
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x00)));
 			_terrainMaterial.gloss = 30;
-			_terrainMaterial.specular = 1;
+			_terrainMaterial.specular = 0.3;
 			_materials[1] = _terrainMaterial;
 
 			// n _ avatar materials
@@ -588,7 +583,6 @@ package {
 			for (var i : uint = 0; i < animators.length; i++) {
 				_cloneHair[i].transform = animators[i].globalPose.jointPoses[15].toMatrix3D();
 				_clones[i].y = _lander.getHeightAt(_clones[i].x, _clones[i].z);
-				// _clones[i].y = _terrain.getHeightAt(_clones[i].x, _clones[i].z);
 			}
 		}
 
