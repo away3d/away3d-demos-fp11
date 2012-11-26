@@ -624,7 +624,18 @@ package {
 			Style.LABEL_TEXT = 0xffffff;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
-			new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
+
+			new PushButton(_menu, 180, -29, ">", showSetting).setSize(30, 30);
+			new PushButton(_menu, 215, -29, "128", switch128).setSize(60, 30);
+			new PushButton(_menu, 215 + 65, -29, "256", switch256).setSize(60, 30);
+		}
+
+		private function switch128(e : Event) : void {
+			_lander.changeResolution(128);
+		}
+
+		private function switch256(e : Event) : void {
+			_lander.changeResolution(256);
 		}
 
 		/**

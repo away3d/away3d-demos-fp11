@@ -22,12 +22,13 @@ package games {
 		private  var _zoneDimension : Number = 12800;
 		private  var _zoneHeight : uint = 1000;
 		private  var _zoneResolution : uint = 128;
+		private var _terrainMaterial : TextureMaterial;
 		private  var _terrainMethod : TerrainDiffuseMethod;
 		private  var _scene : Scene3D;
 		private  var plane : Mesh;
 		private var _subGeometry : SubGeometry;
 		private var _zoneSubdivision : uint;
-		private  var tiles : Array = [1, 40, 40, 40];
+		private  var _tiles : Array = [1, 40, 40, 40];
 		private  var _ground00 : BitmapScrolling;
 		private  var _ground01 : BitmapScrolling;
 		private  var _ground02 : BitmapScrolling;
@@ -38,7 +39,7 @@ package games {
 		private  var _numOctaves : uint = 2;
 		private  var _offsets : Array = [];
 		private  var _complex : Number = 0.2;
-		private  var _maxSpeed : Number = 2;
+		private  var _maxSpeed : Number = 0.2;
 		// private  var _matrix : Matrix;
 		private var _bitmaps : Array;
 		private var _isMove : Boolean;
@@ -58,13 +59,13 @@ package games {
 			_zoneDimension = Dimension;
 			_zoneHeight = Height;
 			_zoneResolution = Resolution;
-
+			_terrainMaterial = Material;
 			_ease = new Vector3D();
 
 			for (var i : uint = 0; i < _numOctaves; i++) {
 				_offsets[i] = new Point(0, 0);
 			}
-			// _matrix = new Matrix();
+
 			_ground = new BitmapData(_zoneResolution, _zoneResolution, false);
 			draw();
 
@@ -73,10 +74,14 @@ package games {
 			_ground01 = new BitmapScrolling(_bitmaps[1]);
 			_ground02 = new BitmapScrolling(_bitmaps[2]);
 
-			if (Resolution == 256) _zoneSubdivision = 250;
+			if (Resolution == 256) _zoneSubdivision = Resolution - 6;
 			else _zoneSubdivision = Resolution - 1;
 
-			plane = new Mesh(new PlaneGeometry(_zoneDimension, _zoneDimension, _zoneSubdivision, _zoneSubdivision), Material);
+			initTerrainMesh();
+		}
+
+		public function initTerrainMesh() : void {
+			plane = new Mesh(new PlaneGeometry(_zoneDimension, _zoneDimension, _zoneSubdivision, _zoneSubdivision), _terrainMaterial);
 			plane.geometry.convertToSeparateBuffers();
 			plane.geometry.subGeometries[0].autoDeriveVertexNormals = false;
 			plane.geometry.subGeometries[0].autoDeriveVertexTangents = false;
@@ -84,7 +89,6 @@ package games {
 			plane.mouseChildren = false;
 			plane.castsShadows = false;
 			_subGeometry = SubGeometry(plane.geometry.subGeometries[0]);
-
 			updateMaterial();
 			updateTerrain();
 			_scene.addChild(plane);
@@ -106,23 +110,33 @@ package games {
 		}
 
 		private function updateMaterial() : void {
-			_ground00.move(-_ease.x * 20, -_ease.y * 20);
-			_ground01.move(-_ease.x * 20, -_ease.y * 20);
-			_ground02.move(-_ease.x * 20, -_ease.y * 20);
-			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground00.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground02.getMap())], Cast.bitmapTexture(_ground), tiles);
+			var multy : Number;
+			if (_zoneResolution == 256) multy = 80;
+			else multy = 160;
+			_ground00.move(-_ease.x * multy, -_ease.y * multy);
+			_ground01.move(-_ease.x * multy, -_ease.y * multy);
+			_ground02.move(-_ease.x * multy, -_ease.y * multy);
+			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground00.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground02.getMap())], Cast.bitmapTexture(_ground), _tiles);
 			TextureMaterial(plane.material).diffuseMethod = _terrainMethod;
 			TextureMaterial(plane.material).normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground));
 		}
 
+		/**
+		 * Draw perlin noize bitmap and add filter
+		 */
 		private  function draw() : void {
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-
 			_ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(60));
-			_ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(2, 2));
+			if (_zoneResolution == 256) _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(4, 4));
+			else _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(2, 2));
 		}
 
+		/**
+		 * Get height from perlin noize bitmap
+		 */
 		public function getHeightAt(x : Number, z : Number) : Number {
-			var col : uint = _ground.getPixel((x / _zoneDimension + .5) * (_zoneResolution - 1), (-z / _zoneDimension + .5) * (_zoneResolution - 1)) & 0xffffff;
+			// var col : uint = _ground.getPixel((x / _zoneDimension + .5) * (_zoneResolution - 1), (-z / _zoneDimension + .5) * (_zoneResolution - 1)) & 0xffffff;
+			var col : uint = _ground.getPixel((x / _zoneDimension + .5) * (_zoneSubdivision - 1), (-z / _zoneDimension + .5) * (_zoneSubdivision - 1)) & 0xffffff;
 			return _zoneHeight * (col / 0xffffff);
 		}
 
@@ -141,6 +155,26 @@ package games {
 			}
 		}
 
+		/**
+		 * Change terrain and perlin bitmap resolution
+		 */
+		public function changeResolution(Resolution : uint = 128) : void {
+			if (Resolution == _zoneResolution) return;
+			else _zoneResolution = Resolution;
+			_isMove = false;
+			_scene.removeChild(plane);
+			plane.dispose();
+			_subGeometry = null;
+			_ground = new BitmapData(_zoneResolution, _zoneResolution, false);
+			draw();
+			if (Resolution == 256) _zoneSubdivision = Resolution - 6;
+			else _zoneSubdivision = Resolution - 1;
+			initTerrainMesh();
+		}
+
+		/**
+		 * Move noize perlin bitmap
+		 */
 		public function move(x : Number, y : Number) : void {
 			_isMove = true;
 			_ease.x = x;
@@ -157,14 +191,14 @@ package games {
 		}
 
 		/**
-		 * Update Terrain
+		 * Update plane subgeometry from bitmap
 		 */
 		private function updateTerrain() : void {
 			// get plane vertex data
 			var v : Vector.<Number> = _subGeometry.vertexData;
 			var l : uint = v.length;
 			var c : uint, px : uint, size : uint;
-			if (_zoneResolution == 256) size = _zoneResolution - 6;
+			if (_zoneResolution == 256) size = _zoneResolution - 5;
 			else size = _zoneResolution;
 			for (var i : uint = 1; i < l; i += 3, c++) {
 				// Get pixel at x and y position

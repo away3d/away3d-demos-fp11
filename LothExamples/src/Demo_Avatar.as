@@ -178,9 +178,9 @@ package {
 			stage.align = StageAlign.TOP_LEFT;
 			stage.quality = StageQuality.LOW;
 
+			initEngine();
 			initText();
 			initSetting();
-			initEngine();
 			initLights();
 
 			// kickoff asset loading
@@ -210,7 +210,7 @@ package {
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
 			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			_lander.moveCenter(0, 0.04);
+			_lander.move(0, 0.03);
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(40, 40);
@@ -513,7 +513,7 @@ package {
 			var m : Mesh;
 			var j : int, k : int;
 			for (var i : int = 0; i < n; ++i) {
-				m = addAvatar(3, 2);
+				m = addAvatar(2, 2);
 				m.z = (j * sz);
 				k = (i - (j * maxbyline));
 				m.x = -((maxbyline * sx) >> 1) + (k * sx) + (sx / 2);
@@ -770,7 +770,19 @@ package {
 			Style.BACKGROUND = 0x000000;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
-			new PushButton(_menu, 180, -39, ">", showSetting).setSize(40, 40);
+			new PushButton(_menu, 180, -29, ">", showSetting).setSize(30, 30);
+			new PushButton(_menu, 215, -29, "128", switch128).setSize(60, 30);
+			new PushButton(_menu, 215 + 65, -29, "256", switch256).setSize(60, 30);
+		}
+
+		private function switch128(e : Event) : void {
+			_lander.changeResolution(128);
+			_lander.move(0, 0.03);
+		}
+
+		private function switch256(e : Event) : void {
+			_lander.changeResolution(256);
+			_lander.move(0, 0.03);
 		}
 
 		/**
