@@ -183,13 +183,12 @@ package {
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
 			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			_lander.isMove = true;
-
+			_lander.moveCenter(0.1, 0);
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(30, 30);
+			_ground.geometry.scaleUV(40, 40);
 			_ground.y = 100;
-			_ground.castsShadows = false;
+			// _ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 
 			initListeners();
@@ -243,15 +242,14 @@ package {
 		 * Initialise the lights
 		 */
 		private function initLights() : void {
-			// _sunLight = new DirectionalLight( -0.5, -1, 0.3);
-			_sunLight = new DirectionalLight(0, -1, -1);
+			_sunLight = new DirectionalLight(0.1, -0.8, 0.3);
 			_sunLight.color = sunColor;
-			_sunLight.ambientColor = sunColor;
+			// _sunLight.ambientColor = 0x000000;
 			_sunLight.ambient = 0;
 			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.2);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.4);
 			_view.scene.addChild(_sunLight);
 
 			// create light picker for materials
@@ -273,19 +271,21 @@ package {
 		 */
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
-			// shadow method
-			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			_shadowMethod.epsilon = .0005;
+
 			// water method
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
-			_fresnelMethod.normalReflectance = 0.5;
+			_fresnelMethod.normalReflectance = 0.4;
 			// fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
+			// shadow method
+			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_shadowMethod.epsilon = .0007;
+			_shadowMethod.alpha = 0.25;
 
 			// 0 _ water texture
-			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x10404070)));
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x22404060)));
 			_waterMaterial.alphaBlending = true;
 			_waterMaterial.repeat = true;
 			_waterMaterial.gloss = 100;
@@ -295,15 +295,15 @@ package {
 			_materials[0] = _waterMaterial;
 
 			// creat terrain material
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x00)));
-			_terrainMaterial.gloss = 5;
-			_terrainMaterial.specular = .3;
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x00)));
+			_terrainMaterial.gloss = 10;
+			_terrainMaterial.specular = 0.2;
 			_materials[1] = _terrainMaterial;
 
 			// 1- simulation box
 			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
-			_boxMaterial.gloss = 10;
-			_boxMaterial.specular = 0.6;
+			_boxMaterial.gloss = 60;
+			_boxMaterial.specular = 1;
 			_materials[2] = _boxMaterial;
 
 			// for all material
@@ -324,11 +324,11 @@ package {
 				AutoMapSky.night(_night);
 				_night -= 0.5;
 			}
-			if (_sunLight.ambient < 0.8)
+			if (_sunLight.ambient < 0.3)
 				_sunLight.ambient += 0.005;
-			if (_sunLight.diffuse < 3)
+			if (_sunLight.diffuse < 1)
 				_sunLight.diffuse += 0.005;
-			if (_sunLight.specular < 2)
+			if (_sunLight.specular < 1)
 				_sunLight.specular += 0.005;
 			if (_cameraController.distance > 1000)
 				_cameraController.distance--;

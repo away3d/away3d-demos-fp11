@@ -14,6 +14,7 @@ package games {
 	import flash.geom.Vector3D;
 	import flash.display.Sprite;
 	import flash.filters.BlurFilter;
+
 	import utils.BitmapScrolling;
 	import utils.BitmapFilterEffects;
 
@@ -26,7 +27,7 @@ package games {
 		private  var plane : Mesh;
 		private var _subGeometry : SubGeometry;
 		private var _zoneSubdivision : uint;
-		private  var tiles : Array = [1, 10, 20, 25];
+		private  var tiles : Array = [1, 40, 40, 40];
 		private  var _ground00 : BitmapScrolling;
 		private  var _ground01 : BitmapScrolling;
 		private  var _ground02 : BitmapScrolling;
@@ -43,10 +44,6 @@ package games {
 		private var _isMove : Boolean;
 
 		public function Lander() {
-		}
-
-		public function set isMove(b : Boolean) : void {
-			_isMove = b;
 		}
 
 		public function set scene(s : Scene3D) : void {
@@ -83,6 +80,7 @@ package games {
 
 			// plane.mouseEnabled = true;
 			// plane.pickingCollider = PickingColliderType.BOUNDS_ONLY;
+
 			plane.geometry.convertToSeparateBuffers();
 			plane.geometry.subGeometries[0].autoDeriveVertexNormals = false;
 			plane.geometry.subGeometries[0].autoDeriveVertexTangents = false;
@@ -96,10 +94,14 @@ package games {
 
 		public function update() : void {
 			if (_isMove) {
-				move(0, 0.1);
-				_ground00.move(0, -(0.1 * 10));
-				_ground01.move(0, -(0.1 * 20));
-				_ground02.move(0, -(0.1 * 25));
+				for (var i : uint = 0; i < _numOctaves; i++) {
+					Point(_offsets[i]).x += _ease.x;
+					Point(_offsets[i]).y += _ease.y;
+				}
+				draw();
+				_ground00.move(-_ease.x * 40, -_ease.y * 40);
+				_ground01.move(-_ease.x * 40, -_ease.y * 40);
+				_ground02.move(-_ease.x * 40, -_ease.y * 40);
 
 				updateMaterial();
 				updateTerrain();
@@ -114,9 +116,9 @@ package games {
 
 		private  function draw() : void {
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-			
-			_ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(40));
-		    _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(5,5));
+
+			_ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(60));
+			_ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(2, 2));
 		}
 
 		public function getHeightAt(x : Number, z : Number) : Number {
@@ -124,7 +126,8 @@ package games {
 			return _zoneHeight * (col / 0xffffff);
 		}
 
-		public function move(x : Number, y : Number) : void {
+		public function moveCenter(x : Number, y : Number) : void {
+			_isMove = true;
 			_ease.x = x;
 			// -((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1);
 			_ease.y = y;
@@ -139,11 +142,11 @@ package games {
 			if (_ease.y < -_maxSpeed)
 				_ease.y = -_maxSpeed;
 
-			for (var i : uint = 0; i < _numOctaves; i++) {
-				Point(_offsets[i]).x += _ease.x;
-				Point(_offsets[i]).y += _ease.y;
+			/*for (var i : uint = 0; i < _numOctaves; i++) {
+			Point(_offsets[i]).x += _ease.x;
+			Point(_offsets[i]).y += _ease.y;
 			}
-			draw();
+			draw();*/
 		}
 
 		/**
