@@ -112,7 +112,8 @@ package games {
 		private function updateMaterial() : void {
 			var multy : Number;
 			if (_zoneResolution == 256) multy = 80;
-			else multy = 160;
+			else if (_zoneResolution == 128) multy = 160;
+			else multy = 320;
 			_ground00.move(-_ease.x * multy, -_ease.y * multy);
 			_ground01.move(-_ease.x * multy, -_ease.y * multy);
 			_ground02.move(-_ease.x * multy, -_ease.y * multy);

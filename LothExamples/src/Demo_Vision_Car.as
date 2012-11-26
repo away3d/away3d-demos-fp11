@@ -136,6 +136,7 @@ package {
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
 		private var _cameraHeight : Number = 50;
+		private var _night : Number = 100;
 		private var _isIntro : Boolean = true;
 		private var _isReflection : Boolean;
 		private var _cloneActif : Boolean;
@@ -359,8 +360,7 @@ package {
 		 * Initialise the reflection methode
 		 */
 		private function initReflection() : void {
-			if (_isReflection)
-				return;
+			if (_isReflection) return;
 			_isReflection = true;
 			initReflectionCube();
 			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
@@ -381,8 +381,16 @@ package {
 		 * Render loop
 		 */
 		private function onEnterFrame(event : Event = null) : void {
-			if (_sunLight.ambient < 0.3)
-				_sunLight.ambient += 0.01;
+			if (_sunLight.ambient < 0.3) _sunLight.ambient += 0.003;
+			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
+			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
+			else _isIntro = false;
+
+			if (_night > 0) {
+				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
+				AutoMapSky.night(_night);
+				_night--;
+			}
 
 			CarMove.update();
 			if (_visionCar) {
@@ -601,8 +609,6 @@ package {
 
 			log(message());
 			initListeners();
-
-			_isIntro = false;
 		}
 
 		/**

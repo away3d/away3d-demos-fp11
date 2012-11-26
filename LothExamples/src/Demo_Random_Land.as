@@ -326,17 +326,17 @@ package {
 		 * Render loop
 		 */
 		private function onEnterFrame(event : Event = null) : void {
+			if (_sunLight.ambient < 0.3) _sunLight.ambient += 0.003;
+			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
+			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
+			else _isIntro = false;
+
 			if (_night > 0) {
 				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
 				AutoMapSky.night(_night);
-				_night -= 0.5;
+				_night--;
 			}
-			if (_sunLight.ambient < 0.3)
-				_sunLight.ambient += 0.005;
-			if (_sunLight.diffuse < 1)
-				_sunLight.diffuse += 0.005;
-			if (_sunLight.specular < 1)
-				_sunLight.specular += 0.005;
+
 			if (_cameraController.distance > 1000)
 				_cameraController.distance--;
 
@@ -359,7 +359,6 @@ package {
 		 * Initialise listener
 		 */
 		private function initListeners(e : Event = null) : void {
-			if (_isIntro) _isIntro = false;
 			_isRender = true;
 			log(message());
 			if (e != null) {
@@ -622,8 +621,13 @@ package {
 			Style.BUTTON_DOWN = 0x995522;
 
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
-			new PushButton(_menu, 65, -29, "128", switch128).setSize(60, 30);
-			new PushButton(_menu, 130, -29, "256", switch256).setSize(60, 30);
+			new PushButton(_menu, 65, -29, "64", switch64).setSize(60, 30);
+			new PushButton(_menu, 130, -29, "128", switch128).setSize(60, 30);
+			new PushButton(_menu, 195, -29, "256", switch256).setSize(60, 30);
+		}
+
+		private function switch64(e : Event) : void {
+			_lander.changeResolution(64);
 		}
 
 		private function switch128(e : Event) : void {

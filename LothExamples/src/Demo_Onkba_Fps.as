@@ -173,6 +173,7 @@ package {
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
 		private var _cameraHeight : Number = 80;
+		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
 		private var _isReflection : Boolean;
@@ -414,7 +415,16 @@ package {
 		 * Navigation and render loop
 		 */
 		private function onEnterFrame(event : Event = null) : void {
-			if (_sunLight.ambient < 0.5) _sunLight.ambient += 0.01;
+			if (_sunLight.ambient < 0.3) _sunLight.ambient += 0.003;
+			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
+			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
+			else _isIntro = false;
+
+			if (_night > 0) {
+				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
+				AutoMapSky.night(_night);
+				_night--;
+			}
 
 			_lander.update();
 			_player.y = _lander.getHeightAt(0, 0) + 5;
@@ -431,7 +441,7 @@ package {
 				}
 			}
 			if ( _cameraController.distance > 300 && _isIntro) _cameraController.distance--;
-			else _isIntro = false;
+
 			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y + _cameraHeight, _player.z);
 			_cameraController.update();
 
@@ -447,7 +457,6 @@ package {
 		 * Initialise Listener
 		 */
 		private function initListeners(e : Event = null) : void {
-			if (_isIntro) _isIntro = false;
 			_isRender = true;
 			log(message());
 			if (e != null) {
