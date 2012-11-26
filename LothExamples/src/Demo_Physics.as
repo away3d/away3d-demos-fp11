@@ -74,6 +74,7 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
+		private var _isResize : Boolean;
 
 		/**
 		 * Constructor
@@ -158,7 +159,7 @@ package {
 
 			OimoPhysics.addSphere(_sphere, 150, 0, 500, 0, 10, 600.0, false);
 			var spe : Mesh;
-			for (var i : uint = 0;i < 1000;i++) {
+			for (var i : uint = 0;i < 500;i++) {
 				spe = Mesh(_sphere2.clone());
 				_view.scene.addChild(spe);
 				OimoPhysics.addSphere(spe, 32, -100, 50 + (100 * i), 100, 10, 0.0, false);
@@ -166,7 +167,7 @@ package {
 
 			var G : Mesh = new Mesh(new CubeGeometry(50, 50, 50), material03);
 			// var spe:Mesh;
-			for (i = 0;i < 1000;i++) {
+			for (i = 0;i < 500;i++) {
 				spe = Mesh(G.clone());
 				_view.scene.addChild(spe);
 				OimoPhysics.addCube(spe, 50, 50, 50, 100, 50 + (100 * i), - 100, 10, 0.0, false);
@@ -186,10 +187,12 @@ package {
 		 * render loop
 		 */
 		private function _onEnterFrame(e : Event) : void {
-			_cameraController.update();
 			OimoPhysics.update();
 			log(OimoPhysics.info());
-			_view.render();
+			_cameraController.update();
+
+			if (_isResize) _isResize = false;
+			else _view.render();
 		}
 
 		/**

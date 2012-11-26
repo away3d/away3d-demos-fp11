@@ -36,6 +36,7 @@ THE SOFTWARE.
 
  */
 package {
+	import away3d.primitives.SphereGeometry;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
@@ -173,6 +174,7 @@ package {
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
 			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_lander.isMove = true;
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
@@ -184,6 +186,9 @@ package {
 			initListeners();
 			log(message());
 
+			var spaceShip : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
+			spaceShip.y = 50;
+			_player.addChild(spaceShip);
 			// load spaceship mesh
 			// load("SpaceShip.awd"+ "?uniq=" + _id);
 		}
@@ -211,7 +216,6 @@ package {
 
 			// setup the player container
 			_player = new ObjectContainer3D();
-			_player.y = 200;
 			_view.scene.addChild(_player);
 
 			// add stats
@@ -278,7 +282,8 @@ package {
 			// creat terrain material
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x00)));
 			_terrainMaterial.gloss = 5;
-			_terrainMaterial.specular = .1;
+			_terrainMaterial.specular = .3;
+			_terrainMaterial.addMethod(_fogMethode);
 			_materials[1] = _terrainMaterial;
 
 			// 1- simulation box
@@ -310,11 +315,11 @@ package {
 				_sunLight.ambient += 0.005;
 			if (_sunLight.diffuse < 1)
 				_sunLight.diffuse += 0.005;
-
+			if (_sunLight.specular < 1)
+				_sunLight.specular += 0.005;
 			if (_cameraController.distance > 1000)
 				_cameraController.distance--;
 
-			// Land.update();
 			_lander.update();
 			_player.y = _lander.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);

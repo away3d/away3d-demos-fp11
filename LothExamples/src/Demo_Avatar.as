@@ -205,11 +205,11 @@ package {
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
 			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-
+			_lander.isMove = true;
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(60, 60);
-			// _ground.y = 100;
+			_ground.y = 60;
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 
