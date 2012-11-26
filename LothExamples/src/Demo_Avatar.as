@@ -95,8 +95,8 @@ package {
 		// signature swf
 		[Embed(source="/../embeds/signature.swf",symbol="Signature")]
 		public var SignatureSwf : Class;
-		private const MOUNTAIGN_TOP : Number = 1000;
-		private const FARVIEW : Number = 25600;
+		private const MOUNTAIGN_TOP : Number = 2000;
+		private const FARVIEW : Number = 128 * 100;
 		private const FOGNEAR : Number = 0;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
@@ -204,12 +204,12 @@ package {
 			_lander = new Lander();
 			_lander.scene = _view.scene;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			_lander.initObjects(_terrainMaterial, 200, MOUNTAIGN_TOP, FARVIEW);
+			_lander.initObjects(_terrainMaterial, FARVIEW, MOUNTAIGN_TOP);
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(60, 60);
-			_ground.y = 100;
+			// _ground.y = 100;
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 
@@ -380,7 +380,7 @@ package {
 
 			_lander.update();
 
-			_cameraController.lookAtPosition = new Vector3D(0, _lander.getHeightAt(0, 0) + 20, 0);
+			_cameraController.lookAtPosition = new Vector3D(0, _lander.getHeightAt(0, 0), 0);
 			_cameraController.update();
 
 			updateClone();

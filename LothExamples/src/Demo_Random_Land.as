@@ -171,10 +171,9 @@ package {
 			// create lander
 			_lander = new Lander();
 			_lander.scene = _view.scene;
-			_lander.maxElevation = MOUNTAIGN_TOP;
 			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
 			// _lander.initObjects(100, MOUNTAIGN_TOP);
-			_lander.initObjects(_terrainMaterial, 100, MOUNTAIGN_TOP, 25600);
+			_lander.initObjects(_terrainMaterial, FARVIEW, MOUNTAIGN_TOP);
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
