@@ -45,6 +45,9 @@ package {
 	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
+	import away3d.materials.methods.SimpleWaterNormalMethod;
+	import away3d.materials.methods.FresnelSpecularMethod;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.PlaneGeometry;
 	import away3d.lights.DirectionalLight;
@@ -111,6 +114,9 @@ package {
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
 		private var _shadowMethod : NearShadowMapMethod;
+		private var _reflectionMethod : EnvMapMethod;
+		private var _fresnelMethod : FresnelSpecularMethod;
+		private var _waterMethod : SimpleWaterNormalMethod;
 		private var _fogMethode : FogMethod;
 		// navigation
 		private var _prevMouseX : Number;
@@ -152,7 +158,7 @@ package {
 			_bitmapStrings = new Vector.<String>();
 			_bitmapStrings.push("sky3/negy.jpg", "sky3/posy.jpg", "sky3/posx.jpg", "sky3/negz.jpg", "sky3/posz.jpg", "sky3/negx.jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
-			_bitmapStrings.push("weave_diffuse.jpg", "water_normals.jpg");
+			_bitmapStrings.push("water_normals.jpg");
 
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
@@ -168,7 +174,10 @@ package {
 
 			// create skybox
 			randomSky();
-
+			// reflection method
+			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
+			_waterMaterial.addMethod(_reflectionMethod);
+			_boxMaterial.addMethod(_reflectionMethod);
 			// create lander
 			_lander = new Lander();
 			_lander.scene = _view.scene;
@@ -178,15 +187,18 @@ package {
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(60, 60);
-			_ground.y = 30;
+			_ground.geometry.scaleUV(30, 30);
+			_ground.y = 100;
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 
 			initListeners();
 			log(message());
 
-			var spaceShip : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
+			var spaceShip : Mesh = new Mesh(new SphereGeometry(60, 30, 20), _boxMaterial);
+			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(140, 30, 20), _boxMaterial);
+			spaceShip2.scaleY = 0.25;
+			spaceShip.addChild(spaceShip2);
 			spaceShip.y = 50;
 			_player.addChild(spaceShip);
 			// load spaceship mesh
@@ -234,12 +246,12 @@ package {
 			// _sunLight = new DirectionalLight( -0.5, -1, 0.3);
 			_sunLight = new DirectionalLight(0, -1, -1);
 			_sunLight.color = sunColor;
-			// _sunLight.ambientColor = sunColor;
+			_sunLight.ambientColor = sunColor;
 			_sunLight.ambient = 0;
 			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.02);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.2);
 			_view.scene.addChild(_sunLight);
 
 			// create light picker for materials
@@ -261,44 +273,45 @@ package {
 		 */
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
-			// global shadow method
+			// shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			// _shadowMethod.epsilon = .0005;
+			_shadowMethod.epsilon = .0005;
+			// water method
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
+			// fresnelMethod
+			_fresnelMethod = new FresnelSpecularMethod();
+			_fresnelMethod.normalReflectance = 0.5;
+			// fog method
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 
-			// global fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW >> 1, fogColor);
-
-			// create water texture
-			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, true, 0x20ffffff)));
-			_waterMaterial.specularMap = Cast.bitmapTexture(_bitmaps[9]);
-			_waterMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			// 0 _ water texture
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x10404070)));
 			_waterMaterial.alphaBlending = true;
-			_waterMaterial.gloss = 100;
-			_waterMaterial.specular = 0.1;
-			_waterMaterial.addMethod(_fogMethode);
 			_waterMaterial.repeat = true;
+			_waterMaterial.gloss = 100;
+			_waterMaterial.specular = 1;
+			_waterMaterial.normalMethod = _waterMethod;
+			_waterMaterial.specularMethod = _fresnelMethod;
 			_materials[0] = _waterMaterial;
 
 			// creat terrain material
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x00)));
 			_terrainMaterial.gloss = 5;
 			_terrainMaterial.specular = .3;
-			_terrainMaterial.addMethod(_fogMethode);
 			_materials[1] = _terrainMaterial;
 
 			// 1- simulation box
-			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xee100000)));
+			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
 			_boxMaterial.gloss = 10;
-			_boxMaterial.specular = 0.1;
-			_boxMaterial.alphaBlending = true;
-			_boxMaterial.addMethod(_fogMethode);
+			_boxMaterial.specular = 0.6;
 			_materials[2] = _boxMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
-				_materials[i].ambient = 0.85;
+				_terrainMaterial.addMethod(_fogMethode);
+				_materials[i].ambient = 1;
 			}
 		}
 
@@ -311,19 +324,26 @@ package {
 				AutoMapSky.night(_night);
 				_night -= 0.5;
 			}
-			if (_sunLight.ambient < 0.5)
+			if (_sunLight.ambient < 0.8)
 				_sunLight.ambient += 0.005;
-			if (_sunLight.diffuse < 1)
+			if (_sunLight.diffuse < 3)
 				_sunLight.diffuse += 0.005;
-			if (_sunLight.specular < 1)
+			if (_sunLight.specular < 2)
 				_sunLight.specular += 0.005;
 			if (_cameraController.distance > 1000)
 				_cameraController.distance--;
 
 			_lander.update();
+
 			_player.y = _lander.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
 			_cameraController.update();
+
+			// animate our lake material
+			_waterMethod.water1OffsetX += .001;
+			_waterMethod.water1OffsetY += .001;
+			_waterMethod.water2OffsetX += .0007;
+			_waterMethod.water2OffsetY += .0006;
 
 			_view.render();
 		}

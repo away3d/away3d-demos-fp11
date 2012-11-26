@@ -47,6 +47,7 @@ package {
 	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.materials.methods.SimpleWaterNormalMethod;
 	import away3d.materials.methods.NearShadowMapMethod;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.materials.methods.FogMethod;
@@ -115,6 +116,7 @@ package {
 		private var _sunLight : DirectionalLight;
 		private var _waterMethod : SimpleWaterNormalMethod;
 		private var _fresnelMethod : FresnelSpecularMethod;
+		private var _reflectionMethod : EnvMapMethod;
 		private var _fogMethode : FogMethod;
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _rimLightMethod : RimLightMethod;
@@ -185,7 +187,7 @@ package {
 			_bitmapStrings = new Vector.<String>();
 			_bitmapStrings.push("sky4/negy.jpg", "sky4/posy.jpg", "sky4/posx.jpg", "sky4/negz.jpg", "sky4/posz.jpg", "sky4/negx.jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
-			_bitmapStrings.push("weave_diffuse.jpg", "water_normals.jpg");
+			_bitmapStrings.push("water_normals.jpg");
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -200,6 +202,9 @@ package {
 
 			// create skybox
 			randomSky();
+			// reflection method
+			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
+			_waterMaterial.addMethod(_reflectionMethod);
 
 			_lander = new Lander();
 			_lander.scene = _view.scene;
@@ -208,8 +213,8 @@ package {
 			_lander.isMove = true;
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(60, 60);
-			_ground.y = 60;
+			_ground.geometry.scaleUV(30, 30);
+			_ground.y = 100;
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 
@@ -230,7 +235,7 @@ package {
 			addChild(_view);
 
 			// create custom lens
-			_view.camera.lens = new PerspectiveLens(100);
+			_view.camera.lens = new PerspectiveLens(80);
 			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 1;
 
@@ -287,39 +292,35 @@ package {
 		 */
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
-
 			_sTexture = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
-			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[10]), Cast.bitmapTexture(_bitmaps[10]));
+			// water method
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
+			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
-			_fresnelMethod.normalReflectance = .3;
+			_fresnelMethod.normalReflectance = .4;
 
-			// create global shadow method
+			// shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0007;
-
-			// create Rim light method
+			// Rim light method
 			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
-
-			// create global fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW >> 1, 0x000000);
+			// fog method
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, 0x000000);
 
 			// 0 _ water texture
-			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x40ffffff)));
-			_waterMaterial.specularMap = Cast.bitmapTexture(_bitmaps[9]);
-			_waterMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x10404070)));
 			_waterMaterial.alphaBlending = true;
-			_waterMaterial.gloss = 100;
-			_waterMaterial.specular = 0.1;
-			_waterMaterial.normalMethod = _waterMethod;
-			// _waterMaterial.addMethod(new EnvMapMethod(VectorSkyEffects.skyMap));
-			_waterMaterial.specularMethod = _fresnelMethod;
 			_waterMaterial.repeat = true;
+			_waterMaterial.gloss = 100;
+			_waterMaterial.specular = 2;
+			_waterMaterial.normalMethod = _waterMethod;
+			_waterMaterial.specularMethod = _fresnelMethod;
 			_materials[0] = _waterMaterial;
 
 			// 1 - terrain material
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x00)));
-			_terrainMaterial.gloss = 30;
-			_terrainMaterial.specular = 0.3;
+			_terrainMaterial.gloss = 5;
+			_terrainMaterial.specular = 0.2;
 			_materials[1] = _terrainMaterial;
 
 			// n _ avatar materials
@@ -377,6 +378,11 @@ package {
 
 			_cameraController.lookAtPosition = new Vector3D(0, _lander.getHeightAt(0, 0), 0);
 			_cameraController.update();
+			// animate our lake material
+			_waterMethod.water1OffsetX += .001;
+			_waterMethod.water1OffsetY += .001;
+			_waterMethod.water2OffsetX += .0007;
+			_waterMethod.water2OffsetY += .0006;
 
 			updateClone();
 

@@ -9,5 +9,7 @@ http://perso.numericable.fr/chamaslot/private/
    Infini terrain generator by perlin noise
 4°/ AVATAR
    Most simple human and woman model with IA simulator
-   
+5°/ PHYSICS
+   Basic test for oimophysics
+     
 All demos use AWD2 format (files for 3dsmax 2012 include)
