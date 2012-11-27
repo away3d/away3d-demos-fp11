@@ -94,10 +94,11 @@ package {
 
 	import games.FractalTerrain;
 
+	// import games.PoissonDisk;
 	[SWF(frameRate="60", backgroundColor = "#000000")]
 	public class Demo_Onkba_Fps extends Sprite {
-		private const MOUNTAIGN_TOP : Number = 2000;
-		private const FARVIEW : Number = 30000;
+		private const MOUNTAIGN_TOP : Number = 4000;
+		private const FARVIEW : Number = 20000;
 		private const FOGNEAR : Number = 0;
 		private const HERO_SIZE : Number = 2;
 		// start colors

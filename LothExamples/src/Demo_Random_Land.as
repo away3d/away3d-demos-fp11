@@ -189,7 +189,7 @@ package {
 			_ground.geometry.scaleUV(40, 40);
 			_ground.mouseEnabled = true;
 			_ground.pickingCollider = PickingColliderType.BOUNDS_ONLY;
-			_ground.y = 100;
+			_ground.y = 900;
 			_view.scene.addChild(_ground);
 			_ground.addEventListener(MouseEvent3D.MOUSE_UP, onGroundMouseOver);
 			_ground.addEventListener(MouseEvent3D.MOUSE_MOVE, onGroundMouseOver);

@@ -93,9 +93,9 @@ package {
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Avatar extends Sprite {
-		private const MOUNTAIGN_TOP : Number = 2000;
+		private const MOUNTAIGN_TOP : Number = 1500;
 		private const FARVIEW : Number = 128 * 100;
-		private const FOGNEAR : Number = 0;
+		private const FOGNEAR : Number = 400;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
 		private var sunColor : uint = 0xFFFFFF;
@@ -207,7 +207,7 @@ package {
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(40, 40);
-			_ground.y = 100;
+			_ground.y = 600;
 			// _ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 
@@ -228,7 +228,7 @@ package {
 			addChild(_view);
 
 			// create custom lens
-			_view.camera.lens = new PerspectiveLens(80);
+			_view.camera.lens = new PerspectiveLens(70);
 			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 1;
 
@@ -250,12 +250,11 @@ package {
 		 * Initialise the lights
 		 */
 		private function initLights() : void {
-			// create a light for shadows that mimics the sun's position in the skybox
 			_sunLight = new DirectionalLight(0.1, -0.8, 0.3);
 			_sunLight.color = sunColor;
 			_sunLight.ambientColor = sunColor;
 			_sunLight.ambient = 0;
-			_sunLight.diffuse = 1;
+			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
 
 			_sunLight.castsShadows = true;

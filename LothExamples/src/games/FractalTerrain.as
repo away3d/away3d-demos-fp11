@@ -38,10 +38,10 @@ package games {
 		static private var _ground02 : BitmapScrolling;
 		static private var _ground : BitmapData;
 		static private var _ease : Vector3D;
-		static private var _fractal : Boolean = false;
+		static private var _fractal : Boolean = true;
 		static private var _numOctaves : uint = 2;
 		static private var _offsets : Array = [];
-		static private var _complex : Number = 0.2;
+		static private var _complex : Number = 0.12;
 		static private var _maxSpeed : Number = 0.2;
 		static private var _bitmaps : Vector.<BitmapData>;
 		static private var _seed : uint;
@@ -50,7 +50,7 @@ package games {
 		/**
 		 * Globale initialiser
 		 */
-		static public function initGround(Scene:Scene3D, Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : Number = 12800, Height : Number = 1000, Resolution : uint = 128) : void {
+		static public function initGround(Scene : Scene3D, Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : Number = 12800, Height : Number = 1000, Resolution : uint = 128) : void {
 			_zoneHeight = Height;
 			_zoneDimension = Dimension;
 			_zoneResolution = Resolution;
@@ -103,8 +103,9 @@ package games {
 					Point(_offsets[i]).y += _ease.y;
 				}
 				draw();
-				updateMaterial();
+
 				updateTerrain();
+				updateMaterial();
 			}
 		}
 
@@ -121,24 +122,26 @@ package games {
 			_ground02.move(-_ease.x * multy, -_ease.y * multy);
 			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground00.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground02.getMap())], Cast.bitmapTexture(_ground), _tiles);
 			_terrainMaterial.diffuseMethod = _terrainMethod;
-			_terrainMaterial.normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground));
+			_terrainMaterial.normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground, 30, 2, -1, -1));
 		}
 
 		/**
 		 * Draw bitmap perlin noize and add filter
 		 */
 		static private  function draw() : void {
+			_ground.unlock();
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-			_ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(60));
-			if (_zoneResolution == 256) _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(4, 4));
-			else _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(2, 2));
+			_ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(20));
+			if (_zoneResolution == 256) _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(12, 12));
+			else _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(6, 6));
+			_ground.lock();
 		}
 
 		/**
 		 * Get height from perlin noize bitmap
 		 */
 		static public function getHeightAt(x : Number, z : Number) : Number {
-			var col : uint = _ground.getPixel((x / _zoneDimension + .5) * (_zoneSubdivision - 1), (-z / _zoneDimension + .5) * (_zoneSubdivision - 1)) & 0xffffff;
+			var col : uint = _ground.getPixel((x / _zoneDimension + .5) * (_zoneSubdivision + 1), (-z / _zoneDimension + .5) * (_zoneSubdivision + 1)) & 0xffffff;
 			return _zoneHeight * (col / 0xffffff);
 		}
 
