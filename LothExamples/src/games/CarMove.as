@@ -5,13 +5,13 @@
 
 	public class CarMove extends Sprite {
 		private static var _speed : Number = 0;
-		private static var _speedMax : Number = 8;
-		private static var _speedMaxReverse : Number = -3;
-		private static var _speedAcceleration : Number = .15;
+		private static var _speedMax : Number = 200;
+		private static var _speedMaxReverse : Number = -4;
+		private static var _speedAcceleration : Number = 0.8;//.15;
 		private static var _groundFriction : Number = .95;
 		private static var _steering : Number = 0;
-		private static var _steeringMax : Number = 2;
-		private static var _steeringAcceleration : Number = .10;
+		private static var _steeringMax : Number = 1;
+		private static var _steeringAcceleration : Number = .05;
 		private static var _steeringFriction : Number = .98;
 		private static var _velocityX : Number = 0;
 		private static var _velocityY : Number = 0;

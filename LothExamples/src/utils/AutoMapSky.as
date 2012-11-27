@@ -184,20 +184,23 @@ package utils {
 			return skyFinal;
 		}
 
-		public static function night(value : Number = 100) : void {
-			if (_bigCubeMat == null) {
+		public static function night(value : Number = 100, FarView : Number = 2000) : void {
+			if (value == 100 && _bigCube == null ) {
 				_bigCubeMat = new ColorMaterial(0x000000, 1);
 				_bigCubeMat.bothSides = true;
-				_bigCube = new Mesh(new CubeGeometry(20000, 20000, 20000), _bigCubeMat);
+				_bigCubeMat.specular = 0;
+				_bigCube = new Mesh(new CubeGeometry(FarView - 100, FarView - 100, FarView - 100), _bigCubeMat);
 				_bigCube.castsShadows = false;
 				_scene.addChild(_bigCube);
-			} else if (_bigCubeMat.alpha == 0) {
-				_scene.removeChild(_bigCube);
-				_bigCube.dispose();
-				_bigCubeMat = null;
-			} else {
+			} else if (value > 10) {
 				_bigCubeMat.alpha = value / 100;
 				_bigCube.material = _bigCubeMat;
+			} else if (value < 10 && _bigCube != null) {
+				_scene.removeChild(_bigCube);
+				_bigCube.dispose();
+				_bigCubeMat.dispose();
+				_bigCubeMat = null;
+				_bigCube = null;
 			}
 		}
 

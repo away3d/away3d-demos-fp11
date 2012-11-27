@@ -51,9 +51,12 @@ package {
 	import away3d.library.assets.AssetType;
 	import away3d.primitives.CubeGeometry;
 	import away3d.lights.DirectionalLight;
+	import away3d.materials.methods.SimpleWaterNormalMethod;
+	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.events.LoaderEvent;
 	import away3d.containers.View3D;
 	import away3d.events.AssetEvent;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.loaders.Loader3D;
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
@@ -80,13 +83,15 @@ package {
 	import utils.LoaderPool;
 
 	import games.CarMove;
+	import games.FractalTerrain;
 
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Vision_Car extends Sprite {
-		private const FARVIEW : Number = 8000;
+		private const MOUNTAIGN_TOP : Number = 600;
+		private const FARVIEW : Number = 30000;
 		private const FOGNEAR : Number = 0;
 		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xAAAAA9;
@@ -94,8 +99,6 @@ package {
 		private var skyColor : uint = 0x445465;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
-		private var sunDiffuse : Number = 0.0;
-		private var sunSpecular : Number = 1.3;
 		// engine variables
 		private var _view : View3D;
 		private var _stats : AwayStats;
@@ -104,13 +107,17 @@ package {
 		// light variables
 		private var _sunLight : DirectionalLight;
 		private var _reflectionTexture : CubeReflectionTexture;
+		private var _reflectionMethod : EnvMapMethod;
 		private var _fresnelMethod : FresnelEnvMapMethod;
 		private var _fresnelMethod2 : FresnelEnvMapMethod;
+		private var _fresnelMethod3 : FresnelSpecularMethod;
 		private var _fogMethode : FogMethod;
 		private var _shadowMethod : NearShadowMapMethod;
+		private var _waterMethod : SimpleWaterNormalMethod;
 		// Materials
 		private var _materials : Vector.<TextureMaterial>;
-		private var _groundMaterial : TextureMaterial;
+		private var _terrainMaterial : TextureMaterial;
+		private var _waterMaterial : TextureMaterial;
 		private var _carWhiteMat : TextureMaterial;
 		private var _carBlackMat : TextureMaterial;
 		private var _carLightMat1 : TextureMaterial;
@@ -135,7 +142,7 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
-		private var _cameraHeight : Number = 50;
+		private var _cameraHeight : Number = 80;
 		private var _night : Number = 100;
 		private var _isIntro : Boolean = true;
 		private var _isReflection : Boolean;
@@ -171,8 +178,8 @@ package {
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
 			_bitmapStrings.push("sky2/negy.jpg", "sky2/posy.jpg", "sky2/posx.jpg", "sky2/negz.jpg", "sky2/posz.jpg", "sky2/negx.jpg");
-			_bitmapStrings.push("sand.jpg", "sand_n.jpg", "sand_l.jpg");
-
+			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
+			_bitmapStrings.push("water_normals.jpg");
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -188,12 +195,19 @@ package {
 			// create skybox
 			randomSky();
 
-			// basic ground
-			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _groundMaterial);
-			_ground.geometry.scaleUV(60, 60);
-			_ground.castsShadows = false;
-			_view.scene.addChild(_ground);
+			// reflection method
+			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
+			_waterMaterial.addMethod(_reflectionMethod);
 
+			// create noize terrain with image 6 7 8
+			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+
+			// basic ground
+			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_ground.geometry.scaleUV(60, 60);
+			// _ground.castsShadows = false;
+			_view.scene.addChild(_ground);
+			_ground.y = 300;
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
 
@@ -237,9 +251,8 @@ package {
 			_sunLight.color = sunColor;
 			_sunLight.ambientColor = sunColor;
 			_sunLight.ambient = 0;
-			// sunAmbient;
-			_sunLight.diffuse = sunDiffuse;
-			_sunLight.specular = sunSpecular;
+			_sunLight.diffuse = 0;
+			_sunLight.specular = 0;
 
 			_sunLight.castsShadows = true;
 			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.1);
@@ -273,15 +286,26 @@ package {
 			// create global fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 
+			// water method
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
+			// fresnelMethod
+			_fresnelMethod3 = new FresnelSpecularMethod();
+			_fresnelMethod3.normalReflectance = 0.4;
+
 			// create ground texture
-			_groundMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
+			/*_groundMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
 			_groundMaterial.normalMap = Cast.bitmapTexture(_bitmaps[7]);
 			_groundMaterial.specularMap = Cast.bitmapTexture(_bitmaps[8]);
 			_groundMaterial.gloss = 100;
 			_groundMaterial.specular = 0.1;
 			_groundMaterial.addMethod(_fogMethode);
 			_groundMaterial.repeat = true;
-			_materials[0] = _groundMaterial;
+			_materials[0] = _groundMaterial;*/
+			// 5 - terrain material
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x00)));
+			_terrainMaterial.gloss = 10;
+			_terrainMaterial.specular = 0.2;
+			_materials[0] = _terrainMaterial;
 
 			// create car material
 			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x010101)));
@@ -338,11 +362,21 @@ package {
 			// _carGlassMat.specularMethod = _specularMethod;
 			_materials[9] = _carGlassMat;
 
+			// 10 _ water texture
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x22404060)));
+			_waterMaterial.alphaBlending = true;
+			_waterMaterial.repeat = true;
+			_waterMaterial.gloss = 100;
+			_waterMaterial.specular = 1;
+			_waterMaterial.normalMethod = _waterMethod;
+			_waterMaterial.specularMethod = _fresnelMethod3;
+			_materials[10] = _waterMaterial;
+
 			// apply light and effect for all material
 			for (var i : int; i < _materials.length; i++) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
-				_materials[i].ambient = 0.5;
+				_materials[i].ambient = 1;
 			}
 		}
 
@@ -388,13 +422,13 @@ package {
 
 			if (_night > 0) {
 				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night);
+				AutoMapSky.night(_night, FARVIEW);
 				_night--;
 			}
 
 			CarMove.update();
 			if (_visionCar) {
-				_visionCar.position = new Vector3D(CarMove.position.x * 10, 0, CarMove.position.z * 10);
+				_visionCar.position = new Vector3D(CarMove.position.x * 10, FractalTerrain.getHeightAt(CarMove.position.x * 10, CarMove.position.z * 10), CarMove.position.z * 10);
 				_visionCar.rotationY = CarMove.angle + 180;
 				// wheels steering
 				_wheels[1].rotationY = CarMove.steering * 25;
@@ -406,7 +440,7 @@ package {
 				_wheels[3].rotationX += CarMove.speed * 6;
 			}
 
-			_cameraController.lookAtPosition = new Vector3D(_visionCar.position.x, _cameraHeight, _visionCar.position.z);
+			_cameraController.lookAtPosition = _visionCar.position.add(new Vector3D(0, _cameraHeight, 0));
 			_cameraController.update();
 
 			// update reflection

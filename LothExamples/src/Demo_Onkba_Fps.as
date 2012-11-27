@@ -99,7 +99,7 @@ package {
 	public class Demo_Onkba_Fps extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 4000;
 		private const FARVIEW : Number = 20000;
-		private const FOGNEAR : Number = 0;
+		private const FOGNEAR : Number = 1000;
 		private const HERO_SIZE : Number = 2;
 		// start colors
 		private var groundColor : uint = 0x333338;
@@ -419,7 +419,7 @@ package {
 
 			if (_night > 0) {
 				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night);
+				AutoMapSky.night(_night, FARVIEW);
 				_night--;
 			}
 

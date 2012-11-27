@@ -360,7 +360,7 @@ package {
 
 			if (_night > 0) {
 				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night);
+				AutoMapSky.night(_night, FARVIEW);
 				_night--;
 			}
 
