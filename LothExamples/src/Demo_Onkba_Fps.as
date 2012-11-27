@@ -47,7 +47,7 @@ package {
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
-	import away3d.textures.CubeReflectionTexture;
+	//import away3d.textures.CubeReflectionTexture;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
@@ -122,7 +122,7 @@ package {
 		private var _weapons : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
 		private var _heroWeapon : Mesh;
-		private var _bigBall : Mesh;
+		//private var _bigBall : Mesh;
 		private var _hero : Mesh;
 		// materials
 		private var _boxMaterial : TextureMaterial;
@@ -136,7 +136,7 @@ package {
 		private var _eyesClosedMaterial : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
-		private var _reflectionTexture : CubeReflectionTexture;
+		//private var _reflectionTexture : CubeReflectionTexture;
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _rimLightMethod : RimLightMethod;
 		private var _fogMethode : FogMethod;
@@ -176,7 +176,7 @@ package {
 		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
-		private var _isReflection : Boolean;
+		//private var _isReflection : Boolean;
 		private var _dynamicsEyes : Boolean;
 		private var _cloneActif : Boolean;
 		private var _debugRay : Boolean;
@@ -442,10 +442,10 @@ package {
 			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y + _cameraHeight, _player.z);
 			_cameraController.update();
 
-			if (_isReflection) {
+			/*if (_isReflection) {
 				_reflectionTexture.position = _bigBall.position;
 				_reflectionTexture.render(_view);
-			}
+			}*/
 
 			_view.render();
 		}
@@ -474,6 +474,7 @@ package {
 		 * Remove Listener
 		 */
 		private function stopListeners() : void {
+			if (_isIntro) return;
 			grayPauseEffect();
 			_isRender = false;
 			log("&#47;&#33;&#92; PAUSE");
@@ -493,7 +494,6 @@ package {
 		 *  Function pause if leave stage
 		 */
 		private function grayPauseEffect() : void {
-			if (_isIntro) return;
 			_capture = new BitmapData(stage.stageWidth, stage.stageHeight, true, 0x40000000);
 			_topPause.graphics.beginBitmapFill(_capture, null, false, false);
 			_topPause.graphics.drawRect(0, 0, stage.width, stage.height);

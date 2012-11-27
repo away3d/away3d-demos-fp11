@@ -368,6 +368,7 @@ package {
 
 			_cameraController.lookAtPosition.y = FractalTerrain.getHeightAt(0, 0);
 			_cameraController.update();
+
 			// animate our lake material
 			_waterMethod.water1OffsetX += .001;
 			_waterMethod.water1OffsetY += .001;
@@ -408,6 +409,7 @@ package {
 		 * Remove Listener
 		 */
 		private function stopListeners() : void {
+			if (_isIntro) return;
 			_isRender = false;
 			grayPauseEffect();
 			log("&#47;&#33;&#92; PAUSE");
@@ -430,7 +432,6 @@ package {
 		 *  Function pause if leave stage
 		 */
 		private function grayPauseEffect() : void {
-			if (_isIntro) return;
 			_capture = new BitmapData(stage.stageWidth, stage.stageHeight, true, 0x40000000);
 			_topPause.graphics.beginBitmapFill(_capture, null, false, false);
 			_topPause.graphics.drawRect(0, 0, stage.width, stage.height);

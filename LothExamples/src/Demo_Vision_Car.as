@@ -118,6 +118,8 @@ package {
 		private var _materials : Vector.<TextureMaterial>;
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
+		private var _carIntern : TextureMaterial;
+		private var _carIntern2 : TextureMaterial;
 		private var _carWhiteMat : TextureMaterial;
 		private var _carBlackMat : TextureMaterial;
 		private var _carLightMat1 : TextureMaterial;
@@ -135,6 +137,7 @@ package {
 		private var _wheel : Mesh;
 		private var _wheels : Vector.<Mesh>;
 		private var _door : Mesh;
+		private var _driveWheel : Mesh;
 		private var _doors : Vector.<Mesh>;
 		private var _sit : Mesh;
 		private var _sits : Vector.<Mesh>;
@@ -205,7 +208,7 @@ package {
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(60, 60);
-			// _ground.castsShadows = false;
+			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 			_ground.y = 300;
 			// Now load High res Vision car
@@ -292,77 +295,75 @@ package {
 			_fresnelMethod3 = new FresnelSpecularMethod();
 			_fresnelMethod3.normalReflectance = 0.4;
 
-			// create ground texture
-			/*_groundMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
-			_groundMaterial.normalMap = Cast.bitmapTexture(_bitmaps[7]);
-			_groundMaterial.specularMap = Cast.bitmapTexture(_bitmaps[8]);
-			_groundMaterial.gloss = 100;
-			_groundMaterial.specular = 0.1;
-			_groundMaterial.addMethod(_fogMethode);
-			_groundMaterial.repeat = true;
-			_materials[0] = _groundMaterial;*/
-			// 5 - terrain material
+			// 0 - terrain material
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x00)));
 			_terrainMaterial.gloss = 10;
 			_terrainMaterial.specular = 0.2;
 			_materials[0] = _terrainMaterial;
-
-			// create car material
-			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x010101)));
+			// 1 - car material
+			_carWhiteMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x090702)));
 			_carWhiteMat.gloss = 100;
 			_carWhiteMat.specular = 0.9;
 			_materials[1] = _carWhiteMat;
-
+			// 2 - car material black
 			_carBlackMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x090702)));
 			_carBlackMat.gloss = 10;
 			_carBlackMat.specular = 0.3;
 			_materials[2] = _carBlackMat;
-
+			// 3 - car light material
 			_carLightMat1 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xEEFFFFFF)));
 			_carLightMat1.alphaBlending = true;
 			_carLightMat1.gloss = 10;
 			_carLightMat1.specular = 0.9;
 			_materials[3] = _carLightMat1;
-
+			// 4 - car light back material
 			_carLightMat2 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xEEFF1010)));
 			_carLightMat2.alphaBlending = true;
 			_carLightMat2.gloss = 10;
 			_carLightMat2.specular = 0.9;
 			_materials[4] = _carLightMat2;
-
+			// 5 - car light front material
 			_carLightMat3 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x60FFFFFF)));
 			_carLightMat3.alphaBlending = true;
 			_carLightMat3.gloss = 10;
 			_carLightMat3.specular = 0.9;
 			_materials[5] = _carLightMat3;
-
-			_carWheelMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x050301)));
+			// 6 - tire wheels material
+			_carWheelMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x080912)));
 			_carWheelMat.gloss = 100;
 			_carWheelMat.specular = 0.5;
 			_carWheelMat.bothSides = true;
 			_materials[6] = _carWheelMat;
-
+			// 7 - double side black car
 			_carBlackDoubleMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x090702)));
 			_carBlackDoubleMat.gloss = 10;
-			_carBlackDoubleMat.specular = 0.9;
+			_carBlackDoubleMat.specular = 0.3;
 			_carBlackDoubleMat.bothSides = true;
 			_materials[7] = _carBlackDoubleMat;
-
+			// 8 - chrome
 			_carCromeMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x404040)));
 			_carCromeMat.gloss = 10;
 			_carCromeMat.specular = 0.9;
 			_carCromeMat.bothSides = true;
 			_materials[8] = _carCromeMat;
-
+			// 9 - car windows
 			_carGlassMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x99010101)));
 			_carGlassMat.gloss = 60;
 			_carGlassMat.specular = 1;
 			_carGlassMat.alphaBlending = true;
 			_carGlassMat.bothSides = true;
-			// _carGlassMat.specularMethod = _specularMethod;
 			_materials[9] = _carGlassMat;
-
-			// 10 _ water texture
+			// 10 - car interior 1
+			_carIntern = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0xcfccaa)));
+			_carIntern.gloss = 30;
+			_carIntern.specular = 0.9;
+			_materials[10] = _carIntern;
+			// 11 - car interior 2
+			_carIntern2 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x383533)));
+			_carIntern2.gloss = 10;
+			_carIntern2.specular = 1;
+			_materials[11] = _carIntern2;
+			// 12 - water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x22404060)));
 			_waterMaterial.alphaBlending = true;
 			_waterMaterial.repeat = true;
@@ -370,7 +371,7 @@ package {
 			_waterMaterial.specular = 1;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod3;
-			_materials[10] = _waterMaterial;
+			_materials[12] = _waterMaterial;
 
 			// apply light and effect for all material
 			for (var i : int; i < _materials.length; i++) {
@@ -430,9 +431,10 @@ package {
 			if (_visionCar) {
 				_visionCar.position = new Vector3D(CarMove.position.x * 10, FractalTerrain.getHeightAt(CarMove.position.x * 10, CarMove.position.z * 10), CarMove.position.z * 10);
 				_visionCar.rotationY = CarMove.angle + 180;
+				_driveWheel.rotationZ = (CarMove.steering * 180);
 				// wheels steering
-				_wheels[1].rotationY = CarMove.steering * 25;
-				_wheels[3].rotationY = 180 + (CarMove.steering * 25);
+				_wheels[1].rotationY = CarMove.steering * 60;
+				_wheels[3].rotationY = 180 + (CarMove.steering * 60);
 				// wheels rotation
 				_wheels[0].rotationX -= CarMove.speed * 6;
 				_wheels[1].rotationX -= CarMove.speed * 6;
@@ -442,6 +444,12 @@ package {
 
 			_cameraController.lookAtPosition = _visionCar.position.add(new Vector3D(0, _cameraHeight, 0));
 			_cameraController.update();
+
+			// animate our lake material
+			_waterMethod.water1OffsetX += .001;
+			_waterMethod.water1OffsetY += .001;
+			_waterMethod.water2OffsetX += .0007;
+			_waterMethod.water2OffsetY += .0006;
 
 			// update reflection
 			if (_isReflection) {
@@ -480,6 +488,7 @@ package {
 		 * Remove Listener
 		 */
 		private function stopListeners() : void {
+			if (_isIntro) return;
 			_isRender = false;
 			grayPauseEffect();
 			log("&#47;&#33;&#92; PAUSE");
@@ -501,7 +510,6 @@ package {
 		 *  Function pause if leave stage
 		 */
 		private function grayPauseEffect() : void {
-			if (_isIntro) return;
 			_capture = new BitmapData(stage.stageWidth, stage.stageHeight, true, 0x40000000);
 			_topPause.graphics.beginBitmapFill(_capture, null, false, false);
 			_topPause.graphics.drawRect(0, 0, stage.width, stage.height);
@@ -540,6 +548,7 @@ package {
 			_sit = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
 			_wheel = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
 			_door = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
+			_driveWheel = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));
 
 			for (var i : int = 0; i < _vision.length; i++) {
 				mesh = _vision[i];
@@ -552,11 +561,17 @@ package {
 					mesh.material = _carCromeMat;
 				else if (mesh.name == 'frontLightContour')
 					mesh.material = _carLightMat3;
+				else if (mesh.name == 'Plaques')
+					mesh.material = _carCromeMat;
+				else if (mesh.name == 'sitBase')
+					mesh.material = _carIntern;
+				else if (mesh.name == 'sitColor' || mesh.name == 'steering')
+					mesh.material = _carIntern2;
 				else if (mesh.name == 'frontLight')
 					mesh.material = _carLightMat1;
 				else if (mesh.name == 'light_red')
 					mesh.material = _carLightMat2;
-				else if (mesh.name == 'interiorSymetrie' || mesh.name == 'chassisPlus' || mesh.name == 'chassisSymetrie' || mesh.name == 'wheel_j2' || mesh.name == 'sitColor' || mesh.name == 'radiateur')
+				else if (mesh.name == 'interiorSymetrie' || mesh.name == 'chassisPlus' || mesh.name == 'chassisSymetrie' || mesh.name == 'wheel_j2' || mesh.name == 'radiateur')
 					mesh.material = _carBlackMat;
 				else if (mesh.name == 'door')
 					mesh.material = _carBlackDoubleMat;
@@ -574,7 +589,9 @@ package {
 					_door.addChild(mesh);
 				// steering wheel
 				else if (mesh.name == 'steering') {
-					mesh.position = new Vector3D(-70, 123, 96);
+					_driveWheel.addChild(mesh);
+					_visionCar.addChild(_driveWheel);
+					_driveWheel.position = new Vector3D(70, 123, -96);
 				} else
 					_visionCar.addChild(mesh);
 			}
@@ -700,9 +717,6 @@ package {
 					break;
 				case Keyboard.I:
 					fullScreen();
-					break;
-				case Keyboard.V:
-					initReflection();
 					break;
 			}
 		}
@@ -838,7 +852,6 @@ package {
 		 */
 		private function message() : String {
 			var mes : String = "ARROW.WSAD.ZSQD - move\n";
-			mes += "V - reflection\n";
 			mes += "I - full screen\n";
 			mes += "N - random sky\n";
 			mes += "B - clone\n";
