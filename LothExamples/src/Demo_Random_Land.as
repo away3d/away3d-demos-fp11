@@ -81,7 +81,8 @@ package {
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
-	import games.Lander;
+	// import games.Lander;
+	import games.FractalTerrain;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Random_Land extends Sprite {
@@ -103,7 +104,7 @@ package {
 		private var _cameraController : HoverController;
 		private var _night : Number = 100;
 		// scene objects
-		private var _lander : Lander;
+		// private var _lander : Lander;
 		private var _ground : Mesh;
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
@@ -174,30 +175,29 @@ package {
 
 			// create skybox
 			randomSky();
+
 			// reflection method
 			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
 			_waterMaterial.addMethod(_reflectionMethod);
 			_boxMaterial.addMethod(_reflectionMethod);
-			// create lander
-			_lander = new Lander();
-			_lander.scene = _view.scene;
-			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			// _lander.moveCenter(0.1, 0);
-			// basic ground
+
+			// create noize terrain with image 6 7 8
+			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+
+			// create plane for water
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(40, 40);
 			_ground.mouseEnabled = true;
 			_ground.pickingCollider = PickingColliderType.BOUNDS_ONLY;
 			_ground.y = 100;
-			// _ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 			_ground.addEventListener(MouseEvent3D.MOUSE_UP, onGroundMouseOver);
-			// _ground.addEventListener(MouseEvent3D.MOUSE_DOWN, onGroundMouseOver);
 			_ground.addEventListener(MouseEvent3D.MOUSE_MOVE, onGroundMouseOver);
+
 			initListeners();
 			log(message());
 
+			// create basic spacShip
 			var spaceShip : Mesh = new Mesh(new SphereGeometry(60, 30, 20), _boxMaterial);
 			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(140, 30, 20), _boxMaterial);
 			spaceShip2.scaleY = 0.25;
@@ -207,6 +207,7 @@ package {
 			_player.addChild(spaceShip2);
 			spaceShip2.addEventListener(MouseEvent3D.MOUSE_DOWN, onShipMouseDown);
 			spaceShip2.mouseEnabled = true;
+
 			// load spaceship mesh
 			// load("SpaceShip.awd"+ "?uniq=" + _id);
 		}
@@ -340,9 +341,9 @@ package {
 			if (_cameraController.distance > 1000)
 				_cameraController.distance--;
 
-			_lander.update();
+			FractalTerrain.update();
 
-			_player.y = _lander.getHeightAt(0, 0);
+			_player.y = FractalTerrain.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
 			_cameraController.update();
 
@@ -560,8 +561,8 @@ package {
 
 		private function onGroundMouseOver(e : MouseEvent3D) : void {
 			if (_mouseMove)
-				_lander.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
-			else _lander.stop();
+				FractalTerrain.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
+			else FractalTerrain.stop();
 		}
 
 		private function onShipMouseDown(e : MouseEvent3D) : void {
@@ -627,15 +628,15 @@ package {
 		}
 
 		private function switch64(e : Event) : void {
-			_lander.changeResolution(64);
+			FractalTerrain.changeResolution(64);
 		}
 
 		private function switch128(e : Event) : void {
-			_lander.changeResolution(128);
+			FractalTerrain.changeResolution(128);
 		}
 
 		private function switch256(e : Event) : void {
-			_lander.changeResolution(256);
+			FractalTerrain.changeResolution(256);
 		}
 
 		/**

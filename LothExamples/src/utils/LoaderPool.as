@@ -21,7 +21,7 @@ package utils {
 	/**
 	 * Loader Pool
 	 * load binary file
-	 * @author Loth
+	 * @author Loth 2012
 	 */
 	public class LoaderPool extends Sprite {
 		private static const ASSETS_ROOT : String = "assets/";

@@ -86,13 +86,13 @@ package {
 	import flash.geom.Matrix;
 	import flash.ui.Keyboard;
 
-	import utils.AutoMapSky;
-	import utils.LoaderPool;
-	// import physics.*;
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
-	import games.Lander;
+	import utils.AutoMapSky;
+	import utils.LoaderPool;
+
+	import games.FractalTerrain;
 
 	[SWF(frameRate="60", backgroundColor = "#000000")]
 	public class Demo_Onkba_Fps extends Sprite {
@@ -114,7 +114,6 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// scene objects
-		private var _lander : Lander;
 		private var _cubeVector : Vector.<Mesh>;
 		private var _heroPieces : ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
@@ -235,11 +234,8 @@ package {
 			// create skybox
 			randomSky();
 
-			// create lander
-			_lander = new Lander();
-			_lander.scene = _view.scene;
-			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			// create noize terrain with image 6 7 8
+			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);
@@ -426,10 +422,10 @@ package {
 				_night--;
 			}
 
-			_lander.update();
-			_player.y = _lander.getHeightAt(0, 0) + 5;
+			FractalTerrain.update();
+			_player.y = FractalTerrain.getHeightAt(0, 0) + 5;
 			for (var i : int = 0; i < _cubeVector.length; i++) {
-				_cubeVector[i].y = _lander.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
+				_cubeVector[i].y = FractalTerrain.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
 			}
 
 			if (_hero) {
@@ -626,8 +622,7 @@ package {
 				posX = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
 				posZ = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
 				mesh = new Mesh(new CubeGeometry(150, 300, 150), _boxMaterial);
-				mesh.position = new Vector3D(posX, _lander.getHeightAt(posX, posZ) + (150), posZ);
-
+				mesh.position = new Vector3D(posX, FractalTerrain.getHeightAt(posX, posZ), posZ);
 				_view.scene.addChild(mesh);
 				_cubeVector[i] = mesh;
 			}
@@ -666,7 +661,7 @@ package {
 						g = Mesh(_hero.clone());
 						g.x = decal + (100 * i);
 						g.z = (decal + (100 * j));
-						g.y = _lander.getHeightAt(g.x, g.z);
+						g.y = FractalTerrain.getHeightAt(g.x, g.z);
 						if (g.x != 0 || g.z != 0)
 							_view.scene.addChild(g);
 					}
@@ -683,7 +678,8 @@ package {
 			else anim = WEAPON[currentWeapon] + ANIMATION[0];
 
 			if (currentAnim == anim) return;
-			_lander.move(0, 0);
+			// FractalTerrain.move(0, 0);
+			FractalTerrain.move(0, 0);
 			currentAnim = anim;
 			_animator.playbackSpeed = IDLE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
@@ -701,7 +697,7 @@ package {
 			if (currentAnim == anim) return;
 
 			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
-			_lander.move(0, -_animator.playbackSpeed / 20);
+			FractalTerrain.move(0, -_animator.playbackSpeed / 20);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -716,7 +712,7 @@ package {
 
 			if (dir > 0) anim = 'WalkL';
 			else anim = 'WalkR';
-			_lander.move(dir / 100, 0);
+			FractalTerrain.move(dir / 100, 0);
 			if (isCrouch) return;
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);

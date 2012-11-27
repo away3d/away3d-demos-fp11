@@ -77,7 +77,7 @@ package {
 	import flash.text.TextFormat;
 	import flash.text.TextField;
 	import flash.display.Sprite;
-	import flash.geom.Vector3D;
+	// import flash.geom.Vector3D;
 	import flash.events.Event;
 	import flash.ui.Keyboard;
 
@@ -89,7 +89,7 @@ package {
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
-	import games.Lander;
+	import games.FractalTerrain;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Avatar extends Sprite {
@@ -105,7 +105,6 @@ package {
 		// engine variables
 		private var _view : View3D;
 		private var _stats : AwayStats;
-		private var _lander : Lander;
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// light variables
@@ -202,11 +201,9 @@ package {
 			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
 			_waterMaterial.addMethod(_reflectionMethod);
 
-			_lander = new Lander();
-			_lander.scene = _view.scene;
-			_lander.bitmaps = [_bitmaps[6], _bitmaps[7], _bitmaps[8]];
-			_lander.initObjects(_terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			_lander.move(0, 0.03);
+			// create noize terrain with image 6 7 8
+			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrain.move(0, 0.03);
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(40, 40);
@@ -368,9 +365,9 @@ package {
 				_night--;
 			}
 
-			_lander.update();
+			FractalTerrain.update();
 
-			_cameraController.lookAtPosition = new Vector3D(0, _lander.getHeightAt(0, 0), 0);
+			_cameraController.lookAtPosition.y = FractalTerrain.getHeightAt(0, 0);
 			_cameraController.update();
 			// animate our lake material
 			_waterMethod.water1OffsetX += .001;
@@ -510,7 +507,7 @@ package {
 				m.z = (j * sz);
 				k = (i - (j * maxbyline));
 				m.x = -((maxbyline * sx) >> 1) + (k * sx) + (sx / 2);
-				m.y = _lander.getHeightAt(m.x, m.z);
+				m.y = FractalTerrain.getHeightAt(m.x, m.z);
 				m.mouseEnabled = m.mouseChildren = false;
 				_view.scene.addChild(m);
 				_clones[i] = m;
@@ -546,8 +543,6 @@ package {
 
 			// create new animator
 			var animator : SkeletonAnimator = new SkeletonAnimator(_animationSet, _squeleton);
-			// var vertexAnimator:VertexAnimator = new VertexAnimator(_animationSet);
-
 			// play random animation or Anim
 			var num : uint;
 			if (AnimNum == -1) num = int(Math.random() * 3);
@@ -581,7 +576,7 @@ package {
 		public function updateClone() : void {
 			for (var i : uint = 0; i < animators.length; i++) {
 				_cloneHair[i].transform = animators[i].globalPose.jointPoses[15].toMatrix3D();
-				_clones[i].y = _lander.getHeightAt(_clones[i].x, _clones[i].z);
+				_clones[i].y = FractalTerrain.getHeightAt(_clones[i].x, _clones[i].z);
 			}
 		}
 
@@ -765,18 +760,18 @@ package {
 		}
 
 		private function switch64(e : Event) : void {
-			_lander.changeResolution(64);
-			_lander.move(0, 0.03);
+			FractalTerrain.changeResolution(64);
+			FractalTerrain.move(0, 0.03);
 		}
 
 		private function switch128(e : Event) : void {
-			_lander.changeResolution(128);
-			_lander.move(0, 0.03);
+			FractalTerrain.changeResolution(128);
+			FractalTerrain.move(0, 0.03);
 		}
 
 		private function switch256(e : Event) : void {
-			_lander.changeResolution(256);
-			_lander.move(0, 0.03);
+			FractalTerrain.changeResolution(256);
+			FractalTerrain.move(0, 0.03);
 		}
 
 		/**

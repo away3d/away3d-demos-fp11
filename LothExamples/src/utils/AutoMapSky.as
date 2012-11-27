@@ -83,9 +83,9 @@ package utils {
 			var blend : String = Blend;
 			_skyTextureBitmaps = new Vector.<BitmapData>(6);
 			if (colors == null) {
-				_skyColor = 0xFFFFFF * Math.random();
-				_fogColor = 0xFFFFFF * Math.random();
-				_groundColor = 0xFFFFFF * Math.random();
+				_skyColor = randColor();
+				_fogColor = randColor();
+				_groundColor = randColor();
 				blend = _blendmodes[uint(Math.random() * _blendmodes.length)];
 			} else {
 				_skyColor = colors[0];
@@ -268,7 +268,7 @@ package utils {
 			return Vector.<uint>([(color & 0xff0000) >> 16, (color & 0x00ff00) >> 8, color & 0x0000ff]);
 		}
 
-		public function randColor() : uint {
+		static public function randColor() : uint {
 			return uint(Math.random() * 0xffffff);
 		}
 	}
