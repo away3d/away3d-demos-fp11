@@ -1,0 +1,10 @@
+# Sequences for Human.max
+# This file was written by loth
+# Man animation
+Breathe 0 20
+Walk 30 50
+Run 60 77
+Sit 90 110
+# Woman animation
+WalkWoman 120 140
+SitWoman 150 169

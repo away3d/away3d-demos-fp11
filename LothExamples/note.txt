@@ -1,0 +1,15 @@
+preview at 
+http://perso.numericable.fr/chamaslot/private/
+
+1°/ ONKBA FPS
+   Complexe human model with all animation for shooter game
+2°/ VISION CAR
+   Complex car model with full physics or basic mouvement
+3°/ RANDOM LAND
+   Infini terrain generator by perlin noise
+4°/ AVATAR
+   Most simple human and woman model with IA simulator
+5°/ PHYSICS
+   Basic test for oimophysics
+     
+All demos use AWD2 format (files for 3dsmax 2012 include)
