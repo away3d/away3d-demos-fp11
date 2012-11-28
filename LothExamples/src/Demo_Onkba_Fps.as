@@ -601,6 +601,7 @@ package {
 			// apply our _animator to our mesh
 			_hero.animator = _animator;
 			_hero.material = _heroMaterial;
+			_hero.rotationY = 180;
 			_hero.scale(HERO_SIZE);
 			// do the same for shirt
 			_shirt.animator = _animator;
@@ -613,7 +614,7 @@ package {
 
 			_player.addChild(_hero);
 			_player.addChild(_shirt);
-			_hero.rotationY = 180;
+
 			// Optional dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
 			_heroPieces.scale(HERO_SIZE);
