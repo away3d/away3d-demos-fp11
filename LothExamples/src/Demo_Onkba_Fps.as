@@ -97,9 +97,9 @@ package {
 	// import games.PoissonDisk;
 	[SWF(frameRate="60", backgroundColor = "#000000")]
 	public class Demo_Onkba_Fps extends Sprite {
-		private const MOUNTAIGN_TOP : Number = 4000;
+		private const MOUNTAIGN_TOP : Number = 1000;
 		private const FARVIEW : Number = 20000;
-		private const FOGNEAR : Number = 1000;
+		private const FOGNEAR : Number = 300;
 		private const HERO_SIZE : Number = 2;
 		// start colors
 		private var groundColor : uint = 0x333338;
@@ -172,7 +172,7 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
-		private var _cameraHeight : Number = 80;
+		private var _cameraHeight : Number = 120;
 		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
@@ -359,7 +359,7 @@ package {
 
 			// 3- eye ball open from bitmap diffuse onkba
 			b = new BitmapData(256 / 2, 256 / 2, false);
-			b.draw(_bitmaps[11], new Matrix(1, 0, 0, 1, -283 / 2, -197 / 2));
+			b.draw(_bitmaps[9], new Matrix(1, 0, 0, 1, -283 / 2, -197 / 2));
 			_eyesOpenMaterial = new TextureMaterial(Cast.bitmapTexture(b));
 			_eyesOpenMaterial.gloss = 100;
 			_eyesOpenMaterial.specular = 0.8;
@@ -407,7 +407,7 @@ package {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
-				if (i != 5 || i != 3 || i != 2) _materials[i].addMethod(_rimLightMethod);
+				if (i != 5) _materials[i].addMethod(_rimLightMethod);
 			}
 		}
 
