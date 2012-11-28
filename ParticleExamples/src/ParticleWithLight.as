@@ -1,37 +1,23 @@
 package
 {
-	import away3d.animators.data.ParticlePropertiesMode;
-	import away3d.animators.nodes.ParticleColorNode;
-	import away3d.core.base.ParticleGeometry;
-	import away3d.animators.data.ParticleProperties;
-	import away3d.animators.nodes.ParticleRotationalVelocityNode;
-	import away3d.animators.nodes.ParticlePositionNode;
-	import away3d.animators.nodes.ParticleVelocityNode;
-	import away3d.animators.ParticleAnimationSet;
-	import away3d.animators.ParticleAnimator;
-	import away3d.containers.View3D;
-	import away3d.controllers.HoverController;
-	import away3d.core.base.Geometry;
-	import away3d.debug.AwayStats;
-	import away3d.entities.Mesh;
-	import away3d.lights.DirectionalLight;
-	import away3d.materials.ColorMaterial;
-	import away3d.materials.lightpickers.StaticLightPicker;
-	import away3d.materials.methods.HardShadowMapMethod;
-	import away3d.primitives.ConeGeometry;
-	import away3d.primitives.CubeGeometry;
-	import away3d.primitives.CylinderGeometry;
-	import away3d.primitives.PlaneGeometry;
-	import away3d.primitives.SphereGeometry;
-	import away3d.primitives.TorusGeometry;
-	import away3d.tools.helpers.ParticleGeometryHelper;
-	import flash.display.Sprite;
-	import flash.display.StageAlign;
-	import flash.display.StageScaleMode;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.geom.ColorTransform;
-	import flash.geom.Vector3D;
+	import flash.display.*;
+	import flash.events.*;
+	import flash.geom.*;
+	
+	import away3d.animators.*;
+	import away3d.animators.data.*;
+	import away3d.animators.nodes.*;
+	import away3d.containers.*;
+	import away3d.controllers.*;
+	import away3d.core.base.*;
+	import away3d.debug.*;
+	import away3d.entities.*;
+	import away3d.lights.*;
+	import away3d.materials.*;
+	import away3d.materials.lightpickers.*;
+	import away3d.materials.methods.*;
+	import away3d.primitives.*;
+	import away3d.tools.helpers.*;
 	
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class ParticleWithLight extends Sprite
@@ -49,6 +35,7 @@ package
 		
 		private var lightPicker:StaticLightPicker;
 		private var light:DirectionalLight;
+		private var softShadowMapMethod:SoftShadowMapMethod;
 		
 
 		public function ParticleWithLight()
@@ -85,8 +72,10 @@ package
 			_view.scene.addChild(light);
 			lightPicker = new StaticLightPicker([light]);
 			
+			softShadowMapMethod = new SoftShadowMapMethod(light, 20);
+			softShadowMapMethod.range = 2;
 			var groundMaterial:ColorMaterial = new ColorMaterial();
-			groundMaterial.shadowMethod = new HardShadowMapMethod(light);
+			groundMaterial.shadowMethod = softShadowMapMethod;
 			groundMaterial.lightPicker = lightPicker;
 			var ground:Mesh = new Mesh(new PlaneGeometry(2000, 2000), groundMaterial);
 			_view.scene.addChild(ground);
@@ -134,7 +123,7 @@ package
 			//create a mesh with material for particles
 			var material:ColorMaterial = new ColorMaterial(0xcccc88);
 			material.lightPicker = lightPicker;
-			material.shadowMethod = new HardShadowMapMethod(light);
+			material.shadowMethod = softShadowMapMethod;
 			var particleMesh:Mesh = new Mesh(particleGeometry, material);
 			var animator:ParticleAnimator = new ParticleAnimator(animationSet);
 			particleMesh.animator = animator;
