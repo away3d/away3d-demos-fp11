@@ -39,9 +39,12 @@ package {
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.SimpleWaterNormalMethod;
+	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.materials.methods.FresnelEnvMapMethod;
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.textures.CubeReflectionTexture;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
@@ -51,13 +54,10 @@ package {
 	import away3d.library.assets.AssetType;
 	import away3d.primitives.CubeGeometry;
 	import away3d.lights.DirectionalLight;
-	import away3d.materials.methods.SimpleWaterNormalMethod;
-	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.events.LoaderEvent;
 	import away3d.containers.View3D;
 	import away3d.events.AssetEvent;
-	import away3d.materials.methods.EnvMapMethod;
-	import away3d.loaders.Loader3D;
+	// import away3d.loaders.Loader3D;
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
@@ -178,9 +178,12 @@ package {
 			initSetting();
 			initLights();
 
+			// random sky map
+			var skyN : uint = uint(1 + Math.random() * 6);
+
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky2/negy.jpg", "sky2/posy.jpg", "sky2/posx.jpg", "sky2/negz.jpg", "sky2/posz.jpg", "sky2/negx.jpg");
+			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
 			LoaderPool.log = log;
@@ -539,9 +542,9 @@ package {
 		 * Listener on all resource complete
 		 */
 		private function onResourceComplete(e : LoaderEvent) : void {
-			var loader3d : Loader3D = e.target as Loader3D;
+			/*var loader3d : Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
-			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
+			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);*/
 
 			var mesh : Mesh;
 			_visionCar = new Mesh(new CubeGeometry(1, 1, 1), new ColorMaterial(0x0, 0));

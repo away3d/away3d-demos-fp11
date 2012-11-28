@@ -178,9 +178,12 @@ package {
 			initSetting();
 			initLights();
 
+			// random sky map
+			var skyN : uint = uint(1 + Math.random() * 6);
+
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky4/negy.jpg", "sky4/posy.jpg", "sky4/posx.jpg", "sky4/negz.jpg", "sky4/posz.jpg", "sky4/negx.jpg");
+			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
 			LoaderPool.log = log;
@@ -235,8 +238,8 @@ package {
 			// setup controller to be used on the camera
 			_cameraController = new HoverController(_view.camera, null, 180, 0, 1000, 10, 9);
 			_cameraController.tiltAngle = 0;
-			_cameraController.minTiltAngle = 0;
-			_cameraController.maxTiltAngle = 60;
+			_cameraController.minTiltAngle = -90;
+			_cameraController.maxTiltAngle = 90;
 			_cameraController.autoUpdate = false;
 
 			// add stats
@@ -271,7 +274,7 @@ package {
 		private function randomSky() : void {
 			AutoMapSky.scene = _view.scene;
 			if (_isIntro) {
-				AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 4, "overlay");
+				AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8, "overlay");
 				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, 100);
 			} else {
 				AutoMapSky.randomSky(null, _bitmaps, 4, "add");

@@ -47,7 +47,7 @@ package {
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
-	//import away3d.textures.CubeReflectionTexture;
+	// import away3d.textures.CubeReflectionTexture;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
@@ -122,7 +122,7 @@ package {
 		private var _weapons : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
 		private var _heroWeapon : Mesh;
-		//private var _bigBall : Mesh;
+		// private var _bigBall : Mesh;
 		private var _hero : Mesh;
 		// materials
 		private var _boxMaterial : TextureMaterial;
@@ -136,7 +136,7 @@ package {
 		private var _eyesClosedMaterial : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
-		//private var _reflectionTexture : CubeReflectionTexture;
+		// private var _reflectionTexture : CubeReflectionTexture;
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _rimLightMethod : RimLightMethod;
 		private var _fogMethode : FogMethod;
@@ -176,7 +176,7 @@ package {
 		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
-		//private var _isReflection : Boolean;
+		// private var _isReflection : Boolean;
 		private var _dynamicsEyes : Boolean;
 		private var _cloneActif : Boolean;
 		private var _debugRay : Boolean;
@@ -210,9 +210,12 @@ package {
 			initSetting();
 			initLights();
 
+			// random sky map
+			var skyN : uint = uint(1 + Math.random() * 6);
+
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky/negy.jpg", "sky/posy.jpg", "sky/posx.jpg", "sky/negz.jpg", "sky/posz.jpg", "sky/negx.jpg");
+			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			// hero map 9 10 11
 			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
@@ -425,9 +428,9 @@ package {
 
 			FractalTerrain.update();
 			_player.y = FractalTerrain.getHeightAt(0, 0) + 5;
-			for (var i : int = 0; i < _cubeVector.length; i++) {
-				_cubeVector[i].y = FractalTerrain.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
-			}
+			/*for (var i : int = 0; i < _cubeVector.length; i++) {
+			_cubeVector[i].y = FractalTerrain.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
+			}*/
 
 			if (_hero) {
 				if (_dynamicsEyes) updateEyes();
@@ -443,8 +446,8 @@ package {
 			_cameraController.update();
 
 			/*if (_isReflection) {
-				_reflectionTexture.position = _bigBall.position;
-				_reflectionTexture.render(_view);
+			_reflectionTexture.position = _bigBall.position;
+			_reflectionTexture.render(_view);
 			}*/
 
 			_view.render();

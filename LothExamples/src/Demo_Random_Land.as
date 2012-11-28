@@ -155,9 +155,12 @@ package {
 			initSetting();
 			initLights();
 
+			// random sky map
+			var skyN : uint = uint(1 + Math.random() * 6);
+
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky3/negy.jpg", "sky3/posy.jpg", "sky3/posx.jpg", "sky3/negz.jpg", "sky3/posz.jpg", "sky3/negx.jpg");
+			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
 
@@ -186,7 +189,7 @@ package {
 
 			// create plane for water
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(40, 40);
+			_ground.geometry.scaleUV(60, 60);
 			_ground.mouseEnabled = true;
 			_ground.pickingCollider = PickingColliderType.BOUNDS_ONLY;
 			_ground.y = 900;

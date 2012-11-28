@@ -113,7 +113,9 @@ package utils {
 		 * Create Sky vector map
 		 */
 		static public function vectorSky(zenithColor : uint, horizonColor : uint, nadirColor : uint, quality : uint = 8, bitmaps : Vector.<BitmapData> = null, blend : String = "overlay") : BitmapCubeTexture {
-			var xl : uint = 128 * quality;
+			var xl : uint;
+			if (bitmaps != null)xl = bitmaps[0].width;
+			else xl = 128 * quality;
 			var pinch : uint = xl / 3.6;
 
 			// sky color from bottom to top;

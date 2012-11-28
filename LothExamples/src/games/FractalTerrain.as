@@ -82,15 +82,19 @@ package games {
 		static public function initTerrainMesh() : void {
 			_plane = new Mesh(new PlaneGeometry(_zoneDimension, _zoneDimension, _zoneSubdivision, _zoneSubdivision), _terrainMaterial);
 			_plane.geometry.convertToSeparateBuffers();
-			_plane.geometry.subGeometries[0].autoDeriveVertexNormals = false;
-			_plane.geometry.subGeometries[0].autoDeriveVertexTangents = false;
+
 			_plane.mouseEnabled = false;
 			_plane.mouseChildren = false;
 			_plane.castsShadows = false;
 			_scene.addChild(_plane);
 			_subGeometry = SubGeometry(_plane.geometry.subGeometries[0]);
+
+			// _subGeometry.useFaceWeights = true;
+
 			updateMaterial();
 			updateTerrain();
+			_subGeometry.autoDeriveVertexNormals = false;
+			_subGeometry.autoDeriveVertexTangents = false;
 		}
 
 		/**
@@ -131,9 +135,9 @@ package games {
 		static private  function draw() : void {
 			_ground.unlock();
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-			_ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(20));
-			if (_zoneResolution == 256) _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(12, 12));
-			else _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(6, 6));
+			_ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(60));
+			if (_zoneResolution == 256) _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(8, 8));
+			else _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(4, 4));
 			_ground.lock();
 		}
 
@@ -141,7 +145,9 @@ package games {
 		 * Get height from perlin noize bitmap
 		 */
 		static public function getHeightAt(x : Number, z : Number) : Number {
+			// var col : uint = _ground.getPixel((x / _zoneDimension + .5) * (_zoneSubdivision + 1), (-z / _zoneDimension + .5) * (_zoneSubdivision + 1)) & 0xffffff;
 			var col : uint = _ground.getPixel((x / _zoneDimension + .5) * (_zoneSubdivision + 1), (-z / _zoneDimension + .5) * (_zoneSubdivision + 1)) & 0xffffff;
+
 			return _zoneHeight * (col / 0xffffff);
 		}
 
@@ -201,6 +207,7 @@ package games {
 		static private function updateTerrain() : void {
 			// get plane vertex data
 			var v : Vector.<Number> = _subGeometry.vertexData;
+			// var indices:Vector.<uint> = _subGeometry.indexData;
 			var l : uint = v.length;
 			var c : uint, px : uint, size : uint;
 			if (_zoneResolution == 256) size = _zoneResolution - 5;
@@ -211,7 +218,9 @@ package games {
 				// Displace y position by the range
 				v[i] = ((_zoneHeight * (px / 0xffffff)));
 			}
+
 			_subGeometry.updateVertexData(v);
+			// _subGeometry.updateIndexData(indices);
 		}
 
 		/**
