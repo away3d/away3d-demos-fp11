@@ -822,6 +822,9 @@ package {
 			Style.LABEL_TEXT = 0xffffff;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
+			Style.fontName = "Helvetica";
+			Style.embedFonts = false;
+			Style.fontSize = 11;
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 		}
 

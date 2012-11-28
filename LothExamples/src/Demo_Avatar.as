@@ -756,6 +756,9 @@ package {
 			Style.BACKGROUND = 0x000000;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
+			Style.fontName = "Helvetica";
+			Style.embedFonts = false;
+			Style.fontSize = 11;
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "64", switch64).setSize(60, 30);
 			new PushButton(_menu, 130, -29, "128", switch128).setSize(60, 30);

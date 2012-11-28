@@ -156,7 +156,7 @@ package {
 			initLights();
 
 			// random sky map
-			var skyN : uint = uint(1 + Math.random() * 6);
+			var skyN : uint = uint(1+ Math.random() * 6);
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
@@ -623,6 +623,9 @@ package {
 			Style.LABEL_TEXT = 0xffffff;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
+			Style.fontName = "Helvetica";
+			Style.embedFonts = false;
+			Style.fontSize = 11;
 
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "64", switch64).setSize(60, 30);

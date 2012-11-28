@@ -517,9 +517,9 @@ package {
 		private function onAssetComplete(event : AssetEvent) : void {
 			var i : uint;
 			if (event.asset.assetType == AssetType.SKELETON) {
-				// Create a new skeleton animation set with 4 joints per vertex
+				// Create a new skeleton animation set with 3 joints per vertex
 				// and Wrap in an animator object
-				_animationSet = new SkeletonAnimationSet(4);
+				_animationSet = new SkeletonAnimationSet(3);
 				_animator = new SkeletonAnimator(_animationSet, event.asset as Skeleton);
 			} else if (event.asset.assetType == AssetType.ANIMATION_NODE) {
 				// Add each animation node to the animation set
@@ -1109,6 +1109,9 @@ package {
 			Style.BACKGROUND = 0x000000;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
+			Style.fontName = "Helvetica";
+			Style.embedFonts = false;
+			Style.fontSize = 11;
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "WEAPON", switchWeapon).setSize(60, 30);
 		}
