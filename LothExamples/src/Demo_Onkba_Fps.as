@@ -124,6 +124,7 @@ package {
 		private var _heroWeapon : Mesh;
 		// private var _bigBall : Mesh;
 		private var _hero : Mesh;
+		private var _shirt : Mesh;
 		// materials
 		private var _boxMaterial : TextureMaterial;
 		private var _gunMaterial : TextureMaterial;
@@ -538,7 +539,10 @@ package {
 				if (mesh.name == "Onkba") {
 					_hero = mesh;
 				}
-
+				// Shirt object
+				if (mesh.name == "Shirt") {
+					_shirt = mesh;
+				}
 				// Weapons object
 				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (mesh.name == WEAPON[i] + 'Test') {
@@ -598,12 +602,17 @@ package {
 			_hero.animator = _animator;
 			_hero.material = _heroMaterial;
 			_hero.scale(HERO_SIZE);
-
+			// do the same for shirt
+			_shirt.animator = _animator;
+			_shirt.material = _heroMaterial;
+			_shirt.rotationY = 180;
+			_shirt.scale(HERO_SIZE);
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), null);
 			_hero.addChild(_heroWeapon);
 
 			_player.addChild(_hero);
+			_player.addChild(_shirt);
 			_hero.rotationY = 180;
 			// Optional dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
