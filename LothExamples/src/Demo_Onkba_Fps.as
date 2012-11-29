@@ -594,20 +594,19 @@ package {
 			var loader3d : Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
-			// var posY : Number = (96 * HERO_SIZE);
 
 			_transition = new CrossfadeTransition(0.3);
 
 			// apply our _animator to our mesh
 			_hero.animator = _animator;
 			_hero.material = _heroMaterial;
-			_hero.rotationY = 180;
 			_hero.scale(HERO_SIZE);
+
 			// do the same for shirt
 			_shirt.animator = _animator;
 			_shirt.material = _heroMaterial;
-			_shirt.rotationY = 180;
 			_shirt.scale(HERO_SIZE);
+
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), null);
 			_hero.addChild(_heroWeapon);
@@ -619,7 +618,7 @@ package {
 			_heroPieces = new ObjectContainer3D();
 			_heroPieces.scale(HERO_SIZE);
 			_player.addChild(_heroPieces);
-			_heroPieces.rotationY = 180;
+
 			addHeroEye();
 
 			if (_isIntro) {
@@ -711,7 +710,7 @@ package {
 			if (currentAnim == anim) return;
 
 			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
-			FractalTerrain.move(0, -_animator.playbackSpeed / 20);
+			FractalTerrain.move(0, _animator.playbackSpeed / 20);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -723,7 +722,6 @@ package {
 		private function updateMovementSide(dir : Number) : void {
 			isSideMove = true;
 			var anim : String;
-
 			if (dir > 0) anim = 'WalkL';
 			else anim = 'WalkR';
 			FractalTerrain.move(dir / 100, 0);
@@ -1124,6 +1122,12 @@ package {
 			Style.fontSize = 11;
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "WEAPON", switchWeapon).setSize(60, 30);
+			new PushButton(_menu, 65+65, -29, "SHIRT", switchShirt).setSize(60, 30);
+		}
+
+		private function switchShirt(e:Event=null) : void {
+			if (_shirt.visible) _shirt.visible = false;
+			else _shirt.visible = true;
 		}
 
 		/**
