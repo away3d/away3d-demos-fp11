@@ -131,6 +131,7 @@ package {
 		private var _gunMaterial2 : TextureMaterial;
 		private var _boneMaterial : TextureMaterial;
 		private var _heroMaterial : TextureMaterial;
+		private var _shirtMaterial : TextureMaterial;
 		private var _shereMaterial : TextureMaterial;
 		private var _terrainMaterial : TextureMaterial;
 		private var _eyesOpenMaterial : TextureMaterial;
@@ -337,9 +338,7 @@ package {
 			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
 			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
 			_heroMaterial.gloss = 25;
-			_heroMaterial.specular = 0.5;
-			_heroMaterial.alphaThreshold = 0.9;
-			_heroMaterial.alphaPremultiplied = true;
+			_heroMaterial.specular = 0.8;
 			_materials[0] = _heroMaterial;
 
 			// 1- weapon
@@ -402,6 +401,16 @@ package {
 			_gunMaterial2.gloss = 20;
 			_gunMaterial2.specular = 0.8;
 			_materials[8] = _gunMaterial2;
+
+			// 9 - hero shirt
+			_shirtMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
+			// _heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			// _heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
+			_shirtMaterial.gloss = 5;
+			_shirtMaterial.specular = 0.1;
+			_shirtMaterial.alphaThreshold = 0.9;
+			_shirtMaterial.alphaPremultiplied = true;
+			_materials[9] = _shirtMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++ ) {
@@ -534,6 +543,8 @@ package {
 				}
 			} else if (event.asset.assetType == AssetType.MESH) {
 				var mesh : Mesh = event.asset as Mesh;
+				// set default texture
+				mesh.material = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x000000)));
 
 				// Onkba object
 				if (mesh.name == "Onkba") {
@@ -604,7 +615,7 @@ package {
 
 			// do the same for shirt
 			_shirt.animator = _animator;
-			_shirt.material = _heroMaterial;
+			_shirt.material = _shirtMaterial;
 			_shirt.scale(HERO_SIZE);
 
 			// add weapon container
@@ -1122,10 +1133,10 @@ package {
 			Style.fontSize = 11;
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "WEAPON", switchWeapon).setSize(60, 30);
-			new PushButton(_menu, 65+65, -29, "SHIRT", switchShirt).setSize(60, 30);
+			new PushButton(_menu, 65 + 65, -29, "SHIRT", switchShirt).setSize(60, 30);
 		}
 
-		private function switchShirt(e:Event=null) : void {
+		private function switchShirt(e : Event = null) : void {
 			if (_shirt.visible) _shirt.visible = false;
 			else _shirt.visible = true;
 		}

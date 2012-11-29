@@ -471,6 +471,8 @@ package {
 			_animationSet.addState(animationState.name, animationState);
 			}*/ else if (event.asset.assetType == AssetType.MESH) {
 				mesh = Mesh(event.asset);
+				// set default texture
+				mesh.material = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x000000)));
 				// Character Men & Woman
 				if (mesh.name.substring(0, 4) == "Skin") {
 					_skinMesh.push(mesh);
