@@ -1,0 +1,5 @@
+# Sequences for FPS character ONKBA
+# This file was written by loth
+# AWD Export option : no material , joints per vertex 3
+#
+Basic 0 100
