@@ -36,32 +36,46 @@ THE SOFTWARE.
 
  */
 package {
-	import flash.text.TextField;
-
-	import away3d.containers.*;
-	import away3d.entities.Mesh;
-	import away3d.primitives.*;
-	import away3d.utils.*;
-	import away3d.materials.TextureMaterial;
-	import away3d.lights.DirectionalLight;
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
+	import away3d.events.Stage3DEvent;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
+	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.controllers.HoverController;
-	import away3d.materials.methods.FilteredShadowMapMethod;
+	import away3d.materials.TextureMaterial;
+	import away3d.primitives.SphereGeometry;
+	import away3d.primitives.CubeGeometry;
+	import away3d.lights.DirectionalLight;
+	import away3d.containers.View3D;
+	import away3d.debug.AwayStats;
+	import away3d.entities.Mesh;
+	import away3d.utils.Cast;
+
+	import flash.display.StageQuality;
+	import flash.display.StageScaleMode;
+	import flash.display.BitmapData;
+	import flash.display.StageAlign;
+	import flash.events.MouseEvent;
+	import flash.text.TextFormat;
+	import flash.system.System;
+	import flash.text.TextField;
+	import flash.display.Sprite;
+	import flash.geom.Vector3D;
+	import flash.events.Event;
 
 	import physics.OimoPhysics;
-
-	import flash.display.*;
-	import flash.events.*;
-	import flash.geom.Vector3D;
-	import flash.text.TextFormat;
 
 	[SWF(backgroundColor="#000000", frameRate="60", quality="LOW")]
 	public class Demo_Physics extends Sprite {
 		// engine variables
 		private var _view : View3D;
 		private var _text : TextField;
+		private var _stats : AwayStats;
+		// Stage manager and Stage3D instance proxy classes
+		private var _stage3DManager : Stage3DManager;
+		private var _stage3DProxy : Stage3DProxy;
 		// scene objects
 		private var _plane : Mesh;
 		private var _sphere : Mesh;
@@ -80,14 +94,65 @@ package {
 		 * Constructor
 		 */
 		public function Demo_Physics() {
+			if (stage) init(null);
+			else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
+		}
+
+		/**
+		 * Work around IE flash embedding issues
+		 */
+		private function init(e : Event) : void {
+			if (e != null) removeEventListener(Event.ADDED_TO_STAGE, init);
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
+			stage.quality = StageQuality.LOW;
+			System.pauseForGCIfCollectionImminent(1);
+			if ((stage.stageWidth != 0) && (stage.stageHeight != 0)) initProxies();
+			else stage.addEventListener(Event.RESIZE, onResizeTesting);
+		}
+
+		/**
+		 * Testing if stage height != 0
+		 */
+		private function onResizeTesting(e : Event) : void {
+			if ((stage.stageWidth != 0) && (stage.stageHeight != 0)) {
+				stage.removeEventListener(Event.RESIZE, onResizeTesting);
+				initProxies();
+			}
+		}
+
+		/**
+		 * Initialise the Stage3D proxies
+		 */
+		private function initProxies() : void {
+			// Define a new Stage3DManager for the Stage3D objects
+			_stage3DManager = Stage3DManager.getInstance(stage);
+
+			// Create a new Stage3D proxy for the first Stage3D scene
+			_stage3DProxy = _stage3DManager.getFreeStage3DProxy();
+			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, initFinal);
+			_stage3DProxy.color = 0x000000;
+		}
+
+		/**
+		 * Global initialise function
+		 */
+		private function initFinal(e : Stage3DEvent = null) : void {
 			initText();
 
-			// setup the view
+			// create the view
 			_view = new View3D();
+			_view.stage3DProxy = _stage3DProxy;
+			_view.shareContext = true;
+			addChild(_view);
 			_view.camera.lens.far = 3000;
 			addChild(_view);
+
+			// add stats
+			addChild(_stats = new AwayStats(_view, false, true));
+			_stats.x = stage.stageWidth - _stats.width - 5;
+			_stats.alpha = 0.5;
+			_stats.y = 2;
 
 			// setup the light
 			initLights();
@@ -174,7 +239,7 @@ package {
 			}
 
 			// setup the render loop
-			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			_stage3DProxy.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			stage.addEventListener(Event.RESIZE, onResize);
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
@@ -201,6 +266,7 @@ package {
 		private function onResize(event : Event = null) : void {
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
+			_stats.x = stage.stageWidth - _stats.width;
 		}
 
 		/**

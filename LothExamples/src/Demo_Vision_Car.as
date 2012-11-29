@@ -36,6 +36,9 @@
 
  */
 package {
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
+	import away3d.events.Stage3DEvent;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
@@ -57,7 +60,6 @@ package {
 	import away3d.events.LoaderEvent;
 	import away3d.containers.View3D;
 	import away3d.events.AssetEvent;
-	// import away3d.loaders.Loader3D;
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
@@ -73,6 +75,7 @@ package {
 	import flash.events.MouseEvent;
 	import flash.text.GridFitType;
 	import flash.text.TextFormat;
+	import flash.system.System;
 	import flash.text.TextField;
 	import flash.display.Sprite;
 	import flash.geom.Vector3D;
@@ -99,6 +102,9 @@ package {
 		private var skyColor : uint = 0x445465;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
+		// Stage manager and Stage3D instance proxy classes
+		private var _stage3DManager : Stage3DManager;
+		private var _stage3DProxy : Stage3DProxy;
 		// engine variables
 		private var _view : View3D;
 		private var _stats : AwayStats;
@@ -160,19 +166,50 @@ package {
 		 * Constructor
 		 */
 		public function Demo_Vision_Car() {
-			if (stage) init();
+			if (stage) init(null);
 			else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
+		}
+
+		/**
+		 * Work around IE flash embedding issues
+		 */
+		private function init(e : Event) : void {
+			if (e != null) removeEventListener(Event.ADDED_TO_STAGE, init);
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+			stage.quality = StageQuality.LOW;
+			System.pauseForGCIfCollectionImminent(1);
+			if ((stage.stageWidth != 0) && (stage.stageHeight != 0)) initProxies();
+			else stage.addEventListener(Event.RESIZE, onResizeTesting);
+		}
+
+		/**
+		 * Testing if stage height != 0
+		 */
+		private function onResizeTesting(e : Event) : void {
+			if ((stage.stageWidth != 0) && (stage.stageHeight != 0)) {
+				stage.removeEventListener(Event.RESIZE, onResizeTesting);
+				initProxies();
+			}
+		}
+
+		/**
+		 * Initialise the Stage3D proxies
+		 */
+		private function initProxies() : void {
+			// Define a new Stage3DManager for the Stage3D objects
+			_stage3DManager = Stage3DManager.getInstance(stage);
+
+			// Create a new Stage3D proxy for the first Stage3D scene
+			_stage3DProxy = _stage3DManager.getFreeStage3DProxy();
+			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, initFinal);
+			_stage3DProxy.color = 0x000000;
 		}
 
 		/**
 		 * Global initialise function
 		 */
-		private function init(e : Event = null) : void {
-			removeEventListener(Event.ADDED_TO_STAGE, init);
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
-			stage.quality = StageQuality.LOW;
-
+		private function initFinal(e : Stage3DEvent = null) : void {
 			initEngine();
 			initText();
 			initSetting();
@@ -225,7 +262,10 @@ package {
 		 * Initialise the engine
 		 */
 		private function initEngine() : void {
+			// create the view
 			_view = new View3D();
+			_view.stage3DProxy = _stage3DProxy;
+			_view.shareContext = true;
 			addChild(_view);
 
 			// create custom lens
@@ -475,7 +515,7 @@ package {
 				stage.removeEventListener(MouseEvent.MOUSE_OVER, initListeners);
 			}
 			// add render loop
-			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			_stage3DProxy.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			// add key listeners
 			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
@@ -495,7 +535,7 @@ package {
 			_isRender = false;
 			grayPauseEffect();
 			log("&#47;&#33;&#92; PAUSE");
-			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			_stage3DProxy.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
