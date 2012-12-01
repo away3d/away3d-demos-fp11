@@ -90,8 +90,8 @@ package {
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Random_Land extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
-		private const FARVIEW : Number = 128 * 100;
-		private const FOGNEAR : Number = 0;
+		private const FARVIEW : Number = 6400;
+		private const FOGNEAR : Number = 5000;
 		// start colors
 		private var groundColor : uint = 0x333338;
 		private var fogColor : uint = 0x000000;
@@ -224,7 +224,7 @@ package {
 
 			// create noize terrain with image 6 7 8
 			_terrain = new FractalTerrain();
-			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
 
 			// create plane for water
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);

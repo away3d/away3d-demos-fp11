@@ -1,4 +1,6 @@
 package games {
+	import flash.geom.Rectangle;
+
 	import away3d.materials.methods.TerrainDiffuseMethod;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.PlaneGeometry;
@@ -9,10 +11,13 @@ package games {
 	import away3d.utils.Cast;
 
 	import flash.display.BitmapData;
+	import flash.display.Sprite;
+	import flash.display.Bitmap;
 	import flash.filters.ColorMatrixFilter;
-	// import flash.filters.BlurFilter;
+	import flash.filters.BlurFilter;
 	import flash.geom.Vector3D;
 	import flash.geom.Point;
+	import flash.geom.ColorTransform;
 	// import flash.geom.Matrix;
 	import utils.BitmapScrolling;
 	import utils.BitmapFilterEffects;
@@ -24,8 +29,8 @@ package games {
 	 * @author Loth 2012
 	 */
 	public class FractalTerrain {
-		private var _zoneDimension : Number = 12800;
-		private var _zoneHeight : uint = 1000;
+		private var _zoneDimension : uint = 12800;
+		private var _zoneHeight : int = 1000;
 		private var _zoneResolution : uint = 128;
 		private var _terrainMethod : TerrainDiffuseMethod;
 		private var _terrainMaterial : TextureMaterial;
@@ -39,6 +44,7 @@ package games {
 		private var _ground01 : BitmapScrolling;
 		private var _ground02 : BitmapScrolling;
 		private var _ground : BitmapData;
+		private var _blendBitmapData : BitmapData;
 		private var _ease : Vector3D;
 		private var _fractal : Boolean = true;
 		private var _numOctaves : uint = 1;
@@ -46,16 +52,19 @@ package games {
 		private var _complex : Number = 0.12;
 		private var _maxSpeed : Number = 0.2;
 		private var _bitmaps : Vector.<BitmapData>;
-		private var _seed : uint;
+		private var _seed : int;
 		private var _isMove : Boolean;
 		private var _multy : Vector3D = new Vector3D(160, 160, 160);
+		private var _p : Point;
 		// Debug option to see only perlin noize and grid
 		private var _isMapTesting : Boolean = false;
+		private var _layerBitmap : Vector.<BitmapData>;
+		private var _rec : Rectangle;
 
 		/**
 		 * Globale initialiser
 		 */
-		public function initGround(Scene : Scene3D, Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : Number = 12800, Height : Number = 1000, Resolution : uint = 128) : void {
+		public function initGround(Scene : Scene3D, Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : uint = 12800, Height : int = 1000, Resolution : uint = 128) : void {
 			_zoneHeight = Height;
 			_zoneDimension = Dimension;
 			_terrainMaterial = Material;
@@ -63,12 +72,19 @@ package games {
 			_bitmaps = Bitmaps;
 			_scene = Scene;
 			_ease = new Vector3D();
-			_seed = Math.random() * 123456;
+			_seed = int(Math.random() * 123456);
 			for (var i : uint = 0; i < _numOctaves; i++) {
 				_offsets[i] = new Point(0, 0);
 			}
 			// draw the height map
-			_ground = new BitmapData(_zoneResolution, _zoneResolution, false);
+			_ground = new BitmapData(_zoneResolution, _zoneResolution, true);
+			_blendBitmapData = new BitmapData(_zoneResolution, _zoneResolution, false);
+			_layerBitmap = new Vector.<BitmapData>(3);
+			for ( i = 0; i < 3; i++) {
+				_layerBitmap[i] = new BitmapData(_zoneResolution, _zoneResolution, true);
+			}
+			_rec = _ground.rect;
+			_p = new Point();
 			draw();
 			// ground bitmap scrolling
 			_ground00 = new BitmapScrolling(_bitmaps[6]);
@@ -139,7 +155,7 @@ package games {
 			_ground00.move(-_ease.x * _multy.x, -_ease.y * _multy.x);
 			_ground01.move(-_ease.x * _multy.y, -_ease.y * _multy.y);
 			_ground02.move(-_ease.x * _multy.z, -_ease.y * _multy.z);
-			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground00.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground02.getMap())], Cast.bitmapTexture(_ground), _tiles);
+			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground02.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground00.getMap())], Cast.bitmapTexture(_blendBitmapData), _tiles);
 			_terrainMaterial.normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground, 5, 0.5, -1, -1));
 			if (_isMapTesting) _terrainMaterial.texture = Cast.bitmapTexture(_ground);
 			else _terrainMaterial.diffuseMethod = _terrainMethod;
@@ -150,11 +166,38 @@ package games {
 		 */
 		private function draw() : void {
 			_ground.unlock();
+			_blendBitmapData.unlock();
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
+			_layerBitmap[0] = _ground.clone();
+			// red _ top
+			_layerBitmap[0].colorTransform(_rec, new ColorTransform(1, 0, 0, 1, 255, 0, 0, 0));
+			// green _ mid
+			_layerBitmap[1].threshold(_ground, _rec, _p, ">", 0xFF888888, 0x0000000, 0xFFFFFFFF, true);
+			_layerBitmap[1].colorTransform(_rec, new ColorTransform(0, 1, 0, 1, 0, 255, 0, 0));
+			_layerBitmap[1].applyFilter(_layerBitmap[1], _rec, _p, new BlurFilter(12, 12, 3));
+			// blue _ bottom
+			_layerBitmap[2].threshold(_ground, _rec, _p, ">", 0xFF555555, 0x0000000, 0xFFFFFFFF, true);
+			_layerBitmap[2].colorTransform(_rec, new ColorTransform(0, 0, 1, 1, 0, 0, 255, 0));
+			_layerBitmap[2].applyFilter(_layerBitmap[2], _rec, _p, new BlurFilter(6, 6, 3));
+
+			var b1 : Bitmap = new Bitmap(_layerBitmap[0]);
+			var b2 : Bitmap = new Bitmap(_layerBitmap[1]);
+			var b3 : Bitmap = new Bitmap(_layerBitmap[2]);
+
+			var full : Sprite = new Sprite();
+			full.addChild(b1);
+			full.addChild(b2);
+			full.addChild(b3);
+
+			_blendBitmapData.draw(full);
+
+			// _ground.colorTransform(_ground.rect, new ColorTransform(1, 1, 1, 1, 0, 0, 0, 0));
 			// _ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(60));
 			// if (_zoneResolution == 256) _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(8, 8));
 			// else _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(10, 10));
 			_ground.lock();
+			_blendBitmapData.lock();
+			_layerBitmap[0].dispose();
 		}
 
 		/**
@@ -222,7 +265,7 @@ package games {
 			var c : uint, px : uint, size : uint;
 			if (_zoneResolution == 256) size = _zoneResolution - 5;// 250 is max
 			else size = _zoneResolution;
-			for (var i : uint = 1; i < l; i += 3, c++) {
+			for (var i : uint = 1; i < l; i += 3, ++c) {
 				// Get pixel at x and y position
 				px = _ground.getPixel(c % size, size - (c / size));
 				// Displace y position by the range
