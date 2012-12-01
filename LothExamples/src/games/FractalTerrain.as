@@ -39,10 +39,9 @@ package games {
 		private var _ground01 : BitmapScrolling;
 		private var _ground02 : BitmapScrolling;
 		private var _ground : BitmapData;
-		private var _groundRevers : BitmapData;
 		private var _ease : Vector3D;
 		private var _fractal : Boolean = true;
-		private var _numOctaves : uint = 2;
+		private var _numOctaves : uint = 1;
 		private var _offsets : Array = [];
 		private var _complex : Number = 0.12;
 		private var _maxSpeed : Number = 0.2;
@@ -50,6 +49,7 @@ package games {
 		private var _seed : uint;
 		private var _isMove : Boolean;
 		private var _multy : Vector3D = new Vector3D(160, 160, 160);
+		// Debug option to see only perlin noize and grid
 		private var _isMapTesting : Boolean = false;
 
 		/**
@@ -58,8 +58,8 @@ package games {
 		public function initGround(Scene : Scene3D, Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : Number = 12800, Height : Number = 1000, Resolution : uint = 128) : void {
 			_zoneHeight = Height;
 			_zoneDimension = Dimension;
-			_zoneResolution = Resolution;
 			_terrainMaterial = Material;
+			_zoneResolution = Resolution;
 			_bitmaps = Bitmaps;
 			_scene = Scene;
 			_ease = new Vector3D();
@@ -67,29 +67,26 @@ package games {
 			for (var i : uint = 0; i < _numOctaves; i++) {
 				_offsets[i] = new Point(0, 0);
 			}
+			// draw the height map
 			_ground = new BitmapData(_zoneResolution, _zoneResolution, false);
-			_groundRevers = new BitmapData(_zoneResolution, _zoneResolution, false);
 			draw();
-
-			// ground scrolling
+			// ground bitmap scrolling
 			_ground00 = new BitmapScrolling(_bitmaps[6]);
 			_ground01 = new BitmapScrolling(_bitmaps[7]);
 			_ground02 = new BitmapScrolling(_bitmaps[8]);
-
 			// find the map multyplicator for scrolling
 			findMultyplicator();
 
-			if (Resolution == 256) _zoneSubdivision = Resolution - 6;
-			else _zoneSubdivision = Resolution - 1;
-
+			// create terrain mesh
 			initTerrainMesh();
-			if (_isMapTesting) initTerrainGrid();
 		}
 
 		/**
 		 * Initialise terrain mesh
 		 */
 		private function initTerrainMesh() : void {
+			if (_zoneResolution == 256) _zoneSubdivision = _zoneResolution - 6;
+			else _zoneSubdivision = _zoneResolution - 1;
 			_plane = new Mesh(new PlaneGeometry(_zoneDimension, _zoneDimension, _zoneSubdivision, _zoneSubdivision, true, false), _terrainMaterial);
 			_plane.geometry.convertToSeparateBuffers();
 			_plane.mouseEnabled = false;
@@ -99,7 +96,7 @@ package games {
 			_subGeometry = SubGeometry(_plane.geometry.subGeometries[0]);
 			_subGeometry.autoDeriveVertexNormals = false;
 			_subGeometry.autoDeriveVertexTangents = false;
-
+			if (_isMapTesting) initTerrainGrid();
 			updateMaterial();
 			updateTerrain();
 		}
@@ -188,15 +185,15 @@ package games {
 		 */
 		public function changeResolution(Resolution : uint = 128) : void {
 			if (Resolution == _zoneResolution) return;
-			else _zoneResolution = Resolution;
+
 			_isMove = false;
+			_zoneResolution = Resolution;
 			_scene.removeChild(_plane);
 			_plane.dispose();
 			_subGeometry = null;
-			if (Resolution == 256) _zoneSubdivision = Resolution - 6;
-			else _zoneSubdivision = Resolution - 1;
+
 			findMultyplicator();
-			_ground = new BitmapData(_zoneSubdivision, _zoneSubdivision, false);
+			_ground = new BitmapData(_zoneResolution, _zoneResolution, false);
 
 			draw();
 			initTerrainMesh();
@@ -221,7 +218,6 @@ package games {
 		private function updateTerrain() : void {
 			// get plane vertex data
 			var v : Vector.<Number> = _subGeometry.vertexData;
-			// var indices:Vector.<uint> = _subGeometry.indexData;
 			var l : uint = v.length;
 			var c : uint, px : uint, size : uint;
 			if (_zoneResolution == 256) size = _zoneResolution - 5;// 250 is max
@@ -229,9 +225,7 @@ package games {
 			for (var i : uint = 1; i < l; i += 3, c++) {
 				// Get pixel at x and y position
 				px = _ground.getPixel(c % size, size - (c / size));
-				// px = _ground.getPixel(c % size, int(c / size));
 				// Displace y position by the range
-				// v[i] = ((_zoneHeight * (px / 0xffffff)));
 				v[i] = int(_zoneHeight * px / 0xffffff - (_zoneHeight >> 1));
 			}
 			_subGeometry.updateVertexData(v);
