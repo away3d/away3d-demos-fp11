@@ -85,7 +85,6 @@ package {
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
-	// import games.Lander;
 	import games.FractalTerrain;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
@@ -113,6 +112,7 @@ package {
 		// scene objects
 		// private var _lander : Lander;
 		private var _ground : Mesh;
+		private var _terrain : FractalTerrain;
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
 		// materials
@@ -223,14 +223,14 @@ package {
 			_boxMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
-			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_terrain = new FractalTerrain();
+			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// create plane for water
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(60, 60);
 			_ground.mouseEnabled = true;
 			_ground.pickingCollider = PickingColliderType.BOUNDS_ONLY;
-			_ground.y = 900;
 			_view.scene.addChild(_ground);
 			_ground.addEventListener(MouseEvent3D.MOUSE_UP, onGroundMouseOver);
 			_ground.addEventListener(MouseEvent3D.MOUSE_MOVE, onGroundMouseOver);
@@ -384,9 +384,9 @@ package {
 			if (_cameraController.distance > 1000)
 				_cameraController.distance--;
 
-			FractalTerrain.update();
+			_terrain.update();
 
-			_player.y = FractalTerrain.getHeightAt(0, 0);
+			_player.y = _terrain.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
 			_cameraController.update();
 
@@ -604,8 +604,8 @@ package {
 
 		private function onGroundMouseOver(e : MouseEvent3D) : void {
 			if (_mouseMove)
-				FractalTerrain.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
-			else FractalTerrain.stop();
+				_terrain.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
+			else _terrain.stop();
 		}
 
 		private function onShipMouseDown(e : MouseEvent3D) : void {
@@ -674,15 +674,15 @@ package {
 		}
 
 		private function switch64(e : Event) : void {
-			FractalTerrain.changeResolution(64);
+			_terrain.changeResolution(64);
 		}
 
 		private function switch128(e : Event) : void {
-			FractalTerrain.changeResolution(128);
+			_terrain.changeResolution(128);
 		}
 
 		private function switch256(e : Event) : void {
-			FractalTerrain.changeResolution(256);
+			_terrain.changeResolution(256);
 		}
 
 		/**

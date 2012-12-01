@@ -129,9 +129,9 @@ package {
 		private var _weapons : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
 		private var _heroWeapon : Mesh;
-		// private var _bigBall : Mesh;
 		private var _hero : Mesh;
 		private var _shirt : Mesh;
+		private var _terrain : FractalTerrain;
 		// materials
 		private var _boxMaterial : TextureMaterial;
 		private var _gunMaterial : TextureMaterial;
@@ -279,7 +279,8 @@ package {
 			randomSky();
 
 			// create noize terrain with image 6 7 8
-			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_terrain = new FractalTerrain();
+			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);
@@ -477,8 +478,8 @@ package {
 				_night--;
 			}
 
-			FractalTerrain.update();
-			_player.y = FractalTerrain.getHeightAt(0, 0) + 5;
+			_terrain.update();
+			_player.y = _terrain.getHeightAt(0, 0) + 5;
 			/*for (var i : int = 0; i < _cubeVector.length; i++) {
 			_cubeVector[i].y = FractalTerrain.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
 			}*/
@@ -687,7 +688,7 @@ package {
 				posX = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
 				posZ = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
 				mesh = new Mesh(new CubeGeometry(150, 300, 150), _boxMaterial);
-				mesh.position = new Vector3D(posX, FractalTerrain.getHeightAt(posX, posZ), posZ);
+				mesh.position = new Vector3D(posX, _terrain.getHeightAt(posX, posZ), posZ);
 				_view.scene.addChild(mesh);
 				_cubeVector[i] = mesh;
 			}
@@ -726,7 +727,7 @@ package {
 						g = Mesh(_hero.clone());
 						g.x = decal + (100 * i);
 						g.z = (decal + (100 * j));
-						g.y = FractalTerrain.getHeightAt(g.x, g.z);
+						g.y = _terrain.getHeightAt(g.x, g.z);
 						if (g.x != 0 || g.z != 0)
 							_view.scene.addChild(g);
 					}
@@ -744,7 +745,7 @@ package {
 
 			if (currentAnim == anim) return;
 			// FractalTerrain.move(0, 0);
-			FractalTerrain.move(0, 0);
+			_terrain.move(0, 0);
 			currentAnim = anim;
 			_animator.playbackSpeed = IDLE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
@@ -762,7 +763,7 @@ package {
 			if (currentAnim == anim) return;
 
 			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
-			FractalTerrain.move(0, _animator.playbackSpeed / 20);
+			_terrain.move(0, _animator.playbackSpeed / 20);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -776,7 +777,7 @@ package {
 			var anim : String;
 			if (dir > 0) anim = 'WalkL';
 			else anim = 'WalkR';
-			FractalTerrain.move(dir / 100, 0);
+			_terrain.move(dir / 100, 0);
 			if (isCrouch) return;
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);

@@ -131,6 +131,7 @@ package {
 		private var TEX_Hair : Vector.<TextureMaterial>;
 		// scene objects
 		private var _ground : Mesh;
+		private var _terrain : FractalTerrain;
 		// Avatar referency
 		private var _cloneStyleWoman : Vector.<Mesh>;
 		private var _cloneStyleMan : Vector.<Mesh>;
@@ -242,12 +243,14 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
-			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			FractalTerrain.move(0, 0.03);
+			_terrain = new FractalTerrain();
+			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_terrain.move(0, 1);
+
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(40, 40);
-			_ground.y = 600;
+
 			// _ground.castsShadows = false;
 			_view.scene.addChild(_ground);
 
@@ -407,9 +410,9 @@ package {
 				_night--;
 			}
 
-			FractalTerrain.update();
+			_terrain.update();
 
-			_cameraController.lookAtPosition.y = FractalTerrain.getHeightAt(0, 0);
+			_cameraController.lookAtPosition.y = _terrain.getHeightAt(0, 0);
 			_cameraController.update();
 
 			// animate our lake material
@@ -552,7 +555,7 @@ package {
 				m.z = (j * sz);
 				k = (i - (j * maxbyline));
 				m.x = -((maxbyline * sx) >> 1) + (k * sx) + (sx / 2);
-				m.y = FractalTerrain.getHeightAt(m.x, m.z);
+				m.y = _terrain.getHeightAt(m.x, m.z);
 				m.mouseEnabled = m.mouseChildren = false;
 				_view.scene.addChild(m);
 				_clones[i] = m;
@@ -621,7 +624,7 @@ package {
 		public function updateClone() : void {
 			for (var i : uint = 0; i < animators.length; i++) {
 				_cloneHair[i].transform = animators[i].globalPose.jointPoses[15].toMatrix3D();
-				_clones[i].y = FractalTerrain.getHeightAt(_clones[i].x, _clones[i].z);
+				_clones[i].y = _terrain.getHeightAt(_clones[i].x, _clones[i].z);
 			}
 		}
 
@@ -808,18 +811,18 @@ package {
 		}
 
 		private function switch64(e : Event) : void {
-			FractalTerrain.changeResolution(64);
-			FractalTerrain.move(0, 0.03);
+			_terrain.changeResolution(64);
+			_terrain.move(0, 1);
 		}
 
 		private function switch128(e : Event) : void {
-			FractalTerrain.changeResolution(128);
-			FractalTerrain.move(0, 0.03);
+			_terrain.changeResolution(128);
+			_terrain.move(0, 1);
 		}
 
 		private function switch256(e : Event) : void {
-			FractalTerrain.changeResolution(256);
-			FractalTerrain.move(0, 0.03);
+			_terrain.changeResolution(256);
+			_terrain.move(0, 1);
 		}
 
 		/**

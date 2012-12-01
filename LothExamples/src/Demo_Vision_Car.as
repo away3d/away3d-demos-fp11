@@ -85,15 +85,15 @@ package {
 	import utils.AutoMapSky;
 	import utils.LoaderPool;
 
-	import games.CarMove;
-	import games.FractalTerrain;
-
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
+	import games.CarMove;
+	import games.FractalTerrain;
+
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Vision_Car extends Sprite {
-		private const MOUNTAIGN_TOP : Number = 600;
+		private const MOUNTAIGN_TOP : Number = 1000;
 		private const FARVIEW : Number = 30000;
 		private const FOGNEAR : Number = 0;
 		private var groundColor : uint = 0x333338;
@@ -137,6 +137,7 @@ package {
 		private var _carGlassMat : TextureMaterial;
 		// scene objects
 		private var _ground : Mesh;
+		private var _terrain : FractalTerrain;
 		private var _vision : Vector.<Mesh>;
 		private var _visionCar : Mesh;
 		// car parts
@@ -243,14 +244,14 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
-			FractalTerrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_terrain = new FractalTerrain();
+			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
 			_ground.geometry.scaleUV(60, 60);
 			_ground.castsShadows = false;
 			_view.scene.addChild(_ground);
-			_ground.y = 300;
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
 
@@ -472,7 +473,7 @@ package {
 
 			CarMove.update();
 			if (_visionCar) {
-				_visionCar.position = new Vector3D(CarMove.position.x * 10, FractalTerrain.getHeightAt(CarMove.position.x * 10, CarMove.position.z * 10), CarMove.position.z * 10);
+				_visionCar.position = new Vector3D(CarMove.position.x * 10, _terrain.getHeightAt(CarMove.position.x * 10, CarMove.position.z * 10), CarMove.position.z * 10);
 				_visionCar.rotationY = CarMove.angle + 180;
 				_driveWheel.rotationZ = (CarMove.steering * 180);
 				// wheels steering
@@ -616,9 +617,10 @@ package {
 					mesh.material = _carLightMat2;
 				else if (mesh.name == 'interiorSymetrie' || mesh.name == 'chassisPlus' || mesh.name == 'chassisSymetrie' || mesh.name == 'wheel_j2' || mesh.name == 'radiateur')
 					mesh.material = _carBlackMat;
-				else if (mesh.name == 'door')
+				else if (mesh.name == 'door') {
 					mesh.material = _carBlackDoubleMat;
-				else if (mesh.name == 'wheel')
+					// MeshHelper.invertFaces(mesh, true);
+				} else if (mesh.name == 'wheel')
 					mesh.material = _carWheelMat;
 				else
 					mesh.material = _carWhiteMat;

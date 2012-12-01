@@ -7,12 +7,14 @@
 
 	public class BitmapScrolling {
 		public var scrollingBitmap : BitmapData;
-		protected var _parallaxAmount : Number = 1;
+		protected var _parallaxAmount : Number = 2;
+		// 1;
 		protected var graphPaperBmp : BitmapData;
 		protected var canvas : Graphics;
 		protected var matrix : Matrix;
 		protected var _size : int;
 		protected var content : Sprite;
+		private var bitmaper : BitmapData;
 
 		public function BitmapScrolling(B : BitmapData) {
 			_size = B.width;
@@ -34,6 +36,7 @@
 
 		public function move(dx : Number, dy : Number) : void {
 			matrix.translate(dx, dy);
+			// bitmaper.draw(scrollingBitmap.clone(), matrix);
 			drawCanvas();
 		}
 
@@ -52,10 +55,10 @@
 			canvas.drawRect(0, 0, _size, _size);
 		}
 
-		private var bitmaper : BitmapData;
-
 		public function getMap() : BitmapData {
-			bitmaper.draw(content);
+			bitmaper.unlock();
+			bitmaper.draw(content, null, null, null, null, true);
+			bitmaper.lock();
 			canvas.clear();
 			return bitmaper;
 		}

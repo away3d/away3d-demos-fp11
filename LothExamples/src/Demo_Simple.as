@@ -52,7 +52,6 @@ package {
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
-	import away3d.primitives.PlaneGeometry;
 	import away3d.library.assets.AssetType;
 	import away3d.lights.DirectionalLight;
 	import away3d.events.LoaderEvent;
@@ -62,6 +61,7 @@ package {
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
 	import away3d.utils.Cast;
+	import away3d.primitives.*;
 
 	import flash.display.StageQuality;
 	import flash.display.StageDisplayState;
@@ -197,9 +197,46 @@ package {
 		 * Initialise the scene objects
 		 */
 		private function initAfterBitmapLoad() : void {
+			// Create the NURBS mesh
+			// NURBS constructor
+			/*var controlNet : Vector.<NURBSVertex>;
+			controlNet.push(new NURBSVertex(-200, 0, -150, 1));
+			controlNet.push(new NURBSVertex(-200, -100, -75, 1));
+			controlNet.push(new NURBSVertex(-200, -100, 0, 1));
+			controlNet.push(new NURBSVertex(-200, -100, 75, 1));
+			controlNet.push(new NURBSVertex(-200, 0, 150, 1));
+
+			controlNet.push(new NURBSVertex(-100, -100, -150, 1));
+			controlNet.push(new NURBSVertex(-100, -100, -75, 1));
+			controlNet.push(new NURBSVertex(-100, -100, 0, 1));
+			controlNet.push(new NURBSVertex(-100, -100, 75, 1));
+			controlNet.push(new NURBSVertex(-100, -100, 150, 1));
+
+			controlNet.push(new NURBSVertex(0, -100, -150, 1));
+			controlNet.push(new NURBSVertex(0, -100, -75, 1));
+			controlNet.push(new NURBSVertex(0, 250, 0, 6));
+			controlNet.push(new NURBSVertex(0, -100, 75, 1));
+			controlNet.push(new NURBSVertex(0, -100, 150, 1));
+
+			controlNet.push(new NURBSVertex(100, -100, -150, 1));
+			controlNet.push(new NURBSVertex(100, -100, -75, 1));
+			controlNet.push(new NURBSVertex(100, -100, 0, 1));
+			controlNet.push(new NURBSVertex(100, -100, 75, 1));
+			controlNet.push(new NURBSVertex(100, -100, 150, 1));
+
+			controlNet.push(new NURBSVertex(200, 0, -150, 1));
+			controlNet.push(new NURBSVertex(200, -100, -75, 1));
+			controlNet.push(new NURBSVertex(200, -100, 0, 1));
+			controlNet.push(new NURBSVertex(200, -100, 75, 1));
+			controlNet.push(new NURBSVertex(200, 0, 150, 1));
+			// new NURBS(ctrlPnts, uNumPnts, vNumPnts, init);
+			var nurbsMesh : NURBSGeometry = new NURBSGeometry(controlNet, 5, 5, 5, 5, 20, 20);*/
+			// (controlNet, 5, 5, { name:"nurbsModel", uSegments:20, vSegments:20 });
+
 			// Init material and objects
 			initMaterials();
-
+			//var eee : Mesh = new Mesh(nurbsMesh, _simpleMaterial);
+			//_view.scene.addChild(eee);
 			// create skybox
 			randomSky();
 
