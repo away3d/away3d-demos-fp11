@@ -76,7 +76,7 @@ package games {
 			// draw the height map
 			_ground = new BitmapData(_zoneResolution, _zoneResolution, true);
 			_layerBitmap = new Vector.<BitmapData>(3);
-			_layerBitmap[0] = new BitmapData(_zoneResolution, _zoneResolution, true);
+			_layerBitmap[0] = new BitmapData(_zoneResolution, _zoneResolution, false);
 			_rec = _ground.rect;
 			_p = new Point();
 
@@ -161,13 +161,14 @@ package games {
 		 */
 		private function draw() : void {
 			_ground.unlock();
-			_layerBitmap[0].unlock();
-
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
+			_ground.lock();
+
 			// create two temp layer
 			_layerBitmap[1] = new BitmapData(_zoneResolution, _zoneResolution, true);
 			_layerBitmap[2] = new BitmapData(_zoneResolution, _zoneResolution, true);
 			// red _ top
+			_layerBitmap[0].unlock();
 			_layerBitmap[0] = _ground.clone();
 			_layerBitmap[0].colorTransform(_rec, new ColorTransform(1, 0, 0, 1, 255, 0, 0, 0));
 			// green _ mid
@@ -181,11 +182,9 @@ package games {
 			// copy chanel from other layer to base layer
 			_layerBitmap[0].draw(_layerBitmap[1]);
 			_layerBitmap[0].draw(_layerBitmap[2]);
+			_layerBitmap[0].lock();
 			_layerBitmap[1].dispose();
 			_layerBitmap[2].dispose();
-
-			_ground.lock();
-			_layerBitmap[0].lock();
 		}
 
 		/**
@@ -224,8 +223,9 @@ package games {
 			_subGeometry = null;
 
 			findMultyplicator();
-			_ground = new BitmapData(_zoneResolution, _zoneResolution, false);
-
+			_ground = new BitmapData(_zoneResolution, _zoneResolution, true);
+			_layerBitmap[0] = new BitmapData(_zoneResolution, _zoneResolution, false);
+			_rec = _ground.rect;
 			draw();
 			initTerrainMesh();
 		}
