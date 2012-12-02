@@ -1,6 +1,4 @@
 package games {
-	import flash.geom.Rectangle;
-
 	import away3d.materials.methods.TerrainDiffuseMethod;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.PlaneGeometry;
@@ -11,14 +9,13 @@ package games {
 	import away3d.utils.Cast;
 
 	import flash.display.BitmapData;
-	import flash.display.Sprite;
-	import flash.display.Bitmap;
 	import flash.filters.ColorMatrixFilter;
+	import flash.geom.ColorTransform;
 	import flash.filters.BlurFilter;
 	import flash.geom.Vector3D;
+	import flash.geom.Rectangle;
 	import flash.geom.Point;
-	import flash.geom.ColorTransform;
-	// import flash.geom.Matrix;
+
 	import utils.BitmapScrolling;
 	import utils.BitmapFilterEffects;
 
@@ -44,7 +41,6 @@ package games {
 		private var _ground01 : BitmapScrolling;
 		private var _ground02 : BitmapScrolling;
 		private var _ground : BitmapData;
-		private var _blendBitmapData : BitmapData;
 		private var _ease : Vector3D;
 		private var _fractal : Boolean = true;
 		private var _numOctaves : uint = 1;
@@ -76,15 +72,14 @@ package games {
 			for (var i : uint = 0; i < _numOctaves; i++) {
 				_offsets[i] = new Point(0, 0);
 			}
+
 			// draw the height map
 			_ground = new BitmapData(_zoneResolution, _zoneResolution, true);
-			_blendBitmapData = new BitmapData(_zoneResolution, _zoneResolution, false);
 			_layerBitmap = new Vector.<BitmapData>(3);
-			for ( i = 0; i < 3; i++) {
-				_layerBitmap[i] = new BitmapData(_zoneResolution, _zoneResolution, true);
-			}
+			_layerBitmap[0] = new BitmapData(_zoneResolution, _zoneResolution, true);
 			_rec = _ground.rect;
 			_p = new Point();
+
 			draw();
 			// ground bitmap scrolling
 			_ground00 = new BitmapScrolling(_bitmaps[6]);
@@ -155,7 +150,7 @@ package games {
 			_ground00.move(-_ease.x * _multy.x, -_ease.y * _multy.x);
 			_ground01.move(-_ease.x * _multy.y, -_ease.y * _multy.y);
 			_ground02.move(-_ease.x * _multy.z, -_ease.y * _multy.z);
-			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground02.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground00.getMap())], Cast.bitmapTexture(_blendBitmapData), _tiles);
+			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground02.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground00.getMap())], Cast.bitmapTexture(_layerBitmap[0]), _tiles);
 			_terrainMaterial.normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground, 5, 0.5, -1, -1));
 			if (_isMapTesting) _terrainMaterial.texture = Cast.bitmapTexture(_ground);
 			else _terrainMaterial.diffuseMethod = _terrainMethod;
@@ -166,10 +161,14 @@ package games {
 		 */
 		private function draw() : void {
 			_ground.unlock();
-			_blendBitmapData.unlock();
+			_layerBitmap[0].unlock();
+
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-			_layerBitmap[0] = _ground.clone();
+			// create two temp layer
+			_layerBitmap[1] = new BitmapData(_zoneResolution, _zoneResolution, true);
+			_layerBitmap[2] = new BitmapData(_zoneResolution, _zoneResolution, true);
 			// red _ top
+			_layerBitmap[0] = _ground.clone();
 			_layerBitmap[0].colorTransform(_rec, new ColorTransform(1, 0, 0, 1, 255, 0, 0, 0));
 			// green _ mid
 			_layerBitmap[1].threshold(_ground, _rec, _p, ">", 0xFF888888, 0x0000000, 0xFFFFFFFF, true);
@@ -179,25 +178,14 @@ package games {
 			_layerBitmap[2].threshold(_ground, _rec, _p, ">", 0xFF555555, 0x0000000, 0xFFFFFFFF, true);
 			_layerBitmap[2].colorTransform(_rec, new ColorTransform(0, 0, 1, 1, 0, 0, 255, 0));
 			_layerBitmap[2].applyFilter(_layerBitmap[2], _rec, _p, new BlurFilter(6, 6, 3));
+			// copy chanel from other layer to base layer
+			_layerBitmap[0].draw(_layerBitmap[1]);
+			_layerBitmap[0].draw(_layerBitmap[2]);
+			_layerBitmap[1].dispose();
+			_layerBitmap[2].dispose();
 
-			var b1 : Bitmap = new Bitmap(_layerBitmap[0]);
-			var b2 : Bitmap = new Bitmap(_layerBitmap[1]);
-			var b3 : Bitmap = new Bitmap(_layerBitmap[2]);
-
-			var full : Sprite = new Sprite();
-			full.addChild(b1);
-			full.addChild(b2);
-			full.addChild(b3);
-
-			_blendBitmapData.draw(full);
-
-			// _ground.colorTransform(_ground.rect, new ColorTransform(1, 1, 1, 1, 0, 0, 0, 0));
-			// _ground.applyFilter(_ground, _ground.rect, new Point(), setContrast(60));
-			// if (_zoneResolution == 256) _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(8, 8));
-			// else _ground.applyFilter(_ground, _ground.rect, new Point(), new BlurFilter(10, 10));
 			_ground.lock();
-			_blendBitmapData.lock();
-			_layerBitmap[0].dispose();
+			_layerBitmap[0].lock();
 		}
 
 		/**
