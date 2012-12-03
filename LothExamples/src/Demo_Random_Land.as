@@ -617,11 +617,10 @@ package {
 		}
 
 		private function onStageMouseDown(e : MouseEvent) : void {
-			if (e.stageY < stage.stageHeight - 30) {
-				_prevMouseX = e.stageX;
-				_prevMouseY = e.stageY;
-				_mouseMove = true;
-			}
+			if (e.stageY > stage.stageHeight - 30) return;
+			_prevMouseX = e.stageX;
+			_prevMouseY = e.stageY;
+			_mouseMove = true;
 		}
 
 		private function onStageMouseUp(e : Event) : void {
@@ -687,6 +686,10 @@ package {
 			_terrain.changeHeight(event.currentTarget.value);
 		}
 
+		private function switchFractal(e : Event) : void {
+			_terrain.changeFractal();
+		}
+
 		private function switch64(e : Event) : void {
 			_terrain.changeResolution(64);
 		}
@@ -697,10 +700,6 @@ package {
 
 		private function switch256(e : Event) : void {
 			_terrain.changeResolution(256);
-		}
-
-		private function switchFractal(e : Event) : void {
-			_terrain.changeFractal();
 		}
 
 		/**

@@ -91,6 +91,8 @@ package {
 
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
+	import com.bit101.components.HUISlider;
+	import com.bit101.components.Component;
 
 	import games.FractalTerrain;
 
@@ -728,6 +730,7 @@ package {
 		}
 
 		private function onStageMouseDown(e : MouseEvent) : void {
+			if (e.stageY > stage.stageHeight - 30) return;
 			_prevMouseX = e.stageX;
 			_prevMouseY = e.stageY;
 			_mouseMove = true;
@@ -798,16 +801,30 @@ package {
 			Style.setStyle("dark");
 			Style.LABEL_TEXT = 0xEEEEEE;
 			Style.DROPSHADOW = 0x000000;
-			Style.BACKGROUND = 0x000000;
+			Style.BACKGROUND = 0x995522;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
 			Style.fontName = "Helvetica";
 			Style.embedFonts = false;
 			Style.fontSize = 11;
+			Component.initStage(stage);
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "64", switch64).setSize(60, 30);
 			new PushButton(_menu, 130, -29, "128", switch128).setSize(60, 30);
 			new PushButton(_menu, 195, -29, "256", switch256).setSize(60, 30);
+			new PushButton(_menu, 195 + 65, -29, "fractal", switchFractal).setSize(60, 30);
+			var f : HUISlider = new HUISlider(_menu, 350, -29, "height", setTerrainHeight);
+			f.maximum = 4000;
+			f.minimum = -4000;
+			f.value = MOUNTAIGN_TOP;
+		}
+
+		private function setTerrainHeight(event : Event) : void {
+			_terrain.changeHeight(event.currentTarget.value);
+		}
+
+		private function switchFractal(e : Event) : void {
+			_terrain.changeFractal();
 		}
 
 		private function switch64(e : Event) : void {
