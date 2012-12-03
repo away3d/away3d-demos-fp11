@@ -40,20 +40,20 @@ package {
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;
 	import away3d.events.MouseEvent3D;
-	import away3d.primitives.SphereGeometry;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
+	import away3d.materials.methods.SimpleWaterNormalMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.materials.methods.EnvMapMethod;
+	import away3d.core.pick.PickingColliderType;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
-	import away3d.core.pick.PickingColliderType;
-	import away3d.materials.methods.SimpleWaterNormalMethod;
-	import away3d.materials.methods.FresnelSpecularMethod;
-	import away3d.materials.methods.EnvMapMethod;
 	import away3d.materials.TextureMaterial;
+	import away3d.primitives.SphereGeometry;
 	import away3d.primitives.PlaneGeometry;
 	import away3d.lights.DirectionalLight;
 	import away3d.containers.View3D;
@@ -67,15 +67,15 @@ package {
 	import flash.events.KeyboardEvent;
 	import flash.text.AntiAliasType;
 	import flash.display.BitmapData;
-	import flash.geom.Vector3D;
 	import flash.display.StageAlign;
 	import flash.display.StageQuality;
 	import flash.events.MouseEvent;
 	import flash.text.GridFitType;
 	import flash.text.TextFormat;
 	import flash.text.TextField;
-	import flash.system.System;
 	import flash.display.Sprite;
+	import flash.geom.Vector3D;
+	import flash.system.System;
 	import flash.events.Event;
 	import flash.ui.Keyboard;
 
@@ -84,14 +84,16 @@ package {
 
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
+	import com.bit101.components.HUISlider;
+	import com.bit101.components.Component;
 
 	import games.FractalTerrain;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Random_Land extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
-		private const FARVIEW : Number = 6400;
-		private const FOGNEAR : Number = 5000;
+		private const FARVIEW : Number = 6400 * 2;
+		private const FOGNEAR : Number = 3200;
 		// start colors
 		private var groundColor : uint = 0x333338;
 		private var fogColor : uint = 0x000000;
@@ -199,7 +201,7 @@ package {
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
 			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
-			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
+			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
 
 			LoaderPool.log = log;
@@ -218,7 +220,7 @@ package {
 			randomSky();
 
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
+			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.6);
 			_waterMaterial.addMethod(_reflectionMethod);
 			_boxMaterial.addMethod(_reflectionMethod);
 
@@ -228,7 +230,7 @@ package {
 
 			// create plane for water
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(60, 60);
+			_ground.geometry.scaleUV(40, 40);
 			_ground.mouseEnabled = true;
 			_ground.pickingCollider = PickingColliderType.BOUNDS_ONLY;
 			_view.scene.addChild(_ground);
@@ -300,7 +302,7 @@ package {
 			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.4);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.6);
 			_view.scene.addChild(_sunLight);
 
 			// create light picker for materials
@@ -327,7 +329,7 @@ package {
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
-			_fresnelMethod.normalReflectance = 0.4;
+			_fresnelMethod.normalReflectance = 0.5;
 			// fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 			// shadow method
@@ -336,13 +338,14 @@ package {
 			_shadowMethod.alpha = 0.25;
 
 			// 0 _ water texture
-			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x22404060)));
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x30404060)));
 			_waterMaterial.alphaBlending = true;
 			_waterMaterial.repeat = true;
-			_waterMaterial.gloss = 100;
+			_waterMaterial.gloss = 120;
 			_waterMaterial.specular = 1;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
+			_waterMaterial.bothSides = true;
 			_materials[0] = _waterMaterial;
 
 			// creat terrain material
@@ -614,9 +617,11 @@ package {
 		}
 
 		private function onStageMouseDown(e : MouseEvent) : void {
-			_prevMouseX = e.stageX;
-			_prevMouseY = e.stageY;
-			_mouseMove = true;
+			if (e.stageY < stage.stageHeight - 30) {
+				_prevMouseX = e.stageX;
+				_prevMouseY = e.stageY;
+				_mouseMove = true;
+			}
 		}
 
 		private function onStageMouseUp(e : Event) : void {
@@ -659,18 +664,27 @@ package {
 			_menu.y = stage.stageHeight;
 			Style.setStyle("dark");
 			Style.DROPSHADOW = 0x000000;
-			Style.BACKGROUND = 0x000000;
-			Style.LABEL_TEXT = 0xffffff;
+			Style.BACKGROUND = 0x995522;
+			Style.LABEL_TEXT = 0xEEEEEE;
 			Style.BUTTON_FACE = 0x060606;
 			Style.BUTTON_DOWN = 0x995522;
 			Style.fontName = "Helvetica";
 			Style.embedFonts = false;
 			Style.fontSize = 11;
-
+			Component.initStage(stage);
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "64", switch64).setSize(60, 30);
 			new PushButton(_menu, 130, -29, "128", switch128).setSize(60, 30);
 			new PushButton(_menu, 195, -29, "256", switch256).setSize(60, 30);
+			new PushButton(_menu, 195 + 65, -29, "fractal", switchFractal).setSize(60, 30);
+			var f : HUISlider = new HUISlider(_menu, 350, -29, "height", setTerrainHeight);
+			f.maximum = 4000;
+			f.minimum = -4000;
+			f.value = MOUNTAIGN_TOP;
+		}
+
+		private function setTerrainHeight(event : Event) : void {
+			_terrain.changeHeight(event.currentTarget.value);
 		}
 
 		private function switch64(e : Event) : void {
@@ -683,6 +697,10 @@ package {
 
 		private function switch256(e : Event) : void {
 			_terrain.changeResolution(256);
+		}
+
+		private function switchFractal(e : Event) : void {
+			_terrain.changeFractal();
 		}
 
 		/**

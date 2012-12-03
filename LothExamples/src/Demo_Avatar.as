@@ -105,7 +105,7 @@ package {
 		private var skyColor : uint = 0x9090ee;
 		private var fogColor : uint = 0xd3eef9;
 		private var groundColor : uint = 0xd3eef9;
-		// Stage manager and Stage3D instance proxy classes
+		// stage manager and Stage3D instance proxy classes
 		private var _stage3DManager : Stage3DManager;
 		private var _stage3DProxy : Stage3DProxy;
 		// engine variables
@@ -116,29 +116,30 @@ package {
 		// light variables
 		private var _night : Number = 100;
 		private var _sunLight : DirectionalLight;
+		// methodes
 		private var _waterMethod : SimpleWaterNormalMethod;
 		private var _fresnelMethod : FresnelSpecularMethod;
-		private var _reflectionMethod : EnvMapMethod;
-		private var _fogMethode : FogMethod;
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _rimLightMethod : RimLightMethod;
-		// Materials
+		private var _reflectionMethod : EnvMapMethod;
+		private var _fogMethode : FogMethod;
+		// materials
 		private var _materials : Vector.<TextureMaterial>;
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
-		// Materials AVATAR
+		// materials AVATAR
 		private var TEX_Avatar : Vector.<TextureMaterial>;
 		private var TEX_Hair : Vector.<TextureMaterial>;
 		// scene objects
 		private var _ground : Mesh;
 		private var _terrain : FractalTerrain;
-		// Avatar referency
+		// avatar referency
 		private var _cloneStyleWoman : Vector.<Mesh>;
 		private var _cloneStyleMan : Vector.<Mesh>;
 		private var _skinMesh : Vector.<Mesh>;
-		// Hair variable
+		// hair variable
 		private var _cloneHair : Vector.<Mesh>;
-		// Avatar structure
+		// avatar structure
 		private var _squeleton : Skeleton;
 		private var _animationSet : SkeletonAnimationSet;
 		// away3d dev
@@ -146,7 +147,7 @@ package {
 		// animation constants
 		private const SEQUENCE_MAN : Array = ['Breathe', 'Sit', 'Walk', 'Run'];
 		private const SEQUENCE_WOMEN : Array = ['Breathe', 'SitWoman', 'WalkWoman', 'Run'];
-		private const SEQSPEED : Array = [0.4, -0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4];
+		private const SEQSPEED : Array = [0.4, -0.4, 0.4, 0.8];
 		private var _clones : Vector.<Mesh>;
 		private var animators : Vector.<SkeletonAnimator>;
 		private var chromosomes : Vector.<int>;
@@ -411,7 +412,6 @@ package {
 			}
 
 			_terrain.update();
-
 			_cameraController.lookAtPosition.y = _terrain.getHeightAt(0, 0);
 			_cameraController.update();
 
@@ -551,7 +551,7 @@ package {
 			var m : Mesh;
 			var j : int, k : int;
 			for (var i : int = 0; i < n; ++i) {
-				m = addAvatar(2, 2);
+				m = addAvatar(2, 3);
 				m.z = (j * sz);
 				k = (i - (j * maxbyline));
 				m.x = -((maxbyline * sx) >> 1) + (k * sx) + (sx / 2);
@@ -796,7 +796,7 @@ package {
 			addChild(_menu);
 			_menu.y = stage.stageHeight;
 			Style.setStyle("dark");
-			Style.LABEL_TEXT = 0xffffff;
+			Style.LABEL_TEXT = 0xEEEEEE;
 			Style.DROPSHADOW = 0x000000;
 			Style.BACKGROUND = 0x000000;
 			Style.BUTTON_FACE = 0x060606;
