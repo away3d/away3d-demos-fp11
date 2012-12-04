@@ -99,7 +99,7 @@ package {
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Avatar extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 1500;
-		private const FARVIEW : Number = 128 * 100;
+		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 400;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
@@ -721,6 +721,8 @@ package {
 		 * stage listener and mouse control
 		 */
 		private function onResize(event : Event = null) : void {
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;

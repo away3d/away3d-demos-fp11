@@ -807,6 +807,8 @@ package {
 		 * stage listener and mouse control
 		 */
 		private function onResize(event : Event = null) : void {
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;

@@ -235,8 +235,8 @@ package {
 
 			// Init material and objects
 			initMaterials();
-			//var eee : Mesh = new Mesh(nurbsMesh, _simpleMaterial);
-			//_view.scene.addChild(eee);
+			// var eee : Mesh = new Mesh(nurbsMesh, _simpleMaterial);
+			// _view.scene.addChild(eee);
 			// create skybox
 			randomSky();
 
@@ -553,6 +553,8 @@ package {
 		 */
 		private function onResize(event : Event = null) : void {
 			if (_view != null) {
+				_stage3DProxy.width = stage.stageWidth;
+				_stage3DProxy.height = stage.stageHeight;
 				_view.width = stage.stageWidth;
 				_view.height = stage.stageHeight;
 				_stats.x = stage.stageWidth - _stats.width;

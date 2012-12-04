@@ -143,6 +143,7 @@ package {
 		private var _terrainMaterial : TextureMaterial;
 		private var _eyesOpenMaterial : TextureMaterial;
 		private var _eyesClosedMaterial : TextureMaterial;
+		private var _basicMaterial : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
 		// private var _reflectionTexture : CubeReflectionTexture;
@@ -461,6 +462,8 @@ package {
 				_materials[i].ambient = 1;
 				if (i != 5) _materials[i].addMethod(_rimLightMethod);
 			}
+
+			_basicMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x000000)));
 		}
 
 		/**
@@ -586,7 +589,7 @@ package {
 			} else if (event.asset.assetType == AssetType.MESH) {
 				var mesh : Mesh = event.asset as Mesh;
 				// set default texture
-				mesh.material = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x000000)));
+				mesh.material = _basicMaterial;
 
 				// Onkba object
 				if (mesh.name == "Onkba") {
@@ -960,6 +963,8 @@ package {
 		 * Stage listener for resize events
 		 */
 		private function onResize(event : Event = null) : void {
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
