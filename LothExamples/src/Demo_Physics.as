@@ -80,9 +80,10 @@ package {
 		private var _plane : Mesh;
 		private var _sphere : Mesh;
 		private var _sphere2 : Mesh;
+		private var _cube : Mesh;
+		private var _sunLight : DirectionalLight;
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
-		private var _sunLight : DirectionalLight;
 		private var _shadowMethod : NearShadowMapMethod;
 		// navigation
 		private var _prevMouseX : Number;
@@ -206,13 +207,6 @@ package {
 			wall2.castsShadows = false;
 			wall3.castsShadows = false;
 			_plane.castsShadows = false;
-			// _plane.position = OimoPhysics.rigidPosition(0);
-
-			_sphere = new Mesh(new SphereGeometry(150), material03);
-			_view.scene.addChild(_sphere);
-
-			_sphere2 = new Mesh(new SphereGeometry(32), material02);
-			_view.scene.addChild(_sphere2);
 
 			// setup physic engine
 			OimoPhysics.getInstance();
@@ -222,20 +216,26 @@ package {
 			OimoPhysics.addCube(wall2, 1000, 600, 30, 0, 300, -500);
 			OimoPhysics.addCube(wall3, 1000, 600, 30, 0, 300, 500);
 
+			// the big sphere
+			_sphere = new Mesh(new SphereGeometry(150), material03);
 			OimoPhysics.addSphere(_sphere, 150, 0, 500, 0, 10, 600.0, false);
-			var spe : Mesh;
+			_view.scene.addChild(_sphere);
+
+			// reference mesh for clone
+			_sphere2 = new Mesh(new SphereGeometry(32), material02);
+			_cube = new Mesh(new CubeGeometry(50, 50, 50), material03);
+
+			var m : Mesh;
 			for (var i : uint = 0;i < 500;i++) {
-				spe = Mesh(_sphere2.clone());
-				_view.scene.addChild(spe);
-				OimoPhysics.addSphere(spe, 32, -100, 50 + (100 * i), 100, 10, 0.0, false);
+				m = Mesh(_sphere2.clone());
+				_view.scene.addChild(m);
+				OimoPhysics.addSphere(m, 32, -100, 50 + (100 * i), 100, 10, 0.0, false);
 			}
 
-			var G : Mesh = new Mesh(new CubeGeometry(50, 50, 50), material03);
-			// var spe:Mesh;
 			for (i = 0;i < 500;i++) {
-				spe = Mesh(G.clone());
-				_view.scene.addChild(spe);
-				OimoPhysics.addCube(spe, 50, 50, 50, 100, 50 + (100 * i), - 100, 10, 0.0, false);
+				m = Mesh(_cube.clone());
+				_view.scene.addChild(m);
+				OimoPhysics.addCube(m, 50, 50, 50, 100, 50 + (100 * i), - 100, 10, 0.0, false);
 			}
 
 			// setup the render loop
@@ -264,6 +264,8 @@ package {
 		 * stage listener for resize events
 		 */
 		private function onResize(event : Event = null) : void {
+			_stage3DProxy.width = stage.stageWidth;
+			_stage3DProxy.height = stage.stageHeight;
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
