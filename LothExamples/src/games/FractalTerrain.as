@@ -219,19 +219,26 @@ package games {
 			initTerrainMesh();
 		}
 
-		public function changeFractal() : void {
-			if (_fractal) _fractal = false;
-			else _fractal = true;
+		private function basicUpdate() : void {
 			draw();
 			updateTerrain();
 			updateMaterial();
 		}
 
+		public function changeFractal() : void {
+			if (_fractal) _fractal = false;
+			else _fractal = true;
+			basicUpdate();
+		}
+
 		public function changeHeight(v : int) : void {
 			_zoneHeight = v;
-			draw();
-			updateTerrain();
-			updateMaterial();
+			basicUpdate();
+		}
+
+		public function changeComplex(v : Number) : void {
+			_complex = v;
+			basicUpdate();
 		}
 
 		public function get zoneHeight() : int {
