@@ -185,7 +185,7 @@ package com.away3d.invawayders
 					
 					if (fragmentsArchetype.entityView) {
 						entityView = new ObjectContainer3D();
-						particleMeshes = fragmentsArchetype.particleMeshes;
+						particleMeshes =  new Vector.<Mesh>();
 						
 						var i:uint = 0;
 						for (i=0; i < fragmentsArchetype.particleMeshes.length; i++) {
@@ -200,7 +200,7 @@ package com.away3d.invawayders
 							
 							//duplicate particle animator
 							particleAnimator = new ParticleAnimator((archetype as FragmentsArchetype).particleAnimationSet);
-							(particleAnimator.getAnimationStateByName("ParticlePositionNode2") as ParticlePositionState).setPositions(particlePositions[i]);
+							(particleAnimator.getAnimationStateByName("ParticlePositionLocalDynamic") as ParticlePositionState).setPositions(particlePositions[i]);
 							particleMesh.animator = particleAnimator;
 						}
 					} else {
