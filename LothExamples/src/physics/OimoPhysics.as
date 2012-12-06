@@ -128,7 +128,9 @@ package physics {
 		static public function rigidPos(n : uint = 0) : Matrix3D {
 			var r : Mat33 = _world.rigidBodies[n].rotation;
 			var p : Vec3 = _world.rigidBodies[n].position;
-			return new Matrix3D(Vector.<Number>([r.e00, r.e20, -r.e10, 0, r.e01, r.e21, -r.e11, 0, r.e02, r.e22, -r.e12, 0, p.x, p.z, p.y, 1]));
+			//return new Matrix3D(Vector.<Number>([r.e00, r.e20, -r.e10, 0, r.e01, r.e21, -r.e11, 0, r.e02, r.e22, -r.e12, 0, p.x, p.z, p.y, 1]));
+			// reverse Y and Z axis and rotation for away3d 
+			return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x, p.y, p.z, 1]));
 		}
 
 		/**
