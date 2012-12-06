@@ -815,14 +815,25 @@ package {
 			new PushButton(_menu, 130, -29, "128", switch128).setSize(60, 30);
 			new PushButton(_menu, 195, -29, "256", switch256).setSize(60, 30);
 			new PushButton(_menu, 195 + 65, -29, "fractal", switchFractal).setSize(60, 30);
-			var f : HUISlider = new HUISlider(_menu, 350, -29, "height", setTerrainHeight);
+			var f : HUISlider = new HUISlider(_menu, 350, -20, "height", setTerrainHeight);
 			f.maximum = 4000;
 			f.minimum = -4000;
 			f.value = MOUNTAIGN_TOP;
+
+			var g : HUISlider = new HUISlider(_menu, 350, -32, "complex", setComplex);
+			g.labelPrecision = 3;
+			g.minimum = 0.001;
+			g.maximum = 0.3;
+			g.tick = 0.001;
+			g.value = 0.12;
 		}
 
 		private function setTerrainHeight(event : Event) : void {
 			_terrain.changeHeight(event.currentTarget.value);
+		}
+
+		private function setComplex(event : Event) : void {
+			_terrain.changeComplex(event.currentTarget.value);
 		}
 
 		private function switchFractal(e : Event) : void {
