@@ -43,6 +43,7 @@ package {
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.NearShadowMapMethod;
+	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.SphereGeometry;
@@ -85,11 +86,15 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		private var _shadowMethod : NearShadowMapMethod;
+		// material
+		private var _material01 : TextureMaterial;
+		private var _material02 : TextureMaterial;
+		private var _material03 : TextureMaterial;
+		private var _material04 : TextureMaterial;
 		// navigation
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
-		private var _isResize : Boolean;
 
 		/**
 		 * Constructor
@@ -140,73 +145,117 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			initText();
+			initEngine();
+			initLights();
+			initMaterials();
+			initSceneObject();
+			initListeners();
+		}
 
-			// create the view
+		/**
+		 * Initialise the engine
+		 */
+		private function initEngine() : void {
 			_view = new View3D();
 			_view.stage3DProxy = _stage3DProxy;
 			_view.shareContext = true;
 			addChild(_view);
-			_view.camera.lens.far = 3000;
-			addChild(_view);
+			// setup the camera
+			_view.camera.lens = new PerspectiveLens(80);
+			_view.camera.lens.far = 6000;
+			// setup controller to be used on the camera
+			_cameraController = new HoverController(_view.camera, null, 0, 80, 1300, 10, 9);
+			_cameraController.minTiltAngle = -90;
+			_cameraController.maxTiltAngle = 90;
+			_cameraController.autoUpdate = false;
+			_cameraController.lookAtPosition = new Vector3D(0, 300, 0);
 
 			// add stats
 			addChild(_stats = new AwayStats(_view, false, true));
 			_stats.x = stage.stageWidth - _stats.width - 5;
 			_stats.alpha = 0.5;
 			_stats.y = 2;
+		}
 
-			// setup the light
-			initLights();
+		/**
+		 * Initialise the lights
+		 */
+		private function initLights() : void {
+			// create a light for shadows that mimics the sun's position in the skybox
+			_sunLight = new DirectionalLight(-0.5, -1, 0.3);
+			_sunLight.color = 0xffffff;
+			_sunLight.ambientColor = 0xffffff;
+			_sunLight.ambient = 0;
+			_sunLight.diffuse = 0;
+			_sunLight.specular = 0;
+
+			_sunLight.castsShadows = true;
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.5);
+			_view.scene.addChild(_sunLight);
+
+			_lightPicker = new StaticLightPicker([_sunLight]);
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			// _shadowMethod.epsilon = .0007;
+		}
 
+		/**
+		 * Initialise scene materials
+		 */
+		private function initMaterials() : void {
 			// setup material
-			var material01 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x10888888)));
-			material01.alphaBlending = true;
-			material01.gloss = 100;
-			material01.specular = 0.3;
+			_material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
+			_material01.alphaBlending = true;
+			_material01.bothSides = true;
+			_material01.gloss = 100;
+			_material01.specular = 0.5;
 
-			var material02 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x60ffaa88)));
-			material02.alphaBlending = true;
-			material02.gloss = 100;
-			material02.specular = 0.8;
+			_material02 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x8800A0C8)));
+			_material02.alphaBlending = true;
+			_material02.gloss = 30;
+			_material02.specular = 1;
 
-			var material03 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x6033aaff)));
-			material03.alphaBlending = true;
-			material03.gloss = 30;
-			material03.specular = 0.3;
+			_material03 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x88F9642D)));
+			_material03.alphaBlending = true;
+			_material03.bothSides = true;
+			_material03.gloss = 30;
+			_material03.specular = 1;
 
-			material01.lightPicker = _lightPicker;
-			material02.lightPicker = _lightPicker;
-			material03.lightPicker = _lightPicker;
+			_material04 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x887CD8EF)));
+			_material04.alphaBlending = true;
+			_material04.gloss = 30;
+			_material04.specular = 1;
 
-			material01.shadowMethod = _shadowMethod;
-			material02.shadowMethod = _shadowMethod;
-			material03.shadowMethod = _shadowMethod;
+			_material01.lightPicker = _lightPicker;
+			_material02.lightPicker = _lightPicker;
+			_material03.lightPicker = _lightPicker;
+			_material04.lightPicker = _lightPicker;
 
-			// setup the camera
-			_view.camera.lookAt(new Vector3D());
-			// setup controller to be used on the camera
-			_cameraController = new HoverController(_view.camera, null, 0, 80, 1000, 10, 9);
-			_cameraController.minTiltAngle = -90;
-			_cameraController.maxTiltAngle = 90;
-			_cameraController.autoUpdate = false;
-			// setup the scene
-			_plane = new Mesh(new CubeGeometry(1000, 30, 1000), material01);
+			_material01.shadowMethod = _shadowMethod;
+			_material02.shadowMethod = _shadowMethod;
+			_material03.shadowMethod = _shadowMethod;
+			_material04.shadowMethod = _shadowMethod;
+		}
+
+		/**
+		 * Initialise scene object3d
+		 */
+		private function initSceneObject() : void {
+			_plane = new Mesh(new CubeGeometry(1000, 30, 1000), _material01);
 			_view.scene.addChild(_plane);
-			var wall0 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), material01);
+			_plane.castsShadows = false;
+
+			var wall0 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
+			var wall1 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
+			var wall2 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
+			var wall3 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
 			_view.scene.addChild(wall0);
-			var wall1 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), material01);
 			_view.scene.addChild(wall1);
-			var wall2 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), material01);
 			_view.scene.addChild(wall2);
-			var wall3 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), material01);
 			_view.scene.addChild(wall3);
 			wall0.castsShadows = false;
 			wall1.castsShadows = false;
 			wall2.castsShadows = false;
 			wall3.castsShadows = false;
-			_plane.castsShadows = false;
 
 			// setup physic engine
 			OimoPhysics.getInstance();
@@ -217,13 +266,13 @@ package {
 			OimoPhysics.addCube(wall3, 1000, 600, 30, 0, 300, 500);
 
 			// the big sphere
-			_sphere = new Mesh(new SphereGeometry(150), material03);
+			_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
 			OimoPhysics.addSphere(_sphere, 150, 0, 500, 0, 10, 600.0, false);
 			_view.scene.addChild(_sphere);
 
 			// reference mesh for clone
-			_sphere2 = new Mesh(new SphereGeometry(32), material02);
-			_cube = new Mesh(new CubeGeometry(50, 50, 50), material03);
+			_sphere2 = new Mesh(new SphereGeometry(32), _material02);
+			_cube = new Mesh(new CubeGeometry(50, 50, 50), _material03);
 
 			var m : Mesh;
 			for (var i : uint = 0;i < 500;i++) {
@@ -237,8 +286,12 @@ package {
 				_view.scene.addChild(m);
 				OimoPhysics.addCube(m, 50, 50, 50, 100, 50 + (100 * i), - 100, 10, 0.0, false);
 			}
+		}
 
-			// setup the render loop
+		/**
+		 * Initialise Listener
+		 */
+		private function initListeners(e : Event = null) : void {
 			_stage3DProxy.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			stage.addEventListener(Event.RESIZE, onResize);
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
@@ -252,12 +305,13 @@ package {
 		 * render loop
 		 */
 		private function _onEnterFrame(e : Event) : void {
+			if (_sunLight.ambient < 0.3) _sunLight.ambient += 0.003;
+			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
+			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
 			OimoPhysics.update();
 			log(OimoPhysics.info());
 			_cameraController.update();
-
-			if (_isResize) _isResize = false;
-			else _view.render();
+			_view.render();
 		}
 
 		/**
@@ -269,25 +323,6 @@ package {
 			_view.width = stage.stageWidth;
 			_view.height = stage.stageHeight;
 			_stats.x = stage.stageWidth - _stats.width;
-		}
-
-		/**
-		 * Initialise the lights
-		 */
-		private function initLights() : void {
-			// create a light for shadows that mimics the sun's position in the skybox
-			_sunLight = new DirectionalLight(1, 1, -1);
-			_sunLight.color = 0xffffff;
-			_sunLight.ambientColor = 0xffffff;
-			_sunLight.ambient = 0.3;
-			_sunLight.diffuse = 1;
-			_sunLight.specular = 1;
-
-			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.5);
-			_view.scene.addChild(_sunLight);
-
-			_lightPicker = new StaticLightPicker([_sunLight]);
 		}
 
 		private function onStageMouseDown(e : MouseEvent) : void {
