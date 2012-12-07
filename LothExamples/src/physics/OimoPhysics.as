@@ -14,7 +14,7 @@ package physics {
 	import com.element.oimo.math.Vec3;
 
 	import flash.display.Sprite;
-	// import flash.geom.Vector3D;
+	import flash.geom.Vector3D;
 	import flash.events.Event;
 	import flash.geom.Matrix3D;
 
@@ -32,6 +32,8 @@ package physics {
 		private static var _world : World;
 		private static var _scene : Scene3D;
 		private static var fps : Number;
+		private static var _demoName : String;
+		private static var _gravity : Number = 100;
 
 		public function OimoPhysics() {
 		}
@@ -56,8 +58,19 @@ package physics {
 			_rigids = new Vector.<RigidBody>();
 		}
 
+		/**
+		 * Set the away3d scene
+		 */
 		static public function set scene(Scene : Scene3D) : void {
 			_scene = Scene;
+		}
+
+		static public function set demoName(name : String) : void {
+			_demoName = name;
+		}
+
+		static public function set gravity(g : Number) : void {
+			_gravity = g;
 		}
 
 		/**
@@ -100,19 +113,21 @@ package physics {
 		/**
 		 * Add physic cube
 		 */
-		static public function addCube(mesh : Mesh, w : Number, h : Number, d : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
+		static public function addCube(mesh : Mesh, w : Number, h : Number, d : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
-			config.position.init(x, y, z);
-			config.rotation.init();
+			if (pos == null) pos = new Vector3D();
+			if (rot == null) rot = new Vector3D();
+			config.position.init(pos.x, pos.y, pos.z);
+			// config.rotation.init(rot.x, rot.y, rot.z);
 			config.restitution = restitution;
 			config.density = density;
-			config.friction = 0.3;
+			// config.friction = 0.3;
 			shape = new BoxShape(w, h, d, config);
-			rigid = new RigidBody();
-			rigid.linearVelocity.y = -900;
-			rigid.mass = 100;
+			rigid = new RigidBody(angle, rot.x, rot.y, rot.z);
+			rigid.linearVelocity.y = -_gravity;
+			// rigid.mass = 100;
 			rigid.addShape(shape);
 			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
@@ -126,19 +141,21 @@ package physics {
 		/**
 		 * Add physic sphere
 		 */
-		static public function addSphere(mesh : Mesh, r : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
+		static public function addSphere(mesh : Mesh, r : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
-			config.position.init(x, y, z);
-			config.rotation.init();
+			if (pos == null) pos = new Vector3D();
+			if (rot == null) rot = new Vector3D();
+			config.position.init(pos.x, pos.y, pos.z);
+			// config.rotation.init(rot.x, rot.y, rot.z);
 			config.restitution = restitution;
 			config.density = density;
-			config.friction = 20;
+			// config.friction = 20;
 			shape = new SphereShape(r, config);
-			rigid = new RigidBody();
-			rigid.linearVelocity.y = -900;
-			rigid.mass = 100;
+			rigid = new RigidBody(angle, rot.x, rot.y, rot.z);
+			rigid.linearVelocity.y = -_gravity;
+			// rigid.mass = 100;
 			rigid.addShape(shape);
 			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
@@ -165,8 +182,8 @@ package physics {
 			var inf : String;
 			fps += (1000 / _world.performance.totalTime - fps) * 0.5;
 			if (fps > 1000 || fps != fps) fps = 1000;
-
-			inf = "Rigid Body Count: " + _world.numRigidBodies;
+			inf = _demoName + "\n";
+			inf += "Rigid Body Count: " + _world.numRigidBodies;
 			inf += "\n" + "Shape Count: " + _world.numShapes + "\n";
 			inf += "Contacts Count: " + _world.numContacts + "\n\n";
 			inf += "Broad Phase Time: " + _world.performance.broadPhaseTime;
