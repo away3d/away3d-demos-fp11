@@ -1,5 +1,6 @@
 package physics {
 	import away3d.entities.Mesh;
+	import away3d.containers.Scene3D;
 
 	import com.element.oimo.physics.collision.shape.ShapeConfig;
 	import com.element.oimo.physics.collision.shape.SphereShape;
@@ -14,7 +15,6 @@ package physics {
 
 	import flash.display.Sprite;
 	// import flash.geom.Vector3D;
-	// import flash.geom.Matrix3D;
 	import flash.events.Event;
 	import flash.geom.Matrix3D;
 
@@ -29,6 +29,7 @@ package physics {
 		private static var Singleton : OimoPhysics;
 		private static var _meshs : Vector.<Mesh>;
 		private static var _world : World;
+		private static var _scene : Scene3D;
 		private static var fps : Number;
 
 		public function OimoPhysics() {
@@ -51,6 +52,10 @@ package physics {
 		private static function init(e : Event = null) : void {
 			_world = new World();
 			_meshs = new Vector.<Mesh>();
+		}
+
+		static public function set scene(Scene : Scene3D) : void {
+			_scene = Scene;
 		}
 
 		/**
@@ -77,7 +82,7 @@ package physics {
 		/**
 		 * Add physic cube
 		 */
-		static public function addCube(M : Mesh, w : Number, h : Number, d : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
+		static public function addCube(mesh : Mesh, w : Number, h : Number, d : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
@@ -95,13 +100,14 @@ package physics {
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
 
 			_world.addRigidBody(rigid);
-			_meshs.push(M);
+			_scene.addChild(mesh);
+			_meshs.push(mesh);
 		}
 
 		/**
 		 * Add physic sphere
 		 */
-		static public function addSphere(M : Mesh, r : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
+		static public function addSphere(mesh : Mesh, r : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
@@ -119,7 +125,8 @@ package physics {
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
 
 			_world.addRigidBody(rigid);
-			_meshs.push(M);
+			_scene.addChild(mesh);
+			_meshs.push(mesh);
 		}
 
 		/**
@@ -137,8 +144,7 @@ package physics {
 		static public function info() : String {
 			var inf : String;
 			fps += (1000 / _world.performance.totalTime - fps) * 0.5;
-			if (fps > 1000 || fps != fps)
-				fps = 1000;
+			if (fps > 1000 || fps != fps) fps = 1000;
 
 			inf = "Rigid Body Count: " + _world.numRigidBodies;
 			inf += "\n" + "Shape Count: " + _world.numShapes + "\n";

@@ -68,17 +68,19 @@ package {
 
 	import physics.OimoPhysics;
 
+	import com.bit101.components.Style;
+	import com.bit101.components.PushButton;
+	import com.bit101.components.Component;
+
 	[SWF(backgroundColor="#000000", frameRate="60", quality="LOW")]
 	public class Demo_Physics extends Sprite {
 		// engine variables
 		private var _view : View3D;
-		private var _text : TextField;
 		private var _stats : AwayStats;
 		// Stage manager and Stage3D instance proxy classes
 		private var _stage3DManager : Stage3DManager;
 		private var _stage3DProxy : Stage3DProxy;
 		// scene objects
-		private var _plane : Mesh;
 		private var _sphere : Mesh;
 		private var _sphere2 : Mesh;
 		private var _cube : Mesh;
@@ -95,6 +97,9 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
+		// other
+		private var _menu : Sprite;
+		private var _text : TextField;
 
 		/**
 		 * Constructor
@@ -144,9 +149,11 @@ package {
 		 * Global initialise function
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
-			initText();
 			initEngine();
+			initText();
+			initSetting();
 			initLights();
+			initOimoPhysics();
 			initMaterials();
 			initSceneObject();
 			initListeners();
@@ -237,29 +244,29 @@ package {
 		}
 
 		/**
+		 * Initialise OimoPhysics engine
+		 */
+		private function initOimoPhysics() : void {
+			OimoPhysics.getInstance();
+			OimoPhysics.scene = _view.scene;
+		}
+
+		/**
 		 * Initialise scene object3d
 		 */
 		private function initSceneObject() : void {
-			_plane = new Mesh(new CubeGeometry(1000, 30, 1000), _material01);
-			_view.scene.addChild(_plane);
-			_plane.castsShadows = false;
-
+			var ground : Mesh = new Mesh(new CubeGeometry(1000, 30, 1000), _material01);
 			var wall0 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
 			var wall1 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
 			var wall2 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
 			var wall3 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
-			_view.scene.addChild(wall0);
-			_view.scene.addChild(wall1);
-			_view.scene.addChild(wall2);
-			_view.scene.addChild(wall3);
+			ground.castsShadows = false;
 			wall0.castsShadows = false;
 			wall1.castsShadows = false;
 			wall2.castsShadows = false;
 			wall3.castsShadows = false;
 
-			// setup physic engine
-			OimoPhysics.getInstance();
-			OimoPhysics.addCube(_plane, 1000, 10, 1000, 0, 15, 0);
+			OimoPhysics.addCube(ground, 1000, 10, 1000, 0, 15, 0);
 			OimoPhysics.addCube(wall0, 30, 600, 1000, 500, 300, 0);
 			OimoPhysics.addCube(wall1, 30, 600, 1000, -500, 300, 0);
 			OimoPhysics.addCube(wall2, 1000, 600, 30, 0, 300, -500);
@@ -268,7 +275,6 @@ package {
 			// the big sphere
 			_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
 			OimoPhysics.addSphere(_sphere, 150, 0, 500, 0, 10, 600.0, false);
-			_view.scene.addChild(_sphere);
 
 			// reference mesh for clone
 			_sphere2 = new Mesh(new SphereGeometry(32), _material02);
@@ -277,13 +283,11 @@ package {
 			var m : Mesh;
 			for (var i : uint = 0;i < 500;i++) {
 				m = Mesh(_sphere2.clone());
-				_view.scene.addChild(m);
 				OimoPhysics.addSphere(m, 32, -100, 50 + (100 * i), 100, 10, 0.0, false);
 			}
 
 			for (i = 0;i < 500;i++) {
 				m = Mesh(_cube.clone());
-				_view.scene.addChild(m);
 				OimoPhysics.addCube(m, 50, 50, 50, 100, 50 + (100 * i), - 100, 10, 0.0, false);
 			}
 		}
@@ -337,7 +341,6 @@ package {
 
 		private function onStageMouseLeave(e : Event) : void {
 			_mouseMove = false;
-			// stopListeners();
 		}
 
 		private function onStageMouseMove(e : MouseEvent) : void {
@@ -347,6 +350,37 @@ package {
 			}
 			_prevMouseX = e.stageX;
 			_prevMouseY = e.stageY;
+		}
+
+		/**
+		 * Interface button
+		 */
+		private function initSetting() : void {
+			_menu = new Sprite();
+			addChild(_menu);
+			_menu.y = stage.stageHeight;
+			Style.setStyle("dark");
+			Style.DROPSHADOW = 0x000000;
+			Style.BACKGROUND = 0x995522;
+			Style.LABEL_TEXT = 0xEEEEEE;
+			Style.BUTTON_FACE = 0x060606;
+			Style.BUTTON_DOWN = 0x995522;
+			Style.fontName = "Helvetica";
+			Style.embedFonts = false;
+			Style.fontSize = 11;
+			Component.initStage(stage);
+			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
+			new PushButton(_menu, 65, -29, "prev", prevDemo).setSize(60, 30);
+			new PushButton(_menu, 130, -29, "next", nextDemo).setSize(60, 30);
+		}
+
+		private function showSetting(e : Event) : void {
+		}
+
+		private function prevDemo(e : Event) : void {
+		}
+
+		private function nextDemo(e : Event) : void {
 		}
 
 		/**
