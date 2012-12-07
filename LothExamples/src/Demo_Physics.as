@@ -100,6 +100,8 @@ package {
 		// other
 		private var _menu : Sprite;
 		private var _text : TextField;
+		private var _currentDemo : uint;
+		private var _maxDemo : uint;
 
 		/**
 		 * Constructor
@@ -149,6 +151,8 @@ package {
 		 * Global initialise function
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
+			_currentDemo = 0;
+			_maxDemo = 3;
 			initEngine();
 			initText();
 			initSetting();
@@ -255,40 +259,45 @@ package {
 		 * Initialise scene object3d
 		 */
 		private function initSceneObject() : void {
-			var ground : Mesh = new Mesh(new CubeGeometry(1000, 30, 1000), _material01);
-			var wall0 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
-			var wall1 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
-			var wall2 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
-			var wall3 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
-			ground.castsShadows = false;
-			wall0.castsShadows = false;
-			wall1.castsShadows = false;
-			wall2.castsShadows = false;
-			wall3.castsShadows = false;
-
-			OimoPhysics.addCube(ground, 1000, 10, 1000, 0, 15, 0);
-			OimoPhysics.addCube(wall0, 30, 600, 1000, 500, 300, 0);
-			OimoPhysics.addCube(wall1, 30, 600, 1000, -500, 300, 0);
-			OimoPhysics.addCube(wall2, 1000, 600, 30, 0, 300, -500);
-			OimoPhysics.addCube(wall3, 1000, 600, 30, 0, 300, 500);
-
-			// the big sphere
-			_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
-			OimoPhysics.addSphere(_sphere, 150, 0, 500, 0, 10, 600.0, false);
-
-			// reference mesh for clone
-			_sphere2 = new Mesh(new SphereGeometry(32), _material02);
-			_cube = new Mesh(new CubeGeometry(50, 50, 50), _material03);
-
-			var m : Mesh;
-			for (var i : uint = 0;i < 500;i++) {
-				m = Mesh(_sphere2.clone());
-				OimoPhysics.addSphere(m, 32, -100, 50 + (100 * i), 100, 10, 0.0, false);
-			}
-
-			for (i = 0;i < 500;i++) {
-				m = Mesh(_cube.clone());
-				OimoPhysics.addCube(m, 50, 50, 50, 100, 50 + (100 * i), - 100, 10, 0.0, false);
+			switch(_currentDemo) {
+				case 0 :
+					var ground : Mesh = new Mesh(new CubeGeometry(1000, 30, 1000), _material01);
+					var wall0 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
+					var wall1 : Mesh = new Mesh(new CubeGeometry(30, 600, 1000), _material01);
+					var wall2 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
+					var wall3 : Mesh = new Mesh(new CubeGeometry(1000, 600, 30), _material01);
+					ground.castsShadows = false;
+					wall0.castsShadows = false;
+					wall1.castsShadows = false;
+					wall2.castsShadows = false;
+					wall3.castsShadows = false;
+					OimoPhysics.addCube(ground, 1000, 10, 1000, 0, 15, 0);
+					OimoPhysics.addCube(wall0, 30, 600, 1000, 500, 300, 0);
+					OimoPhysics.addCube(wall1, 30, 600, 1000, -500, 300, 0);
+					OimoPhysics.addCube(wall2, 1000, 600, 30, 0, 300, -500);
+					OimoPhysics.addCube(wall3, 1000, 600, 30, 0, 300, 500);
+					// the big sphere
+					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
+					OimoPhysics.addSphere(_sphere, 150, 0, 500, 0, 10, 600.0, false);
+					// reference mesh for clone
+					_sphere2 = new Mesh(new SphereGeometry(32), _material02);
+					_cube = new Mesh(new CubeGeometry(50, 50, 50), _material03);
+					var m : Mesh;
+					for (var i : uint = 0;i < 500;i++) {
+						m = Mesh(_sphere2.clone());
+						OimoPhysics.addSphere(m, 32, -100, 50 + (100 * i), 100, 10, 0.0, false);
+					}
+					for (i = 0;i < 500;i++) {
+						m = Mesh(_cube.clone());
+						OimoPhysics.addCube(m, 50, 50, 50, 100, 50 + (100 * i), - 100, 10, 0.0, false);
+					}
+					break;
+				case 1 :
+					break;
+				case 2 :
+					break;
+				case 3 :
+					break;
 			}
 		}
 
@@ -378,9 +387,17 @@ package {
 		}
 
 		private function prevDemo(e : Event) : void {
+			OimoPhysics.clean();
+			if (_currentDemo == 0) _currentDemo = _maxDemo;
+			else _currentDemo--;
+			initSceneObject();
 		}
 
 		private function nextDemo(e : Event) : void {
+			OimoPhysics.clean();
+			if (_currentDemo == _maxDemo) _currentDemo = 0;
+			else _currentDemo++;
+			initSceneObject();
 		}
 
 		/**

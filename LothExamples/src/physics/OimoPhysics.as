@@ -28,6 +28,7 @@ package physics {
 	public class OimoPhysics extends Sprite {
 		private static var Singleton : OimoPhysics;
 		private static var _meshs : Vector.<Mesh>;
+		private static var _rigids : Vector.<RigidBody>;
 		private static var _world : World;
 		private static var _scene : Scene3D;
 		private static var fps : Number;
@@ -52,6 +53,7 @@ package physics {
 		private static function init(e : Event = null) : void {
 			_world = new World();
 			_meshs = new Vector.<Mesh>();
+			_rigids = new Vector.<RigidBody>();
 		}
 
 		static public function set scene(Scene : Scene3D) : void {
@@ -80,6 +82,22 @@ package physics {
 		}
 
 		/**
+		 * Remove all object to simulation
+		 */
+		static public function clean() : void {
+			for (var i : uint; i < _meshs.length; ++i) {
+				_scene.removeChild(_meshs[i]);
+				for (var j : uint; j < _rigids[i].shapes.length; ++j) {
+					_world.removeShape(_rigids[i].shapes[j]);
+				}
+				_world.removeRigidBody(_rigids[i]);
+				_meshs[i].dispose();
+			}
+			// reset the physics world
+			init();
+		}
+
+		/**
 		 * Add physic cube
 		 */
 		static public function addCube(mesh : Mesh, w : Number, h : Number, d : Number, x : Number = 0, y : Number = 0, z : Number = 0, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
@@ -101,6 +119,7 @@ package physics {
 
 			_world.addRigidBody(rigid);
 			_scene.addChild(mesh);
+			_rigids.push(rigid);
 			_meshs.push(mesh);
 		}
 
@@ -126,6 +145,7 @@ package physics {
 
 			_world.addRigidBody(rigid);
 			_scene.addChild(mesh);
+			_rigids.push(rigid);
 			_meshs.push(mesh);
 		}
 
