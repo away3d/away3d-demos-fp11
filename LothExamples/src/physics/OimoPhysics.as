@@ -24,6 +24,9 @@ package physics {
 	 * @link https://github.com/saharan/OimoPhysics
 	 * ...
 	 * Compact engine by Loth
+	 * 
+	 * OimoPhysics use international system units 0.1 to 10 meters max 
+	 * for away3d mutliply by scale 100
 	 */
 	public class OimoPhysics extends Sprite {
 		private static var Singleton : OimoPhysics;
@@ -33,7 +36,7 @@ package physics {
 		private static var _scene : Scene3D;
 		private static var fps : Number;
 		private static var _demoName : String;
-		private static var _gravity : Number = 100;
+		private static var _scale : uint = 100;
 
 		public function OimoPhysics() {
 		}
@@ -69,8 +72,8 @@ package physics {
 			_demoName = name;
 		}
 
-		static public function set gravity(g : Number) : void {
-			_gravity = g;
+		static public function gravity(g : Number) : void {
+			_world.gravity = new Vec3(0, g, 0);
 		}
 
 		/**
@@ -113,21 +116,21 @@ package physics {
 		/**
 		 * Add physic cube
 		 */
-		static public function addCube(mesh : Mesh, w : Number, h : Number, d : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
+		static public function addCube(mesh : Mesh, w : Number, h : Number, d : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, Density : Number = 1, Friction : Number = 0.5, Restitution : Number = 0.5, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
 			if (pos == null) pos = new Vector3D();
 			if (rot == null) rot = new Vector3D();
-			config.position.init(pos.x, pos.y, pos.z);
+			config.position.init(pos.x / _scale, pos.y / _scale, pos.z / _scale);
 			// config.rotation.init(rot.x, rot.y, rot.z);
-			config.restitution = restitution;
-			config.density = density;
-			// config.friction = 0.3;
-			shape = new BoxShape(w, h, d, config);
+			config.density = Density;
+			config.friction = Friction;
+			config.restitution = Restitution;
+			shape = new BoxShape(w / _scale, h / _scale, d / _scale, config);
 			rigid = new RigidBody(angle, rot.x, rot.y, rot.z);
-			rigid.linearVelocity.y = -_gravity;
-			// rigid.mass = 100;
+			// rigid.linearVelocity.y = -_gravity;
+			rigid.mass = 1;
 			rigid.addShape(shape);
 			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
@@ -141,21 +144,22 @@ package physics {
 		/**
 		 * Add physic sphere
 		 */
-		static public function addSphere(mesh : Mesh, r : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, density : Number = 10, restitution : Number = 0, isStatic : Boolean = true) : void {
+		static public function addSphere(mesh : Mesh, r : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, Density : Number = 1, Friction : Number = 0.5, Restitution : Number = 0.5, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
 			if (pos == null) pos = new Vector3D();
 			if (rot == null) rot = new Vector3D();
-			config.position.init(pos.x, pos.y, pos.z);
+			config.position.init(pos.x / _scale, pos.y / _scale, pos.z / _scale);
 			// config.rotation.init(rot.x, rot.y, rot.z);
-			config.restitution = restitution;
-			config.density = density;
-			// config.friction = 20;
-			shape = new SphereShape(r, config);
+			config.density = Density;
+			config.friction = Friction;
+			config.restitution = Restitution;
+
+			shape = new SphereShape(r / _scale, config);
 			rigid = new RigidBody(angle, rot.x, rot.y, rot.z);
-			rigid.linearVelocity.y = -_gravity;
-			// rigid.mass = 100;
+			// rigid.linearVelocity.y = -_gravity;
+			rigid.mass = 1;
 			rigid.addShape(shape);
 			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
@@ -172,7 +176,7 @@ package physics {
 		static public function rigidPos(n : uint = 0) : Matrix3D {
 			var r : Mat33 = _world.rigidBodies[n].rotation;
 			var p : Vec3 = _world.rigidBodies[n].position;
-			return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x, p.y, p.z, 1]));
+			return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x * _scale, p.y * _scale, p.z * _scale, 1]));
 		}
 
 		/**
