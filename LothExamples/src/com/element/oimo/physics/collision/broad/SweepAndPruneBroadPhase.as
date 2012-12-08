@@ -53,7 +53,7 @@ package com.element.oimo.physics.collision.broad {
 		override public function detectPairs(pairs:Vector.<Pair>):uint {
 			numPairChecks = 0;
 			var proxyPool:Vector.<Proxy> = proxyPoolAxis[sortAxis];
-			//var result:uint;
+			var result:uint;
 			if (sortAxis == 0) {
 				insertionSortX(proxyPool);
 				return sweepX(pairs, proxyPool);
@@ -103,7 +103,7 @@ package com.element.oimo.physics.collision.broad {
 						b1 == b2 ||
 						p1.maxY < p2.minY || p1.minY > p2.maxY ||
 						p1.maxZ < p2.minZ || p1.minZ > p2.maxZ ||
-						b1.type == bodyStatic && b2.type == bodyStatic
+						!isAvailablePair(b1, b2)
 					) {
 						continue;
 					}
@@ -174,7 +174,7 @@ package com.element.oimo.physics.collision.broad {
 						b1 == b2 ||
 						p1.maxX < p2.minX || p1.minX > p2.maxX ||
 						p1.maxZ < p2.minZ || p1.minZ > p2.maxZ ||
-						b1.type == bodyStatic && b2.type == bodyStatic
+						!isAvailablePair(b1, b2)
 					) {
 						continue;
 					}
@@ -245,7 +245,7 @@ package com.element.oimo.physics.collision.broad {
 						b1 == b2 ||
 						p1.maxX < p2.minX || p1.minX > p2.maxX ||
 						p1.maxY < p2.minY || p1.minY > p2.maxY ||
-						b1.type == bodyStatic && b2.type == bodyStatic
+						!isAvailablePair(b1, b2)
 					) {
 						continue;
 					}
