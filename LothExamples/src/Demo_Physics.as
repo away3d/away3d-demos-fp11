@@ -305,7 +305,7 @@ package {
 				case 1 :
 					OimoPhysics.demoName = '1 - The tower stack';
 					OimoPhysics.gravity(-10);
-					height = 20;
+					height = 40;
 					bw = 75;
 					bh = 75;
 					bd = 120;
@@ -329,19 +329,25 @@ package {
 					width = 20;
 					bw = 80;
 					bh = 50;
-					bd = 70;
+					bd = 80;
 					var ground02 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
 					OimoPhysics.addCube(ground02, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
 					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 0), 0, null, 10, 1, 0.5, false);
+							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 200), 0, null, 10, 1, 0.5, false);
+						}
+					}
+					for (i = 0; i < width; i++) {
+						for (j = i; j < width; j++) {
+							m = Mesh(pbox.clone());
+							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -200), 0, null, 10, 1, 0.5, false);
 						}
 					}
 					// the big sphere
-					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
-					OimoPhysics.addSphere(_sphere, 150, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
+					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _material04);
+					OimoPhysics.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
 					break;
 				case 3 :
 					OimoPhysics.demoName = '3 - Compound shapes';
