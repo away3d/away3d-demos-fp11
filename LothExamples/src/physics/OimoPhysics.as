@@ -37,6 +37,7 @@ package physics {
 		private static var fps : Number;
 		private static var _demoName : String;
 		private static var _scale : uint = 100;
+		private static var _invScale : Number = 0.01;
 
 		public function OimoPhysics() {
 		}
@@ -122,23 +123,22 @@ package physics {
 			var config : ShapeConfig = new ShapeConfig();
 			if (pos == null) pos = new Vector3D();
 			if (rot == null) rot = new Vector3D();
-			config.position.init(pos.x / _scale, pos.y / _scale, pos.z / _scale);
-			// config.rotation.init(rot.x, rot.y, rot.z);
+			config.position.init(pos.x * _invScale, pos.y * _invScale, pos.z * _invScale);
+			config.rotation.init();
 			config.density = Density;
 			config.friction = Friction;
 			config.restitution = Restitution;
-			shape = new BoxShape(w / _scale, h / _scale, d / _scale, config);
+			shape = new BoxShape(w * _invScale, h * _invScale, d * _invScale, config);
 			rigid = new RigidBody(angle, rot.x, rot.y, rot.z);
-			// rigid.linearVelocity.y = -_gravity;
-			rigid.mass = 1;
 			rigid.addShape(shape);
 			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
-
-			_world.addRigidBody(rigid);
-			_scene.addChild(mesh);
+			// add to listing
 			_rigids.push(rigid);
 			_meshs.push(mesh);
+			// showtime
+			_world.addRigidBody(rigid);
+			_scene.addChild(mesh);
 		}
 
 		/**
@@ -150,24 +150,22 @@ package physics {
 			var config : ShapeConfig = new ShapeConfig();
 			if (pos == null) pos = new Vector3D();
 			if (rot == null) rot = new Vector3D();
-			config.position.init(pos.x / _scale, pos.y / _scale, pos.z / _scale);
-			// config.rotation.init(rot.x, rot.y, rot.z);
+			config.position.init(pos.x * _invScale, pos.y * _invScale, pos.z * _invScale);
+			config.rotation.init();
 			config.density = Density;
 			config.friction = Friction;
 			config.restitution = Restitution;
-
-			shape = new SphereShape(r / _scale, config);
+			shape = new SphereShape(r * _invScale, config);
 			rigid = new RigidBody(angle, rot.x, rot.y, rot.z);
-			// rigid.linearVelocity.y = -_gravity;
-			rigid.mass = 1;
 			rigid.addShape(shape);
 			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
-
-			_world.addRigidBody(rigid);
-			_scene.addChild(mesh);
+			// add to listing
 			_rigids.push(rigid);
 			_meshs.push(mesh);
+			// showtime
+			_world.addRigidBody(rigid);
+			_scene.addChild(mesh);
 		}
 
 		/**

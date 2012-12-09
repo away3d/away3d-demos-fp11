@@ -271,7 +271,7 @@ package {
 			switch(_currentDemo) {
 				case 0 :
 					OimoPhysics.demoName = '0 - Push the limite';
-					OimoPhysics.gravity(-9.8);
+					OimoPhysics.gravity(-10);
 					var ground : Mesh = new Mesh(new CubeGeometry(1000, 100, 1000), _material01);
 					var wall0 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
 					var wall1 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
@@ -304,41 +304,44 @@ package {
 					break;
 				case 1 :
 					OimoPhysics.demoName = '1 - The tower stack';
-					OimoPhysics.gravity(-9.8);
+					OimoPhysics.gravity(-10);
 					height = 20;
-					bw = 60;
+					bw = 75;
 					bh = 75;
 					bd = 120;
-					var ground01 : Mesh = new Mesh(new CubeGeometry(1000, 30, 1000), _material01);
-					OimoPhysics.addCube(ground01, 1000, 10, 1000, new Vector3D(0, -10, 0));
+					var ground01 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
+					OimoPhysics.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.0, true);
 					var bbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for ( j = 0; j < height; j++) {
 						for (i = 0; i < 10; i++) {
 							var ang : Number = Math.PI * 2 / 10 * (i + (j & 1) * 0.5);
 							m = Mesh(bbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 1, 0.5, 0.5, false);
+							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 10, 1, 0.2, false);
 						}
 					}
+					// the big sphere
+					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material04);
+					OimoPhysics.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), 0, null, 5, 1, 0.5, false);
 					break;
 				case 2 :
 					OimoPhysics.demoName = '2 - The pyramid stack';
-					OimoPhysics.gravity(-9.8);
+					OimoPhysics.gravity(-10);
 					width = 20;
 					bw = 80;
 					bh = 50;
 					bd = 70;
-					var ground02 : Mesh = new Mesh(new CubeGeometry(2000, 30, 1000), _material01);
-					OimoPhysics.addCube(ground02, 2000, 10, 1000, new Vector3D(0, -10, 0));
+					var ground02 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
+					OimoPhysics.addCube(ground02, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
 					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 0), 0, null, 1, 0.5, 0.5, false);
+							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 0), 0, null, 10, 1, 0.5, false);
 						}
 					}
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
-					OimoPhysics.addSphere(_sphere, 150, new Vector3D(0, 2000, 0), 0, null, 5, 0.3, 0.2, false);
+					OimoPhysics.addSphere(_sphere, 150, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
 					break;
 				case 3 :
 					OimoPhysics.demoName = '3 - Compound shapes';
