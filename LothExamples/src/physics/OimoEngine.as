@@ -21,7 +21,7 @@ package physics {
 	import flash.geom.Matrix3D;
 
 	/**
-	 * OimoPhysics
+	 * OimoPhysics alpha release 7 
 	 * @author Saharan _ http://el-ement.com
 	 * @link https://github.com/saharan/OimoPhysics
 	 * ...
@@ -31,10 +31,10 @@ package physics {
 	 * 0.1 to 10 meters max for dynamique body
 	 * in away3d mutliply by scale 100
 	 */
-	public class OimoPhysics extends Sprite {
+	final public class OimoEngine extends Sprite {
 		private static const SCALE : uint = 100;
 		private static const USCALE : Number = 0.01;
-		private static var Singleton : OimoPhysics;
+		private static var Singleton : OimoEngine;
 		private static var _world : World;
 		private static var _rigids : Vector.<RigidBody>;
 		private static var _joints : Vector.<Joint>;
@@ -46,10 +46,10 @@ package physics {
 		/**
 		 * Singleton enforcer
 		 */
-		public static function getInstance() : OimoPhysics {
+		public static function getInstance() : OimoEngine {
 			if (Singleton == null) {
-				Singleton = new OimoPhysics();
-				OimoPhysics.init();
+				Singleton = new OimoEngine();
+				OimoEngine.init();
 			}
 			return Singleton;
 		}

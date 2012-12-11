@@ -66,7 +66,7 @@ package {
 	import flash.geom.Vector3D;
 	import flash.events.Event;
 
-	import physics.OimoPhysics;
+	import physics.OimoEngine;
 
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
@@ -247,11 +247,11 @@ package {
 		}
 
 		/**
-		 * Initialise OimoPhysics engine
+		 * Initialise OimoEngine engine
 		 */
 		private function initOimoPhysics() : void {
-			OimoPhysics.getInstance();
-			OimoPhysics.scene = _view.scene;
+			OimoEngine.getInstance();
+			OimoEngine.scene = _view.scene;
 		}
 
 		/**
@@ -269,8 +269,8 @@ package {
 
 			switch(_currentDemo) {
 				case 0 :
-					OimoPhysics.demoName = '0 - Push the limite';
-					OimoPhysics.gravity(-10);
+					OimoEngine.demoName = '0 - Push the limite';
+					OimoEngine.gravity(-10);
 					var ground : Mesh = new Mesh(new CubeGeometry(1000, 50, 1000), _material01);
 					var wall0 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
 					var wall1 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
@@ -281,90 +281,90 @@ package {
 					wall1.castsShadows = false;
 					wall2.castsShadows = false;
 					wall3.castsShadows = false;
-					OimoPhysics.addCube(ground, 1000, 50, 1000, new Vector3D(0, 0, 0));
-					OimoPhysics.addCube(wall0, 50, 600, 1000, new Vector3D(500, 300, 0));
-					OimoPhysics.addCube(wall1, 50, 600, 1000, new Vector3D(-500, 300, 0));
-					OimoPhysics.addCube(wall2, 1000, 600, 50, new Vector3D(0, 300, -500));
-					OimoPhysics.addCube(wall3, 1000, 600, 50, new Vector3D(0, 300, 500));
+					OimoEngine.addCube(ground, 1000, 50, 1000, new Vector3D(0, 0, 0));
+					OimoEngine.addCube(wall0, 50, 600, 1000, new Vector3D(500, 300, 0));
+					OimoEngine.addCube(wall1, 50, 600, 1000, new Vector3D(-500, 300, 0));
+					OimoEngine.addCube(wall2, 1000, 600, 50, new Vector3D(0, 300, -500));
+					OimoEngine.addCube(wall3, 1000, 600, 50, new Vector3D(0, 300, 500));
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
-					OimoPhysics.addSphere(_sphere, 150, new Vector3D(0, 500, 0), 0, null, 1, 0.5, 0.5, false);
+					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 500, 0), 0, null, 1, 0.5, 0.5, false);
 					// reference mesh for clone
 					var sphere : Mesh = new Mesh(new SphereGeometry(50), _material02);
 					for ( i = 0;i < 200;i++) {
 						m = Mesh(sphere.clone());
-						OimoPhysics.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
+						OimoEngine.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
 					}
 					var cube : Mesh = new Mesh(new CubeGeometry(100, 100, 100), _material03);
 					for (i = 0;i < 200;i++) {
 						m = Mesh(cube.clone());
-						OimoPhysics.addCube(m, 100, 100, 100, new Vector3D(100, 50 + (100 * i), - 100), 0, null, 1, 0.5, 0.5, false);
+						OimoEngine.addCube(m, 100, 100, 100, new Vector3D(100, 50 + (100 * i), - 100), 0, null, 1, 0.5, 0.5, false);
 					}
 					break;
 				case 1 :
-					OimoPhysics.demoName = '1 - The tower stack';
-					OimoPhysics.gravity(-10);
+					OimoEngine.demoName = '1 - The tower stack';
+					OimoEngine.gravity(-10);
 					height = 40;
 					bw = 75;
 					bh = 75;
 					bd = 120;
 					var ground01 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
-					OimoPhysics.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.0, true);
+					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.0, true);
 					var bbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for ( j = 0; j < height; j++) {
 						for (i = 0; i < 10; i++) {
 							var ang : Number = Math.PI * 2 / 10 * (i + (j & 1) * 0.5);
 							m = Mesh(bbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 10, 1, 0.2, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 10, 1, 0.2, false);
 						}
 					}
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material04);
-					OimoPhysics.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), 0, null, 5, 1, 0.5, false);
+					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), 0, null, 5, 1, 0.5, false);
 					break;
 				case 2 :
-					OimoPhysics.demoName = '2 - The pyramid stack';
-					OimoPhysics.gravity(-10);
+					OimoEngine.demoName = '2 - The pyramid stack';
+					OimoEngine.gravity(-10);
 					width = 20;
 					bw = 80;
 					bh = 50;
 					bd = 80;
 					var ground02 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
-					OimoPhysics.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
+					OimoEngine.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
 					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), 0, null, 10, 1, 0.5, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), 0, null, 10, 1, 0.5, false);
 						}
 					}
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), 0, null, 10, 1, 0.5, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), 0, null, 10, 1, 0.5, false);
 						}
 					}
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _material04);
-					OimoPhysics.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
+					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
 					break;
 				case 3 :
-					OimoPhysics.gravity(0);
-					OimoPhysics.demoName = '3 - Joint Test';
+					OimoEngine.gravity(0);
+					OimoEngine.demoName = '3 - Joint Test';
 					var ground03 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
-					OimoPhysics.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
+					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
 					var spherex : Mesh = new Mesh(new SphereGeometry(100), _material02);
 					for ( i = 0;i < 100;i++) {
 						m = Mesh(spherex.clone());
-						OimoPhysics.addSphere(m, 100, new Vector3D(-100, 100 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
-						OimoPhysics.addDistanceJoint(OimoPhysics.rigids[i], OimoPhysics.rigids[i + 1], 200);
+						OimoEngine.addSphere(m, 100, new Vector3D(-100, 100 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
+						OimoEngine.addDistanceJoint(OimoEngine.rigids[i], OimoEngine.rigids[i + 1], 200);
 					}
 					break;
 				case 4 :
-					OimoPhysics.demoName = '4 - Dominoes days';
+					OimoEngine.demoName = '4 - Dominoes days';
 					break;
 				case 5 :
-					OimoPhysics.demoName = '5 - Spining tops';
+					OimoEngine.demoName = '5 - Spining tops';
 					break;
 			}
 		}
@@ -373,7 +373,7 @@ package {
 		 * Initialise Listener
 		 */
 		private function initListeners(e : Event = null) : void {
-			_stage3DProxy.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			_stage3DProxy.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			stage.addEventListener(Event.RESIZE, onResize);
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
@@ -385,12 +385,12 @@ package {
 		/**
 		 * render loop
 		 */
-		private function _onEnterFrame(e : Event) : void {
+		private function onEnterFrame(e : Event) : void {
 			if (_sunLight.ambient < 0.3) _sunLight.ambient += 0.003;
 			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
 			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
-			OimoPhysics.update();
-			log(OimoPhysics.info());
+			OimoEngine.update();
+			log(OimoEngine.info());
 			_cameraController.update();
 			_view.render();
 		}
@@ -461,21 +461,21 @@ package {
 		}
 
 		private function setGravity(event : Event) : void {
-			OimoPhysics.gravity(event.currentTarget.value);
+			OimoEngine.gravity(event.currentTarget.value);
 		}
 
 		private function showSetting(e : Event) : void {
 		}
 
 		private function prevDemo(e : Event) : void {
-			OimoPhysics.clean();
+			OimoEngine.clean();
 			if (_currentDemo == 0) _currentDemo = _maxDemo;
 			else _currentDemo--;
 			initSceneObject();
 		}
 
 		private function nextDemo(e : Event) : void {
-			OimoPhysics.clean();
+			OimoEngine.clean();
 			if (_currentDemo == _maxDemo) _currentDemo = 0;
 			else _currentDemo++;
 			initSceneObject();
