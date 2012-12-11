@@ -89,6 +89,8 @@ package {
 
 	import games.FractalTerrain;
 
+	import physics.OimoEngine;
+
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Random_Land extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
@@ -112,7 +114,6 @@ package {
 		private var _cameraController : HoverController;
 		private var _night : Number = 100;
 		// scene objects
-		// private var _lander : Lander;
 		private var _ground : Mesh;
 		private var _terrain : FractalTerrain;
 		private var _sunLight : DirectionalLight;
@@ -191,6 +192,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			initEngine();
+			initOimoPhysics();
 			initText();
 			initSetting();
 			initLights();
@@ -370,6 +372,14 @@ package {
 		}
 
 		/**
+		 * Initialise OimoPhysics engine
+		 */
+		private function initOimoPhysics() : void {
+			OimoEngine.getInstance();
+			OimoEngine.scene = _view.scene;
+		}
+
+		/**
 		 * Render loop
 		 */
 		private function onEnterFrame(event : Event = null) : void {
@@ -388,6 +398,8 @@ package {
 				_cameraController.distance--;
 
 			_terrain.update();
+			
+			OimoEngine.update();
 
 			_player.y = _terrain.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);

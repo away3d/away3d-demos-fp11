@@ -31,7 +31,7 @@ package physics {
 	 * 0.1 to 10 meters max for dynamique body
 	 * in away3d mutliply by scale 100
 	 */
-	final public class OimoEngine extends Sprite {
+	public class OimoEngine extends Sprite {
 		private static const SCALE : uint = 100;
 		private static const USCALE : Number = 0.01;
 		private static var Singleton : OimoEngine;

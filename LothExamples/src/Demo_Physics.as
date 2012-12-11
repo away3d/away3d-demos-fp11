@@ -247,7 +247,7 @@ package {
 		}
 
 		/**
-		 * Initialise OimoEngine engine
+		 * Initialise OimoPhysics engine
 		 */
 		private function initOimoPhysics() : void {
 			OimoEngine.getInstance();
