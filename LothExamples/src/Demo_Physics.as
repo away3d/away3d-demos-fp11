@@ -71,6 +71,7 @@ package {
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 	import com.bit101.components.Component;
+	import com.bit101.components.HUISlider;
 
 	[SWF(backgroundColor="#000000", frameRate="60", quality="LOW")]
 	public class Demo_Physics extends Sprite {
@@ -82,8 +83,6 @@ package {
 		private var _stage3DProxy : Stage3DProxy;
 		// scene objects
 		private var _sphere : Mesh;
-		private var _sphere2 : Mesh;
-		private var _cube : Mesh;
 		private var _sunLight : DirectionalLight;
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
@@ -152,7 +151,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			_currentDemo = 0;
-			_maxDemo = 2;
+			_maxDemo = 3;
 			initEngine();
 			initText();
 			initSetting();
@@ -173,7 +172,7 @@ package {
 			addChild(_view);
 			// setup the camera
 			_view.camera.lens = new PerspectiveLens(80);
-			_view.camera.lens.far = 6000;
+			_view.camera.lens.far = 10000;
 			// setup controller to be used on the camera
 			_cameraController = new HoverController(_view.camera, null, 0, 80, 1300, 10, 9);
 			_cameraController.minTiltAngle = -90;
@@ -272,7 +271,7 @@ package {
 				case 0 :
 					OimoPhysics.demoName = '0 - Push the limite';
 					OimoPhysics.gravity(-10);
-					var ground : Mesh = new Mesh(new CubeGeometry(1000, 100, 1000), _material01);
+					var ground : Mesh = new Mesh(new CubeGeometry(1000, 50, 1000), _material01);
 					var wall0 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
 					var wall1 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
 					var wall2 : Mesh = new Mesh(new CubeGeometry(1000, 600, 50), _material01);
@@ -282,7 +281,7 @@ package {
 					wall1.castsShadows = false;
 					wall2.castsShadows = false;
 					wall3.castsShadows = false;
-					OimoPhysics.addCube(ground, 1000, 100, 1000, new Vector3D(0, 0, 0));
+					OimoPhysics.addCube(ground, 1000, 50, 1000, new Vector3D(0, 0, 0));
 					OimoPhysics.addCube(wall0, 50, 600, 1000, new Vector3D(500, 300, 0));
 					OimoPhysics.addCube(wall1, 50, 600, 1000, new Vector3D(-500, 300, 0));
 					OimoPhysics.addCube(wall2, 1000, 600, 50, new Vector3D(0, 300, -500));
@@ -291,15 +290,15 @@ package {
 					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
 					OimoPhysics.addSphere(_sphere, 150, new Vector3D(0, 500, 0), 0, null, 1, 0.5, 0.5, false);
 					// reference mesh for clone
-					_sphere2 = new Mesh(new SphereGeometry(32), _material02);
-					_cube = new Mesh(new CubeGeometry(50, 50, 50), _material03);
-					for ( i = 0;i < 500;i++) {
-						m = Mesh(_sphere2.clone());
-						OimoPhysics.addSphere(m, 32, new Vector3D(-100, 50 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
+					var sphere : Mesh = new Mesh(new SphereGeometry(50), _material02);
+					for ( i = 0;i < 200;i++) {
+						m = Mesh(sphere.clone());
+						OimoPhysics.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
 					}
-					for (i = 0;i < 500;i++) {
-						m = Mesh(_cube.clone());
-						OimoPhysics.addCube(m, 50, 50, 50, new Vector3D(100, 50 + (100 * i), - 100), 0, null, 1, 0.5, 0.5, false);
+					var cube : Mesh = new Mesh(new CubeGeometry(100, 100, 100), _material03);
+					for (i = 0;i < 200;i++) {
+						m = Mesh(cube.clone());
+						OimoPhysics.addCube(m, 100, 100, 100, new Vector3D(100, 50 + (100 * i), - 100), 0, null, 1, 0.5, 0.5, false);
 					}
 					break;
 				case 1 :
@@ -330,19 +329,19 @@ package {
 					bw = 80;
 					bh = 50;
 					bd = 80;
-					var ground02 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
-					OimoPhysics.addCube(ground02, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
+					var ground02 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
+					OimoPhysics.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
 					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 200), 0, null, 10, 1, 0.5, false);
+							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), 0, null, 10, 1, 0.5, false);
 						}
 					}
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -200), 0, null, 10, 1, 0.5, false);
+							OimoPhysics.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), 0, null, 10, 1, 0.5, false);
 						}
 					}
 					// the big sphere
@@ -350,7 +349,16 @@ package {
 					OimoPhysics.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
 					break;
 				case 3 :
-					OimoPhysics.demoName = '3 - Compound shapes';
+					OimoPhysics.gravity(0);
+					OimoPhysics.demoName = '3 - Joint Test';
+					var ground03 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
+					OimoPhysics.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
+					var spherex : Mesh = new Mesh(new SphereGeometry(100), _material02);
+					for ( i = 0;i < 100;i++) {
+						m = Mesh(spherex.clone());
+						OimoPhysics.addSphere(m, 100, new Vector3D(-100, 100 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
+						OimoPhysics.addDistanceJoint(OimoPhysics.rigids[i], OimoPhysics.rigids[i + 1], 200);
+					}
 					break;
 				case 4 :
 					OimoPhysics.demoName = '4 - Dominoes days';
@@ -400,6 +408,7 @@ package {
 		}
 
 		private function onStageMouseDown(e : MouseEvent) : void {
+			if (e.stageY > stage.stageHeight - 30) return;
 			_prevMouseX = e.stageX;
 			_prevMouseY = e.stageY;
 			_mouseMove = true;
@@ -442,6 +451,17 @@ package {
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "prev", prevDemo).setSize(60, 30);
 			new PushButton(_menu, 130, -29, "next", nextDemo).setSize(60, 30);
+
+			var g : HUISlider = new HUISlider(_menu, 250, -32, "Gravity", setGravity);
+			g.labelPrecision = 1;
+			g.minimum = -20;
+			g.maximum = 20;
+			g.tick = 0.1;
+			g.value = -9.8;
+		}
+
+		private function setGravity(event : Event) : void {
+			OimoPhysics.gravity(event.currentTarget.value);
 		}
 
 		private function showSetting(e : Event) : void {
