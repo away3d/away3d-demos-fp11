@@ -55,6 +55,7 @@ package {
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.SphereGeometry;
 	import away3d.primitives.PlaneGeometry;
+	import away3d.primitives.CubeGeometry;
 	import away3d.lights.DirectionalLight;
 	import away3d.containers.View3D;
 	import away3d.debug.AwayStats;
@@ -121,6 +122,7 @@ package {
 		// materials
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
+		private var _shipMaterial : TextureMaterial;
 		private var _boxMaterial : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
@@ -224,11 +226,21 @@ package {
 			// reflection method
 			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.6);
 			_waterMaterial.addMethod(_reflectionMethod);
-			_boxMaterial.addMethod(_reflectionMethod);
+			_shipMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
 			_terrain = new FractalTerrain();
+			_terrain.addCubicReference();
 			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
+
+			// create physical cube ship bump on it
+			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 100, 190), _boxMaterial);
+			pboxe.castsShadows = false;
+			var pb : Mesh;
+			for (var i : uint = 0; i < 36; ++i) {
+				pb = Mesh(pboxe.clone());
+				OimoEngine.addCube(pb, 190, 100, 190, new Vector3D(0, 0, 0));
+			}
 
 			// create plane for water
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
@@ -243,8 +255,8 @@ package {
 			log(message());
 
 			// create basic spacShip
-			var spaceShip : Mesh = new Mesh(new SphereGeometry(60, 30, 20), _boxMaterial);
-			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(140, 30, 20), _boxMaterial);
+			var spaceShip : Mesh = new Mesh(new SphereGeometry(60, 30, 20), _shipMaterial);
+			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(140, 30, 20), _shipMaterial);
 			spaceShip2.scaleY = 0.25;
 			spaceShip.y = 100;
 			spaceShip2.y = 100;
@@ -348,25 +360,34 @@ package {
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
 			_waterMaterial.bothSides = true;
+			_waterMaterial.addMethod(_fogMethode);
 			_materials[0] = _waterMaterial;
 
 			// creat terrain material
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x00)));
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x000000)));
 			_terrainMaterial.gloss = 10;
 			_terrainMaterial.specular = 0.2;
+			_terrainMaterial.addMethod(_fogMethode);
 			_materials[1] = _terrainMaterial;
 
-			// 1- simulation box
-			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
+			// 2 - ship material
+			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
+			_shipMaterial.gloss = 60;
+			_shipMaterial.specular = 1;
+			_materials[2] = _shipMaterial;
+
+			// 3- simulation box
+			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x12cccc99)));
 			_boxMaterial.gloss = 60;
 			_boxMaterial.specular = 1;
-			_materials[2] = _boxMaterial;
+			_boxMaterial.bothSides = true;
+			_boxMaterial.alphaBlending = true;
+			// _materials[3] = _boxMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
-				_terrainMaterial.addMethod(_fogMethode);
 				_materials[i].ambient = 1;
 			}
 		}
@@ -394,12 +415,17 @@ package {
 				_night--;
 			}
 
-			if (_cameraController.distance > 1000)
-				_cameraController.distance--;
+			if (_cameraController.distance > 1000) _cameraController.distance--;
 
 			_terrain.update();
-			
+
 			OimoEngine.update();
+
+			for (var i : uint = 0; i < 36; ++i) {
+				OimoEngine.rigids[i].position.x = _terrain.cubePoints[i].x * 0.01;
+				OimoEngine.rigids[i].position.y = (_terrain.cubePoints[i].y - 50) * 0.01;
+				OimoEngine.rigids[i].position.z = _terrain.cubePoints[i].z * 0.01;
+			}
 
 			_player.y = _terrain.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
