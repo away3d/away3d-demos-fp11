@@ -232,6 +232,7 @@ package {
 			_terrain = new FractalTerrain();
 			_terrain.addCubicReference();
 			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
+			
 
 			// create physical cube ship bump on it
 			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 100, 190), _boxMaterial);
@@ -280,7 +281,7 @@ package {
 			addChild(_view);
 
 			// create custom lens
-			_view.camera.lens = new PerspectiveLens(80);
+			_view.camera.lens = new PerspectiveLens(120);
 			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 1;
 			_view.forceMouseMove = true;

@@ -55,6 +55,7 @@ package games {
 		private var _rec : Rectangle;
 		private var _p : Point;
 		private var _cubePoints : Vector.<Vector3D>;
+		private var _groundVertex : Vector.<uint>;
 		// Debug option to see only perlin noize and grid
 		private var _isMapTesting : Boolean = false;
 		private var _isCubicReference : Boolean = false;
@@ -113,14 +114,55 @@ package games {
 		}
 
 		/**
+		 * Get the current vector cubic position
+		 */
+		public function get cubePoints() : Vector.<Vector3D> {
+			return _cubePoints;
+		}
+
+		/**
 		 * Optional physics cube reference point follow terrain 6 * 6
 		 */
 		public function addCubicReference() : void {
 			_cubePoints = new Vector.<Vector3D>(36);
+
 			for (var i : uint = 0; i < 36; ++i) {
-				_cubePoints.push(new Vector3D());
+				_cubePoints[i] = new Vector3D();
 			}
+			defineGroundVertex();
 			_isCubicReference = true;
+		}
+
+		/**
+		 * Define the central vertex on ground mesh
+		 */
+		private function defineGroundVertex() : void {
+			_groundVertex = new Vector.<uint>(36);
+			var i : uint;
+			var j : uint;
+			var n : uint;
+			if (_zoneResolution == 128) {
+				for (j = 0; j < 6; ++j) {
+					for (i = 0; i < 6; ++i) {
+						_groundVertex[n] = uint(7869 + i + (j * 128));
+						n++;
+					}
+				}
+			} else if (_zoneResolution == 64) {
+				for (j = 0; j < 6; ++j) {
+					for (i = 0; i < 6; ++i) {
+						_groundVertex[n] = uint(1885 + i + (j * 64));
+						n++;
+					}
+				}
+			} else if (_zoneResolution == 256) {
+				for (j = 0; j < 6; ++j) {
+					for (i = 0; i < 6; ++i) {
+						_groundVertex[n] = uint(30745 + i + (j * 251));
+						n++;
+					}
+				}
+			}
 		}
 
 		/**
@@ -214,65 +256,10 @@ package games {
 		}
 
 		/**
-		 * Get the current vector cubic position
-		 */
-		public function get cubePoints() : Vector.<Vector3D> {
-			return _cubePoints;
-		}
-
-		/**
-		 * update vector cubic from vertex position
-		 */
-		private function boxePosition(vertex : uint, v : Vector.<Number>, i : uint) : void {
-			if (vertex == 8509) _cubePoints[0] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8510) _cubePoints[1] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8511) _cubePoints[2] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8512) _cubePoints[3] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8513) _cubePoints[4] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8514) _cubePoints[5] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			// +133
-			if (vertex == 8381) _cubePoints[6] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8382) _cubePoints[7] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8383) _cubePoints[8] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8384) _cubePoints[9] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8385) _cubePoints[10] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8386) _cubePoints[11] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			// +133
-			if (vertex == 8253) _cubePoints[12] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8254) _cubePoints[13] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8255) _cubePoints[14] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8256) _cubePoints[15] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8257) _cubePoints[16] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8258) _cubePoints[17] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			// +133
-			if (vertex == 8125) _cubePoints[18] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8126) _cubePoints[19] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8127) _cubePoints[20] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8128) _cubePoints[21] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8129) _cubePoints[22] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8130) _cubePoints[23] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-
-			if (vertex == 7997) _cubePoints[24] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 7998) _cubePoints[25] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 7999) _cubePoints[26] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8000) _cubePoints[27] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8001) _cubePoints[28] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 8002) _cubePoints[29] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-
-			if (vertex == 7869) _cubePoints[30] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 7870) _cubePoints[31] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 7871) _cubePoints[32] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 7872) _cubePoints[33] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 7873) _cubePoints[34] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-			if (vertex == 7874) _cubePoints[35] = new Vector3D(v[i - 1], v[i], v[i + 1]);
-		}
-
-		/**
 		 * Change terrain and perlin bitmap resolution
 		 */
 		public function changeResolution(Resolution : uint = 128) : void {
 			if (Resolution == _zoneResolution) return;
-
 			_isMove = false;
 			_zoneResolution = Resolution;
 			_scene.removeChild(_plane);
@@ -280,9 +267,11 @@ package games {
 			_subGeometry = null;
 
 			findMultyplicator();
+			if (_isCubicReference) defineGroundVertex();
 			_ground = new BitmapData(_zoneResolution, _zoneResolution, true);
 			_layerBitmap[0] = new BitmapData(_zoneResolution, _zoneResolution, false);
 			_rec = _ground.rect;
+
 			draw();
 			initTerrainMesh();
 		}
@@ -332,6 +321,7 @@ package games {
 		private function updateTerrain() : void {
 			// get plane vertex data
 			var i : uint;
+			var j : uint;
 			var v : Vector.<Number> = _subGeometry.vertexData;
 			var l : uint = v.length;
 			var c : uint, px : uint, size : uint;
@@ -345,7 +335,11 @@ package games {
 				// Displace y position by the range
 				v[i] = int(_zoneHeight * px / 0xffffff - (_zoneHeight >> 1));
 				// update cubic reference
-				if (_isCubicReference) boxePosition(vertex, v, i);
+				if (_isCubicReference) {
+					for (j = 0; j < 36; ++j) {
+						if (vertex == _groundVertex[j] ) _cubePoints[j] = new Vector3D(v[i - 1], v[i], v[i + 1]);
+					}
+				}
 				vertex++;
 			}
 			_subGeometry.updateVertexData(v);
