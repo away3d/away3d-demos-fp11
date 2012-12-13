@@ -281,7 +281,8 @@ package {
 
 			// create noize terrain with image 6 7 8
 			_terrain = new FractalTerrain();
-			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_terrain.scene = _view.scene;
+			_terrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);

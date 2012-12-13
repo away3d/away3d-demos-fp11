@@ -102,7 +102,7 @@ package {
 		private var skyColor : uint = 0x445465;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
-		// Stage manager and Stage3D instance proxy classes
+		// stage manager and Stage3D instance proxy classes
 		private var _stage3DManager : Stage3DManager;
 		private var _stage3DProxy : Stage3DProxy;
 		// engine variables
@@ -120,7 +120,7 @@ package {
 		private var _fogMethode : FogMethod;
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _waterMethod : SimpleWaterNormalMethod;
-		// Materials
+		// materials
 		private var _materials : Vector.<TextureMaterial>;
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
@@ -245,7 +245,8 @@ package {
 
 			// create noize terrain with image 6 7 8
 			_terrain = new FractalTerrain();
-			_terrain.initGround(_view.scene, _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			_terrain.scene = _view.scene;
+			_terrain.initGround( _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
@@ -505,7 +506,7 @@ package {
 			_view.render();
 		}
 
-		/*
+		/**
 		 * Initialise Listener
 		 */
 		private function initListeners(e : Event = null) : void {
@@ -528,7 +529,7 @@ package {
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
 		}
 
-		/*
+		/**
 		 * Remove Listener
 		 */
 		private function stopListeners() : void {

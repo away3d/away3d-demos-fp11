@@ -88,12 +88,12 @@ package {
 	import com.bit101.components.HUISlider;
 	import com.bit101.components.Component;
 
-	import games.FractalTerrainStatic;
+	import games.FractalTerrain;
 
 	import physics.OimoEngine;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
-	public class Demo_Random_Land extends Sprite {
+	public class Demo_Random_Land2 extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
@@ -116,6 +116,7 @@ package {
 		private var _night : Number = 100;
 		// scene objects
 		private var _ground : Mesh;
+		private var _terrain : FractalTerrain;
 		
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
@@ -148,7 +149,7 @@ package {
 		/**
 		 * Constructor
 		 */
-		public function Demo_Random_Land() {
+		public function Demo_Random_Land2() {
 			if (stage) init(null);
 			else addEventListener(Event.ADDED_TO_STAGE, init, false, 0, true);
 		}
@@ -228,9 +229,8 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 			_shipMaterial.addMethod(_reflectionMethod);
 
-			// create fractal terrain
 			initFractalTerrain();
-
+			
 			// create physical cube ship bump on it
 			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 100, 190), _boxMaterial);
 			pboxe.castsShadows = false;
@@ -309,7 +309,7 @@ package {
 		private function initLights() : void {
 			_sunLight = new DirectionalLight(0.1, -0.8, 0.3);
 			_sunLight.color = sunColor;
-			_sunLight.ambientColor = sunColor;
+			// _sunLight.ambientColor = 0x000000;
 			_sunLight.ambient = 0;
 			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
@@ -402,11 +402,10 @@ package {
 		 * Initialise fractal terrain
 		 */
 		private function initFractalTerrain() : void {
-			FractalTerrainStatic.getInstance();
-			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference();
-			// create noize terrain with image 6 7 8
-			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
+			_terrain = new FractalTerrain();
+			_terrain.scene = _view.scene;
+			_terrain.addCubicReference();
+			_terrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
 		}
 		
 		/**
@@ -426,18 +425,20 @@ package {
 
 			if (_cameraController.distance > 1000) _cameraController.distance--;
 
-			FractalTerrainStatic.update();
+			_terrain.update();
+			
 			// update physics static boxe
 			for (var i : uint = 0; i < 36; ++i) {
-				OimoEngine.rigids[i].position.x = FractalTerrainStatic.cubePoints[i].x * 0.01;
-				OimoEngine.rigids[i].position.y = (FractalTerrainStatic.cubePoints[i].y - 50) * 0.01;
-				OimoEngine.rigids[i].position.z = FractalTerrainStatic.cubePoints[i].z * 0.01;
+				OimoEngine.rigids[i].position.x = _terrain.cubePoints[i].x * 0.01;
+				OimoEngine.rigids[i].position.y = (_terrain.cubePoints[i].y - 50) * 0.01;
+				OimoEngine.rigids[i].position.z = _terrain.cubePoints[i].z * 0.01;
 			}
+			
 			// update physic engine
 			OimoEngine.update();
 
-			//_player.y = _terrain.getHeightAt(0, 0);
-			_player.y = FractalTerrainStatic.getHeightAt(0, 0);
+			_player.y = _terrain.getHeightAt(0, 0);
+			//_player.y = FractalTerrainStatic.getHeightAt(0, 0);
 			
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
 			_cameraController.update();
@@ -656,8 +657,8 @@ package {
 		}
 
 		private function onGroundMouseOver(e : MouseEvent3D) : void {
-			if (_mouseMove) FractalTerrainStatic.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
-			else FractalTerrainStatic.stop();
+			if (_mouseMove) _terrain.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
+			else _terrain.stop();
 		}
 
 		private function onShipMouseDown(e : MouseEvent3D) : void {
@@ -739,27 +740,27 @@ package {
 		}
 
 		private function setTerrainHeight(event : Event) : void {
-			FractalTerrainStatic.changeHeight(event.currentTarget.value);
+			_terrain.changeHeight(event.currentTarget.value);
 		}
 
 		private function setComplex(event : Event) : void {
-			FractalTerrainStatic.changeComplex(event.currentTarget.value);
+			_terrain.changeComplex(event.currentTarget.value);
 		}
 
 		private function switchFractal(e : Event) : void {
-			FractalTerrainStatic.changeFractal();
+			_terrain.changeFractal();
 		}
 
 		private function switch64(e : Event) : void {
-			FractalTerrainStatic.changeResolution(64);
+			_terrain.changeResolution(64);
 		}
 
 		private function switch128(e : Event) : void {
-			FractalTerrainStatic.changeResolution(128);
+			_terrain.changeResolution(128);
 		}
 
 		private function switch256(e : Event) : void {
-			FractalTerrainStatic.changeResolution(256);
+			_terrain.changeResolution(256);
 		}
 
 		/**
