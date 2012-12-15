@@ -130,6 +130,7 @@ package {
 		private var _bonesFx : Vector.<Mesh>;
 		private var _heroWeapon : Mesh;
 		private var _hero : Mesh;
+		private var _hero2 : Mesh;
 		private var _shirt : Mesh;
 		private var _terrain : FractalTerrain;
 		// materials
@@ -186,6 +187,7 @@ package {
 		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
+		private var _isMan:Boolean = true;
 		// private var _isReflection : Boolean;
 		private var _dynamicsEyes : Boolean;
 		private var _cloneActif : Boolean;
@@ -289,7 +291,7 @@ package {
 			_weapons[0] = new Mesh(new CubeGeometry(1, 1, 1), null);
 
 			// load Onkba character with weapons
-			LoaderPool.loadObject("onkba/onkba_fps.awd", onAssetComplete, onResourceComplete);
+			LoaderPool.loadObject("onkba/onkba_sia_fps.awd", onAssetComplete, onResourceComplete);
 		}
 
 		/**
@@ -592,7 +594,11 @@ package {
 				// set default texture
 				mesh.material = _basicMaterial;
 
-				// Onkba object
+				// Sia character object
+				if (mesh.name == "Sia") {
+					_hero2 = mesh;
+				}
+				// Onkba character object
 				if (mesh.name == "Onkba") {
 					_hero = mesh;
 				}
@@ -653,28 +659,32 @@ package {
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
 
 			_transition = new CrossfadeTransition(0.3);
+			// apply our _animator to sia character
+			_hero2.animator = _animator;
+			_hero2.material = _heroMaterial;
 
-			// apply our _animator to our mesh
+			// apply our animator to onkba character
 			_hero.animator = _animator;
 			_hero.material = _heroMaterial;
-			_hero.scale(HERO_SIZE);
 
 			// do the same for shirt
 			_shirt.animator = _animator;
 			_shirt.material = _shirtMaterial;
-			_shirt.scale(HERO_SIZE);
 
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), null);
-			_hero.addChild(_heroWeapon);
-
+			
+			// Dynamic eyes ball
+			_heroPieces = new ObjectContainer3D();
+			
+			
+			//_player.addChild(_hero2);
 			_player.addChild(_hero);
 			_player.addChild(_shirt);
-
-			// Optional dynamic eyes ball
-			_heroPieces = new ObjectContainer3D();
-			_heroPieces.scale(HERO_SIZE);
+			_player.addChild(_heroWeapon);
 			_player.addChild(_heroPieces);
+			
+			_player.scale(HERO_SIZE);
 
 			addHeroEye();
 
@@ -1121,7 +1131,8 @@ package {
 				for (var i : int = 0; i < _animator.globalPose.numJointPoses; i++) {
 					m = Mesh(mref.clone());
 					j = new Sprite3D(materialBones("bone " + i), 4, 4);
-					_hero.addChild(m);
+					//_hero.addChild(m);
+					_player.addChild(m);
 					m.addChild(j);
 					_bonesFx[i] = m;
 				}
@@ -1130,7 +1141,8 @@ package {
 				_heroMaterial.alpha = 1;
 				for ( i = 0; i < _bonesFx.length; i++) {
 					m = _bonesFx[i];
-					_hero.removeChild(m);
+					//_hero.removeChild(m);
+					_player.removeChild(m);
 					m.dispose();
 					_bonesFx[i] = null;
 				}
@@ -1182,11 +1194,20 @@ package {
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "WEAPON", switchWeapon).setSize(60, 30);
 			new PushButton(_menu, 65 + 65, -29, "SHIRT", switchShirt).setSize(60, 30);
+			new PushButton(_menu, 65 + 65 + 65, -29, "SEXE", switchSexe).setSize(60, 30);
 		}
 
 		private function switchShirt(e : Event = null) : void {
 			if (_shirt.visible) _shirt.visible = false;
 			else _shirt.visible = true;
+		}
+		
+		/**
+		 * Man or woman character
+		 */
+		private function switchSexe(e : Event = null) : void {
+			if (_isMan) {_player.removeChild(_hero); _player.addChild(_hero2); _isMan = false; _shirt.visible = false;}
+			else {_player.removeChild(_hero2); _player.addChild(_hero); _isMan = true; _shirt.visible = true;}
 		}
 
 		/**
