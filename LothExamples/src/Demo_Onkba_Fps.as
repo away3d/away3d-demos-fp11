@@ -139,6 +139,7 @@ package {
 		private var _gunMaterial2 : TextureMaterial;
 		private var _boneMaterial : TextureMaterial;
 		private var _heroMaterial : TextureMaterial;
+		private var _siaMaterial : TextureMaterial;
 		private var _shirtMaterial : TextureMaterial;
 		private var _shereMaterial : TextureMaterial;
 		private var _terrainMaterial : TextureMaterial;
@@ -187,7 +188,7 @@ package {
 		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
-		private var _isMan:Boolean = true;
+		private var _isMan : Boolean = true;
 		// private var _isReflection : Boolean;
 		private var _dynamicsEyes : Boolean;
 		private var _cloneActif : Boolean;
@@ -266,6 +267,9 @@ package {
 			_bitmapStrings.push("onkba/weapon_diffuse.jpg", "onkba/weapon_normals.jpg", "onkba/weapon_lightmap.jpg");
 			// bazooka map 15 16 17
 			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
+			// Sia map 18
+			_bitmapStrings.push("onkba/sia_diffuse.jpg");
+
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -378,7 +382,7 @@ package {
 			// global fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 
-			// 0- hero
+			// 0 - onkba hero
 			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
 			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
 			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
@@ -386,7 +390,7 @@ package {
 			_heroMaterial.specular = 0.8;
 			_materials[0] = _heroMaterial;
 
-			// 1- weapon
+			// 1 - weapon
 			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[12]));
 			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[13]);
 			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[14]);
@@ -394,7 +398,7 @@ package {
 			_gunMaterial.specular = 0.8;
 			_materials[1] = _gunMaterial;
 
-			// 2- eye ball close
+			// 2 - eye ball close
 			var b : BitmapData;
 			b = new BitmapData(64, 64, false, 0xA13D1E);
 			_eyesClosedMaterial = new TextureMaterial(Cast.bitmapTexture(b));
@@ -410,7 +414,7 @@ package {
 			_eyesOpenMaterial.specular = 0.8;
 			_materials[3] = _eyesOpenMaterial;
 
-			// 4- sphere reflection test
+			// 4 - sphere reflection test
 			_shereMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x00)));
 			_shereMaterial.gloss = 90;
 			_shereMaterial.specular = 4;
@@ -424,7 +428,7 @@ package {
 			_terrainMaterial.specular = 0.2;
 			_materials[5] = _terrainMaterial;
 
-			// 6- simulation box
+			// 6 - simulation box
 			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xee100000)));
 			_boxMaterial.gloss = 10;
 			_boxMaterial.specular = 0.1;
@@ -432,14 +436,14 @@ package {
 			_boxMaterial.addMethod(_fogMethode);
 			_materials[6] = _boxMaterial;
 
-			// 7- Xray bones
+			// 7 - Xray bones
 			_boneMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xee00ff00)));
 			_boneMaterial.gloss = 10;
 			_boneMaterial.specular = 0.1;
 			_boneMaterial.alphaBlending = true;
 			_materials[7] = _boneMaterial;
 
-			// 8- bazooka
+			// 8 - bazooka
 			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[15]));
 			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[16]);
 			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[17]);
@@ -457,6 +461,14 @@ package {
 			_shirtMaterial.alphaPremultiplied = true;
 			_shirtMaterial.bothSides = true;
 			_materials[9] = _shirtMaterial;
+
+			// 10 - sia hero
+			_siaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[18]));
+			// _siaMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			// _siaMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
+			_siaMaterial.gloss = 25;
+			_siaMaterial.specular = 0.8;
+			_materials[10] = _siaMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++ ) {
@@ -661,7 +673,7 @@ package {
 			_transition = new CrossfadeTransition(0.3);
 			// apply our _animator to sia character
 			_hero2.animator = _animator;
-			_hero2.material = _heroMaterial;
+			_hero2.material = _siaMaterial;
 
 			// apply our animator to onkba character
 			_hero.animator = _animator;
@@ -673,17 +685,16 @@ package {
 
 			// add weapon container
 			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), null);
-			
+
 			// Dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
-			
-			
-			//_player.addChild(_hero2);
+
+			// _player.addChild(_hero2);
 			_player.addChild(_hero);
 			_player.addChild(_shirt);
 			_player.addChild(_heroWeapon);
 			_player.addChild(_heroPieces);
-			
+
 			_player.scale(HERO_SIZE);
 
 			addHeroEye();
@@ -1089,6 +1100,24 @@ package {
 			_dynamicsEyes = true;
 		}
 
+		private function moveEyesSexe() : void {
+			if (_isMan) {
+				_eyeR.z = _eyeL.z = 3.9;
+				_eyeR.x = _eyeL.x = 5.6;
+				_eyeR.y = 1.75;
+				_eyeL.y = -1.75;
+				_eyeL.scale(1);
+				_eyeR.scale(1);
+			} else {
+				_eyeR.z = _eyeL.z = 2;
+				_eyeR.x = _eyeL.x = 4.7;
+				_eyeR.y = 1.66;
+				_eyeL.y = -1.66;
+				_eyeL.scale(0.8);
+				_eyeR.scale(0.8);
+			}
+		}
+
 		/**
 		 * Listene dynamique eye follow mouse
 		 */
@@ -1131,7 +1160,7 @@ package {
 				for (var i : int = 0; i < _animator.globalPose.numJointPoses; i++) {
 					m = Mesh(mref.clone());
 					j = new Sprite3D(materialBones("bone " + i), 4, 4);
-					//_hero.addChild(m);
+					// _hero.addChild(m);
 					_player.addChild(m);
 					m.addChild(j);
 					_bonesFx[i] = m;
@@ -1141,7 +1170,7 @@ package {
 				_heroMaterial.alpha = 1;
 				for ( i = 0; i < _bonesFx.length; i++) {
 					m = _bonesFx[i];
-					//_hero.removeChild(m);
+					// _hero.removeChild(m);
 					_player.removeChild(m);
 					m.dispose();
 					_bonesFx[i] = null;
@@ -1201,13 +1230,24 @@ package {
 			if (_shirt.visible) _shirt.visible = false;
 			else _shirt.visible = true;
 		}
-		
+
 		/**
 		 * Man or woman character
 		 */
 		private function switchSexe(e : Event = null) : void {
-			if (_isMan) {_player.removeChild(_hero); _player.addChild(_hero2); _isMan = false; _shirt.visible = false;}
-			else {_player.removeChild(_hero2); _player.addChild(_hero); _isMan = true; _shirt.visible = true;}
+			if (_isMan) {
+				_player.removeChild(_hero);
+				_player.addChild(_hero2);
+				_isMan = false;
+				_shirt.visible = false;
+				 moveEyesSexe();
+			} else {
+				_player.removeChild(_hero2);
+				_player.addChild(_hero);
+				_isMan = true;
+				_shirt.visible = true;
+				 moveEyesSexe();
+			}
 		}
 
 		/**
