@@ -122,7 +122,7 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// scene objects
-		private var _cubeVector : Vector.<Mesh>;
+		//private var _cubeVector : Vector.<Mesh>;
 		private var _heroPieces : ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
@@ -191,7 +191,7 @@ package {
 		private var _isMan : Boolean = true;
 		// private var _isReflection : Boolean;
 		private var _dynamicsEyes : Boolean;
-		private var _cloneActif : Boolean;
+		//private var _cloneActif : Boolean;
 		private var _debugRay : Boolean;
 		private var _isRender : Boolean;
 		private var _text : TextField;
@@ -288,6 +288,7 @@ package {
 			// create noize terrain with image 6 7 8
 			_terrain = new FractalTerrain();
 			_terrain.scene = _view.scene;
+			_terrain.addCubicReference();
 			_terrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// weapon referency
@@ -497,10 +498,7 @@ package {
 			}
 
 			_terrain.update();
-			_player.y = _terrain.getHeightAt(0, 0) + 5;
-			/*for (var i : int = 0; i < _cubeVector.length; i++) {
-			_cubeVector[i].y = FractalTerrain.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
-			}*/
+			_player.position =  _terrain.cubePoints[21];
 
 			if (_heroOnkba) {
 				if (_dynamicsEyes) updateEyes();
@@ -706,7 +704,7 @@ package {
 			}
 
 			// add some box for fun
-			var num : int = 100;
+			/*var num : int = 100;
 			var mesh : Mesh, posX : Number, posZ : Number;
 			_cubeVector = new Vector.<Mesh>(num);
 			for (var i : int = 0; i < num; i++) {
@@ -716,7 +714,7 @@ package {
 				mesh.position = new Vector3D(posX, _terrain.getHeightAt(posX, posZ), posZ);
 				_view.scene.addChild(mesh);
 				_cubeVector[i] = mesh;
-			}
+			}*/
 
 			log(message());
 			initListeners();
