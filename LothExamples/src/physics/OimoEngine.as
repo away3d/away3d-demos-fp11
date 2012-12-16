@@ -21,7 +21,7 @@ package physics {
 	import flash.geom.Matrix3D;
 
 	/**
-	 * OimoPhysics alpha release 7 
+	 * OimoPhysics alpha release 8 
 	 * @author Saharan _ http://el-ement.com
 	 * @link https://github.com/saharan/OimoPhysics
 	 * ...
@@ -71,6 +71,9 @@ package physics {
 			_scene = Scene;
 		}
 
+		/**
+		 * Global world gravity
+		 */
 		static public function gravity(g : Number) : void {
 			_world.gravity = new Vec3(0, g, 0);
 		}
