@@ -101,10 +101,10 @@ package {
 	// import games.PoissonDisk;
 	[SWF(frameRate="60", backgroundColor = "#000000")]
 	public class Demo_Onkba_Fps extends Sprite {
-		private const MOUNTAIGN_TOP : Number = 1000;
-		private const FARVIEW : Number = 20000;
+		private const MOUNTAIGN_TOP : Number = 2000;
+		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 300;
-		private const HERO_SIZE : Number = 2;
+		private const HERO_SIZE : Number = 1.5;
 		// start colors
 		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xAAAAA9;
@@ -129,8 +129,8 @@ package {
 		private var _weapons : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
 		private var _heroWeapon : Mesh;
-		private var _hero : Mesh;
-		private var _hero2 : Mesh;
+		private var _heroOnkba : Mesh;
+		private var _heroSia : Mesh;
 		private var _shirt : Mesh;
 		private var _terrain : FractalTerrain;
 		// materials
@@ -138,7 +138,7 @@ package {
 		private var _gunMaterial : TextureMaterial;
 		private var _gunMaterial2 : TextureMaterial;
 		private var _boneMaterial : TextureMaterial;
-		private var _heroMaterial : TextureMaterial;
+		private var _onkbaMaterial : TextureMaterial;
 		private var _siaMaterial : TextureMaterial;
 		private var _shirtMaterial : TextureMaterial;
 		private var _shereMaterial : TextureMaterial;
@@ -343,7 +343,7 @@ package {
 			_sunLight.ambientColor = sunColor;
 			_sunLight.ambient = 0;
 			_sunLight.diffuse = 0;
-			_sunLight.specular = 1;
+			_sunLight.specular = 0;
 			_sunLight.castsShadows = true;
 			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.02);
 			_view.scene.addChild(_sunLight);
@@ -383,12 +383,12 @@ package {
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 
 			// 0 - onkba hero
-			_heroMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
-			_heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
-			_heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
-			_heroMaterial.gloss = 25;
-			_heroMaterial.specular = 0.8;
-			_materials[0] = _heroMaterial;
+			_onkbaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
+			_onkbaMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			_onkbaMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
+			_onkbaMaterial.gloss = 25;
+			_onkbaMaterial.specular = 0.8;
+			_materials[0] = _onkbaMaterial;
 
 			// 1 - weapon
 			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[12]));
@@ -453,8 +453,8 @@ package {
 
 			// 9 - hero shirt
 			_shirtMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
-			// _heroMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
-			// _heroMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
+			// _onkbaMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			// _onkbaMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
 			_shirtMaterial.gloss = 5;
 			_shirtMaterial.specular = 0.1;
 			_shirtMaterial.alphaThreshold = 0.9;
@@ -502,7 +502,7 @@ package {
 			_cubeVector[i].y = FractalTerrain.getHeightAt(_cubeVector[i].x, _cubeVector[i].z);
 			}*/
 
-			if (_hero) {
+			if (_heroOnkba) {
 				if (_dynamicsEyes) updateEyes();
 				if (_debugRay) updateBones();
 				// hand bone for weapon
@@ -608,11 +608,11 @@ package {
 
 				// Sia character object
 				if (mesh.name == "Sia") {
-					_hero2 = mesh;
+					_heroSia = mesh;
 				}
 				// Onkba character object
 				if (mesh.name == "Onkba") {
-					_hero = mesh;
+					_heroOnkba = mesh;
 				}
 				// Shirt object
 				if (mesh.name == "Shirt") {
@@ -672,12 +672,12 @@ package {
 
 			_transition = new CrossfadeTransition(0.3);
 			// apply our _animator to sia character
-			_hero2.animator = _animator;
-			_hero2.material = _siaMaterial;
+			_heroSia.animator = _animator;
+			_heroSia.material = _siaMaterial;
 
 			// apply our animator to onkba character
-			_hero.animator = _animator;
-			_hero.material = _heroMaterial;
+			_heroOnkba.animator = _animator;
+			_heroOnkba.material = _onkbaMaterial;
 
 			// do the same for shirt
 			_shirt.animator = _animator;
@@ -689,8 +689,8 @@ package {
 			// Dynamic eyes ball
 			_heroPieces = new ObjectContainer3D();
 
-			// _player.addChild(_hero2);
-			_player.addChild(_hero);
+			// _player.addChild(_heroSia);
+			_player.addChild(_heroOnkba);
 			_player.addChild(_shirt);
 			_player.addChild(_heroWeapon);
 			_player.addChild(_heroPieces);
@@ -742,14 +742,14 @@ package {
 		/**
 		 * Test some Clones
 		 */
-		private function makeClone(n : int = 20) : void {
+		/*private function makeClone(n : int = 20) : void {
 			if (!_cloneActif) {
 				_cloneActif = true;
 				var g : Mesh;
 				var decal : int = -(n * 100) / 2;
 				for (var j : int = 1; j < n; j++) {
 					for (var i : int = 1; i < n; i++) {
-						g = Mesh(_hero.clone());
+						g = Mesh(_heroOnkba.clone());
 						g.x = decal + (100 * i);
 						g.z = (decal + (100 * j));
 						g.y = _terrain.getHeightAt(g.x, g.z);
@@ -758,7 +758,7 @@ package {
 					}
 				}
 			}
-		}
+		}*/
 
 		/**
 		 * Character breath animation
@@ -895,18 +895,6 @@ package {
 				case Keyboard.R:
 					reload();
 					break;
-				case Keyboard.B:
-					makeClone();
-					break;
-				case Keyboard.N:
-					randomSky();
-					break;
-				case Keyboard.U:
-					// if(_physics) _physics.addDebug(_view);
-					break;
-				case Keyboard.P:
-					xRay();
-					break;
 				case Keyboard.O:
 					switchWeapon();
 					break;
@@ -914,6 +902,7 @@ package {
 					fullScreen();
 					break;
 				case Keyboard.C:
+				case Keyboard.CONTROL:
 					if (isCrouch) {
 						isCrouch = false;
 						_cameraHeight = 80;
@@ -926,7 +915,6 @@ package {
 				case Keyboard.SPACE:
 					if (!isJump) {
 						jumpUp();
-						// if (_physics) { _physics.key_Jump(true); }
 					}
 					break;
 			}
@@ -1146,12 +1134,13 @@ package {
 		/**
 		 * Xray view debug bone
 		 */
-		private function xRay() : void {
+		private function xRay(e : Event = null) : void {
 			var m : Mesh;
 			var j : Sprite3D;
 			if (!_debugRay) {
 				_debugRay = true;
-				_heroMaterial.alpha = 0.5;
+				_onkbaMaterial.alpha = 0.5;
+				_siaMaterial.alpha = 0.5;
 				_bonesFx = new Vector.<Mesh>(_animator.globalPose.numJointPoses);
 				var mref0 : Mesh = new Mesh(new CubeGeometry(3, 0.3, 0.3), _boneMaterial);
 				var mref : Mesh = new Mesh(new CubeGeometry(0.7, 0.7, 0.7), _boneMaterial);
@@ -1160,17 +1149,18 @@ package {
 				for (var i : int = 0; i < _animator.globalPose.numJointPoses; i++) {
 					m = Mesh(mref.clone());
 					j = new Sprite3D(materialBones("bone " + i), 4, 4);
-					// _hero.addChild(m);
+					// _heroOnkba.addChild(m);
 					_player.addChild(m);
 					m.addChild(j);
 					_bonesFx[i] = m;
 				}
 			} else {
 				_debugRay = false;
-				_heroMaterial.alpha = 1;
+				_onkbaMaterial.alpha = 1;
+				_siaMaterial.alpha = 1;
 				for ( i = 0; i < _bonesFx.length; i++) {
 					m = _bonesFx[i];
-					// _hero.removeChild(m);
+					// _heroOnkba.removeChild(m);
 					_player.removeChild(m);
 					m.dispose();
 					_bonesFx[i] = null;
@@ -1222,8 +1212,9 @@ package {
 			Style.fontSize = 11;
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "WEAPON", switchWeapon).setSize(60, 30);
-			new PushButton(_menu, 65 + 65, -29, "SHIRT", switchShirt).setSize(60, 30);
-			new PushButton(_menu, 65 + 65 + 65, -29, "SEXE", switchSexe).setSize(60, 30);
+			new PushButton(_menu, 130, -29, "SHIRT", switchShirt).setSize(60, 30);
+			new PushButton(_menu, 195, -29, "GENDER", switchGender).setSize(60, 30);
+			new PushButton(_menu, 260, -29, "X-RAY", xRay).setSize(60, 30);
 		}
 
 		private function switchShirt(e : Event = null) : void {
@@ -1234,16 +1225,16 @@ package {
 		/**
 		 * Man or woman character
 		 */
-		private function switchSexe(e : Event = null) : void {
+		private function switchGender(e : Event = null) : void {
 			if (_isMan) {
-				_player.removeChild(_hero);
-				_player.addChild(_hero2);
+				_player.removeChild(_heroOnkba);
+				_player.addChild(_heroSia);
 				_isMan = false;
 				_shirt.visible = false;
 				 moveEyesSexe();
 			} else {
-				_player.removeChild(_hero2);
-				_player.addChild(_hero);
+				_player.removeChild(_heroSia);
+				_player.addChild(_heroOnkba);
 				_isMan = true;
 				_shirt.visible = true;
 				 moveEyesSexe();
@@ -1282,13 +1273,11 @@ package {
 			var mes : String = "ARROW.WSAD.ZSQD - move\n";
 			mes += "SHIFT - hold to run\n";
 			mes += "R - reload weapon\n";
+			mes += "C, Ctrl - crouch\n";
 			mes += "O - next weapon\n";
-			mes += "C - crouch\n\n";
-			mes += "U - physics debug\n";
+			mes += "SPACE - jump\n\n";
 			mes += "I - full screen\n";
 			mes += "N - random sky\n";
-			mes += "P - xray bones\n";
-			mes += "B - clone\n";
 			return mes;
 		}
 
