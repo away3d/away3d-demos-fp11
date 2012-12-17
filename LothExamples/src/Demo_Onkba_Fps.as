@@ -122,7 +122,7 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// scene objects
-		//private var _cubeVector : Vector.<Mesh>;
+		// private var _cubeVector : Vector.<Mesh>;
 		private var _heroPieces : ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
@@ -145,6 +145,7 @@ package {
 		private var _terrainMaterial : TextureMaterial;
 		private var _eyesOpenMaterial : TextureMaterial;
 		private var _eyesClosedMaterial : TextureMaterial;
+		private var _eyesClosedSiaMaterial : TextureMaterial;
 		private var _basicMaterial : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
@@ -191,7 +192,7 @@ package {
 		private var _isMan : Boolean = true;
 		// private var _isReflection : Boolean;
 		private var _dynamicsEyes : Boolean;
-		//private var _cloneActif : Boolean;
+		// private var _cloneActif : Boolean;
 		private var _debugRay : Boolean;
 		private var _isRender : Boolean;
 		private var _text : TextField;
@@ -424,7 +425,7 @@ package {
 			_materials[4] = _shereMaterial;
 
 			// 5 - terrain material
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x00)));
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x808080)));
 			_terrainMaterial.gloss = 10;
 			_terrainMaterial.specular = 0.2;
 			_materials[5] = _terrainMaterial;
@@ -471,6 +472,14 @@ package {
 			_siaMaterial.specular = 0.8;
 			_materials[10] = _siaMaterial;
 
+			// 11 - eye ball close sia
+			var b2 : BitmapData;
+			b2 = new BitmapData(64, 64, false, 0x483445);
+			_eyesClosedSiaMaterial = new TextureMaterial(Cast.bitmapTexture(b2));
+			_eyesClosedSiaMaterial.gloss = 12;
+			_eyesClosedSiaMaterial.specular = 0.6;
+			_materials[11] = _eyesClosedSiaMaterial;
+
 			// for all material
 			for (var i : int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
@@ -498,7 +507,7 @@ package {
 			}
 
 			_terrain.update();
-			_player.position =  _terrain.cubePoints[21];
+			_player.position = _terrain.cubePoints[21];
 
 			if (_heroOnkba) {
 				if (_dynamicsEyes) updateEyes();
@@ -708,12 +717,12 @@ package {
 			var mesh : Mesh, posX : Number, posZ : Number;
 			_cubeVector = new Vector.<Mesh>(num);
 			for (var i : int = 0; i < num; i++) {
-				posX = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
-				posZ = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
-				mesh = new Mesh(new CubeGeometry(150, 300, 150), _boxMaterial);
-				mesh.position = new Vector3D(posX, _terrain.getHeightAt(posX, posZ), posZ);
-				_view.scene.addChild(mesh);
-				_cubeVector[i] = mesh;
+			posX = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
+			posZ = Number(-(FARVIEW * 0.5) + (Math.random() * FARVIEW));
+			mesh = new Mesh(new CubeGeometry(150, 300, 150), _boxMaterial);
+			mesh.position = new Vector3D(posX, _terrain.getHeightAt(posX, posZ), posZ);
+			_view.scene.addChild(mesh);
+			_cubeVector[i] = mesh;
 			}*/
 
 			log(message());
@@ -741,23 +750,22 @@ package {
 		 * Test some Clones
 		 */
 		/*private function makeClone(n : int = 20) : void {
-			if (!_cloneActif) {
-				_cloneActif = true;
-				var g : Mesh;
-				var decal : int = -(n * 100) / 2;
-				for (var j : int = 1; j < n; j++) {
-					for (var i : int = 1; i < n; i++) {
-						g = Mesh(_heroOnkba.clone());
-						g.x = decal + (100 * i);
-						g.z = (decal + (100 * j));
-						g.y = _terrain.getHeightAt(g.x, g.z);
-						if (g.x != 0 || g.z != 0)
-							_view.scene.addChild(g);
-					}
-				}
-			}
+		if (!_cloneActif) {
+		_cloneActif = true;
+		var g : Mesh;
+		var decal : int = -(n * 100) / 2;
+		for (var j : int = 1; j < n; j++) {
+		for (var i : int = 1; i < n; i++) {
+		g = Mesh(_heroOnkba.clone());
+		g.x = decal + (100 * i);
+		g.z = (decal + (100 * j));
+		g.y = _terrain.getHeightAt(g.x, g.z);
+		if (g.x != 0 || g.z != 0)
+		_view.scene.addChild(g);
+		}
+		}
+		}
 		}*/
-
 		/**
 		 * Character breath animation
 		 */
@@ -1082,7 +1090,6 @@ package {
 			_eyePosition = _eyeLook.position;
 			_eyes.addChild(zone);
 			_eyes.addChild(_eyeLook);
-
 			_dynamicsEyes = true;
 		}
 
@@ -1090,17 +1097,9 @@ package {
 			if (_isMan) {
 				_eyeR.z = _eyeL.z = 3.9;
 				_eyeR.x = _eyeL.x = 5.6;
-				_eyeR.y = 1.75;
-				_eyeL.y = -1.75;
-				_eyeL.scale(1);
-				_eyeR.scale(1);
 			} else {
-				_eyeR.z = _eyeL.z = 2;
+				_eyeR.z = _eyeL.z = 1.8;
 				_eyeR.x = _eyeL.x = 4.7;
-				_eyeR.y = 1.66;
-				_eyeL.y = -1.66;
-				_eyeL.scale(0.8);
-				_eyeR.scale(0.8);
 			}
 		}
 
@@ -1119,8 +1118,13 @@ package {
 			// open close eye
 			_eyeCount++;
 			if (_eyeCount > 300) {
-				_eyeR.material = _eyesClosedMaterial;
-				_eyeL.material = _eyesClosedMaterial;
+				if (_isMan) {
+					_eyeR.material = _eyesClosedMaterial;
+					_eyeL.material = _eyesClosedMaterial;
+				} else {
+					_eyeR.material = _eyesClosedSiaMaterial;
+					_eyeL.material = _eyesClosedSiaMaterial;
+				}
 			}
 			if (_eyeCount > 309) {
 				_eyeR.material = _eyesOpenMaterial;
@@ -1229,13 +1233,13 @@ package {
 				_player.addChild(_heroSia);
 				_isMan = false;
 				_shirt.visible = false;
-				 moveEyesSexe();
+				moveEyesSexe();
 			} else {
 				_player.removeChild(_heroSia);
 				_player.addChild(_heroOnkba);
 				_isMan = true;
 				_shirt.visible = true;
-				 moveEyesSexe();
+				moveEyesSexe();
 			}
 		}
 
