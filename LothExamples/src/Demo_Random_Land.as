@@ -115,9 +115,9 @@ package {
 		private var _cameraController : HoverController;
 		private var _night : Number = 100;
 		// scene objects
+		private var _player : ObjectContainer3D;
 		private var _groundWater : Mesh;
 		private var _sunLight : DirectionalLight;
-		private var _player : ObjectContainer3D;
 		// materials
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
@@ -147,6 +147,8 @@ package {
 		private var _menu : Sprite;
 		private var _sliderComplex : HUISlider;
 		private var _sliderHeight : HUISlider;
+		// number of physics cube 36 or 49
+		private var _numCube:uint;
 
 		/**
 		 * Constructor
@@ -234,21 +236,22 @@ package {
 			// create fractal terrain with image 6 7 8
 			FractalTerrainStatic.getInstance();
 			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.addCubicReference(7);
 			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
+			_numCube = 7*7;
 
 			// create physical cube ship bump on it
 			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 100, 190), _boxMaterial);
 			pboxe.castsShadows = false;
 			var pb : Mesh;
-			for (var i : uint = 0; i < 36; ++i) {
+			for (var i : uint = 0; i < _numCube; ++i) {
 				pb = Mesh(pboxe.clone());
-				if (i == 21) pb.material = _boxMaterialPlus;
+				if (i == 24) pb.material = _boxMaterialPlus;
 				OimoEngine.addCube(pb, 190, 100, 190, new Vector3D(0, 0, 0));
 			}
 
 			// create plane for water
-			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
 			_groundWater.mouseEnabled = true;
 			_groundWater.pickingCollider = PickingColliderType.BOUNDS_ONLY;
@@ -389,13 +392,13 @@ package {
 			_shipMaterial.specular = 1;
 			_materials[2] = _shipMaterial;
 
-			// 3- simulation box
+			// simulation box
 			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x12cccc99)));
 			_boxMaterial.gloss = 60;
 			_boxMaterial.specular = 1;
 			_boxMaterial.bothSides = true;
 			_boxMaterial.alphaBlending = true;
-
+			// simulation box color 2
 			_boxMaterialPlus = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x22FF9999)));
 			_boxMaterialPlus.gloss = 60;
 			_boxMaterialPlus.specular = 1;
@@ -430,16 +433,17 @@ package {
 
 			FractalTerrainStatic.update();
 			// update physics static boxe
-			for (var i : uint = 0; i < 36; ++i) {
+			for (var i : uint = 0; i < _numCube; ++i) {
 				OimoEngine.rigids[i].position.x = FractalTerrainStatic.cubePoints[i].x * 0.01;
 				OimoEngine.rigids[i].position.y = (FractalTerrainStatic.cubePoints[i].y - 50) * 0.01;
 				OimoEngine.rigids[i].position.z = FractalTerrainStatic.cubePoints[i].z * 0.01;
 			}
+			
 			// update physic engine
 			OimoEngine.update();
-
-			// _player.y = _terrain.getHeightAt(0, 0);
-			_player.y = FractalTerrainStatic.getHeightAt(0, 0);
+			
+			// player follow terrain
+			_player.position = FractalTerrainStatic.cubePoints[24];
 
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
 			_cameraController.update();

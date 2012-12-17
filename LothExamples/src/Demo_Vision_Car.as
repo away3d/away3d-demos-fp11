@@ -49,6 +49,7 @@ package {
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.materials.methods.EnvMapMethod;
 	import away3d.textures.CubeReflectionTexture;
+	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
@@ -97,7 +98,8 @@ package {
 	public class Demo_Vision_Car extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 1000;
 		private const FARVIEW : Number = 30000;
-		private const FOGNEAR : Number = 0;
+		private const FOGNEAR : Number = 300;
+		private const CAR_SIZE : Number = 0.4;
 		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xAAAAA9;
 		private var fogColor : uint = 0x333338;
@@ -138,6 +140,7 @@ package {
 		private var _carBlackDoubleMat : TextureMaterial;
 		private var _carGlassMat : TextureMaterial;
 		// scene objects
+		private var _player : ObjectContainer3D;
 		private var _groundWater : Mesh;
 		private var _vision : Vector.<Mesh>;
 		private var _visionCar : Mesh;
@@ -249,18 +252,20 @@ package {
 			// create noize terrain with image 6 7 8
 			FractalTerrainStatic.getInstance();
 			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.addCubicReference(1);
 			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// basic water ground
-			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
 			_view.scene.addChild(_groundWater);
-			
+
+			// setup the player container
+			_player = new ObjectContainer3D();
+			_view.scene.addChild(_player);
+
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
-
-			// load vision car model
 			LoaderPool.loadObject("vision/vision.awd", onAssetComplete, onResourceComplete);
 		}
 
@@ -484,8 +489,15 @@ package {
 			}
 
 			CarMove.update();
+			
+			// need to find solution in progress
+			//FractalTerrainStatic.move(CarMove.position.x/1000, -CarMove.position.z/1000);
+			//FractalTerrainStatic.update();
+			
 			if (_visionCar) {
-				_visionCar.position = new Vector3D(CarMove.position.x * 10, FractalTerrainStatic.getHeightAt(CarMove.position.x * 10, CarMove.position.z * 10), CarMove.position.z * 10);
+				//_visionCar.position = FractalTerrainStatic.cubePoints[0];
+				_visionCar.position = new Vector3D(CarMove.position.x*3 , FractalTerrainStatic.getHeightAt(CarMove.position.x*3 , CarMove.position.z*3 ), CarMove.position.z*3 );
+				
 				_visionCar.rotationY = CarMove.angle + 180;
 				_driveWheel.rotationZ = (CarMove.steering * 180);
 				// wheels steering
@@ -712,6 +724,7 @@ package {
 
 			// finaly add vision car mesh
 			_view.scene.addChild(_visionCar);
+			_visionCar.scale(CAR_SIZE);
 			// if (_isReflection)
 			initReflection();
 

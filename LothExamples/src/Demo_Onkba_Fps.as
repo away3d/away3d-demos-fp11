@@ -125,10 +125,10 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// scene objects
+		private var _player : ObjectContainer3D;
 		private var _groundWater : Mesh;
 		private var _heroPieces : ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
-		private var _player : ObjectContainer3D;
 		private var _weapons : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
 		private var _heroWeapon : Mesh;
@@ -292,11 +292,11 @@ package {
 			// create noize terrain with image 6 7 8
 			FractalTerrainStatic.getInstance();
 			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.addCubicReference(1);
 			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 			
 			// basic water ground
-			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
 			//_groundWater.castsShadows = false;
 			_view.scene.addChild(_groundWater);
@@ -476,8 +476,8 @@ package {
 
 			// 9 - hero shirt
 			_shirtMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
-			// _onkbaMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
-			// _onkbaMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
+			// _shirtMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
+			// _shirtMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
 			_shirtMaterial.gloss = 5;
 			_shirtMaterial.specular = 0.1;
 			_shirtMaterial.alphaThreshold = 0.9;
@@ -540,7 +540,7 @@ package {
 			}
 
 			FractalTerrainStatic.update();
-			_player.position = FractalTerrainStatic.cubePoints[21];
+			_player.position = FractalTerrainStatic.cubePoints[0];
 
 			if (_heroOnkba) {
 				if (_dynamicsEyes) updateEyes();

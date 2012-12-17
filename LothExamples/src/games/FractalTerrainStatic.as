@@ -57,22 +57,23 @@ package games {
 		private static var _p : Point;
 		private static var _cubePoints : Vector.<Vector3D>;
 		private static var _groundVertex : Vector.<uint>;
+		private static var _numCube : uint = 36;
 		// Debug option to see only perlin noize and grid
 		private static var _isMapTesting : Boolean = false;
 		// Optional cube position follow terrain mesh
 		private static var _isCubicReference : Boolean = false;
-		
+
 		/**
 		 * Singleton enforcer
 		 */
 		public static function getInstance() : FractalTerrainStatic {
 			if (Singleton == null) {
 				Singleton = new FractalTerrainStatic();
-				//FractalTerrainStatic.init();
+				// FractalTerrainStatic.init();
 			}
 			return Singleton;
 		}
-		
+
 		/**
 		 * Set the away3d scene
 		 */
@@ -83,7 +84,7 @@ package games {
 		/**
 		 * Globale initialiser
 		 */
-		public static function initGround( Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : uint = 12800, Height : int = 1000, Resolution : uint = 128) : void {
+		public static function initGround(Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : uint = 12800, Height : int = 1000, Resolution : uint = 128) : void {
 			_zoneHeight = Height;
 			_zoneDimension = Dimension;
 			_terrainMaterial = Material;
@@ -101,12 +102,12 @@ package games {
 			_rec = _ground.rect;
 			_p = new Point();
 			draw();
-			
+
 			// ground bitmap scrolling
 			_ground00 = new BitmapScrolling(_bitmaps[6]);
 			_ground01 = new BitmapScrolling(_bitmaps[7]);
 			_ground02 = new BitmapScrolling(_bitmaps[8]);
-			
+
 			// find the map multyplicator for scrolling
 			findMultyplicator();
 
@@ -142,43 +143,44 @@ package games {
 		}
 
 		/**
-		 * Optional physics cube reference point follow terrain 6 * 6
+		 * Optional physics cube reference point follow terrain n * n
+		 * @param n number of cube by line
 		 */
-		public static function addCubicReference() : void {
-			_cubePoints = new Vector.<Vector3D>(36);
-
-			for (var i : uint = 0; i < 36; ++i) {
+		public static function addCubicReference(n : uint = 1) : void {
+			_numCube = n * n;
+			_cubePoints = new Vector.<Vector3D>(_numCube);
+			for (var i : uint = 0; i < _numCube; ++i) {
 				_cubePoints[i] = new Vector3D();
 			}
-			defineGroundVertex();
+			defineGroundVertex(n);
 			_isCubicReference = true;
 		}
 
 		/**
-		 * Define the central vertex on ground mesh
+		 * fine the vertex on terrain plane mesh
 		 */
-		private static function defineGroundVertex() : void {
-			_groundVertex = new Vector.<uint>(36);
+		private static function defineGroundVertex(multy : uint = 7) : void {
+			_groundVertex = new Vector.<uint>(_numCube);
 			var i : uint;
 			var j : uint;
 			var n : uint;
 			if (_zoneResolution == 128) {
-				for (j = 0; j < 6; ++j) {
-					for (i = 0; i < 6; ++i) {
+				for (j = 0; j < multy; ++j) {
+					for (i = 0; i < multy; ++i) {
 						_groundVertex[n] = uint(7869 + i + (j * 128));
 						n++;
 					}
 				}
 			} else if (_zoneResolution == 64) {
-				for (j = 0; j < 6; ++j) {
-					for (i = 0; i < 6; ++i) {
+				for (j = 0; j < multy; ++j) {
+					for (i = 0; i < multy; ++i) {
 						_groundVertex[n] = uint(1885 + i + (j * 64));
 						n++;
 					}
 				}
 			} else if (_zoneResolution == 256) {
-				for (j = 0; j < 6; ++j) {
-					for (i = 0; i < 6; ++i) {
+				for (j = 0; j < multy; ++j) {
+					for (i = 0; i < multy; ++i) {
 						_groundVertex[n] = uint(30745 + i + (j * 251));
 						n++;
 					}
@@ -357,7 +359,7 @@ package games {
 				v[i] = int(_zoneHeight * px / 0xffffff - (_zoneHeight >> 1));
 				// update cubic reference
 				if (_isCubicReference) {
-					for (j = 0; j < 36; ++j) {
+					for (j = 0; j < _numCube; ++j) {
 						if (vertex == _groundVertex[j] ) _cubePoints[j] = new Vector3D(v[i - 1], v[i], v[i + 1]);
 					}
 				}

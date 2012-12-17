@@ -253,7 +253,7 @@ package {
 			// create noize terrain with image 6 7 8
 			FractalTerrainStatic.getInstance();
 			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.addCubicReference(1);
 			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 			FractalTerrainStatic.move(0, 1);
 
@@ -429,7 +429,8 @@ package {
 			}
 
 			FractalTerrainStatic.update();
-			_cameraController.lookAtPosition.y = FractalTerrainStatic.getHeightAt(0, 0);
+			//_cameraController.lookAtPosition.y = FractalTerrainStatic.getHeightAt(0, 0);
+			_cameraController.lookAtPosition = FractalTerrainStatic.cubePoints[0];
 			_cameraController.update();
 
 			// animate our lake material

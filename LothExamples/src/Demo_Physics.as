@@ -97,10 +97,13 @@ package {
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
 		// other
-		private var _menu : Sprite;
+		
 		private var _text : TextField;
 		private var _currentDemo : uint;
 		private var _maxDemo : uint;
+		// ui
+		private var _menu : Sprite;
+		private var _sliderGravity:HUISlider;
 
 		/**
 		 * Constructor
@@ -452,16 +455,16 @@ package {
 			new PushButton(_menu, 65, -29, "prev", prevDemo).setSize(60, 30);
 			new PushButton(_menu, 130, -29, "next", nextDemo).setSize(60, 30);
 
-			var g : HUISlider = new HUISlider(_menu, 250, -32, "Gravity", setGravity);
-			g.labelPrecision = 1;
-			g.minimum = -20;
-			g.maximum = 20;
-			g.tick = 0.1;
-			g.value = -9.8;
+			_sliderGravity = new HUISlider(_menu, 250, -32, "Gravity", setGravity);
+			_sliderGravity.labelPrecision = 1;
+			_sliderGravity.minimum = -20;
+			_sliderGravity.maximum = 20;
+			_sliderGravity.tick = 0.1;
+			_sliderGravity.value = -9.8;
 		}
 
 		private function setGravity(event : Event) : void {
-			OimoEngine.gravity(event.currentTarget.value);
+			OimoEngine.gravity(_sliderGravity.value);
 		}
 
 		private function showSetting(e : Event) : void {
