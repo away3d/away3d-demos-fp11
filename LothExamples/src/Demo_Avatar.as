@@ -94,7 +94,9 @@ package {
 	import com.bit101.components.HUISlider;
 	import com.bit101.components.Component;
 
-	import games.FractalTerrain;
+	import games.FractalTerrainStatic;
+
+	//import physics.OimoEngine;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Avatar extends Sprite {
@@ -133,8 +135,7 @@ package {
 		private var TEX_Avatar : Vector.<TextureMaterial>;
 		private var TEX_Hair : Vector.<TextureMaterial>;
 		// scene objects
-		private var _ground : Mesh;
-		private var _terrain : FractalTerrain;
+		private var _groundWater : Mesh;
 		// avatar referency
 		private var _cloneStyleWoman : Vector.<Mesh>;
 		private var _cloneStyleMan : Vector.<Mesh>;
@@ -164,7 +165,10 @@ package {
 		private var _text : TextField;
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
+		// ui
 		private var _menu : Sprite;
+		private var _sliderComplex : HUISlider;
+		private var _sliderHeight : HUISlider;
 
 		/**
 		 * Constructor
@@ -215,6 +219,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			initEngine();
+			//initOimoPhysics();
 			initText();
 			initSetting();
 			initLights();
@@ -246,17 +251,16 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
-			_terrain = new FractalTerrain();
-			_terrain.scene = _view.scene;
-			_terrain.initGround( _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			_terrain.move(0, 1);
+			FractalTerrainStatic.getInstance();
+			FractalTerrainStatic.scene = _view.scene;
+			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrainStatic.move(0, 1);
 
-			// basic ground
-			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(40, 40);
-
-			// _ground.castsShadows = false;
-			_view.scene.addChild(_ground);
+			// basic water ground
+			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_groundWater.geometry.scaleUV(40, 40);
+			_view.scene.addChild(_groundWater);
 
 			// Avatar character mesh referency
 			_skinMesh = new Vector.<Mesh>();
@@ -297,6 +301,14 @@ package {
 		}
 
 		/**
+		 * Initialise OimoPhysics engine
+		 */
+		/*private function initOimoPhysics() : void {
+			OimoEngine.getInstance();
+			OimoEngine.scene = _view.scene;
+		}*/
+
+		/**
 		 * Initialise the lights
 		 */
 		private function initLights() : void {
@@ -335,19 +347,21 @@ package {
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
 			_sTexture = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
+			
+			// shadow method
+			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_shadowMethod.epsilon = .0007;
+			_shadowMethod.alpha = 0.5;
+			// Rim light method
+			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
+			// fog method
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, 0x000000);
 			// water method
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = .4;
-			// Rim light method
-			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
-			// fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, 0x000000);
-			// shadow method
-			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			_shadowMethod.epsilon = .0007;
-			_shadowMethod.alpha = 0.25;
+			
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x22404060)));
@@ -414,8 +428,8 @@ package {
 				_night--;
 			}
 
-			_terrain.update();
-			_cameraController.lookAtPosition.y = _terrain.getHeightAt(0, 0);
+			FractalTerrainStatic.update();
+			_cameraController.lookAtPosition.y = FractalTerrainStatic.getHeightAt(0, 0);
 			_cameraController.update();
 
 			// animate our lake material
@@ -558,7 +572,7 @@ package {
 				m.z = (j * sz);
 				k = (i - (j * maxbyline));
 				m.x = -((maxbyline * sx) >> 1) + (k * sx) + (sx / 2);
-				m.y = _terrain.getHeightAt(m.x, m.z);
+				m.y = FractalTerrainStatic.getHeightAt(m.x, m.z);
 				m.mouseEnabled = m.mouseChildren = false;
 				_view.scene.addChild(m);
 				_clones[i] = m;
@@ -627,7 +641,7 @@ package {
 		public function updateClone() : void {
 			for (var i : uint = 0; i < animators.length; i++) {
 				_cloneHair[i].transform = animators[i].globalPose.jointPoses[15].toMatrix3D();
-				_clones[i].y = _terrain.getHeightAt(_clones[i].x, _clones[i].z);
+				_clones[i].y = FractalTerrainStatic.getHeightAt(_clones[i].x, _clones[i].z);
 			}
 		}
 
@@ -816,44 +830,44 @@ package {
 			new PushButton(_menu, 130, -29, "128", switch128).setSize(60, 30);
 			new PushButton(_menu, 195, -29, "256", switch256).setSize(60, 30);
 			new PushButton(_menu, 195 + 65, -29, "fractal", switchFractal).setSize(60, 30);
-			var f : HUISlider = new HUISlider(_menu, 350, -20, "height", setTerrainHeight);
-			f.maximum = 4000;
-			f.minimum = -4000;
-			f.value = MOUNTAIGN_TOP;
+			_sliderHeight = new HUISlider(_menu, 350, -20, "height", setTerrainHeight);
+			_sliderHeight.maximum = 4000;
+			_sliderHeight.minimum = -4000;
+			_sliderHeight.value = MOUNTAIGN_TOP;
 
-			var g : HUISlider = new HUISlider(_menu, 350, -32, "complex", setComplex);
-			g.labelPrecision = 3;
-			g.minimum = 0.001;
-			g.maximum = 0.3;
-			g.tick = 0.001;
-			g.value = 0.12;
+			_sliderComplex = new HUISlider(_menu, 350, -32, "complex", setComplex);
+			_sliderComplex.labelPrecision = 3;
+			_sliderComplex.minimum = 0.001;
+			_sliderComplex.maximum = 0.3;
+			_sliderComplex.tick = 0.001;
+			_sliderComplex.value = 0.12;
 		}
 
 		private function setTerrainHeight(event : Event) : void {
-			_terrain.changeHeight(event.currentTarget.value);
+			FractalTerrainStatic.changeHeight(_sliderHeight.value);
 		}
 
 		private function setComplex(event : Event) : void {
-			_terrain.changeComplex(event.currentTarget.value);
+			FractalTerrainStatic.changeComplex(_sliderComplex.value);
 		}
 
 		private function switchFractal(e : Event) : void {
-			_terrain.changeFractal();
+			FractalTerrainStatic.changeFractal();
 		}
 
 		private function switch64(e : Event) : void {
-			_terrain.changeResolution(64);
-			_terrain.move(0, 1);
+			FractalTerrainStatic.changeResolution(64);
+			FractalTerrainStatic.move(0, 1);
 		}
 
 		private function switch128(e : Event) : void {
-			_terrain.changeResolution(128);
-			_terrain.move(0, 1);
+			FractalTerrainStatic.changeResolution(128);
+			FractalTerrainStatic.move(0, 1);
 		}
 
 		private function switch256(e : Event) : void {
-			_terrain.changeResolution(256);
-			_terrain.move(0, 1);
+			FractalTerrainStatic.changeResolution(256);
+			FractalTerrainStatic.move(0, 1);
 		}
 
 		/**

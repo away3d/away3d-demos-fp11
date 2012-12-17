@@ -115,8 +115,7 @@ package {
 		private var _cameraController : HoverController;
 		private var _night : Number = 100;
 		// scene objects
-		private var _ground : Mesh;
-		
+		private var _groundWater : Mesh;
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
 		// materials
@@ -124,6 +123,7 @@ package {
 		private var _waterMaterial : TextureMaterial;
 		private var _shipMaterial : TextureMaterial;
 		private var _boxMaterial : TextureMaterial;
+		private var _boxMaterialPlus : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
 		private var _shadowMethod : NearShadowMapMethod;
@@ -143,7 +143,10 @@ package {
 		private var _text : TextField;
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
+		// ui
 		private var _menu : Sprite;
+		private var _sliderComplex : HUISlider;
+		private var _sliderHeight : HUISlider;
 
 		/**
 		 * Constructor
@@ -228,8 +231,11 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 			_shipMaterial.addMethod(_reflectionMethod);
 
-			// create fractal terrain
-			initFractalTerrain();
+			// create fractal terrain with image 6 7 8
+			FractalTerrainStatic.getInstance();
+			FractalTerrainStatic.scene = _view.scene;
+			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
 
 			// create physical cube ship bump on it
 			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 100, 190), _boxMaterial);
@@ -237,17 +243,18 @@ package {
 			var pb : Mesh;
 			for (var i : uint = 0; i < 36; ++i) {
 				pb = Mesh(pboxe.clone());
+				if (i == 21) pb.material = _boxMaterialPlus;
 				OimoEngine.addCube(pb, 190, 100, 190, new Vector3D(0, 0, 0));
 			}
 
 			// create plane for water
-			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(40, 40);
-			_ground.mouseEnabled = true;
-			_ground.pickingCollider = PickingColliderType.BOUNDS_ONLY;
-			_view.scene.addChild(_ground);
-			_ground.addEventListener(MouseEvent3D.MOUSE_UP, onGroundMouseOver);
-			_ground.addEventListener(MouseEvent3D.MOUSE_MOVE, onGroundMouseOver);
+			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_groundWater.geometry.scaleUV(40, 40);
+			_groundWater.mouseEnabled = true;
+			_groundWater.pickingCollider = PickingColliderType.BOUNDS_ONLY;
+			_view.scene.addChild(_groundWater);
+			_groundWater.addEventListener(MouseEvent3D.MOUSE_UP, onGroundMouseOver);
+			_groundWater.addEventListener(MouseEvent3D.MOUSE_MOVE, onGroundMouseOver);
 
 			initListeners();
 			log(message());
@@ -304,6 +311,14 @@ package {
 		}
 
 		/**
+		 * Initialise OimoPhysics engine
+		 */
+		private function initOimoPhysics() : void {
+			OimoEngine.getInstance();
+			OimoEngine.scene = _view.scene;
+		}
+
+		/**
 		 * Initialise the lights
 		 */
 		private function initLights() : void {
@@ -337,17 +352,17 @@ package {
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
 
+			// shadow method
+			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_shadowMethod.epsilon = .0007;
+			_shadowMethod.alpha = 0.5;
+			// fog method
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 			// water method
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.5;
-			// fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
-			// shadow method
-			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			_shadowMethod.epsilon = .0007;
-			_shadowMethod.alpha = 0.25;
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x30404060)));
@@ -362,7 +377,7 @@ package {
 			_materials[0] = _waterMaterial;
 
 			// creat terrain material
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x000000)));
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x808080)));
 			_terrainMaterial.gloss = 10;
 			_terrainMaterial.specular = 0.2;
 			_terrainMaterial.addMethod(_fogMethode);
@@ -380,6 +395,12 @@ package {
 			_boxMaterial.specular = 1;
 			_boxMaterial.bothSides = true;
 			_boxMaterial.alphaBlending = true;
+
+			_boxMaterialPlus = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x22FF9999)));
+			_boxMaterialPlus.gloss = 60;
+			_boxMaterialPlus.specular = 1;
+			_boxMaterialPlus.bothSides = true;
+			_boxMaterialPlus.alphaBlending = true;
 			// _materials[3] = _boxMaterial;
 
 			// for all material
@@ -390,25 +411,6 @@ package {
 			}
 		}
 
-		/**
-		 * Initialise OimoPhysics engine
-		 */
-		private function initOimoPhysics() : void {
-			OimoEngine.getInstance();
-			OimoEngine.scene = _view.scene;
-		}
-		
-		/**
-		 * Initialise fractal terrain
-		 */
-		private function initFractalTerrain() : void {
-			FractalTerrainStatic.getInstance();
-			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference();
-			// create noize terrain with image 6 7 8
-			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
-		}
-		
 		/**
 		 * Render loop
 		 */
@@ -436,13 +438,13 @@ package {
 			// update physic engine
 			OimoEngine.update();
 
-			//_player.y = _terrain.getHeightAt(0, 0);
+			// _player.y = _terrain.getHeightAt(0, 0);
 			_player.y = FractalTerrainStatic.getHeightAt(0, 0);
-			
+
 			_cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
 			_cameraController.update();
 
-			// animate our lake material
+			// animate water material
 			_waterMethod.water1OffsetX += .001;
 			_waterMethod.water1OffsetY += .001;
 			_waterMethod.water2OffsetX += .0007;
@@ -725,25 +727,25 @@ package {
 			new PushButton(_menu, 130, -29, "128", switch128).setSize(60, 30);
 			new PushButton(_menu, 195, -29, "256", switch256).setSize(60, 30);
 			new PushButton(_menu, 195 + 65, -29, "fractal", switchFractal).setSize(60, 30);
-			var f : HUISlider = new HUISlider(_menu, 350, -20, "height", setTerrainHeight);
-			f.maximum = 6000;
-			f.minimum = -6000;
-			f.value = MOUNTAIGN_TOP;
+			_sliderHeight = new HUISlider(_menu, 350, -20, "height", setTerrainHeight);
+			_sliderHeight.maximum = 4000;
+			_sliderHeight.minimum = -4000;
+			_sliderHeight.value = MOUNTAIGN_TOP;
 
-			var g : HUISlider = new HUISlider(_menu, 350, -32, "complex", setComplex);
-			g.labelPrecision = 3;
-			g.minimum = 0.001;
-			g.maximum = 0.3;
-			g.tick = 0.001;
-			g.value = 0.12;
+			_sliderComplex = new HUISlider(_menu, 350, -32, "complex", setComplex);
+			_sliderComplex.labelPrecision = 3;
+			_sliderComplex.minimum = 0.001;
+			_sliderComplex.maximum = 0.3;
+			_sliderComplex.tick = 0.001;
+			_sliderComplex.value = 0.12;
 		}
 
 		private function setTerrainHeight(event : Event) : void {
-			FractalTerrainStatic.changeHeight(event.currentTarget.value);
+			FractalTerrainStatic.changeHeight(_sliderHeight.value);
 		}
 
 		private function setComplex(event : Event) : void {
-			FractalTerrainStatic.changeComplex(event.currentTarget.value);
+			FractalTerrainStatic.changeComplex(_sliderComplex.value);
 		}
 
 		private function switchFractal(e : Event) : void {

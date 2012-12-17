@@ -46,11 +46,12 @@ package {
 	import away3d.animators.transitions.CrossfadeTransition;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
+	import away3d.materials.methods.SimpleWaterNormalMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
-	// import away3d.textures.CubeReflectionTexture;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
@@ -96,7 +97,9 @@ package {
 	import utils.AutoMapSky;
 	import utils.LoaderPool;
 
-	import games.FractalTerrain;
+	import games.FractalTerrainStatic;
+
+	//import physics.OimoEngine;
 
 	// import games.PoissonDisk;
 	[SWF(frameRate="60", backgroundColor = "#000000")]
@@ -107,7 +110,7 @@ package {
 		private const HERO_SIZE : Number = 1.5;
 		// start colors
 		private var groundColor : uint = 0x333338;
-		private var sunColor : uint = 0xAAAAA9;
+		private var sunColor : uint = 0xFFFFFF;
 		private var fogColor : uint = 0x333338;
 		private var skyColor : uint = 0x445465;
 		// bitmaps
@@ -122,7 +125,7 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// scene objects
-		// private var _cubeVector : Vector.<Mesh>;
+		private var _groundWater : Mesh;
 		private var _heroPieces : ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
@@ -132,7 +135,6 @@ package {
 		private var _heroOnkba : Mesh;
 		private var _heroSia : Mesh;
 		private var _shirt : Mesh;
-		private var _terrain : FractalTerrain;
 		// materials
 		private var _boxMaterial : TextureMaterial;
 		private var _gunMaterial : TextureMaterial;
@@ -146,13 +148,15 @@ package {
 		private var _eyesOpenMaterial : TextureMaterial;
 		private var _eyesClosedMaterial : TextureMaterial;
 		private var _eyesClosedSiaMaterial : TextureMaterial;
+		private var _waterMaterial : TextureMaterial;
 		private var _basicMaterial : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
-		// private var _reflectionTexture : CubeReflectionTexture;
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _rimLightMethod : RimLightMethod;
 		private var _fogMethode : FogMethod;
+		private var _fresnelMethod : FresnelSpecularMethod;
+		private var _waterMethod : SimpleWaterNormalMethod;
 		// hero animation variables
 		private const ANIMATION : Array = ["Idle", "Walk", "WalkL", "WalkR", "Run", "CrouchIdle", "CrouchWalk", "Reload", "WaterIdle", "WaterSwim", "StandBack", "StandFace", "JumpDown"];
 		private const WEAPON : Array = ["", "Gun", "Machine", "Sniper", "Gatling", "Bazooka"];
@@ -190,16 +194,12 @@ package {
 		// demo testing
 		private var _isIntro : Boolean = true;
 		private var _isMan : Boolean = true;
-		// private var _isReflection : Boolean;
 		private var _dynamicsEyes : Boolean;
-		// private var _cloneActif : Boolean;
 		private var _debugRay : Boolean;
 		private var _isRender : Boolean;
 		private var _text : TextField;
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
-		// optional physics engine
-		// private var _physics:Object;
 		private var _menu : Sprite;
 
 		/**
@@ -251,6 +251,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			initEngine();
+			//initOimoPhysics();
 			initText();
 			initSetting();
 			initLights();
@@ -270,6 +271,8 @@ package {
 			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
 			// Sia map 18
 			_bitmapStrings.push("onkba/sia_diffuse.jpg");
+			// water map 19
+			_bitmapStrings.push("water_normals.jpg");
 
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
@@ -287,10 +290,16 @@ package {
 			randomSky();
 
 			// create noize terrain with image 6 7 8
-			_terrain = new FractalTerrain();
-			_terrain.scene = _view.scene;
-			_terrain.addCubicReference();
-			_terrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrainStatic.getInstance();
+			FractalTerrainStatic.scene = _view.scene;
+			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			
+			// basic water ground
+			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_groundWater.geometry.scaleUV(40, 40);
+			//_groundWater.castsShadows = false;
+			_view.scene.addChild(_groundWater);
 
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);
@@ -337,17 +346,25 @@ package {
 		}
 
 		/**
+		 * Initialise OimoPhysics engine
+		 */
+		/*private function initOimoPhysics() : void {
+			OimoEngine.getInstance();
+			OimoEngine.scene = _view.scene;
+		}*/
+
+		/**
 		 * Initialise the lights
 		 */
 		private function initLights() : void {
-			_sunLight = new DirectionalLight(-0.5, -1, 0.3);
+			_sunLight = new DirectionalLight(0.1, -0.8, 0.3);
 			_sunLight.color = sunColor;
 			_sunLight.ambientColor = sunColor;
 			_sunLight.ambient = 0;
 			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.02);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.3);
 			_view.scene.addChild(_sunLight);
 
 			// generate cube texture for sky and probe
@@ -374,15 +391,19 @@ package {
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
 
-			// global shadow method
+			// shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			_shadowMethod.epsilon = .0005;
-
+			_shadowMethod.epsilon = .0007;
+			_shadowMethod.alpha = 0.5;
 			// global Rim light method
 			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
-
 			// global fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
+			// water method
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[19]), Cast.bitmapTexture(_bitmaps[19]));
+			// fresnelMethod
+			_fresnelMethod = new FresnelSpecularMethod();
+			_fresnelMethod.normalReflectance = 0.5;
 
 			// 0 - onkba hero
 			_onkbaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
@@ -479,13 +500,25 @@ package {
 			_eyesClosedSiaMaterial.gloss = 12;
 			_eyesClosedSiaMaterial.specular = 0.6;
 			_materials[11] = _eyesClosedSiaMaterial;
+			
+			// 12 _ water texture
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x30404060)));
+			_waterMaterial.alphaBlending = true;
+			_waterMaterial.repeat = true;
+			_waterMaterial.gloss = 120;
+			_waterMaterial.specular = 1;
+			_waterMaterial.normalMethod = _waterMethod;
+			_waterMaterial.specularMethod = _fresnelMethod;
+			_waterMaterial.bothSides = true;
+			_waterMaterial.addMethod(_fogMethode);
+			_materials[12] = _waterMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
-				if (i != 5) _materials[i].addMethod(_rimLightMethod);
+				//if (i != 5) _materials[i].addMethod(_rimLightMethod);
 			}
 
 			_basicMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x000000)));
@@ -506,8 +539,8 @@ package {
 				_night--;
 			}
 
-			_terrain.update();
-			_player.position = _terrain.cubePoints[21];
+			FractalTerrainStatic.update();
+			_player.position = FractalTerrainStatic.cubePoints[21];
 
 			if (_heroOnkba) {
 				if (_dynamicsEyes) updateEyes();
@@ -522,10 +555,11 @@ package {
 			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y + _cameraHeight, _player.z);
 			_cameraController.update();
 
-			/*if (_isReflection) {
-			_reflectionTexture.position = _bigBall.position;
-			_reflectionTexture.render(_view);
-			}*/
+			// animate water material
+			_waterMethod.water1OffsetX += .001;
+			_waterMethod.water1OffsetY += .001;
+			_waterMethod.water2OffsetX += .0007;
+			_waterMethod.water2OffsetY += .0006;
 
 			_view.render();
 		}
@@ -776,7 +810,7 @@ package {
 
 			if (currentAnim == anim) return;
 			// FractalTerrain.move(0, 0);
-			_terrain.move(0, 0);
+			FractalTerrainStatic.move(0, 0);
 			currentAnim = anim;
 			_animator.playbackSpeed = IDLE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
@@ -794,7 +828,7 @@ package {
 			if (currentAnim == anim) return;
 
 			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
-			_terrain.move(0, _animator.playbackSpeed / 20);
+			FractalTerrainStatic.move(0, _animator.playbackSpeed / 20);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -808,7 +842,7 @@ package {
 			var anim : String;
 			if (dir > 0) anim = 'WalkL';
 			else anim = 'WalkR';
-			_terrain.move(dir / 100, 0);
+			FractalTerrainStatic.move(dir / 100, 0);
 			if (isCrouch) return;
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);

@@ -89,7 +89,9 @@ package {
 	import com.bit101.components.PushButton;
 
 	import games.CarMove;
-	import games.FractalTerrain;
+	import games.FractalTerrainStatic;
+
+	import physics.OimoEngine;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Vision_Car extends Sprite {
@@ -136,8 +138,7 @@ package {
 		private var _carBlackDoubleMat : TextureMaterial;
 		private var _carGlassMat : TextureMaterial;
 		// scene objects
-		private var _ground : Mesh;
-		private var _terrain : FractalTerrain;
+		private var _groundWater : Mesh;
 		private var _vision : Vector.<Mesh>;
 		private var _visionCar : Mesh;
 		// car parts
@@ -161,6 +162,7 @@ package {
 		private var _text : TextField;
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
+		// ui
 		private var _menu : Sprite;
 
 		/**
@@ -212,6 +214,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			initEngine();
+			initOimoPhysics();
 			initText();
 			initSetting();
 			initLights();
@@ -244,15 +247,16 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
-			_terrain = new FractalTerrain();
-			_terrain.scene = _view.scene;
-			_terrain.initGround( _bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrainStatic.getInstance();
+			FractalTerrainStatic.scene = _view.scene;
+			FractalTerrainStatic.addCubicReference();
+			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
-			// basic ground
-			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
-			_ground.geometry.scaleUV(60, 60);
-			_ground.castsShadows = false;
-			_view.scene.addChild(_ground);
+			// basic water ground
+			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
+			_groundWater.geometry.scaleUV(40, 40);
+			_view.scene.addChild(_groundWater);
+			
 			// Now load High res Vision car
 			_vision = new Vector.<Mesh>();
 
@@ -289,6 +293,14 @@ package {
 			_stats.x = stage.stageWidth - _stats.width - 5;
 			_stats.alpha = 0.5;
 			_stats.y = 2;
+		}
+
+		/**
+		 * Initialise OimoPhysics engine
+		 */
+		private function initOimoPhysics() : void {
+			OimoEngine.getInstance();
+			OimoEngine.scene = _view.scene;
 		}
 
 		/**
@@ -330,10 +342,9 @@ package {
 			// create global shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0007;
-
+			_shadowMethod.alpha = 0.5;
 			// create global fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
-
 			// water method
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
 			// fresnelMethod
@@ -474,7 +485,7 @@ package {
 
 			CarMove.update();
 			if (_visionCar) {
-				_visionCar.position = new Vector3D(CarMove.position.x * 10, _terrain.getHeightAt(CarMove.position.x * 10, CarMove.position.z * 10), CarMove.position.z * 10);
+				_visionCar.position = new Vector3D(CarMove.position.x * 10, FractalTerrainStatic.getHeightAt(CarMove.position.x * 10, CarMove.position.z * 10), CarMove.position.z * 10);
 				_visionCar.rotationY = CarMove.angle + 180;
 				_driveWheel.rotationZ = (CarMove.steering * 180);
 				// wheels steering
