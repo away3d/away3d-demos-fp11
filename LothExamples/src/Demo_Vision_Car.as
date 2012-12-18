@@ -90,11 +90,11 @@ package {
 	import com.bit101.components.PushButton;
 
 	import games.CarMove;
-	import games.FractalTerrainStatic;
+	import games.FractalTerrain;
 
 	import physics.OimoEngine;
 
-	[SWF(backgroundColor="#000000", frameRate="60")]
+	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Vision_Car extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 1000;
 		private const FARVIEW : Number = 30000;
@@ -156,7 +156,7 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
-		private var _cameraHeight : Number = 80;
+		private var _cameraHeight : Number = 40;
 		private var _night : Number = 100;
 		private var _isIntro : Boolean = true;
 		private var _isReflection : Boolean;
@@ -250,10 +250,10 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
-			FractalTerrainStatic.getInstance();
-			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference(1);
-			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrain.getInstance();
+			FractalTerrain.scene = _view.scene;
+			FractalTerrain.addCubicReference(1);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
 			// basic water ground
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
@@ -491,12 +491,12 @@ package {
 			CarMove.update();
 			
 			// need to find solution in progress
-			//FractalTerrainStatic.move(CarMove.position.x/1000, -CarMove.position.z/1000);
-			//FractalTerrainStatic.update();
+			//FractalTerrain.move(CarMove.position.x/1000, -CarMove.position.z/1000);
+			//FractalTerrain.update();
 			
 			if (_visionCar) {
-				//_visionCar.position = FractalTerrainStatic.cubePoints[0];
-				_visionCar.position = new Vector3D(CarMove.position.x*3 , FractalTerrainStatic.getHeightAt(CarMove.position.x*3 , CarMove.position.z*3 ), CarMove.position.z*3 );
+				//_visionCar.position = FractalTerrain.cubePoints[0];
+				_visionCar.position = new Vector3D(CarMove.position.x*3 , FractalTerrain.getHeightAt(CarMove.position.x*3 , CarMove.position.z*3 ), CarMove.position.z*3 );
 				
 				_visionCar.rotationY = CarMove.angle + 180;
 				_driveWheel.rotationZ = (CarMove.steering * 180);

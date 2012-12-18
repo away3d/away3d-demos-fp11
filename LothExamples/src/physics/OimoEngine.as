@@ -32,8 +32,8 @@ package physics {
 	 * in away3d mutliply by scale 100
 	 */
 	public class OimoEngine extends Sprite {
-		private static const SCALE : uint = 100;
-		private static const USCALE : Number = 0.01;
+		private static const SCALE : uint = 1000;
+		private static const USCALE : Number = 0.001;
 		private static var Singleton : OimoEngine;
 		private static var _world : World;
 		private static var _rigids : Vector.<RigidBody>;
@@ -101,7 +101,8 @@ package physics {
 		static public function rigidPos(n : uint = 0) : Matrix3D {
 			var r : Mat33 = _world.rigidBodies[n].rotation;
 			var p : Vec3 = _world.rigidBodies[n].position;
-			return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
+			//return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
+			return new Matrix3D(Vector.<Number>([r.e00, r.e10, r.e20, 0, r.e01, r.e11, r.e21, 0, r.e02, r.e12, r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
 		}
 
 		/**

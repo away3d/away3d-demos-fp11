@@ -97,12 +97,11 @@ package {
 	import utils.AutoMapSky;
 	import utils.LoaderPool;
 
-	import games.FractalTerrainStatic;
+	import games.FractalTerrain;
 
-	//import physics.OimoEngine;
-
+	// import physics.OimoEngine;
 	// import games.PoissonDisk;
-	[SWF(frameRate="60", backgroundColor = "#000000")]
+	[SWF(frameRate="60", backgroundColor = "#000000", width = "1200", height = "600")]
 	public class Demo_Onkba_Fps extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
@@ -189,7 +188,7 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
-		private var _cameraHeight : Number = 120;
+		private var _cameraHeight : Number = 70;
 		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
@@ -251,7 +250,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			initEngine();
-			//initOimoPhysics();
+			// initOimoPhysics();
 			initText();
 			initSetting();
 			initLights();
@@ -290,15 +289,15 @@ package {
 			randomSky();
 
 			// create noize terrain with image 6 7 8
-			FractalTerrainStatic.getInstance();
-			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference(1);
-			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			
+			FractalTerrain.getInstance();
+			FractalTerrain.scene = _view.scene;
+			FractalTerrain.addCubicReference(1);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+
 			// basic water ground
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
-			//_groundWater.castsShadows = false;
+			// _groundWater.castsShadows = false;
 			_view.scene.addChild(_groundWater);
 
 			// weapon referency
@@ -349,10 +348,9 @@ package {
 		 * Initialise OimoPhysics engine
 		 */
 		/*private function initOimoPhysics() : void {
-			OimoEngine.getInstance();
-			OimoEngine.scene = _view.scene;
+		OimoEngine.getInstance();
+		OimoEngine.scene = _view.scene;
 		}*/
-
 		/**
 		 * Initialise the lights
 		 */
@@ -500,7 +498,7 @@ package {
 			_eyesClosedSiaMaterial.gloss = 12;
 			_eyesClosedSiaMaterial.specular = 0.6;
 			_materials[11] = _eyesClosedSiaMaterial;
-			
+
 			// 12 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x30404060)));
 			_waterMaterial.alphaBlending = true;
@@ -518,7 +516,7 @@ package {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
-				//if (i != 5) _materials[i].addMethod(_rimLightMethod);
+				// if (i != 5) _materials[i].addMethod(_rimLightMethod);
 			}
 
 			_basicMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x000000)));
@@ -539,8 +537,8 @@ package {
 				_night--;
 			}
 
-			FractalTerrainStatic.update();
-			_player.position = FractalTerrainStatic.cubePoints[0];
+			FractalTerrain.update();
+			_player.position = FractalTerrain.cubePoints[0];
 
 			if (_heroOnkba) {
 				if (_dynamicsEyes) updateEyes();
@@ -810,7 +808,7 @@ package {
 
 			if (currentAnim == anim) return;
 			// FractalTerrain.move(0, 0);
-			FractalTerrainStatic.move(0, 0);
+			FractalTerrain.move(0, 0);
 			currentAnim = anim;
 			_animator.playbackSpeed = IDLE_SPEED;
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
@@ -828,7 +826,7 @@ package {
 			if (currentAnim == anim) return;
 
 			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
-			FractalTerrainStatic.move(0, _animator.playbackSpeed / 20);
+			FractalTerrain.move(0, _animator.playbackSpeed / 20);
 			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -842,7 +840,7 @@ package {
 			var anim : String;
 			if (dir > 0) anim = 'WalkL';
 			else anim = 'WalkR';
-			FractalTerrainStatic.move(dir / 100, 0);
+			FractalTerrain.move(dir / 100, 0);
 			if (isCrouch) return;
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
@@ -945,10 +943,10 @@ package {
 				case Keyboard.CONTROL:
 					if (isCrouch) {
 						isCrouch = false;
-						_cameraHeight = 80;
+						_cameraHeight = 70;
 					} else {
 						isCrouch = true;
-						_cameraHeight = 40;
+						_cameraHeight = 35;
 					}
 					stop();
 					break;
@@ -992,7 +990,6 @@ package {
 					break;
 				case Keyboard.SPACE:
 					isJump = false;
-					;
 					// if (_physics){_physics.key_Jump(false);}
 					break;
 			}

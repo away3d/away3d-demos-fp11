@@ -73,7 +73,7 @@ package {
 	import com.bit101.components.Component;
 	import com.bit101.components.HUISlider;
 
-	[SWF(backgroundColor="#000000", frameRate="60", quality="LOW")]
+	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Physics extends Sprite {
 		// engine variables
 		private var _view : View3D;
@@ -97,7 +97,6 @@ package {
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
 		// other
-		
 		private var _text : TextField;
 		private var _currentDemo : uint;
 		private var _maxDemo : uint;
@@ -273,7 +272,7 @@ package {
 			switch(_currentDemo) {
 				case 0 :
 					OimoEngine.demoName = '0 - Push the limite';
-					OimoEngine.gravity(-10);
+					OimoEngine.gravity(-1);
 					var ground : Mesh = new Mesh(new CubeGeometry(1000, 50, 1000), _material01);
 					var wall0 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
 					var wall1 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
@@ -306,19 +305,19 @@ package {
 					break;
 				case 1 :
 					OimoEngine.demoName = '1 - The tower stack';
-					OimoEngine.gravity(-10);
+					OimoEngine.gravity(-1);
 					height = 40;
 					bw = 75;
 					bh = 75;
 					bd = 120;
 					var ground01 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
-					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.0, true);
+					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 1, 0.5, 0.0, true);
 					var bbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for ( j = 0; j < height; j++) {
 						for (i = 0; i < 10; i++) {
-							var ang : Number = Math.PI * 2 / 10 * (i + (j & 1) * 0.5);
+							var ang : Number = (Math.PI * 2 / 10 * (i + (j & 1) * 0.5));
 							m = Mesh(bbox.clone());
-							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 10, 1, 0.2, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5,- Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 1, 0.5, 0.2, false);
 						}
 					}
 					// the big sphere
@@ -327,24 +326,24 @@ package {
 					break;
 				case 2 :
 					OimoEngine.demoName = '2 - The pyramid stack';
-					OimoEngine.gravity(-10);
+					OimoEngine.gravity(-1);
 					width = 20;
 					bw = 80;
 					bh = 50;
 					bd = 80;
 					var ground02 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
-					OimoEngine.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
+					OimoEngine.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 1, 1, 0.5, true);
 					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), 0, null, 10, 1, 0.5, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), 0, null, 1, 0.5, 0.5, false);
 						}
 					}
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), 0, null, 10, 1, 0.5, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), 0, null, 1, 0.5, 0.5, false);
 						}
 					}
 					// the big sphere
@@ -352,7 +351,7 @@ package {
 					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
 					break;
 				case 3 :
-					OimoEngine.gravity(0);
+					OimoEngine.gravity(-1);
 					OimoEngine.demoName = '3 - Joint Test';
 					var ground03 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
 					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
@@ -460,7 +459,7 @@ package {
 			_sliderGravity.minimum = -20;
 			_sliderGravity.maximum = 20;
 			_sliderGravity.tick = 0.1;
-			_sliderGravity.value = -9.8;
+			_sliderGravity.value = -1;
 		}
 
 		private function setGravity(event : Event) : void {

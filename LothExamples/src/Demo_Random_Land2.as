@@ -88,7 +88,7 @@ package {
 	import com.bit101.components.HUISlider;
 	import com.bit101.components.Component;
 
-	import games.FractalTerrain;
+	import games.FractalTerrainOld;
 
 	import physics.OimoEngine;
 
@@ -116,7 +116,7 @@ package {
 		private var _night : Number = 100;
 		// scene objects
 		private var _ground : Mesh;
-		private var _terrain : FractalTerrain;
+		private var _terrain : FractalTerrainOld;
 		
 		private var _sunLight : DirectionalLight;
 		private var _player : ObjectContainer3D;
@@ -402,7 +402,7 @@ package {
 		 * Initialise fractal terrain
 		 */
 		private function initFractalTerrain() : void {
-			_terrain = new FractalTerrain();
+			_terrain = new FractalTerrainOld();
 			_terrain.scene = _view.scene;
 			_terrain.addCubicReference();
 			_terrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);

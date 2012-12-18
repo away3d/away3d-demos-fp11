@@ -26,51 +26,72 @@ package games {
 	 * Author : Loth
 	 */
 	public class FractalTerrain {
-		private var _zoneDimension : uint = 12800;
-		private var _zoneHeight : int = 1000;
-		private var _zoneResolution : uint = 128;
-		private var _terrainMethod : TerrainDiffuseMethod;
-		private var _terrainMaterial : TextureMaterial;
-		private var _subGeometry : SubGeometry;
-		private var _scene : Scene3D;
-		private var _plane : Mesh;
-		private var _planeGrid : WireframePlane;
-		private var _zoneSubdivision : uint;
-		private var _tiles : Array = [1, 40, 80, 40];
-		private var _ground00 : BitmapScrolling;
-		private var _ground01 : BitmapScrolling;
-		private var _ground02 : BitmapScrolling;
-		private var _ground : BitmapData;
-		private var _ease : Vector3D;
-		private var _fractal : Boolean = true;
-		private var _numOctaves : uint = 1;
-		private var _offsets : Array = [];
-		private var _complex : Number = 0.12;
-		private var _maxSpeed : Number = 0.2;
-		private var _bitmaps : Vector.<BitmapData>;
-		private var _layerBitmap : Vector.<BitmapData>;
-		private var _seed : int;
-		private var _isMove : Boolean;
-		private var _multy : Vector3D;
-		private var _rec : Rectangle;
-		private var _p : Point;
-		private var _cubePoints : Vector.<Vector3D>;
-		private var _groundVertex : Vector.<uint>;
+		private static var Singleton : FractalTerrain;
+		private static var _zoneDimension : uint = 12800;
+		private static var _zoneHeight : int = 1000;
+		private static var _zoneResolution : uint = 128;
+		private static var _terrainMethod : TerrainDiffuseMethod;
+		private static var _terrainMaterial : TextureMaterial;
+		private static var _subGeometry : SubGeometry;
+		private static var _scene : Scene3D;
+		private static var _plane : Mesh;
+		private static var _planeGrid : WireframePlane;
+		private static var _zoneSubdivision : uint;
+		private static var _tiles : Array = [1, 40, 80, 40];
+		private static var _ground00 : BitmapScrolling;
+		private static var _ground01 : BitmapScrolling;
+		private static var _ground02 : BitmapScrolling;
+		private static var _ground : BitmapData;
+		private static var _ease : Vector3D;
+		private static var _fractal : Boolean = true;
+		private static var _numOctaves : uint = 1;
+		private static var _offsets : Array = [];
+		private static var _complex : Number = 0.12;
+		private static var _maxSpeed : Number = 0.2;
+		private static var _bitmaps : Vector.<BitmapData>;
+		private static var _layerBitmap : Vector.<BitmapData>;
+		private static var _seed : int;
+		private static var _isMove : Boolean;
+		private static var _multy : Vector3D;
+		private static var _rec : Rectangle;
+		private static var _p : Point;
+		private static var _cubePoints : Vector.<Vector3D>;
+		private static var _groundVertex : Vector.<uint>;
+		private static var _numCube : uint = 36;
 		// Debug option to see only perlin noize and grid
-		private var _isMapTesting : Boolean = false;
-		private var _isCubicReference : Boolean = false;
+		private static var _isMapTesting : Boolean = false;
+		// Optional cube position follow terrain mesh
+		private static var _isCubicReference : Boolean = false;
+
+		/**
+		 * Singleton enforcer
+		 */
+		public static function getInstance() : FractalTerrain {
+			if (Singleton == null) {
+				Singleton = new FractalTerrain();
+				// FractalTerrainStatic.init();
+			}
+			return Singleton;
+		}
+
+		/**
+		 * Set the away3d scene
+		 */
+		static public function set scene(Scene : Scene3D) : void {
+			_scene = Scene;
+		}
 
 		/**
 		 * Globale initialiser
 		 */
-		public function initGround(Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : uint = 12800, Height : int = 1000, Resolution : uint = 128) : void {
+		public static function initGround(Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : uint = 12800, Height : int = 1000, Resolution : uint = 128) : void {
 			_zoneHeight = Height;
 			_zoneDimension = Dimension;
 			_terrainMaterial = Material;
 			_zoneResolution = Resolution;
 			_bitmaps = Bitmaps;
 			_ease = new Vector3D();
-			_seed = int(Math.random() * 123);
+			_seed = int(Math.random() * 12345);
 			for (var i : uint = 0; i < _numOctaves; ++i) {
 				_offsets[i] = new Point(0, 0);
 			}
@@ -81,10 +102,12 @@ package games {
 			_rec = _ground.rect;
 			_p = new Point();
 			draw();
+
 			// ground bitmap scrolling
 			_ground00 = new BitmapScrolling(_bitmaps[6]);
 			_ground01 = new BitmapScrolling(_bitmaps[7]);
 			_ground02 = new BitmapScrolling(_bitmaps[8]);
+
 			// find the map multyplicator for scrolling
 			findMultyplicator();
 
@@ -95,7 +118,7 @@ package games {
 		/**
 		 * Initialise terrain mesh
 		 */
-		private function initTerrainMesh() : void {
+		private static function initTerrainMesh() : void {
 			if (_zoneResolution == 256) _zoneSubdivision = _zoneResolution - 6;
 			else _zoneSubdivision = _zoneResolution - 1;
 			_plane = new Mesh(new PlaneGeometry(_zoneDimension, _zoneDimension, _zoneSubdivision, _zoneSubdivision, true, false), _terrainMaterial);
@@ -111,59 +134,60 @@ package games {
 			updateMaterial();
 			updateTerrain();
 		}
-		
+
 		/**
-		 * Set the away3d scene
+		 * Get the current number of cube
 		 */
-		public function set scene(Scene : Scene3D) : void {
-			_scene = Scene;
+		public static function get numCube() : uint {
+			return _numCube;
 		}
 
 		/**
 		 * Get the current vector cubic position
 		 */
-		public function get cubePoints() : Vector.<Vector3D> {
+		public static function get cubePoints() : Vector.<Vector3D> {
 			return _cubePoints;
 		}
 
 		/**
-		 * Optional physics cube reference point follow terrain 6 * 6
+		 * Optional physics cube reference point follow terrain n * n
+		 * @param n number of cube by line
 		 */
-		public function addCubicReference() : void {
-			_cubePoints = new Vector.<Vector3D>(36);
-
-			for (var i : uint = 0; i < 36; ++i) {
+		public static function addCubicReference(n : uint = 1) : void {
+			_numCube = n * n;
+			_cubePoints = new Vector.<Vector3D>(_numCube);
+			for (var i : uint = 0; i < _numCube; ++i) {
 				_cubePoints[i] = new Vector3D();
 			}
-			defineGroundVertex();
+			defineGroundVertex(n);
 			_isCubicReference = true;
 		}
 
 		/**
-		 * Define the central vertex on ground mesh
+		 * fine the vertex on terrain plane mesh
 		 */
-		private function defineGroundVertex() : void {
-			_groundVertex = new Vector.<uint>(36);
+		private static function defineGroundVertex(multy : uint = 7) : void {
+			_groundVertex = new Vector.<uint>(_numCube);
 			var i : uint;
 			var j : uint;
 			var n : uint;
 			if (_zoneResolution == 128) {
-				for (j = 0; j < 6; ++j) {
-					for (i = 0; i < 6; ++i) {
+				for (j = 0; j < multy; ++j) {
+					for (i = 0; i < multy; ++i) {
 						_groundVertex[n] = uint(7869 + i + (j * 128));
 						n++;
 					}
 				}
 			} else if (_zoneResolution == 64) {
-				for (j = 0; j < 6; ++j) {
-					for (i = 0; i < 6; ++i) {
+				for (j = 0; j < multy; ++j) {
+					for (i = 0; i < multy; ++i) {
 						_groundVertex[n] = uint(1885 + i + (j * 64));
 						n++;
 					}
 				}
 			} else if (_zoneResolution == 256) {
-				for (j = 0; j < 6; ++j) {
-					for (i = 0; i < 6; ++i) {
+				for (j = 0; j < multy; ++j) {
+					for (i = 0; i < multy; ++i) {
 						_groundVertex[n] = uint(30745 + i + (j * 251));
 						n++;
 					}
@@ -174,7 +198,7 @@ package games {
 		/**
 		 * Optional grid debug
 		 */
-		private function initTerrainGrid() : void {
+		private static function initTerrainGrid() : void {
 			_planeGrid = new WireframePlane(_zoneDimension, _zoneDimension, _zoneSubdivision, _zoneSubdivision, 0x22333333, 1, "xz");
 			_scene.addChild(_planeGrid);
 			_planeGrid.y = 1;
@@ -183,7 +207,7 @@ package games {
 		/**
 		 * Update function on enterFrame
 		 */
-		public function update() : void {
+		public static function update() : void {
 			if (_isMove) {
 				for (var i : uint = 0; i < _numOctaves; i++) {
 					Point(_offsets[i]).x += _ease.x;
@@ -198,7 +222,7 @@ package games {
 		/**
 		 * Update function for material
 		 */
-		private function updateMaterial() : void {
+		private static function updateMaterial() : void {
 			_ground00.move(-_ease.x * _multy.x, -_ease.y * _multy.x);
 			_ground01.move(-_ease.x * _multy.y, -_ease.y * _multy.y);
 			_ground02.move(-_ease.x * _multy.z, -_ease.y * _multy.z);
@@ -211,7 +235,7 @@ package games {
 		/**
 		 * Draw bitmap perlin noize and add filter
 		 */
-		private function draw() : void {
+		private static function draw() : void {
 			_ground.unlock();
 			_ground.perlinNoise(_zoneResolution * _complex, _zoneResolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
 			_ground.lock();
@@ -241,12 +265,12 @@ package games {
 		/**
 		 * Get height from perlin noize bitmap
 		 */
-		public function getHeightAt(x : Number, z : Number) : int {
+		public static function getHeightAt(x : Number, z : Number) : int {
 			var col : int = _ground.getPixel((x / _zoneDimension + .5) * (_zoneSubdivision + 1), (-z / _zoneDimension + .5) * (_zoneSubdivision + 1)) & 0xffffff;
 			return _zoneHeight * col / 0xffffff - (_zoneHeight >> 1);
 		}
 
-		public function stop() : void {
+		public static function stop() : void {
 			if (_ease.x != 0) {
 				if (_ease.x < 0) _ease.x += 0.01;
 				else _ease.x -= 0.01;
@@ -264,7 +288,7 @@ package games {
 		/**
 		 * Change terrain and perlin bitmap resolution
 		 */
-		public function changeResolution(Resolution : uint = 128) : void {
+		public static function changeResolution(Resolution : uint = 128) : void {
 			if (Resolution == _zoneResolution) return;
 			_isMove = false;
 			_zoneResolution = Resolution;
@@ -282,36 +306,36 @@ package games {
 			initTerrainMesh();
 		}
 
-		private function basicUpdate() : void {
+		private static function basicUpdate() : void {
 			draw();
 			updateTerrain();
 			updateMaterial();
 		}
 
-		public function changeFractal() : void {
+		public static function changeFractal() : void {
 			if (_fractal) _fractal = false;
 			else _fractal = true;
 			basicUpdate();
 		}
 
-		public function changeHeight(v : int) : void {
+		public static function changeHeight(v : int) : void {
 			_zoneHeight = v;
 			basicUpdate();
 		}
 
-		public function changeComplex(v : Number) : void {
+		public static function changeComplex(v : Number) : void {
 			_complex = v;
 			basicUpdate();
 		}
 
-		public function get zoneHeight() : int {
+		public static function get zoneHeight() : int {
 			return _zoneHeight;
 		}
 
 		/**
 		 * Move noize perlin bitmap
 		 */
-		public function move(x : Number, y : Number) : void {
+		public static function move(x : Number, y : Number) : void {
 			_isMove = true;
 			_ease.x = x;
 			_ease.y = y;
@@ -324,7 +348,7 @@ package games {
 		/**
 		 * Update plane subgeometry from bitmap
 		 */
-		private function updateTerrain() : void {
+		private static function updateTerrain() : void {
 			// get plane vertex data
 			var i : uint;
 			var j : uint;
@@ -342,7 +366,7 @@ package games {
 				v[i] = int(_zoneHeight * px / 0xffffff - (_zoneHeight >> 1));
 				// update cubic reference
 				if (_isCubicReference) {
-					for (j = 0; j < 36; ++j) {
+					for (j = 0; j < _numCube; ++j) {
 						if (vertex == _groundVertex[j] ) _cubePoints[j] = new Vector3D(v[i - 1], v[i], v[i + 1]);
 					}
 				}
@@ -354,7 +378,7 @@ package games {
 		/**
 		 * Define Multyplicator for each map scroll
 		 */
-		private function findMultyplicator() : void {
+		private static function findMultyplicator() : void {
 			_multy = new Vector3D(0, 0, 0);
 			_multy.x = _tiles[1] * (_ground00.getMap().width / _zoneResolution);
 			_multy.y = _tiles[2] * (_ground01.getMap().width / _zoneResolution);
@@ -366,7 +390,7 @@ package games {
 		 * @param       value:int   contrast value
 		 * @return      ColorMatrixFilter
 		 */
-		public function setContrast(value : Number) : ColorMatrixFilter {
+		public static function setContrast(value : Number) : ColorMatrixFilter {
 			value /= 100;
 			var s : Number = value + 1;
 			var o : Number = 128 * (1 - s);
@@ -383,7 +407,7 @@ package games {
 		 * @param       value:int   contrast value
 		 * @return      ColorMatrixFilter
 		 */
-		public function setBrightness(value : Number) : ColorMatrixFilter {
+		public static function setBrightness(value : Number) : ColorMatrixFilter {
 			value = value * (255 / 250);
 			var m : Array = new Array();
 			m = m.concat([1, 0, 0, 0, value]);
@@ -398,7 +422,7 @@ package games {
 		 * @param       value:int   saturation value
 		 * @return      ColorMatrixFilter
 		 */
-		public function setSaturation(value : Number) : ColorMatrixFilter {
+		public static function setSaturation(value : Number) : ColorMatrixFilter {
 			const lumaR : Number = 0.212671;
 			const lumaG : Number = 0.71516;
 			const lumaB : Number = 0.072169;

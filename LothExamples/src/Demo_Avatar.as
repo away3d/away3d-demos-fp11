@@ -94,11 +94,11 @@ package {
 	import com.bit101.components.HUISlider;
 	import com.bit101.components.Component;
 
-	import games.FractalTerrainStatic;
+	import games.FractalTerrain;
 
 	//import physics.OimoEngine;
 
-	[SWF(backgroundColor="#000000", frameRate="60")]
+	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Avatar extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 1500;
 		private const FARVIEW : Number = 12800;
@@ -251,11 +251,11 @@ package {
 			_waterMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
-			FractalTerrainStatic.getInstance();
-			FractalTerrainStatic.scene = _view.scene;
-			FractalTerrainStatic.addCubicReference(1);
-			FractalTerrainStatic.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
-			FractalTerrainStatic.move(0, 1);
+			FractalTerrain.getInstance();
+			FractalTerrain.scene = _view.scene;
+			FractalTerrain.addCubicReference(1);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrain.move(0, 1);
 
 			// basic water ground
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _waterMaterial);
@@ -428,9 +428,9 @@ package {
 				_night--;
 			}
 
-			FractalTerrainStatic.update();
-			//_cameraController.lookAtPosition.y = FractalTerrainStatic.getHeightAt(0, 0);
-			_cameraController.lookAtPosition = FractalTerrainStatic.cubePoints[0];
+			FractalTerrain.update();
+			//_cameraController.lookAtPosition.y = FractalTerrain.getHeightAt(0, 0);
+			_cameraController.lookAtPosition = FractalTerrain.cubePoints[0];
 			_cameraController.update();
 
 			// animate our lake material
@@ -573,7 +573,7 @@ package {
 				m.z = (j * sz);
 				k = (i - (j * maxbyline));
 				m.x = -((maxbyline * sx) >> 1) + (k * sx) + (sx / 2);
-				m.y = FractalTerrainStatic.getHeightAt(m.x, m.z);
+				m.y = FractalTerrain.getHeightAt(m.x, m.z);
 				m.mouseEnabled = m.mouseChildren = false;
 				_view.scene.addChild(m);
 				_clones[i] = m;
@@ -642,7 +642,7 @@ package {
 		public function updateClone() : void {
 			for (var i : uint = 0; i < animators.length; i++) {
 				_cloneHair[i].transform = animators[i].globalPose.jointPoses[15].toMatrix3D();
-				_clones[i].y = FractalTerrainStatic.getHeightAt(_clones[i].x, _clones[i].z);
+				_clones[i].y = FractalTerrain.getHeightAt(_clones[i].x, _clones[i].z);
 			}
 		}
 
@@ -845,30 +845,30 @@ package {
 		}
 
 		private function setTerrainHeight(event : Event) : void {
-			FractalTerrainStatic.changeHeight(_sliderHeight.value);
+			FractalTerrain.changeHeight(_sliderHeight.value);
 		}
 
 		private function setComplex(event : Event) : void {
-			FractalTerrainStatic.changeComplex(_sliderComplex.value);
+			FractalTerrain.changeComplex(_sliderComplex.value);
 		}
 
 		private function switchFractal(e : Event) : void {
-			FractalTerrainStatic.changeFractal();
+			FractalTerrain.changeFractal();
 		}
 
 		private function switch64(e : Event) : void {
-			FractalTerrainStatic.changeResolution(64);
-			FractalTerrainStatic.move(0, 1);
+			FractalTerrain.changeResolution(64);
+			FractalTerrain.move(0, 1);
 		}
 
 		private function switch128(e : Event) : void {
-			FractalTerrainStatic.changeResolution(128);
-			FractalTerrainStatic.move(0, 1);
+			FractalTerrain.changeResolution(128);
+			FractalTerrain.move(0, 1);
 		}
 
 		private function switch256(e : Event) : void {
-			FractalTerrainStatic.changeResolution(256);
-			FractalTerrainStatic.move(0, 1);
+			FractalTerrain.changeResolution(256);
+			FractalTerrain.move(0, 1);
 		}
 
 		/**
