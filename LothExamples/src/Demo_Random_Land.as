@@ -243,7 +243,7 @@ package {
 			// create physical cube ship bump on it
 			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
 			var pboxeBig : Mesh = new Mesh(new CubeGeometry(190, 1000, 190), _boxMaterial);
-			var pSphere : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
+			// var pSphere : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
 			pboxe.castsShadows = false;
 			pboxeBig.castsShadows = false;
 			// _borderCube = [0, 1, 2, 3, 4, 5, 6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 43, 44, 45, 46, 47, 48, 49];
@@ -255,12 +255,12 @@ package {
 				if (i == _borderCube[j]) type = 1;
 				}*/
 				// if (type == 0) {
-				// pb = Mesh(pboxe.clone());
-				pb = Mesh(pSphere.clone());
+				pb = Mesh(pboxe.clone());
+				// pb = Mesh(pSphere.clone());
 				// if (i == 24) pb.material = _boxMaterialPlus;
-				// OimoEngine.addCube(pb, 200, 200, 200, new Vector3D(0, 0, 0), 0, null, 10, 0.5, 0.2, true);
+				OimoEngine.addCube(pb, 190, 200, 190, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 2, 1, 0.2, true);
 
-				OimoEngine.addSphere(pb, 100, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 1, 1, 0.1, true);
+				// OimoEngine.addSphere(pb, 100, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 1, 1, 0.1, true);
 				// } 
 				/*else {
 				pb = Mesh(pboxeBig.clone());
@@ -289,6 +289,7 @@ package {
 
 			// create physics ships
 			var shipboxe : Mesh = new Mesh(new CubeGeometry(600, 200, 600), _boxMaterialPlus);
+			shipboxe.castsShadows = false;
 			shipboxe.addChild(spaceShip);
 			shipboxe.addChild(spaceShip2);
 			OimoEngine.addCube(shipboxe, 600, 200, 600, FractalTerrain.cubePoints[24].add(new Vector3D(0, 100, 0)), 0, null, 1, 0.5, 0.1, false);
