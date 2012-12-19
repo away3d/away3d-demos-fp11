@@ -5,6 +5,7 @@ package physics {
 	import com.element.oimo.physics.constraint.joint.DistanceJoint;
 	import com.element.oimo.physics.constraint.joint.JointConfig;
 	import com.element.oimo.physics.constraint.joint.BallJoint;
+	import com.element.oimo.physics.constraint.joint.HingeJoint;
 	import com.element.oimo.physics.constraint.joint.Joint;
 	import com.element.oimo.physics.collision.shape.ShapeConfig;
 	import com.element.oimo.physics.collision.shape.SphereShape;
@@ -101,7 +102,7 @@ package physics {
 		static public function rigidPos(n : uint = 0) : Matrix3D {
 			var r : Mat33 = _world.rigidBodies[n].rotation;
 			var p : Vec3 = _world.rigidBodies[n].position;
-			//return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
+			// return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
 			return new Matrix3D(Vector.<Number>([r.e00, r.e10, r.e20, 0, r.e01, r.e11, r.e21, 0, r.e02, r.e12, r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
 		}
 
@@ -185,8 +186,10 @@ package physics {
 		/**
 		 * Add ball joint
 		 */
-		static public function addBallJoint(rigid1 : RigidBody, rigid2 : RigidBody, collision : Boolean = true) : void {
+		static public function addBallJoint(rigid1 : RigidBody, rigid2 : RigidBody, collision : Boolean = true, v1 : Vector3D = null, v2 : Vector3D = null) : void {
 			var config : JointConfig = new JointConfig();
+			if (v1 != null) config.localRelativeAnchorPosition1 = new Vec3(v1.x * USCALE, v1.y * USCALE, v1.z * USCALE);
+			if (v2 != null) config.localRelativeAnchorPosition2 = new Vec3(v2.x * USCALE, v2.y * USCALE, v2.z * USCALE);
 			/*config.localRelativeAnchorPosition1 = rigid1.position;
 			config.localRelativeAnchorPosition2 = rigid2.position;*/
 			config.allowCollide = collision;
@@ -199,12 +202,30 @@ package physics {
 		/**
 		 * Add distance joint
 		 */
-		static public function addDistanceJoint(rigid1 : RigidBody, rigid2 : RigidBody, distance : Number, collision : Boolean = true) : void {
+		static public function addDistanceJoint(rigid1 : RigidBody, rigid2 : RigidBody, distance : Number, collision : Boolean = true, v1 : Vector3D = null, v2 : Vector3D = null) : void {
 			var config : JointConfig = new JointConfig();
-			/*config.localRelativeAnchorPosition1 = rigid1.position;
-			config.localRelativeAnchorPosition2 = rigid2.position;*/
+			if (v1 != null) config.localRelativeAnchorPosition1 = new Vec3(v1.x * USCALE, v1.y * USCALE, v1.z * USCALE);
+			if (v2 != null) config.localRelativeAnchorPosition2 = new Vec3(v2.x * USCALE, v2.y * USCALE, v2.z * USCALE);
 			config.allowCollide = collision;
 			var j : DistanceJoint = new DistanceJoint(rigid1, rigid2, distance * USCALE, config);
+
+			_joints.push(j);
+			_world.addJoint(j);
+		}
+
+		/**
+		 * Add Hinge joint
+		 */
+		static public function addHingeJoint(rigid1 : RigidBody, rigid2 : RigidBody, collision : Boolean = true, axe1 : Vector3D = null, axe2 : Vector3D = null, v1 : Vector3D = null, v2 : Vector3D = null) : void {
+			var config : JointConfig = new JointConfig();
+			if (axe1 != null) config.localAxis1.init(axe1.x, axe1.y, axe1.z);
+			else config.localAxis1.init(0, 1, 0);
+			if (axe2 != null) config.localAxis2.init(axe2.x, axe2.y, axe2.z);
+			else config.localAxis2.init(0, 1, 0);
+			if (v1 != null) config.localRelativeAnchorPosition1 = new Vec3(v1.x * USCALE, v1.y * USCALE, v1.z * USCALE);
+			if (v2 != null) config.localRelativeAnchorPosition2 = new Vec3(v2.x * USCALE, v2.y * USCALE, v2.z * USCALE);
+			config.allowCollide = collision;
+			var j : HingeJoint = new HingeJoint(rigid1, rigid2, config);
 
 			_joints.push(j);
 			_world.addJoint(j);

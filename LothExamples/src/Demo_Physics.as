@@ -217,24 +217,22 @@ package {
 			// setup material
 			_material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
 			_material01.alphaBlending = true;
-			_material01.bothSides = true;
 			_material01.gloss = 100;
 			_material01.specular = 0.5;
 
 			_material02 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x8800A0C8)));
 			_material02.alphaBlending = true;
-			_material02.gloss = 30;
+			_material02.gloss = 10;
 			_material02.specular = 1;
 
 			_material03 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x88F9642D)));
 			_material03.alphaBlending = true;
-			_material03.bothSides = true;
-			_material03.gloss = 30;
+			_material03.gloss = 10;
 			_material03.specular = 1;
 
 			_material04 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x887CD8EF)));
 			_material04.alphaBlending = true;
-			_material04.gloss = 30;
+			_material04.gloss = 10;
 			_material04.specular = 1;
 
 			_material01.lightPicker = _lightPicker;
@@ -311,18 +309,18 @@ package {
 					bh = 75;
 					bd = 120;
 					var ground01 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
-					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 1, 0.5, 0.0, true);
+					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 1, 0.5, 0.5, true);
 					var bbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for ( j = 0; j < height; j++) {
 						for (i = 0; i < 10; i++) {
 							var ang : Number = (Math.PI * 2 / 10 * (i + (j & 1) * 0.5));
 							m = Mesh(bbox.clone());
-							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5,- Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 1, 0.5, 0.2, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5,- Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 1, 0.8, 0.5, false);
 						}
 					}
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material04);
-					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), 0, null, 5, 1, 0.5, false);
+					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), 0, null, 1, 0.5, 0.8, false);
 					break;
 				case 2 :
 					OimoEngine.demoName = '2 - The pyramid stack';
@@ -348,13 +346,14 @@ package {
 					}
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _material04);
-					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 5, 1, 0.5, false);
+					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 1, 0.5, 0.8, false);
 					break;
 				case 3 :
 					OimoEngine.gravity(-1);
 					OimoEngine.demoName = '3 - Joint Test';
 					var ground03 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
-					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 10, 1, 0.5, true);
+					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 1, 0.5, 0.5, true);
+					
 					var spherex : Mesh = new Mesh(new SphereGeometry(100), _material02);
 					for ( i = 0;i < 100;i++) {
 						m = Mesh(spherex.clone());
@@ -455,10 +454,10 @@ package {
 			new PushButton(_menu, 130, -29, "next", nextDemo).setSize(60, 30);
 
 			_sliderGravity = new HUISlider(_menu, 250, -32, "Gravity", setGravity);
-			_sliderGravity.labelPrecision = 1;
-			_sliderGravity.minimum = -20;
-			_sliderGravity.maximum = 20;
-			_sliderGravity.tick = 0.1;
+			_sliderGravity.labelPrecision = 2;
+			_sliderGravity.minimum = -1;
+			_sliderGravity.maximum = 1;
+			_sliderGravity.tick = 0.01;
 			_sliderGravity.value = -1;
 		}
 

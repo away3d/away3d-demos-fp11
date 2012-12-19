@@ -124,6 +124,7 @@ package {
 		private var _shipMaterial : TextureMaterial;
 		private var _boxMaterial : TextureMaterial;
 		private var _boxMaterialPlus : TextureMaterial;
+		private var _boxMaterialPlus2 : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// methodes
 		private var _shadowMethod : NearShadowMapMethod;
@@ -149,6 +150,7 @@ package {
 		private var _sliderHeight : HUISlider;
 		private const USCALE : Number = 0.001;
 
+		// private var _borderCube : Array;
 		/**
 		 * Constructor
 		 */
@@ -239,18 +241,33 @@ package {
 			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
 
 			// create physical cube ship bump on it
-			var pboxe : Mesh = new Mesh(new CubeGeometry(200, 200, 200), _boxMaterial);
-			// var pSphere : Mesh = new Mesh(new SphereGeometry( 200 ), _boxMaterial);
+			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
+			var pboxeBig : Mesh = new Mesh(new CubeGeometry(190, 1000, 190), _boxMaterial);
+			var pSphere : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
 			pboxe.castsShadows = false;
+			pboxeBig.castsShadows = false;
+			// _borderCube = [0, 1, 2, 3, 4, 5, 6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 43, 44, 45, 46, 47, 48, 49];
 			var pb : Mesh;
+			// var type : uint;
 			for (var i : uint = 0; i < FractalTerrain.numCube; ++i) {
-				pb = Mesh(pboxe.clone());
-				// pb = Mesh(pSphere.clone());
-				if (i == 24) pb.material = _boxMaterialPlus;
-				OimoEngine.addCube(pb, 200, 200, 200, new Vector3D(0, 0, 0), 0, null, 1, 1, 0.1, true);
-				// OimoEngine.addSphere(pb, 200, new Vector3D(0, 0, 0), 0, null, 1, 1, 0.0, true);
-			}
+				// type = 0;
+				/*for (var j : uint = 0; j < _borderCube.length; ++j) {
+				if (i == _borderCube[j]) type = 1;
+				}*/
+				// if (type == 0) {
+				// pb = Mesh(pboxe.clone());
+				pb = Mesh(pSphere.clone());
+				// if (i == 24) pb.material = _boxMaterialPlus;
+				// OimoEngine.addCube(pb, 200, 200, 200, new Vector3D(0, 0, 0), 0, null, 10, 0.5, 0.2, true);
 
+				OimoEngine.addSphere(pb, 100, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 1, 1, 0.1, true);
+				// } 
+				/*else {
+				pb = Mesh(pboxeBig.clone());
+				pb.material = _boxMaterialPlus2;
+				OimoEngine.addCube(pb, 190, 1000, 190, new Vector3D(0, 0, 0), 0, null, 10, 0.5, 0.2, true);
+				}*/
+			}
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
@@ -264,20 +281,22 @@ package {
 			log(message());
 
 			// create basic spacShip
-			var spaceShip : Mesh = new Mesh(new SphereGeometry(60, 30, 20), _shipMaterial);
-			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(140, 30, 20), _shipMaterial);
-			spaceShip2.scaleY = 0.25;
-			spaceShip.y = 100;
-			spaceShip2.y = 100;
-			_player.addChild(spaceShip);
-			_player.addChild(spaceShip2);
+			var spaceShip : Mesh = new Mesh(new SphereGeometry(120, 30, 20), _shipMaterial);
+			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(300, 30, 20), _shipMaterial);
+			spaceShip2.scaleY = 0.22;
 			spaceShip2.addEventListener(MouseEvent3D.MOUSE_DOWN, onShipMouseDown);
 			spaceShip2.mouseEnabled = true;
 
 			// create physics ships
-			var shipboxe : Mesh = new Mesh(new CubeGeometry(1000, 200, 1000), _boxMaterialPlus);
-			OimoEngine.addCube(shipboxe, 1000, 200, 1000, FractalTerrain.cubePoints[24].add(new Vector3D(0, 400, 0)), 0, null, 10, 0.5, 0.5, false);
-			OimoEngine.addDistanceJoint(OimoEngine.rigids[24], OimoEngine.rigids[FractalTerrain.numCube], 200);
+			var shipboxe : Mesh = new Mesh(new CubeGeometry(600, 200, 600), _boxMaterialPlus);
+			shipboxe.addChild(spaceShip);
+			shipboxe.addChild(spaceShip2);
+			OimoEngine.addCube(shipboxe, 600, 200, 600, FractalTerrain.cubePoints[24].add(new Vector3D(0, 100, 0)), 0, null, 1, 0.5, 0.1, false);
+			// joint test
+			// OimoEngine.addDistanceJoint(OimoEngine.rigids[FractalTerrain.numCube], OimoEngine.rigids[24], 20, true, new Vector3D(0, -100, 0), new Vector3D(0, 100, 0));
+			// OimoEngine.addHingeJoint(OimoEngine.rigids[24], OimoEngine.rigids[FractalTerrain.numCube], false,new Vector3D(1,0,1), new Vector3D(0,1,0) , new Vector3D(0,400,0), new Vector3D(0,0,0));
+			// OimoEngine.addBallJoint(OimoEngine.rigids[24], OimoEngine.rigids[FractalTerrain.numCube], false, new Vector3D(0, 250, 0), new Vector3D(0, 0, 0));
+			// OimoEngine.addDistanceJoint(OimoEngine.rigids[FractalTerrain.numCube], OimoEngine.rigids[24], 350, false);
 
 			// load spaceship mesh
 			// load("SpaceShip.awd"+ "?uniq=" + _id);
@@ -325,7 +344,7 @@ package {
 		private function initOimoPhysics() : void {
 			OimoEngine.getInstance();
 			OimoEngine.scene = _view.scene;
-			OimoEngine.gravity(-1);
+			OimoEngine.gravity(-0.2);
 		}
 
 		/**
@@ -403,15 +422,18 @@ package {
 			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x12cccc99)));
 			_boxMaterial.gloss = 60;
 			_boxMaterial.specular = 1;
-			_boxMaterial.bothSides = true;
 			_boxMaterial.alphaBlending = true;
 			// simulation box color 2
-			_boxMaterialPlus = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x22FF9999)));
+			_boxMaterialPlus = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x069999FF)));
 			_boxMaterialPlus.gloss = 60;
 			_boxMaterialPlus.specular = 1;
-			_boxMaterialPlus.bothSides = true;
 			_boxMaterialPlus.alphaBlending = true;
 			// _materials[3] = _boxMaterial;
+
+			_boxMaterialPlus2 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x10FF9999)));
+			_boxMaterialPlus2.gloss = 60;
+			_boxMaterialPlus2.specular = 1;
+			_boxMaterialPlus2.alphaBlending = true;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
@@ -440,14 +462,23 @@ package {
 
 			FractalTerrain.update();
 			// update physics static boxe
+			// var type : uint;
 			for (var i : uint = 0; i < FractalTerrain.numCube; ++i) {
-				OimoEngine.rigids[i].position.x = FractalTerrain.cubePoints[i].x * USCALE;
+				// OimoEngine.rigids[i].position.y = (FractalTerrain.cubePoints[i].y - 100) * USCALE;
+				// OimoEngine.rigids[i].linearVelocity.init();
+
 				OimoEngine.rigids[i].position.y = (FractalTerrain.cubePoints[i].y - 100) * USCALE;
-				OimoEngine.rigids[i].position.z = FractalTerrain.cubePoints[i].z * USCALE;
+				OimoEngine.rigids[i].linearVelocity.init();
 			}
+
+			OimoEngine.rigids[FractalTerrain.numCube].position.x = (FractalTerrain.cubePoints[24].x) * USCALE;
+			OimoEngine.rigids[FractalTerrain.numCube].position.z = (FractalTerrain.cubePoints[24].z) * USCALE;
+			OimoEngine.rigids[FractalTerrain.numCube].position.y = (FractalTerrain.cubePoints[24].y + 100) * USCALE;
 
 			// update physic engine
 			OimoEngine.update();
+
+			// OimoEngine.rigids[FractalTerrain.numCube].linearVelocity.init();
 
 			// player follow terrain
 			_player.position = FractalTerrain.cubePoints[24];
