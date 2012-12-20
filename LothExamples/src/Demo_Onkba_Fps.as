@@ -101,11 +101,10 @@ package {
 	import games.Player;
 
 	// import physics.OimoEngine;
-	
 	[SWF(frameRate="60", backgroundColor = "#000000", width = "1200", height = "600")]
 	public class Demo_Onkba_Fps extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
-		private const SWIM_TOP : Number = -200;
+		private const SWIM_TOP : Number = -100;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 300;
 		private const HERO_SIZE : Number = 1.5;
@@ -161,7 +160,8 @@ package {
 		private var _fresnelMethod : FresnelSpecularMethod;
 		private var _waterMethod : SimpleWaterNormalMethod;
 		// hero animation variables
-		private const ANIMATION : Array = ["Idle", "Walk", "WalkL", "WalkR", "Run", "CrouchIdle", "CrouchWalk", "Reload", "WaterIdle", "WaterSwim", "StandBack", "StandFace", "JumpDown"];
+		private const ANIMATION : Array = ["Idle", "Walk", "WalkL", "WalkR", "Run", "CrouchIdle", "CrouchWalk", "Reload", "WaterIdle", "WaterSwim", "StandBack", "StandFace", "JumpDown", "TrowGrenade", "CrouchGrenade", "IdleDrive"];
+		//private const ANIMATION_FALL : Array = ["FallBack", "FallBackMid", "FallFace", "FallFaceBack", "FallRight", "FallRightMid", "FallLeft", "FallLeftMid"];
 		private const WEAPON : Array = ["", "Gun", "Machine", "Sniper", "Gatling", "Bazooka"];
 		// private const AMMO:Array = ["", "", "", "", "", "Rocket"];
 		private var _animationSet : SkeletonAnimationSet;
@@ -199,7 +199,6 @@ package {
 		private var _isIntro : Boolean = true;
 		private var _isMan : Boolean = true;
 		private var _isShirt : Boolean = true;
-		
 		private var _isDynamicsEyes : Boolean;
 		private var _isDebugRay : Boolean;
 		private var _isRender : Boolean;
@@ -310,7 +309,7 @@ package {
 
 			// basic water ground
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
-			_groundWater.geometry.scaleUV(40, 40);
+			_groundWater.geometry.scaleUV(60, 60);
 			// _groundWater.castsShadows = false;
 			_view.scene.addChild(_groundWater);
 
@@ -411,7 +410,7 @@ package {
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[19]), Cast.bitmapTexture(_bitmaps[19]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
-			_fresnelMethod.normalReflectance = 0.5;
+			_fresnelMethod.normalReflectance = 0.9;
 
 			// 0 - onkba hero
 			_onkbaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
@@ -510,11 +509,11 @@ package {
 			_materials[11] = _eyesClosedSiaMaterial;
 
 			// 12 _ water texture
-			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x30404060)));
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x50404060)));
 			_waterMaterial.alphaBlending = true;
 			_waterMaterial.repeat = true;
-			_waterMaterial.gloss = 120;
-			_waterMaterial.specular = 1;
+			_waterMaterial.gloss = 20;
+			_waterMaterial.specular = 2;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
 			_waterMaterial.bothSides = true;
@@ -552,9 +551,10 @@ package {
 			}
 
 			FractalTerrain.update();
+
 			if ( FractalTerrain.cubePoints[0].y < SWIM_TOP) {
 				_isSwiming = true;
-				Player.position = new Vector3D(FractalTerrain.cubePoints[0].x, SWIM_TOP ,FractalTerrain.cubePoints[0].z);
+				Player.position = new Vector3D(FractalTerrain.cubePoints[0].x, SWIM_TOP, FractalTerrain.cubePoints[0].z);
 			} else {
 				_isSwiming = false;
 				Player.position = FractalTerrain.cubePoints[0];
@@ -658,7 +658,9 @@ package {
 				// for detail see sequenceFPS.txt in /3dsmax
 				var animationNode : SkeletonClipNode = event.asset as SkeletonClipNode;
 				_animationSet.addAnimation(animationNode);
-				// disable animation loop
+				// disable animation loop*
+				if (animationNode.name == "TrowGrenade") animationNode.looping = false;
+				if (animationNode.name == "CrouchGrenade") animationNode.looping = false;
 				for ( i = 0; i < WEAPON.length; i++ ) {
 					if (animationNode.name == WEAPON[i] + "JumpDown") animationNode.looping = false;
 					if (animationNode.name == WEAPON[i] + "Reload") animationNode.looping = false;
@@ -833,21 +835,21 @@ package {
 		 */
 		private function stop() : void {
 			var anim : String;
-			if(_isSwiming) anim = WEAPON[currentWeapon] + ANIMATION[8];
-			else{
-			if (_isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
-			else anim = WEAPON[currentWeapon] + ANIMATION[0];
+			if (_isSwiming) anim = WEAPON[currentWeapon] + ANIMATION[8];
+			else {
+				if (_isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
+				else anim = WEAPON[currentWeapon] + ANIMATION[0];
 			}
-			
+
 			if (currentAnim == anim) return;
 			// FractalTerrain.move(0, 0);
 			FractalTerrain.move(0, 0);
 			currentAnim = anim;
 			_animator.playbackSpeed = IDLE_SPEED;
-			if(_isSwiming) currentAnim = WEAPON[currentWeapon] + ANIMATION[8];
-			else{
-			if (_isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
-			else currentAnim = WEAPON[currentWeapon] + ANIMATION[0];
+			if (_isSwiming) currentAnim = WEAPON[currentWeapon] + ANIMATION[8];
+			else {
+				if (_isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
+				else currentAnim = WEAPON[currentWeapon] + ANIMATION[0];
 			}
 			_animator.play(currentAnim, _transition);
 		}
@@ -863,11 +865,11 @@ package {
 
 			_animator.playbackSpeed = dir * (_isRunning ? RUN_SPEED : WALK_SPEED);
 			FractalTerrain.move(0, _animator.playbackSpeed / 20);
-			
-			if(_isSwiming) currentAnim = WEAPON[currentWeapon] + ANIMATION[9];
-			else{
-			if (_isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
-			else currentAnim = WEAPON[currentWeapon] + anim;
+
+			if (_isSwiming) currentAnim = WEAPON[currentWeapon] + ANIMATION[9];
+			else {
+				if (_isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
+				else currentAnim = WEAPON[currentWeapon] + anim;
 			}
 			_animator.play(currentAnim, _transition);
 		}
@@ -938,6 +940,21 @@ package {
 		}
 
 		/**
+		 * Character trow grenade
+		 */
+		private function trowGrenade(e : Event = null) : void {
+			if (_isCrouch) {
+				currentAnim = "CrouchGrenade";
+				_animator.play(currentAnim, _transition, 0);
+				setTimeout(stop, 2500);
+			} else {
+				currentAnim = "TrowGrenade";
+				_animator.play(currentAnim, _transition, 0);
+				setTimeout(stop, 2500);
+			}
+		}
+
+		/**
 		 * Key down listener 
 		 */
 		private function onKeyDown(event : KeyboardEvent) : void {
@@ -976,6 +993,9 @@ package {
 				case Keyboard.O:
 					switchWeapon();
 					break;
+				case Keyboard.G:
+					trowGrenade();
+					break;
 				case Keyboard.I:
 					fullScreen();
 					break;
@@ -984,7 +1004,7 @@ package {
 					if (_isCrouch) {
 						_isCrouch = false;
 						_cameraHeight = 70;
-					} else if(!_isSwiming){
+					} else if (!_isSwiming) {
 						_isCrouch = true;
 						_cameraHeight = 35;
 					}
@@ -1361,7 +1381,8 @@ package {
 			mes += "R - reload weapon\n";
 			mes += "C, Ctrl - crouch\n";
 			mes += "O - next weapon\n";
-			mes += "SPACE - jump\n\n";
+			mes += "SPACE - jump\n";
+			mes += "G - grenade\n\n";
 			mes += "I - full screen\n";
 			mes += "N - random sky\n";
 			return mes;

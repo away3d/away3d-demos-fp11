@@ -149,6 +149,7 @@ package {
 		private var _sliderComplex : HUISlider;
 		private var _sliderHeight : HUISlider;
 		private const USCALE : Number = 0.001;
+		private var _isChangeResolution : Boolean = false;
 
 		// private var _borderCube : Array;
 		/**
@@ -241,11 +242,10 @@ package {
 			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
 
 			// create physical cube ship bump on it
-			var pboxe : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
-			var pboxeBig : Mesh = new Mesh(new CubeGeometry(190, 1000, 190), _boxMaterial);
-			// var pSphere : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
-			pboxe.castsShadows = false;
-			pboxeBig.castsShadows = false;
+			//var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
+			var testMesh : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
+			testMesh.castsShadows = false;
+			// pboxeBig.castsShadows = false;
 			// _borderCube = [0, 1, 2, 3, 4, 5, 6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 43, 44, 45, 46, 47, 48, 49];
 			var pb : Mesh;
 			// var type : uint;
@@ -255,12 +255,11 @@ package {
 				if (i == _borderCube[j]) type = 1;
 				}*/
 				// if (type == 0) {
-				pb = Mesh(pboxe.clone());
-				// pb = Mesh(pSphere.clone());
-				// if (i == 24) pb.material = _boxMaterialPlus;
-				OimoEngine.addCube(pb, 190, 200, 190, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 2, 1, 0.2, true);
+				pb = Mesh(testMesh.clone());
+			    if (i == 24) pb.material = _boxMaterialPlus2;
+				//OimoEngine.addCube(pb, 190, 200, 190, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 2, 0.5, 0.5, true);
 
-				// OimoEngine.addSphere(pb, 100, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 1, 1, 0.1, true);
+				OimoEngine.addSphere(pb, 100, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 1, 0.8, 1, true);
 				// } 
 				/*else {
 				pb = Mesh(pboxeBig.clone());
@@ -268,6 +267,7 @@ package {
 				OimoEngine.addCube(pb, 190, 1000, 190, new Vector3D(0, 0, 0), 0, null, 10, 0.5, 0.2, true);
 				}*/
 			}
+
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
@@ -292,7 +292,7 @@ package {
 			shipboxe.castsShadows = false;
 			shipboxe.addChild(spaceShip);
 			shipboxe.addChild(spaceShip2);
-			OimoEngine.addCube(shipboxe, 600, 200, 600, FractalTerrain.cubePoints[24].add(new Vector3D(0, 100, 0)), 0, null, 1, 0.5, 0.1, false);
+			OimoEngine.addCube(shipboxe, 600, 200, 600, FractalTerrain.cubePoints[24].add(new Vector3D(0, 100, 0)), 0, null, 1, 0.8, 1, false);
 			// joint test
 			// OimoEngine.addDistanceJoint(OimoEngine.rigids[FractalTerrain.numCube], OimoEngine.rigids[24], 20, true, new Vector3D(0, -100, 0), new Vector3D(0, 100, 0));
 			// OimoEngine.addHingeJoint(OimoEngine.rigids[24], OimoEngine.rigids[FractalTerrain.numCube], false,new Vector3D(1,0,1), new Vector3D(0,1,0) , new Vector3D(0,400,0), new Vector3D(0,0,0));
@@ -345,7 +345,7 @@ package {
 		private function initOimoPhysics() : void {
 			OimoEngine.getInstance();
 			OimoEngine.scene = _view.scene;
-			OimoEngine.gravity(-0.2);
+			OimoEngine.gravity(-0.9);
 		}
 
 		/**
@@ -392,14 +392,14 @@ package {
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
-			_fresnelMethod.normalReflectance = 0.5;
+			_fresnelMethod.normalReflectance = 0.8;
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x30404060)));
 			_waterMaterial.alphaBlending = true;
 			_waterMaterial.repeat = true;
-			_waterMaterial.gloss = 120;
-			_waterMaterial.specular = 1;
+			_waterMaterial.gloss = 20;
+			_waterMaterial.specular = 2;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
 			_waterMaterial.bothSides = true;
@@ -462,24 +462,29 @@ package {
 			if (_cameraController.distance > 1000) _cameraController.distance--;
 
 			FractalTerrain.update();
+			//OimoEngine.update();
 			// update physics static boxe
 			// var type : uint;
 			for (var i : uint = 0; i < FractalTerrain.numCube; ++i) {
-				// OimoEngine.rigids[i].position.y = (FractalTerrain.cubePoints[i].y - 100) * USCALE;
-				// OimoEngine.rigids[i].linearVelocity.init();
-
+				if (_isChangeResolution) {
+					OimoEngine.rigids[i].position.x = (FractalTerrain.cubePoints[i].x) * USCALE;
+					OimoEngine.rigids[i].position.z = (FractalTerrain.cubePoints[i].z) * USCALE;
+					_isChangeResolution = false;
+				}
 				OimoEngine.rigids[i].position.y = (FractalTerrain.cubePoints[i].y - 100) * USCALE;
 				OimoEngine.rigids[i].linearVelocity.init();
+				OimoEngine.rigids[i].angularVelocity.init();
 			}
 
 			OimoEngine.rigids[FractalTerrain.numCube].position.x = (FractalTerrain.cubePoints[24].x) * USCALE;
 			OimoEngine.rigids[FractalTerrain.numCube].position.z = (FractalTerrain.cubePoints[24].z) * USCALE;
-			OimoEngine.rigids[FractalTerrain.numCube].position.y = (FractalTerrain.cubePoints[24].y + 100) * USCALE;
-
+			OimoEngine.rigids[FractalTerrain.numCube].position.y = (FractalTerrain.cubePoints[24].y + 110) * USCALE;
+			//OimoEngine.rigids[FractalTerrain.numCube].linearVelocity.init();
+			//OimoEngine.rigids[FractalTerrain.numCube].angularVelocity.init();
 			// update physic engine
 			OimoEngine.update();
 
-			// OimoEngine.rigids[FractalTerrain.numCube].linearVelocity.init();
+			// 
 
 			// player follow terrain
 			_player.position = FractalTerrain.cubePoints[24];
@@ -741,7 +746,6 @@ package {
 		 */
 		private function onStageMouseWheel(e : MouseEvent) : void {
 			_cameraController.distance -= e.delta * 5;
-
 			if (_cameraController.distance < 50)
 				_cameraController.distance = 50;
 			else if (_cameraController.distance > 2000)
@@ -796,14 +800,17 @@ package {
 		}
 
 		private function switch64(e : Event) : void {
+			_isChangeResolution = true;
 			FractalTerrain.changeResolution(64);
 		}
 
 		private function switch128(e : Event) : void {
+			_isChangeResolution = true;
 			FractalTerrain.changeResolution(128);
 		}
 
 		private function switch256(e : Event) : void {
+			_isChangeResolution = true;
 			FractalTerrain.changeResolution(256);
 		}
 
