@@ -98,12 +98,14 @@ package {
 	import utils.LoaderPool;
 
 	import games.FractalTerrain;
+	import games.Player;
 
 	// import physics.OimoEngine;
-	// import games.PoissonDisk;
+	
 	[SWF(frameRate="60", backgroundColor = "#000000", width = "1200", height = "600")]
 	public class Demo_Onkba_Fps extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
+		private const SWIM_TOP : Number = -200;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 300;
 		private const HERO_SIZE : Number = 1.5;
@@ -124,9 +126,10 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		// scene objects
-		private var _player : ObjectContainer3D;
+		// private var _player : ObjectContainer3D;
 		private var _groundWater : Mesh;
-		private var _heroPieces : ObjectContainer3D;
+		private var _heroPieces : Mesh;
+		// ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
 		private var _weapons : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
@@ -147,6 +150,7 @@ package {
 		private var _eyesOpenMaterial : TextureMaterial;
 		private var _eyesClosedMaterial : TextureMaterial;
 		private var _eyesClosedSiaMaterial : TextureMaterial;
+		private var _nullMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
 		private var _basicMaterial : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
@@ -172,11 +176,12 @@ package {
 		private var currentAnim : String;
 		private var currentWeapon : uint;
 		// animation phase
-		private var isSideMove : Boolean;
-		private var isRunning : Boolean;
-		private var isCrouch : Boolean;
-		private var isMoving : Boolean;
-		private var isJump : Boolean;
+		private var _isSwiming : Boolean;
+		private var _isSideMove : Boolean;
+		private var _isRunning : Boolean;
+		private var _isCrouch : Boolean;
+		private var _isMoving : Boolean;
+		private var _isJump : Boolean;
 		// hero dynamique eye
 		private var _eyePosition : Vector3D;
 		private var _eyes : ObjectContainer3D;
@@ -193,8 +198,10 @@ package {
 		// demo testing
 		private var _isIntro : Boolean = true;
 		private var _isMan : Boolean = true;
-		private var _dynamicsEyes : Boolean;
-		private var _debugRay : Boolean;
+		private var _isShirt : Boolean = true;
+		
+		private var _isDynamicsEyes : Boolean;
+		private var _isDebugRay : Boolean;
 		private var _isRender : Boolean;
 		private var _text : TextField;
 		private var _capture : BitmapData;
@@ -294,6 +301,13 @@ package {
 			FractalTerrain.addCubicReference(1);
 			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
 
+			// setup the player container
+			Player.getInstance();
+			Player.scene = _view.scene;
+			Player.initPlayer();
+			// _player = new ObjectContainer3D();
+			// _view.scene.addChild(_player);
+
 			// basic water ground
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
@@ -330,10 +344,6 @@ package {
 			_cameraController.minTiltAngle = -10;
 			_cameraController.maxTiltAngle = 60;
 			_cameraController.autoUpdate = false;
-
-			// setup the player container
-			_player = new ObjectContainer3D();
-			_view.scene.addChild(_player);
 
 			// add stats
 			addChild(_stats = new AwayStats(_view, false, true));
@@ -511,6 +521,10 @@ package {
 			_waterMaterial.addMethod(_fogMethode);
 			_materials[12] = _waterMaterial;
 
+			// fake material for hiding mesh
+			_nullMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, true, 0x00000000)));
+			_nullMaterial.alphaBlending = true;
+
 			// for all material
 			for (var i : int; i < _materials.length; i++ ) {
 				_materials[i].lightPicker = _lightPicker;
@@ -538,11 +552,19 @@ package {
 			}
 
 			FractalTerrain.update();
-			_player.position = FractalTerrain.cubePoints[0];
+			if ( FractalTerrain.cubePoints[0].y < SWIM_TOP) {
+				_isSwiming = true;
+				Player.position = new Vector3D(FractalTerrain.cubePoints[0].x, SWIM_TOP ,FractalTerrain.cubePoints[0].z);
+			} else {
+				_isSwiming = false;
+				Player.position = FractalTerrain.cubePoints[0];
+			}
+
+			// _player.position = FractalTerrain.cubePoints[0];
 
 			if (_heroOnkba) {
-				if (_dynamicsEyes) updateEyes();
-				if (_debugRay) updateBones();
+				if (_isDynamicsEyes) updateEyes();
+				if (_isDebugRay) updateBones();
 				// hand bone for weapon
 				if (_animator.globalPose.numJointPoses >= 22) {
 					_heroWeapon.transform = _animator.globalPose.jointPoses[22].toMatrix3D();
@@ -550,7 +572,8 @@ package {
 			}
 			if ( _cameraController.distance > 300 && _isIntro) _cameraController.distance--;
 
-			_cameraController.lookAtPosition = new Vector3D(_player.x, _player.y + _cameraHeight, _player.z);
+			// _cameraController.lookAtPosition = new Vector3D(_player.x, _player.y + _cameraHeight, _player.z);
+			_cameraController.lookAtPosition = Player.position.add(new Vector3D(0, _cameraHeight, 0));
 			_cameraController.update();
 
 			// animate water material
@@ -723,23 +746,30 @@ package {
 			_shirt.material = _shirtMaterial;
 
 			// add weapon container
-			_heroWeapon = new Mesh(new CubeGeometry(1, 1, 1), null);
-
+			_heroWeapon = new Mesh(new PlaneGeometry(1, 1), _nullMaterial);
+			_heroWeapon.castsShadows = false;
 			// Dynamic eyes ball
-			_heroPieces = new ObjectContainer3D();
+			_heroPieces = new Mesh(new PlaneGeometry(1, 1), _nullMaterial);
+			_heroWeapon.castsShadows = false;
+
+			Player.add(_heroOnkba);
+			Player.add(_shirt);
+			Player.add(_heroWeapon);
+			Player.add(_heroPieces);
+
+			Player.scale = (HERO_SIZE);
 
 			// _player.addChild(_heroSia);
-			_player.addChild(_heroOnkba);
+			/*_player.addChild(_heroOnkba);
 			_player.addChild(_shirt);
 			_player.addChild(_heroWeapon);
 			_player.addChild(_heroPieces);
-
-			_player.scale(HERO_SIZE);
+			_player.scale(HERO_SIZE);*/
 
 			addHeroEye();
 
 			if (_isIntro) {
-				isJump = true;
+				_isJump = true;
 				_animator.playbackSpeed = -JUMP_SPEED;
 				jumpDown();
 			}
@@ -803,16 +833,22 @@ package {
 		 */
 		private function stop() : void {
 			var anim : String;
-			if (isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
+			if(_isSwiming) anim = WEAPON[currentWeapon] + ANIMATION[8];
+			else{
+			if (_isCrouch) anim = WEAPON[currentWeapon] + ANIMATION[5];
 			else anim = WEAPON[currentWeapon] + ANIMATION[0];
-
+			}
+			
 			if (currentAnim == anim) return;
 			// FractalTerrain.move(0, 0);
 			FractalTerrain.move(0, 0);
 			currentAnim = anim;
 			_animator.playbackSpeed = IDLE_SPEED;
-			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
+			if(_isSwiming) currentAnim = WEAPON[currentWeapon] + ANIMATION[8];
+			else{
+			if (_isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[5];
 			else currentAnim = WEAPON[currentWeapon] + ANIMATION[0];
+			}
 			_animator.play(currentAnim, _transition);
 		}
 
@@ -820,15 +856,19 @@ package {
 		 * Character Mouvement
 		 */
 		private function updateMovement(dir : Number) : void {
-			isMoving = true;
-			var anim : String = isRunning ? "Run" : "Walk";
+			_isMoving = true;
+			var anim : String = _isRunning ? "Run" : "Walk";
 
 			if (currentAnim == anim) return;
 
-			_animator.playbackSpeed = dir * (isRunning ? RUN_SPEED : WALK_SPEED);
+			_animator.playbackSpeed = dir * (_isRunning ? RUN_SPEED : WALK_SPEED);
 			FractalTerrain.move(0, _animator.playbackSpeed / 20);
-			if (isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
+			
+			if(_isSwiming) currentAnim = WEAPON[currentWeapon] + ANIMATION[9];
+			else{
+			if (_isCrouch) currentAnim = WEAPON[currentWeapon] + ANIMATION[6];
 			else currentAnim = WEAPON[currentWeapon] + anim;
+			}
 			_animator.play(currentAnim, _transition);
 		}
 
@@ -836,12 +876,12 @@ package {
 		 * Character Mouvement side
 		 */
 		private function updateMovementSide(dir : Number) : void {
-			isSideMove = true;
+			_isSideMove = true;
 			var anim : String;
 			if (dir > 0) anim = 'WalkL';
 			else anim = 'WalkR';
 			FractalTerrain.move(dir / 100, 0);
-			if (isCrouch) return;
+			if (_isCrouch) return;
 			else currentAnim = WEAPON[currentWeapon] + anim;
 			_animator.play(currentAnim, _transition);
 		}
@@ -851,7 +891,7 @@ package {
 		 */
 		private function reload() : void {
 			var anim : String;
-			if (isCrouch) anim = WEAPON[currentWeapon] + 'CrouchReload';
+			if (_isCrouch) anim = WEAPON[currentWeapon] + 'CrouchReload';
 			else anim = WEAPON[currentWeapon] + 'Reload';
 
 			if (currentAnim == anim) return;
@@ -865,7 +905,7 @@ package {
 		 * Character jump up animation
 		 */
 		private function jumpUp() : void {
-			isJump = true;
+			_isJump = true;
 			var anim : String;
 			anim = WEAPON[currentWeapon] + 'JumpDown';
 
@@ -903,8 +943,8 @@ package {
 		private function onKeyDown(event : KeyboardEvent) : void {
 			switch (event.keyCode) {
 				case Keyboard.SHIFT:
-					isRunning = true;
-					if (isMoving) updateMovement(movementDirection);
+					_isRunning = true;
+					if (_isMoving) updateMovement(movementDirection);
 					break;
 				case Keyboard.UP:
 				case Keyboard.W:
@@ -922,12 +962,12 @@ package {
 				case Keyboard.A:
 				case Keyboard.Q:
 					// fr
-					if (!isMoving) updateMovementSide(1);
+					if (!_isMoving) updateMovementSide(1);
 					// if (_physics){_physics.key_Left(true);}
 					break;
 				case Keyboard.RIGHT:
 				case Keyboard.D:
-					if (!isMoving) updateMovementSide(-1);
+					if (!_isMoving) updateMovementSide(-1);
 					// if (_physics){_physics.key_Right(true);}
 					break;
 				case Keyboard.R:
@@ -941,17 +981,17 @@ package {
 					break;
 				case Keyboard.C:
 				case Keyboard.CONTROL:
-					if (isCrouch) {
-						isCrouch = false;
+					if (_isCrouch) {
+						_isCrouch = false;
 						_cameraHeight = 70;
-					} else {
-						isCrouch = true;
+					} else if(!_isSwiming){
+						_isCrouch = true;
 						_cameraHeight = 35;
 					}
 					stop();
 					break;
 				case Keyboard.SPACE:
-					if (!isJump) {
+					if (!_isJump) {
 						jumpUp();
 					}
 					break;
@@ -964,8 +1004,8 @@ package {
 		private function onKeyUp(event : KeyboardEvent) : void {
 			switch (event.keyCode) {
 				case Keyboard.SHIFT:
-					isRunning = false;
-					if (isMoving)
+					_isRunning = false;
+					if (_isMoving)
 						updateMovement(movementDirection);
 					break;
 				case Keyboard.UP:
@@ -974,7 +1014,7 @@ package {
 				// fr
 				case Keyboard.DOWN:
 				case Keyboard.S:
-					isMoving = false;
+					_isMoving = false;
 					// if (_physics) { _physics.key_forward(false); _physics.key_Reverse(false);  }
 					stop();
 					break;
@@ -984,12 +1024,12 @@ package {
 				// fr
 				case Keyboard.RIGHT:
 				case Keyboard.D:
-					isSideMove = false;
+					_isSideMove = false;
 					// if (_physics) { _physics.key_Left(false); _physics.key_Right(false); }
 					stop();
 					break;
 				case Keyboard.SPACE:
-					isJump = false;
+					_isJump = false;
 					// if (_physics){_physics.key_Jump(false);}
 					break;
 			}
@@ -1121,7 +1161,7 @@ package {
 			_eyePosition = _eyeLook.position;
 			_eyes.addChild(zone);
 			_eyes.addChild(_eyeLook);
-			_dynamicsEyes = true;
+			_isDynamicsEyes = true;
 		}
 
 		private function moveEyesSexe() : void {
@@ -1170,8 +1210,8 @@ package {
 		private function xRay(e : Event = null) : void {
 			var m : Mesh;
 			var j : Sprite3D;
-			if (!_debugRay) {
-				_debugRay = true;
+			if (!_isDebugRay) {
+				_isDebugRay = true;
 				_onkbaMaterial.alpha = 0.5;
 				_siaMaterial.alpha = 0.5;
 				_bonesFx = new Vector.<Mesh>(_animator.globalPose.numJointPoses);
@@ -1183,18 +1223,20 @@ package {
 					m = Mesh(mref.clone());
 					j = new Sprite3D(materialBones("bone " + i), 4, 4);
 					// _heroOnkba.addChild(m);
-					_player.addChild(m);
+					// _player.addChild(m);
+					Player.add(m);
 					m.addChild(j);
 					_bonesFx[i] = m;
 				}
 			} else {
-				_debugRay = false;
+				_isDebugRay = false;
 				_onkbaMaterial.alpha = 1;
 				_siaMaterial.alpha = 1;
 				for ( i = 0; i < _bonesFx.length; i++) {
 					m = _bonesFx[i];
 					// _heroOnkba.removeChild(m);
-					_player.removeChild(m);
+					// _player.removeChild(m);
+					Player.remove(m);
 					m.dispose();
 					_bonesFx[i] = null;
 				}
@@ -1251,8 +1293,13 @@ package {
 		}
 
 		private function switchShirt(e : Event = null) : void {
-			if (_shirt.visible) _shirt.visible = false;
-			else _shirt.visible = true;
+			if (_isShirt) {
+				Player.remove(_shirt);
+				_isShirt = false;
+			} else if (_isMan) {
+				Player.add(_shirt);
+				_isShirt = true;
+			}
 		}
 
 		/**
@@ -1260,16 +1307,22 @@ package {
 		 */
 		private function switchGender(e : Event = null) : void {
 			if (_isMan) {
-				_player.removeChild(_heroOnkba);
-				_player.addChild(_heroSia);
+				Player.remove(_heroOnkba);
+				Player.add(_heroSia);
+
+				// _player.removeChild(_heroOnkba);
+				// _player.addChild(_heroSia);
 				_isMan = false;
-				_shirt.visible = false;
+				switchShirt();
 				moveEyesSexe();
 			} else {
-				_player.removeChild(_heroSia);
-				_player.addChild(_heroOnkba);
+				Player.remove(_heroSia);
+				Player.add(_heroOnkba);
+
+				// _player.removeChild(_heroSia);
+				// _player.addChild(_heroOnkba);
 				_isMan = true;
-				_shirt.visible = true;
+				switchShirt();
 				moveEyesSexe();
 			}
 		}
