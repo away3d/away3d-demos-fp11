@@ -136,6 +136,7 @@ package {
 		private var _heroOnkba : Mesh;
 		private var _heroSia : Mesh;
 		private var _shirt : Mesh;
+		private var _hair : Mesh;
 		// materials
 		private var _boxMaterial : TextureMaterial;
 		private var _gunMaterial : TextureMaterial;
@@ -267,7 +268,7 @@ package {
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
 			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
-			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
+			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
 			// hero map 9 10 11
 			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
 			// gun map 12 13 14
@@ -674,6 +675,10 @@ package {
 				if (mesh.name == "Sia") {
 					_heroSia = mesh;
 				}
+				// Sia hair object
+				if (mesh.name == "Hair") {
+					_hair = mesh;
+				}
 				// Onkba character object
 				if (mesh.name == "Onkba") {
 					_heroOnkba = mesh;
@@ -738,6 +743,8 @@ package {
 			// apply our _animator to sia character
 			_heroSia.animator = _animator;
 			_heroSia.material = _siaMaterial;
+			_hair.animator = _animator;
+			_hair.material = _siaMaterial;
 
 			// apply our animator to onkba character
 			_heroOnkba.animator = _animator;
@@ -1329,7 +1336,7 @@ package {
 			if (_isMan) {
 				Player.remove(_heroOnkba);
 				Player.add(_heroSia);
-
+				Player.add(_hair);
 				// _player.removeChild(_heroOnkba);
 				// _player.addChild(_heroSia);
 				_isMan = false;
@@ -1337,7 +1344,9 @@ package {
 				moveEyesSexe();
 			} else {
 				Player.remove(_heroSia);
+				Player.remove(_hair);
 				Player.add(_heroOnkba);
+				
 
 				// _player.removeChild(_heroSia);
 				// _player.addChild(_heroOnkba);
