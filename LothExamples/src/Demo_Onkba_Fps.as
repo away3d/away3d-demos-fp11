@@ -335,7 +335,7 @@ package {
 			// create custom lens
 			_view.camera.lens = new PerspectiveLens(60);
 			_view.camera.lens.far = FARVIEW;
-			_view.camera.lens.near = 1;
+			_view.camera.lens.near = 0.1;
 
 			// setup controller to be used on the camera
 			_cameraController = new HoverController(_view.camera, null, 22, 0, 500, 10, 90);
