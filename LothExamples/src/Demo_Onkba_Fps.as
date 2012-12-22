@@ -104,7 +104,7 @@ package {
 	[SWF(frameRate="60", backgroundColor = "#000000", width = "1200", height = "600")]
 	public class Demo_Onkba_Fps extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 2000;
-		private const SWIM_TOP : Number = -100;
+		private const SWIM_TOP : Number = -105;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 300;
 		private const HERO_SIZE : Number = 1.5;
@@ -131,6 +131,7 @@ package {
 		// ObjectContainer3D;
 		private var _sunLight : DirectionalLight;
 		private var _weapons : Vector.<Mesh>;
+		private var _bullets : Vector.<Mesh>;
 		private var _bonesFx : Vector.<Mesh>;
 		private var _heroWeapon : Mesh;
 		private var _heroOnkba : Mesh;
@@ -162,9 +163,9 @@ package {
 		private var _waterMethod : SimpleWaterNormalMethod;
 		// hero animation variables
 		private const ANIMATION : Array = ["Idle", "Walk", "WalkL", "WalkR", "Run", "CrouchIdle", "CrouchWalk", "Reload", "WaterIdle", "WaterSwim", "StandBack", "StandFace", "JumpDown", "TrowGrenade", "CrouchGrenade", "IdleDrive"];
-		//private const ANIMATION_FALL : Array = ["FallBack", "FallBackMid", "FallFace", "FallFaceBack", "FallRight", "FallRightMid", "FallLeft", "FallLeftMid"];
-		private const WEAPON : Array = ["", "Gun", "Machine", "Sniper", "Gatling", "Bazooka"];
-		// private const AMMO:Array = ["", "", "", "", "", "Rocket"];
+		// private const ANIMATION_FALL : Array = ["FallBack", "FallBackMid", "FallFace", "FallFaceBack", "FallRight", "FallRightMid", "FallLeft", "FallLeftMid"];
+		private const WEAPON : Array = ["", "Gun", "ShoutGun", "Sniper", "Gatling", "Bazooka"];
+		private const BULLET : Array = ["", "08mm", "09mm", "12mm", "15mm", "Rocket"];
 		private var _animationSet : SkeletonAnimationSet;
 		private var _transition : CrossfadeTransition;
 		private var _animator : SkeletonAnimator;
@@ -183,6 +184,10 @@ package {
 		private var _isCrouch : Boolean;
 		private var _isMoving : Boolean;
 		private var _isJump : Boolean;
+		// weapon decal
+		private var _weaponsDecals : Vector.<Vector3D>;
+		private var _weaponsDecalsWom : Vector.<Vector3D>;
+		private var _weaponsRotation : Vector.<Vector3D>;
 		// hero dynamique eye
 		private var _eyePosition : Vector3D;
 		private var _eyes : ObjectContainer3D;
@@ -194,7 +199,7 @@ package {
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
 		private var _mouseMove : Boolean;
-		private var _cameraHeight : Number = 70;
+		private var _cameraHeight : Number = 100;
 		private var _night : Number = 100;
 		// demo testing
 		private var _isIntro : Boolean = true;
@@ -316,7 +321,19 @@ package {
 
 			// weapon referency
 			_weapons = new Vector.<Mesh>(WEAPON.length);
-			_weapons[0] = new Mesh(new CubeGeometry(1, 1, 1), null);
+			_weapons[0] = new Mesh(new PlaneGeometry(1, 1), _nullMaterial);
+
+			// weapon decal
+			_weaponsDecals = new Vector.<Vector3D>(WEAPON.length);
+			_weaponsDecalsWom = new Vector.<Vector3D>(WEAPON.length);
+			_weaponsRotation = new Vector.<Vector3D>(WEAPON.length);
+			_weaponsDecals[0] = new Vector3D();
+			_weaponsDecalsWom[0] = new Vector3D();
+			_weaponsRotation[0] = new Vector3D();
+
+			// bullet referency
+			_bullets = new Vector.<Mesh>(BULLET.length);
+			_bullets[0] = new Mesh(new PlaneGeometry(1, 1), _nullMaterial);
 
 			// load Onkba character with weapons
 			LoaderPool.loadObject("onkba/onkba_sia_fps.awd", onAssetComplete, onResourceComplete);
@@ -333,7 +350,7 @@ package {
 			addChild(_view);
 
 			// create custom lens
-			_view.camera.lens = new PerspectiveLens(60);
+			_view.camera.lens = new PerspectiveLens(70);
 			_view.camera.lens.far = FARVIEW;
 			_view.camera.lens.near = 0.1;
 
@@ -687,45 +704,52 @@ package {
 				if (mesh.name == "Shirt") {
 					_shirt = mesh;
 				}
+
 				// Weapons object
 				for ( i = 0; i < WEAPON.length; i++ ) {
-					if (mesh.name == WEAPON[i] + 'Test') {
+					if (mesh.name == WEAPON[i]) {
+						// Gun
 						if (i == 1) {
-							mesh.rotationY = -5;
-							mesh.rotationZ = 0;
-							mesh.rotationX = 0;
-							mesh.z = 1.6;
-							mesh.y = -4.2;
+							_weaponsDecals[1] = new Vector3D(0, -4.2, 1.6);
+							_weaponsDecalsWom[1] = new Vector3D(0, -4.2, 1.6);
+							_weaponsRotation[1] = new Vector3D(0, -5, 0);
 						}
-						// decal for gun
+						// ShoutGun
 						if (i == 2) {
-							mesh.rotationY = -5;
-							mesh.rotationZ = -2;
-							mesh.rotationX = 0;
-							mesh.z = 1.6;
-							mesh.y = -5;
+							_weaponsDecals[2] = new Vector3D(0, -5, 1.6);
+							_weaponsDecalsWom[2] = new Vector3D(0, -5, 1.6);
+							_weaponsRotation[2] = new Vector3D(0, -5, -2);
 						}
-						// decal for machine
+						// Sniper
 						if (i == 3) {
-							mesh.rotationY = -5;
-							mesh.rotationZ = -5;
-							mesh.rotationX = 0;
-							mesh.z = 1.8;
-							mesh.y = -4.6;
+							_weaponsDecals[3] = new Vector3D(0, -4.6, 1.8);
+							_weaponsDecalsWom[3] = new Vector3D(0, -4.6, 1.8);
+							_weaponsRotation[3] = new Vector3D(0, -5, -5);
 						}
-						// decal for sniper
+						// Gateling
+						if (i == 4) {
+							_weaponsDecals[4] = new Vector3D(0, 1.8, -4.6);
+							_weaponsDecalsWom[4] = new Vector3D(0, 1.8, -4.6);
+							_weaponsRotation[4] = new Vector3D(0, -5, -5);
+						}
+						// Basokaa
 						if (i == 5) {
-							mesh.rotationY = 6;
-							mesh.rotationZ = -6;
-							mesh.x = 5;
-							mesh.y = 2;
-							mesh.z = -4;
+							_weaponsDecals[5] = new Vector3D(5, 2, -4);
+							_weaponsDecalsWom[5] = new Vector3D(5, 2, -4);
+							_weaponsRotation[5] = new Vector3D(0, 6, -6);
 						}
 						// decal for bazooka
 
 						if (i != 5) mesh.material = _gunMaterial;
 						else mesh.material = _gunMaterial2;
 						_weapons[i] = mesh;
+					}
+				}
+				// Weapons object
+				for ( i = 0; i < BULLET.length; i++ ) {
+					if (mesh.name == BULLET[i]) {
+						mesh.material = _gunMaterial2;
+						_bullets[i] = mesh;
 					}
 				}
 			}
@@ -812,7 +836,13 @@ package {
 			for (var i : int; i < _heroWeapon.numChildren; i++ ) {
 				_heroWeapon.removeChild(_heroWeapon.getChildAt(i));
 			}
-			_heroWeapon.addChild(_weapons[currentWeapon]);
+			var mesh : Mesh = _weapons[currentWeapon];
+			if (_isMan) mesh.position = _weaponsDecals[currentWeapon];
+			else mesh.position = _weaponsDecalsWom[currentWeapon];
+			mesh.rotationX = _weaponsRotation[currentWeapon].x;
+			mesh.rotationY = _weaponsRotation[currentWeapon].y;
+			mesh.rotationZ = _weaponsRotation[currentWeapon].z;
+			_heroWeapon.addChild(mesh);
 			// Play idle animation
 			stop();
 		}
@@ -1010,10 +1040,10 @@ package {
 				case Keyboard.CONTROL:
 					if (_isCrouch) {
 						_isCrouch = false;
-						_cameraHeight = 70;
+						_cameraHeight = 100;
 					} else if (!_isSwiming) {
 						_isCrouch = true;
-						_cameraHeight = 35;
+						_cameraHeight = 50;
 					}
 					stop();
 					break;
@@ -1196,8 +1226,8 @@ package {
 				_eyeR.z = _eyeL.z = 3.9;
 				_eyeR.x = _eyeL.x = 5.6;
 			} else {
-				_eyeR.z = _eyeL.z = 1.8;
-				_eyeR.x = _eyeL.x = 4.7;
+				_eyeR.z = _eyeL.z = 1.82;
+				_eyeR.x = _eyeL.x = 4.75;
 			}
 		}
 
@@ -1346,7 +1376,6 @@ package {
 				Player.remove(_heroSia);
 				Player.remove(_hair);
 				Player.add(_heroOnkba);
-				
 
 				// _player.removeChild(_heroSia);
 				// _player.addChild(_heroOnkba);

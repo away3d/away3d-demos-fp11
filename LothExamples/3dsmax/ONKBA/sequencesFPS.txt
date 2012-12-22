@@ -46,20 +46,20 @@ GunWaterIdle 832 851
 GunWaterSwim 852 881
 
 #--------------------MACHINE GUN
-MachineStandBack 882 911
-MachineStandFace 912 942
-MachineJumpDown 943 961
-MachineIdle 962 986
-MachineWalk 987 1011
-MachineWalkR 1012 1031
-MachineWalkL 1032 1051
-MachineRun 1052 1070
-MachineReload 1071 1120
-MachineCrouchIdle 1121 1145
-MachineCrouchWalk 1146 1170
-MachineCrouchReload 1171 1220
-MachineWaterIdle 1221 1241
-MachineWaterSwim 1242 1270
+ShoutGunStandBack 882 911
+ShoutGunStandFace 912 942
+ShoutGunJumpDown 943 961
+ShoutGunIdle 962 986
+ShoutGunWalk 987 1011
+ShoutGunWalkR 1012 1031
+ShoutGunWalkL 1032 1051
+ShoutGunRun 1052 1070
+ShoutGunReload 1071 1120
+ShoutGunCrouchIdle 1121 1145
+ShoutGunCrouchWalk 1146 1170
+ShoutGunCrouchReload 1171 1220
+ShoutGunWaterIdle 1221 1241
+ShoutGunWaterSwim 1242 1270
 
 #--------------------SNIPER
 SniperStandBack 1271 1300
