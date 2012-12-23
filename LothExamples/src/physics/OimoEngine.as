@@ -39,8 +39,8 @@ package physics {
 		private static var _world : World;
 		private static var _rigids : Vector.<RigidBody>;
 		private static var _joints : Vector.<Joint>;
-		private static var _scene : Scene3D;
 		private static var _meshs : Vector.<Mesh>;
+		private static var _scene : Scene3D;
 		private static var _demoName : String;
 		private static var _fps : Number;
 
@@ -50,7 +50,7 @@ package physics {
 		public static function getInstance() : OimoEngine {
 			if (Singleton == null) {
 				Singleton = new OimoEngine();
-				OimoEngine.init();
+				OimoEngine.initWorld();
 			}
 			return Singleton;
 		}
@@ -58,10 +58,10 @@ package physics {
 		/**
 		 * Initialise physics world
 		 */
-		private static function init(e : Event = null) : void {
-			_meshs = new Vector.<Mesh>();
+		private static function initWorld(e : Event = null) : void {
 			_rigids = new Vector.<RigidBody>();
 			_joints = new Vector.<Joint>();
+			_meshs = new Vector.<Mesh>();
 			_world = new World();
 		}
 
@@ -83,7 +83,9 @@ package physics {
 		 * Update physics world
 		 */
 		static public function update() : void {
-			for (var i : uint = 0; i < _meshs.length; i++) {
+			var i : uint;
+			var length : uint = _meshs.length;
+			for ( i = 0; i < length; ++i) {
 				_meshs[i].transform = rigidPos(i);
 			}
 			_world.step();
@@ -102,7 +104,6 @@ package physics {
 		static public function rigidPos(n : uint = 0) : Matrix3D {
 			var r : Mat33 = _world.rigidBodies[n].rotation;
 			var p : Vec3 = _world.rigidBodies[n].position;
-			// return new Matrix3D(Vector.<Number>([r.e00, r.e10, -r.e20, 0, r.e01, r.e11, -r.e21, 0, r.e02, r.e12, -r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
 			return new Matrix3D(Vector.<Number>([r.e00, r.e10, r.e20, 0, r.e01, r.e11, r.e21, 0, r.e02, r.e12, r.e22, 0, p.x * SCALE, p.y * SCALE, p.z * SCALE, 1]));
 		}
 
@@ -112,66 +113,89 @@ package physics {
 		static public function clean() : void {
 			var i : uint;
 			var j : uint;
-			// remove joints
-			for (j = 0; j < _joints.length; ++j) {
-				_world.removeJoint(_joints[j]);
+			// 1 - remove all joints
+			for (i = 0; i < _joints.length; ++i) {
+				_world.removeJoint(_joints[i]);
 			}
-			// remove mesh and rigid
-			for ( i = 0 ; i < _meshs.length; ++i) {
+			// 2 - remove all rigid
+			for ( i = 0 ; i < _rigids.length; ++i) {
+				// 3 - remove all shape from rigid body
 				for ( j = 0 ; j < _rigids[i].shapes.length; ++j) {
 					_world.removeShape(_rigids[i].shapes[j]);
 				}
 				_world.removeRigidBody(_rigids[i]);
+			}
+			// 4 - remove all mesh to simulation
+			for ( i = 0 ; i < _meshs.length; ++i) {
+				// 5 - remove all childrens of mesh
+				for ( j = 0 ; j < _meshs[i].numChildren; ++j) {
+					_meshs[i].removeChild(_meshs[i].getChildAt(j));
+				}
 				_scene.removeChild(_meshs[i]);
 				_meshs[i].dispose();
 			}
-			// reset the physics world
-			init();
+
+			// 6 - reset the physics world
+			initWorld();
 		}
 
+		/*static public function addCompound() {
+		}*/
 		/**
 		 * Add physic cube shape
 		 */
-		static public function addCube(mesh : Mesh, w : Number, h : Number, d : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, Density : Number = 1, Friction : Number = 0.5, Restitution : Number = 0.5, isStatic : Boolean = true) : void {
+		static public function addCube(mesh : Mesh, w : int, h : int, d : int, pos : Vector3D = null, rotation : Vector3D = null, Density : Number = 1, Friction : Number = 0.5, Restitution : Number = 0.5, isStatic : Boolean = true, n : int = -1) : void {
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
 			if (pos == null) pos = new Vector3D();
-			if (rot == null) rot = new Vector3D();
 			config.position.init(pos.x * USCALE, pos.y * USCALE, pos.z * USCALE);
-			config.rotation.init();
 			config.density = Density;
 			config.friction = Friction;
 			config.restitution = Restitution;
 			shape = new BoxShape(w * USCALE, h * USCALE, d * USCALE, config);
-
-			addRigid(mesh, shape, angle, rot, isStatic);
+			if (n == -1) addRigid(mesh, shape, rotation, isStatic);
+			else addToRigid(n, mesh, shape);
 		}
 
 		/**
 		 * Add physic sphere shape
 		 */
-		static public function addSphere(mesh : Mesh, r : Number, pos : Vector3D = null, angle : Number = 0, rot : Vector3D = null, Density : Number = 1, Friction : Number = 0.5, Restitution : Number = 0.5, isStatic : Boolean = true) : void {
+		static public function addSphere(mesh : Mesh, r : int, pos : Vector3D = null, rot : Vector3D = null, Density : Number = 1, Friction : Number = 0.5, Restitution : Number = 0.5, isStatic : Boolean = true, n : int = -1) : void {
 			var shape : Shape;
 			var config : ShapeConfig = new ShapeConfig();
 			if (pos == null) pos = new Vector3D();
-			if (rot == null) rot = new Vector3D();
 			config.position.init(pos.x * USCALE, pos.y * USCALE, pos.z * USCALE);
-			config.rotation.init();
 			config.density = Density;
 			config.friction = Friction;
 			config.restitution = Restitution;
 			shape = new SphereShape(r * USCALE, config);
 
-			addRigid(mesh, shape, angle, rot, isStatic);
+			if (n == -1) addRigid(mesh, shape, rot, isStatic);
+			else addToRigid(n, mesh, shape);
 		}
 
 		/**
-		 * Add rigid body to simulation
+		 * Add new rigid body to simulation
 		 */
-		static public function addRigid(mesh : Mesh, shape : Shape, angle : Number = 0, rot : Vector3D = null, isStatic : Boolean = true) : void {
+		static private function addRigid(mesh : Mesh, shape : Shape, rotation : Vector3D = null, isStatic : Boolean = true) : void {
 			var rigid : RigidBody;
+			var rot : Vector3D = new Vector3D();
+			var angle : Number = 0;
+			if (rotation != null) {
+				if (rotation.x != 0) {
+					rot = new Vector3D(1, 0, 0);
+					angle = rotation.x;
+				} else if (rotation.y != 0) {
+					rot = new Vector3D(0, 1, 0);
+					angle = rotation.y;
+				} else if (rotation.z != 0) {
+					rot = new Vector3D(0, 0, 1);
+					angle = rotation.z;
+				}
+			}
 			rigid = new RigidBody(angle, rot.x, rot.y, rot.z);
 			rigid.addShape(shape);
+
 			if (isStatic) rigid.setupMass(RigidBody.BODY_STATIC);
 			else rigid.setupMass(RigidBody.BODY_DYNAMIC);
 
@@ -184,14 +208,22 @@ package physics {
 		}
 
 		/**
+		 * Add to existing rigid body
+		 */
+		static private function addToRigid(n : int, mesh : Mesh, shape : Shape) : void {
+			if (_rigids[n]) {
+				_meshs[n].addChild(mesh);
+				_rigids[n].addShape(shape);
+			}
+		}
+
+		/**
 		 * Add ball joint
 		 */
 		static public function addBallJoint(rigid1 : RigidBody, rigid2 : RigidBody, collision : Boolean = true, v1 : Vector3D = null, v2 : Vector3D = null) : void {
 			var config : JointConfig = new JointConfig();
 			if (v1 != null) config.localRelativeAnchorPosition1 = new Vec3(v1.x * USCALE, v1.y * USCALE, v1.z * USCALE);
 			if (v2 != null) config.localRelativeAnchorPosition2 = new Vec3(v2.x * USCALE, v2.y * USCALE, v2.z * USCALE);
-			/*config.localRelativeAnchorPosition1 = rigid1.position;
-			config.localRelativeAnchorPosition2 = rigid2.position;*/
 			config.allowCollide = collision;
 			var j : BallJoint = new BallJoint(rigid1, rigid2, config);
 
@@ -259,4 +291,3 @@ package physics {
 		}
 	}
 }
-

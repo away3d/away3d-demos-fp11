@@ -65,6 +65,7 @@ package {
 	import flash.display.Sprite;
 	import flash.geom.Vector3D;
 	import flash.events.Event;
+	import flash.utils.setTimeout;
 
 	import physics.OimoEngine;
 
@@ -102,7 +103,7 @@ package {
 		private var _maxDemo : uint;
 		// ui
 		private var _menu : Sprite;
-		private var _sliderGravity:HUISlider;
+		private var _sliderGravity : HUISlider;
 
 		/**
 		 * Constructor
@@ -153,7 +154,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			_currentDemo = 0;
-			_maxDemo = 3;
+			_maxDemo = 4;
 			initEngine();
 			initText();
 			initSetting();
@@ -173,10 +174,10 @@ package {
 			_view.shareContext = true;
 			addChild(_view);
 			// setup the camera
-			_view.camera.lens = new PerspectiveLens(80);
-			_view.camera.lens.far = 10000;
+			_view.camera.lens = new PerspectiveLens(70);
+			_view.camera.lens.far = 20000;
 			// setup controller to be used on the camera
-			_cameraController = new HoverController(_view.camera, null, 0, 80, 1300, 10, 9);
+			_cameraController = new HoverController(_view.camera, null, 0, 80, 2000, 10, 9);
 			_cameraController.minTiltAngle = -90;
 			_cameraController.maxTiltAngle = 90;
 			_cameraController.autoUpdate = false;
@@ -202,7 +203,7 @@ package {
 			_sunLight.specular = 0;
 
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.5);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.3);
 			_view.scene.addChild(_sunLight);
 
 			_lightPicker = new StaticLightPicker([_sunLight]);
@@ -220,17 +221,17 @@ package {
 			_material01.gloss = 100;
 			_material01.specular = 0.5;
 
-			_material02 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x8800A0C8)));
+			_material02 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAA00A0C8)));
 			_material02.alphaBlending = true;
 			_material02.gloss = 10;
 			_material02.specular = 1;
 
-			_material03 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x88F9642D)));
+			_material03 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAAF9642D)));
 			_material03.alphaBlending = true;
 			_material03.gloss = 10;
 			_material03.specular = 1;
 
-			_material04 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x887CD8EF)));
+			_material04 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAA7CD8EF)));
 			_material04.alphaBlending = true;
 			_material04.gloss = 10;
 			_material04.specular = 1;
@@ -269,7 +270,7 @@ package {
 
 			switch(_currentDemo) {
 				case 0 :
-					OimoEngine.demoName = '0 - Push the limite';
+					OimoEngine.demoName = '0 - In the box';
 					OimoEngine.gravity(-1);
 					var ground : Mesh = new Mesh(new CubeGeometry(1000, 50, 1000), _material01);
 					var wall0 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
@@ -288,86 +289,120 @@ package {
 					OimoEngine.addCube(wall3, 1000, 600, 50, new Vector3D(0, 300, 500));
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
-					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 500, 0), 0, null, 1, 0.5, 0.5, false);
+					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 500, 0), null, 1, 0.5, 0.5, false);
 					// reference mesh for clone
 					var sphere : Mesh = new Mesh(new SphereGeometry(50), _material02);
 					for ( i = 0;i < 200;i++) {
 						m = Mesh(sphere.clone());
-						OimoEngine.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
+						OimoEngine.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), null, 1, 0.5, 0.5, false);
 					}
 					var cube : Mesh = new Mesh(new CubeGeometry(100, 100, 100), _material03);
 					for (i = 0;i < 200;i++) {
 						m = Mesh(cube.clone());
-						OimoEngine.addCube(m, 100, 100, 100, new Vector3D(100, 50 + (100 * i), - 100), 0, null, 1, 0.5, 0.5, false);
+						OimoEngine.addCube(m, 100, 100, 100, new Vector3D(100, 50 + (100 * i), - 100), null, 1, 0.5, 0.5, false);
 					}
 					break;
 				case 1 :
-					OimoEngine.demoName = '1 - The tower stack';
-					OimoEngine.gravity(-1);
+					OimoEngine.demoName = '1 - Tower stack destroy';
+					OimoEngine.gravity(-0.9);
 					height = 40;
 					bw = 75;
 					bh = 75;
 					bd = 120;
 					var ground01 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
-					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), 0, null, 1, 0.5, 0.5, true);
+					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), null, 1, 0.5, 0.5, true);
 					var bbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for ( j = 0; j < height; j++) {
 						for (i = 0; i < 10; i++) {
 							var ang : Number = (Math.PI * 2 / 10 * (i + (j & 1) * 0.5));
 							m = Mesh(bbox.clone());
-							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5,- Math.sin(ang) * 250), ang, new Vector3D(0, 1, 0), 1, 0.8, 0.5, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, - Math.sin(ang) * 250), new Vector3D(0, ang, 0), 1, 0.8, 0.5, false);
 						}
 					}
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material04);
-					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), 0, null, 1, 0.5, 0.8, false);
+					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), null, 1, 0.5, 0.8, false);
 					break;
 				case 2 :
-					OimoEngine.demoName = '2 - The pyramid stack';
-					OimoEngine.gravity(-1);
+					OimoEngine.demoName = '2 - Pyramid stack destroy';
+					OimoEngine.gravity(-0.9);
 					width = 20;
 					bw = 80;
 					bh = 50;
 					bd = 80;
 					var ground02 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
-					OimoEngine.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 1, 1, 0.5, true);
+					OimoEngine.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), null, 1, 1, 0.5, true);
 					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), 0, null, 1, 0.5, 0.5, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), null, 1, 0.5, 0.5, false);
 						}
 					}
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; j++) {
 							m = Mesh(pbox.clone());
-							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), 0, null, 1, 0.5, 0.5, false);
+							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), null, 1, 0.5, 0.5, false);
 						}
 					}
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _material04);
-					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), 0, null, 1, 0.5, 0.8, false);
+					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), null, 1, 0.5, 0.8, false);
 					break;
 				case 3 :
-					OimoEngine.gravity(-1);
+					OimoEngine.gravity(-0.9);
 					OimoEngine.demoName = '3 - Joint Test';
 					var ground03 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
-					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), 0, null, 1, 0.5, 0.5, true);
-					
+					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), null, 1, 0.5, 0.5, true);
 					var spherex : Mesh = new Mesh(new SphereGeometry(100), _material02);
 					for ( i = 0;i < 100;i++) {
 						m = Mesh(spherex.clone());
-						OimoEngine.addSphere(m, 100, new Vector3D(-100, 100 + (100 * i), 100), 0, null, 1, 0.5, 0.5, false);
+						OimoEngine.addSphere(m, 100, new Vector3D(-100, 100 + (100 * i), 100), null, 1, 0.5, 0.5, false);
 						OimoEngine.addDistanceJoint(OimoEngine.rigids[i], OimoEngine.rigids[i + 1], 200);
 					}
 					break;
 				case 4 :
-					OimoEngine.demoName = '4 - Dominoes days';
+					OimoEngine.demoName = '4 - Car test';
+					OimoEngine.gravity(0);
+					var ground04 : Mesh = new Mesh(new CubeGeometry(10000, 500, 10000), _material01);
+					OimoEngine.addCube(ground04, 10000, 500, 10000, new Vector3D(0, -250, 0), null, 1, 0.5, 0.5, true);
+					var ground05 : Mesh = new Mesh(new CubeGeometry(10000, 500, 10000), _material01);
+					OimoEngine.addCube(ground05, 10000, 500, 10000, new Vector3D(0, 2000, -9000), new Vector3D(35, 0, 0), 1, 0.5, 0.5, true);
+					var ground06 : Mesh = new Mesh(new CubeGeometry(10000, 500, 500), _material01);
+					OimoEngine.addCube(ground06, 10000, 500, 500, new Vector3D(0, 250, 5000), null, 1, 0.5, 0.5, true);
+					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material04);
+					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 5000, 0), null, 1, 0.5, 0.8, false);
+					var chassie : Mesh = new Mesh(new CubeGeometry(200, 50, 300), _material03);
+					var wheel : Mesh = new Mesh(new SphereGeometry(60, 30, 30), _material02);
+					var posy : int = 5000;
+					var posz : int = -10000;
+					var py : int;
+					var px : int;
+					var chassieRef : uint;
+					for ( i = 1;i < 100;i++) {
+						py = 200 * i;
+						px = int(-5000 + (Math.random() * 10000));
+						OimoEngine.addCube(Mesh(chassie.clone()), 200, 50, 300, new Vector3D(px, posy + py, posz), null, 2, 0.5, 0.5, false);
+						chassieRef = OimoEngine.rigids.length - 1;
+						OimoEngine.addSphere(Mesh(wheel.clone()), 60, new Vector3D(-100 + px, posy + py, 150 + posz), null, 1, 0.5, 0.5, false);
+						OimoEngine.addBallJoint(OimoEngine.rigids[chassieRef], OimoEngine.rigids[OimoEngine.rigids.length - 1], false, new Vector3D(-100, 0, 150));
+						OimoEngine.addSphere(Mesh(wheel.clone()), 60, new Vector3D(100 + px, posy + py, 150 + posz), null, 1, 0.5, 0.5, false);
+						OimoEngine.addBallJoint(OimoEngine.rigids[chassieRef], OimoEngine.rigids[OimoEngine.rigids.length - 1], false, new Vector3D(100, 0, 150));
+						OimoEngine.addSphere(Mesh(wheel.clone()), 60, new Vector3D(-100 + px, posy + py, -150 + posz), null, 1, 0.5, 0.5, false);
+						OimoEngine.addBallJoint(OimoEngine.rigids[chassieRef], OimoEngine.rigids[OimoEngine.rigids.length - 1], false, new Vector3D(-100, 0, -150));
+						OimoEngine.addSphere(Mesh(wheel.clone()), 60, new Vector3D(100 + px, posy + py, -150 + posz), null, 1, 0.5, 0.5, false);
+						OimoEngine.addBallJoint(OimoEngine.rigids[chassieRef], OimoEngine.rigids[OimoEngine.rigids.length - 1], false, new Vector3D(100, 0, -150));
+					}
+					setTimeout(applyG, 260);
 					break;
 				case 5 :
 					OimoEngine.demoName = '5 - Spining tops';
 					break;
 			}
+		}
+
+		private function applyG(e : Event = null) : void {
+			OimoEngine.gravity(-0.9);
 		}
 
 		/**
