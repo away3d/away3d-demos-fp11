@@ -43,6 +43,7 @@ package {
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.NearShadowMapMethod;
+	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
@@ -63,6 +64,7 @@ package {
 	import flash.system.System;
 	import flash.text.TextField;
 	import flash.display.Sprite;
+	import flash.display.Shape;
 	import flash.geom.Vector3D;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
@@ -88,11 +90,14 @@ package {
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
 		private var _shadowMethod : NearShadowMapMethod;
+		private var _rimLightMethod : RimLightMethod;
 		// material
 		private var _material01 : TextureMaterial;
 		private var _material02 : TextureMaterial;
 		private var _material03 : TextureMaterial;
 		private var _material04 : TextureMaterial;
+		private var _material05 : TextureMaterial;
+		private var _materials : Vector.<TextureMaterial>;
 		// navigation
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
@@ -208,6 +213,7 @@ package {
 
 			_lightPicker = new StaticLightPicker([_sunLight]);
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_rimLightMethod = new RimLightMethod(0xffffff, 0.5, 2, RimLightMethod.ADD);
 			// _shadowMethod.epsilon = .0007;
 		}
 
@@ -215,36 +221,65 @@ package {
 		 * Initialise scene materials
 		 */
 		private function initMaterials() : void {
-			// setup material
+			_materials = new Vector.<TextureMaterial>();
+
 			_material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
 			_material01.alphaBlending = true;
 			_material01.gloss = 100;
 			_material01.specular = 0.5;
+			_materials[0] = _material01;
 
 			_material02 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAA00A0C8)));
 			_material02.alphaBlending = true;
 			_material02.gloss = 10;
 			_material02.specular = 1;
+			_materials[1] = _material02;
 
 			_material03 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAAF9642D)));
 			_material03.alphaBlending = true;
 			_material03.gloss = 10;
 			_material03.specular = 1;
+			_materials[2] = _material03;
 
 			_material04 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAA7CD8EF)));
 			_material04.alphaBlending = true;
 			_material04.gloss = 10;
 			_material04.specular = 1;
+			_materials[3] = _material04;
 
-			_material01.lightPicker = _lightPicker;
-			_material02.lightPicker = _lightPicker;
-			_material03.lightPicker = _lightPicker;
-			_material04.lightPicker = _lightPicker;
+			// eye ball texture
+			var b : BitmapData = new BitmapData(256, 256, true, 0xAAFFFFFF);
+			var c : Shape = new Shape();
+			c.graphics.beginFill(0xffffff, 0.7);
+			c.graphics.drawRect(0, 0, 256, 256);
+			c.graphics.endFill();
+			c.graphics.lineStyle(5,0x3070AA);
+			c.graphics.beginFill(0x5090ff, 0.8);
+			c.graphics.drawCircle(128, 128, 60);
+			c.graphics.endFill();
+			c.graphics.beginFill(0x000000, 0.8);
+			c.graphics.drawCircle(128, 128, 20);
+			c.graphics.endFill();
+			c.graphics.lineStyle(0,0xffffff,0);
+			c.graphics.beginFill(0xFFFFFF, 0.8);
+			c.graphics.drawCircle(100, 100, 15);
+			c.graphics.drawCircle(136, 136, 8);
+			c.graphics.endFill();
+			b.draw(c);
 
-			_material01.shadowMethod = _shadowMethod;
-			_material02.shadowMethod = _shadowMethod;
-			_material03.shadowMethod = _shadowMethod;
-			_material04.shadowMethod = _shadowMethod;
+			_material05 = new TextureMaterial(Cast.bitmapTexture(b));
+			_material05.alphaBlending = true;
+			_material05.gloss = 10;
+			_material05.specular = 1;
+			_materials[4] = _material05;
+
+			// for all material
+			for (var i : int; i < _materials.length; i++ ) {
+				_materials[i].lightPicker = _lightPicker;
+				_materials[i].shadowMethod = _shadowMethod;
+				_materials[i].ambient = 1;
+				if (i != 0) _materials[i].addMethod(_rimLightMethod);
+			}
 		}
 
 		/**
@@ -288,10 +323,12 @@ package {
 					OimoEngine.addCube(wall2, 1000, 600, 50, new Vector3D(0, 300, -500));
 					OimoEngine.addCube(wall3, 1000, 600, 50, new Vector3D(0, 300, 500));
 					// the big sphere
-					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material04);
+					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material05);
+					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 500, 0), null, 1, 0.5, 0.5, false);
 					// reference mesh for clone
-					var sphere : Mesh = new Mesh(new SphereGeometry(50), _material02);
+					var sphere : Mesh = new Mesh(new SphereGeometry(50), _material05);
+					sphere.geometry.scaleUV(2, 1);
 					for ( i = 0;i < 200;i++) {
 						m = Mesh(sphere.clone());
 						OimoEngine.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), null, 1, 0.5, 0.5, false);
@@ -320,7 +357,8 @@ package {
 						}
 					}
 					// the big sphere
-					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material04);
+					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material05);
+					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), null, 1, 0.5, 0.8, false);
 					break;
 				case 2 :
@@ -346,7 +384,8 @@ package {
 						}
 					}
 					// the big sphere
-					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _material04);
+					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _material05);
+					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), null, 1, 0.5, 0.8, false);
 					break;
 				case 3 :
@@ -354,7 +393,8 @@ package {
 					OimoEngine.demoName = '3 - Joint Test';
 					var ground03 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
 					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), null, 1, 0.5, 0.5, true);
-					var spherex : Mesh = new Mesh(new SphereGeometry(100), _material02);
+					var spherex : Mesh = new Mesh(new SphereGeometry(100, 30,28), _material05);
+					spherex.geometry.scaleUV(2, 1);
 					for ( i = 0;i < 100;i++) {
 						m = Mesh(spherex.clone());
 						OimoEngine.addSphere(m, 100, new Vector3D(-100, 100 + (100 * i), 100), null, 1, 0.5, 0.5, false);
@@ -370,10 +410,12 @@ package {
 					OimoEngine.addCube(ground05, 10000, 500, 10000, new Vector3D(0, 2000, -9000), new Vector3D(35, 0, 0), 1, 0.5, 0.5, true);
 					var ground06 : Mesh = new Mesh(new CubeGeometry(10000, 500, 500), _material01);
 					OimoEngine.addCube(ground06, 10000, 500, 500, new Vector3D(0, 250, 5000), null, 1, 0.5, 0.5, true);
-					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material04);
+					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material05);
+					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 5000, 0), null, 1, 0.5, 0.8, false);
 					var chassie : Mesh = new Mesh(new CubeGeometry(200, 50, 300), _material03);
-					var wheel : Mesh = new Mesh(new SphereGeometry(60, 30, 30), _material02);
+					var wheel : Mesh = new Mesh(new SphereGeometry(60, 30, 30), _material05);
+					wheel.geometry.scaleUV(2, 1);
 					var posy : int = 5000;
 					var posz : int = -10000;
 					var py : int;
@@ -381,8 +423,8 @@ package {
 					var chassieRef : uint;
 					for ( i = 1;i < 100;i++) {
 						py = 200 * i;
-						px = int(-5000 + (Math.random() * 10000));
-						OimoEngine.addCube(Mesh(chassie.clone()), 200, 50, 300, new Vector3D(px, posy + py, posz), null, 2, 0.5, 0.5, false);
+						px = int(-4000 + (Math.random() * 8000));
+						OimoEngine.addCube(Mesh(chassie.clone()), 200, 50, 300, new Vector3D(px, posy + py, posz), null, 1, 0.5, 0.5, false);
 						chassieRef = OimoEngine.rigids.length - 1;
 						OimoEngine.addSphere(Mesh(wheel.clone()), 60, new Vector3D(-100 + px, posy + py, 150 + posz), null, 1, 0.5, 0.5, false);
 						OimoEngine.addBallJoint(OimoEngine.rigids[chassieRef], OimoEngine.rigids[OimoEngine.rigids.length - 1], false, new Vector3D(-100, 0, 150));
