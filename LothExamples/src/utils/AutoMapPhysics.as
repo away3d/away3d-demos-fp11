@@ -110,5 +110,54 @@ package utils {
 			c = null;
 			return b;
 		}
+		
+		/**
+		 * Simple brick bitmap texture
+		 */
+		static public function bitmapBrick() : BitmapData {
+			var color01 : uint = 0xB7502F;
+			var color02 : uint = 0x6A2E23;
+			var b : BitmapData = new BitmapData(256, 256, true, color01);
+			var c : Shape = new Shape();
+			var m : Matrix;
+			var dColor : Array = [color01, color02];
+			var dRatio : Array = [0x33, 0x99];
+			var dAlpha : Array = [0, 0.8];
+			c.graphics.beginFill(color01, 0.8);
+			c.graphics.drawRect(0, 0, 384, 256);
+
+			c.graphics.lineStyle(6, color02, 0.8);
+			m = new Matrix();
+			m.createGradientBox(256, 256, 0, 0, 0);
+			m.translate(-64, -64);
+			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
+			c.graphics.drawRect(0, 0, 128, 128);
+			m.translate(128, 0);
+			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
+			c.graphics.drawRect(128, 0, 128, 128);
+			m.translate(128, 0);
+			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
+			c.graphics.drawRect(256, 0, 128, 128);
+			m = new Matrix();
+			m.createGradientBox(256, 256, 0, 0, 0);
+			m.translate(-64, 64);
+			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
+			c.graphics.drawRect(0, 128, 128, 128);
+			m.translate(128, 0);
+			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
+			c.graphics.drawRect(128, 128, 128, 128);
+			m.translate(128, 0);
+			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
+			c.graphics.drawRect(256, 128, 128, 128);
+			c.graphics.endFill();
+
+			m = new Matrix();
+			m.scale(0.666, 1);
+			b.draw(c, m);
+			c.graphics.clear();
+			m = null;
+			c = null;
+			return b;
+		}
 	}
 }

@@ -69,6 +69,7 @@ package {
 	import flash.utils.setTimeout;
 
 	import physics.OimoEngine;
+
 	import utils.AutoMapPhysics;
 
 	import com.bit101.components.Style;
@@ -93,11 +94,9 @@ package {
 		private var _rimLightMethod : RimLightMethod;
 		// material
 		private var _material01 : TextureMaterial;
-		private var _material02 : TextureMaterial;
-		private var _material03 : TextureMaterial;
-		private var _material04 : TextureMaterial;
-		private var _materialBoxeDice : TextureMaterial;
 		private var _materialEyeBall : TextureMaterial;
+		private var _materialBoxeDice : TextureMaterial;
+		private var _materialBoxeBrick : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// navigation
 		private var _prevMouseX : Number;
@@ -230,35 +229,23 @@ package {
 			_material01.specular = 0.5;
 			_materials[0] = _material01;
 
-			_material02 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAA00A0C8)));
-			_material02.alphaBlending = true;
-			_material02.gloss = 10;
-			_material02.specular = 1;
-			_materials[1] = _material02;
-
-			_material03 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAAF9642D)));
-			_material03.alphaBlending = true;
-			_material03.gloss = 10;
-			_material03.specular = 1;
-			_materials[2] = _material03;
-
-			_material04 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xAA7CD8EF)));
-			_material04.alphaBlending = true;
-			_material04.gloss = 10;
-			_material04.specular = 1;
-			_materials[3] = _material04;
+			_materialBoxeBrick = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapBrick()));
+			_materialBoxeBrick.alphaBlending = true;
+			_materialBoxeBrick.gloss = 40;
+			_materialBoxeBrick.specular = 1;
+			_materials[1] = _materialBoxeBrick;
 
 			_materialBoxeDice = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapDice()));
 			_materialBoxeDice.alphaBlending = true;
 			_materialBoxeDice.gloss = 40;
 			_materialBoxeDice.specular = 1;
-			_materials[4] = _materialBoxeDice;
+			_materials[2] = _materialBoxeDice;
 
 			_materialEyeBall = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapEyeBall()));
 			_materialEyeBall.alphaBlending = true;
 			_materialEyeBall.gloss = 10;
 			_materialEyeBall.specular = 1;
-			_materials[5] = _materialEyeBall;
+			_materials[3] = _materialEyeBall;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++ ) {
@@ -291,6 +278,9 @@ package {
 			var bh : Number;
 			var bd : Number;
 			var m : Mesh;
+			var px : int, py : int, pz : int;
+			var cube : Mesh;
+			var sphere : Mesh;
 
 			switch(_currentDemo) {
 				case 0 :
@@ -316,16 +306,22 @@ package {
 					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 500, 0), null, 1, 0.5, 0.5, false);
 					// reference mesh for clone
-					var sphere : Mesh = new Mesh(new SphereGeometry(50), _materialEyeBall);
+					sphere = new Mesh(new SphereGeometry(50), _materialEyeBall);
 					sphere.geometry.scaleUV(2, 1);
 					for ( i = 0;i < 200;++i) {
+						px = -400 + (Math.random() * 800);
+						py = 600 + (100 * i);
+						pz = -400 + (Math.random() * 800);
 						m = Mesh(sphere.clone());
-						OimoEngine.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), null, 1, 0.5, 0.5, false);
+						OimoEngine.addSphere(m, 50, new Vector3D(px, py, pz), null, 1, 0.5, 0.5, false);
 					}
-					var cube : Mesh = new Mesh(new CubeGeometry(100, 100, 100), _materialBoxeDice);
+					cube = new Mesh(new CubeGeometry(100, 100, 100), _materialBoxeDice);
 					for (i = 0;i < 200;++i) {
+						px = -400 + (Math.random() * 800);
+						py = 600 + (100 * i);
+						pz = -400 + (Math.random() * 800);
 						m = Mesh(cube.clone());
-						OimoEngine.addCube(m, 100, 100, 100, new Vector3D(100, 50 + (100 * i), - 100), null, 1, 0.5, 0.5, false);
+						OimoEngine.addCube(m, 100, 100, 100, new Vector3D(px, py, pz), null, 1, 0.5, 0.5, false);
 					}
 					break;
 				case 1 :
@@ -335,13 +331,13 @@ package {
 					bw = 75;
 					bh = 75;
 					bd = 120;
-					var ground01 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
-					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), null, 1, 0.5, 0.5, true);
-					var bbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
+					cube = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
+					OimoEngine.addCube(cube, 2000, 100, 2000, new Vector3D(0, -50, 0), null, 1, 0.5, 0.5, true);
+					cube = new Mesh(new CubeGeometry(bw, bh, bd), _materialBoxeBrick);
 					for ( j = 0; j < height; ++j) {
 						for (i = 0; i < 10; ++i) {
 							var ang : Number = (Math.PI * 2 / 10 * (i + (j & 1) * 0.5));
-							m = Mesh(bbox.clone());
+							m = Mesh(cube.clone());
 							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, - Math.sin(ang) * 250), new Vector3D(0, ang, 0), 1, 0.8, 0.5, false);
 						}
 					}
@@ -354,21 +350,21 @@ package {
 					OimoEngine.demoName = '2 - Pyramid stack destroy';
 					OimoEngine.gravity(-0.9);
 					width = 20;
-					bw = 60;
-					bh = 60;
-					bd = 60;
+					bw = 80;
+					bh = 80;
+					bd = 80;
 					var ground02 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
 					OimoEngine.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), null, 1, 1, 0.5, true);
-					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _materialBoxeDice);
+					cube = new Mesh(new CubeGeometry(bw, bh, bd), _materialBoxeDice);
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; ++j) {
-							m = Mesh(pbox.clone());
+							m = Mesh(cube.clone());
 							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), null, 1, 0.5, 0.5, false);
 						}
 					}
 					for (i = 0; i < width; i++) {
 						for (j = i; j < width; ++j) {
-							m = Mesh(pbox.clone());
+							m = Mesh(cube.clone());
 							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), null, 1, 0.5, 0.5, false);
 						}
 					}
@@ -402,13 +398,11 @@ package {
 					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _materialEyeBall);
 					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 5000, 0), null, 1, 0.5, 0.8, false);
-					var chassie : Mesh = new Mesh(new CubeGeometry(200, 50, 300), _material03);
+					var chassie : Mesh = new Mesh(new CubeGeometry(200, 50, 300), _materialBoxeBrick);
 					var wheel : Mesh = new Mesh(new SphereGeometry(60, 30, 30), _materialEyeBall);
 					wheel.geometry.scaleUV(2, 1);
 					var posy : int = 5000;
 					var posz : int = -10000;
-					var py : int;
-					var px : int;
 					var chassieRef : uint;
 					for ( i = 1;i < 100;++i) {
 						py = 200 * i;
