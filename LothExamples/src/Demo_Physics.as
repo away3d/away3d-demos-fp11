@@ -64,12 +64,12 @@ package {
 	import flash.system.System;
 	import flash.text.TextField;
 	import flash.display.Sprite;
-	import flash.display.Shape;
 	import flash.geom.Vector3D;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
 
 	import physics.OimoEngine;
+	import utils.AutoMapPhysics;
 
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
@@ -96,7 +96,8 @@ package {
 		private var _material02 : TextureMaterial;
 		private var _material03 : TextureMaterial;
 		private var _material04 : TextureMaterial;
-		private var _material05 : TextureMaterial;
+		private var _materialBoxeDice : TextureMaterial;
+		private var _materialEyeBall : TextureMaterial;
 		private var _materials : Vector.<TextureMaterial>;
 		// navigation
 		private var _prevMouseX : Number;
@@ -125,7 +126,7 @@ package {
 			if (e != null) removeEventListener(Event.ADDED_TO_STAGE, init);
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-			stage.quality = StageQuality.LOW;
+
 			System.pauseForGCIfCollectionImminent(1);
 			if ((stage.stageWidth != 0) && (stage.stageHeight != 0)) initProxies();
 			else stage.addEventListener(Event.RESIZE, onResizeTesting);
@@ -247,31 +248,17 @@ package {
 			_material04.specular = 1;
 			_materials[3] = _material04;
 
-			// eye ball texture
-			var b : BitmapData = new BitmapData(256, 256, true, 0xAAFFFFFF);
-			var c : Shape = new Shape();
-			c.graphics.beginFill(0xffffff, 0.7);
-			c.graphics.drawRect(0, 0, 256, 256);
-			c.graphics.endFill();
-			c.graphics.lineStyle(5,0x3070AA);
-			c.graphics.beginFill(0x5090ff, 0.8);
-			c.graphics.drawCircle(128, 128, 60);
-			c.graphics.endFill();
-			c.graphics.beginFill(0x000000, 0.8);
-			c.graphics.drawCircle(128, 128, 20);
-			c.graphics.endFill();
-			c.graphics.lineStyle(0,0xffffff,0);
-			c.graphics.beginFill(0xFFFFFF, 0.8);
-			c.graphics.drawCircle(100, 100, 15);
-			c.graphics.drawCircle(136, 136, 8);
-			c.graphics.endFill();
-			b.draw(c);
+			_materialBoxeDice = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapDice()));
+			_materialBoxeDice.alphaBlending = true;
+			_materialBoxeDice.gloss = 40;
+			_materialBoxeDice.specular = 1;
+			_materials[4] = _materialBoxeDice;
 
-			_material05 = new TextureMaterial(Cast.bitmapTexture(b));
-			_material05.alphaBlending = true;
-			_material05.gloss = 10;
-			_material05.specular = 1;
-			_materials[4] = _material05;
+			_materialEyeBall = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapEyeBall()));
+			_materialEyeBall.alphaBlending = true;
+			_materialEyeBall.gloss = 10;
+			_materialEyeBall.specular = 1;
+			_materials[5] = _materialEyeBall;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++ ) {
@@ -280,6 +267,8 @@ package {
 				_materials[i].ambient = 1;
 				if (i != 0) _materials[i].addMethod(_rimLightMethod);
 			}
+
+			stage.quality = StageQuality.LOW;
 		}
 
 		/**
@@ -323,18 +312,18 @@ package {
 					OimoEngine.addCube(wall2, 1000, 600, 50, new Vector3D(0, 300, -500));
 					OimoEngine.addCube(wall3, 1000, 600, 50, new Vector3D(0, 300, 500));
 					// the big sphere
-					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _material05);
+					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _materialEyeBall);
 					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 500, 0), null, 1, 0.5, 0.5, false);
 					// reference mesh for clone
-					var sphere : Mesh = new Mesh(new SphereGeometry(50), _material05);
+					var sphere : Mesh = new Mesh(new SphereGeometry(50), _materialEyeBall);
 					sphere.geometry.scaleUV(2, 1);
-					for ( i = 0;i < 200;i++) {
+					for ( i = 0;i < 200;++i) {
 						m = Mesh(sphere.clone());
 						OimoEngine.addSphere(m, 50, new Vector3D(-100, 50 + (100 * i), 100), null, 1, 0.5, 0.5, false);
 					}
-					var cube : Mesh = new Mesh(new CubeGeometry(100, 100, 100), _material03);
-					for (i = 0;i < 200;i++) {
+					var cube : Mesh = new Mesh(new CubeGeometry(100, 100, 100), _materialBoxeDice);
+					for (i = 0;i < 200;++i) {
 						m = Mesh(cube.clone());
 						OimoEngine.addCube(m, 100, 100, 100, new Vector3D(100, 50 + (100 * i), - 100), null, 1, 0.5, 0.5, false);
 					}
@@ -349,15 +338,15 @@ package {
 					var ground01 : Mesh = new Mesh(new CubeGeometry(2000, 100, 2000), _material01);
 					OimoEngine.addCube(ground01, 2000, 100, 2000, new Vector3D(0, -50, 0), null, 1, 0.5, 0.5, true);
 					var bbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
-					for ( j = 0; j < height; j++) {
-						for (i = 0; i < 10; i++) {
+					for ( j = 0; j < height; ++j) {
+						for (i = 0; i < 10; ++i) {
 							var ang : Number = (Math.PI * 2 / 10 * (i + (j & 1) * 0.5));
 							m = Mesh(bbox.clone());
 							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(Math.cos(ang) * 250, j * bh + bh * 0.5, - Math.sin(ang) * 250), new Vector3D(0, ang, 0), 1, 0.8, 0.5, false);
 						}
 					}
 					// the big sphere
-					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material05);
+					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _materialEyeBall);
 					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 20000, 0), null, 1, 0.5, 0.8, false);
 					break;
@@ -365,26 +354,26 @@ package {
 					OimoEngine.demoName = '2 - Pyramid stack destroy';
 					OimoEngine.gravity(-0.9);
 					width = 20;
-					bw = 80;
-					bh = 50;
-					bd = 80;
+					bw = 60;
+					bh = 60;
+					bd = 60;
 					var ground02 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
 					OimoEngine.addCube(ground02, 3000, 100, 3000, new Vector3D(0, -50, 0), null, 1, 1, 0.5, true);
-					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _material03);
+					var pbox : Mesh = new Mesh(new CubeGeometry(bw, bh, bd), _materialBoxeDice);
 					for (i = 0; i < width; i++) {
-						for (j = i; j < width; j++) {
+						for (j = i; j < width; ++j) {
 							m = Mesh(pbox.clone());
 							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), 160), null, 1, 0.5, 0.5, false);
 						}
 					}
 					for (i = 0; i < width; i++) {
-						for (j = i; j < width; j++) {
+						for (j = i; j < width; ++j) {
 							m = Mesh(pbox.clone());
 							OimoEngine.addCube(m, bw, bh, bd, new Vector3D(((j - i * 0.5 - (width - 1) * 0.5) * bw * 1.1), (i * bh * 1.1 + bh * 0.5), -160), null, 1, 0.5, 0.5, false);
 						}
 					}
 					// the big sphere
-					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _material05);
+					_sphere = new Mesh(new SphereGeometry(200, 30, 20), _materialEyeBall);
 					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 200, new Vector3D(0, 2000, 0), null, 1, 0.5, 0.8, false);
 					break;
@@ -393,7 +382,7 @@ package {
 					OimoEngine.demoName = '3 - Joint Test';
 					var ground03 : Mesh = new Mesh(new CubeGeometry(3000, 100, 3000), _material01);
 					OimoEngine.addCube(ground03, 3000, 100, 3000, new Vector3D(0, -50, 0), null, 1, 0.5, 0.5, true);
-					var spherex : Mesh = new Mesh(new SphereGeometry(100, 30,28), _material05);
+					var spherex : Mesh = new Mesh(new SphereGeometry(100, 30, 28), _materialEyeBall);
 					spherex.geometry.scaleUV(2, 1);
 					for ( i = 0;i < 100;i++) {
 						m = Mesh(spherex.clone());
@@ -410,18 +399,18 @@ package {
 					OimoEngine.addCube(ground05, 10000, 500, 10000, new Vector3D(0, 2000, -9000), new Vector3D(35, 0, 0), 1, 0.5, 0.5, true);
 					var ground06 : Mesh = new Mesh(new CubeGeometry(10000, 500, 500), _material01);
 					OimoEngine.addCube(ground06, 10000, 500, 500, new Vector3D(0, 250, 5000), null, 1, 0.5, 0.5, true);
-					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _material05);
+					_sphere = new Mesh(new SphereGeometry(250, 30, 20), _materialEyeBall);
 					_sphere.geometry.scaleUV(2, 1);
 					OimoEngine.addSphere(_sphere, 250, new Vector3D(0, 5000, 0), null, 1, 0.5, 0.8, false);
 					var chassie : Mesh = new Mesh(new CubeGeometry(200, 50, 300), _material03);
-					var wheel : Mesh = new Mesh(new SphereGeometry(60, 30, 30), _material05);
+					var wheel : Mesh = new Mesh(new SphereGeometry(60, 30, 30), _materialEyeBall);
 					wheel.geometry.scaleUV(2, 1);
 					var posy : int = 5000;
 					var posz : int = -10000;
 					var py : int;
 					var px : int;
 					var chassieRef : uint;
-					for ( i = 1;i < 100;i++) {
+					for ( i = 1;i < 100;++i) {
 						py = 200 * i;
 						px = int(-4000 + (Math.random() * 8000));
 						OimoEngine.addCube(Mesh(chassie.clone()), 200, 50, 300, new Vector3D(px, posy + py, posz), null, 1, 0.5, 0.5, false);
@@ -439,6 +428,8 @@ package {
 					break;
 				case 5 :
 					OimoEngine.demoName = '5 - Spining tops';
+					var groundx : Mesh = new Mesh(new CubeGeometry(1000, 1000, 1000), _materialBoxeDice);
+					OimoEngine.addCube(groundx, 1000, 1000, 1000, new Vector3D(0, -250, 0), null, 1, 0.5, 0.5, true);
 					break;
 			}
 		}
