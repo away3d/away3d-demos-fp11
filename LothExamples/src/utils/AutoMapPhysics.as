@@ -33,22 +33,21 @@ package utils {
 		}
 
 		/**
-		 * Simple dice bitmap texture
+		 * Simple cube bitmap texture with edge of different color
 		 */
-		static public function bitmapDice() : BitmapData {
-			var color01 : uint = 0xEFEFEF;
-			var color02 : uint = 0xAAAAAA;
+		static public function bitmapCube(c1 : uint = 0xEFEFEF, c2 : uint = 0xAAAAAA, isDice : Boolean = false, Alpha:Array = null) : BitmapData {
+			var color01 : uint = c1;
+			var color02 : uint = c2;
 			var b : BitmapData = new BitmapData(256, 256, true, color01);
 			var c : Shape = new Shape();
-			var m : Matrix;
+			var m : Matrix = new Matrix();
 			var dColor : Array = [color01, color02];
 			var dRatio : Array = [0x33, 0x99];
-			var dAlpha : Array = [0, 0.8];
-			c.graphics.beginFill(color01, 0.8);
+			var dAlpha : Array = [0.8, 0.8];
+			if(Alpha!=null) dAlpha = Alpha;
+			c.graphics.beginFill(color02, dAlpha[1]);
 			c.graphics.drawRect(0, 0, 384, 256);
-
-			c.graphics.lineStyle(6, color02, 0.8);
-			m = new Matrix();
+			c.graphics.lineStyle(6, color02, dAlpha[1]);
 			m.createGradientBox(256, 256, 0, 0, 0);
 			m.translate(-64, -64);
 			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
@@ -71,86 +70,39 @@ package utils {
 			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
 			c.graphics.drawRect(256, 128, 128, 128);
 			c.graphics.endFill();
-			// dice point
-			c.graphics.lineStyle(6, color02, 0.3);
-			c.graphics.beginFill(0xff0000, 0.8);
-			c.graphics.drawCircle(64, 64, 16);
-			c.graphics.beginFill(0x202020, 0.8);
-			// 6
-			c.graphics.drawCircle(160, 32, 10);
-			c.graphics.drawCircle(160, 64, 10);
-			c.graphics.drawCircle(160, 96, 10);
-			c.graphics.drawCircle(224, 32, 10);
-			c.graphics.drawCircle(224, 64, 10);
-			c.graphics.drawCircle(224, 96, 10);
-			// 2
-			c.graphics.drawCircle(288, 32, 10);
-			c.graphics.drawCircle(352, 96, 10);
-			// 4
-			c.graphics.drawCircle(32, 160, 10);
-			c.graphics.drawCircle(32, 224, 10);
-			c.graphics.drawCircle(96, 160, 10);
-			c.graphics.drawCircle(96, 224, 10);
-			// 5
-			c.graphics.drawCircle(160, 160, 10);
-			c.graphics.drawCircle(192, 192, 10);
-			c.graphics.drawCircle(160, 224, 10);
-			c.graphics.drawCircle(224, 160, 10);
-			c.graphics.drawCircle(224, 224, 10);
-			// 3
-			c.graphics.drawCircle(288, 160, 10);
-			c.graphics.drawCircle(320, 192, 10);
-			c.graphics.drawCircle(352, 224, 10);
-
-			m = new Matrix();
-			m.scale(0.666, 1);
-			b.draw(c, m);
-			c.graphics.clear();
-			m = null;
-			c = null;
-			return b;
-		}
-		
-		/**
-		 * Simple brick bitmap texture
-		 */
-		static public function bitmapBrick() : BitmapData {
-			var color01 : uint = 0xB7502F;
-			var color02 : uint = 0x6A2E23;
-			var b : BitmapData = new BitmapData(256, 256, true, color01);
-			var c : Shape = new Shape();
-			var m : Matrix;
-			var dColor : Array = [color01, color02];
-			var dRatio : Array = [0x33, 0x99];
-			var dAlpha : Array = [0, 0.8];
-			c.graphics.beginFill(color01, 0.8);
-			c.graphics.drawRect(0, 0, 384, 256);
-
-			c.graphics.lineStyle(6, color02, 0.8);
-			m = new Matrix();
-			m.createGradientBox(256, 256, 0, 0, 0);
-			m.translate(-64, -64);
-			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
-			c.graphics.drawRect(0, 0, 128, 128);
-			m.translate(128, 0);
-			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
-			c.graphics.drawRect(128, 0, 128, 128);
-			m.translate(128, 0);
-			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
-			c.graphics.drawRect(256, 0, 128, 128);
-			m = new Matrix();
-			m.createGradientBox(256, 256, 0, 0, 0);
-			m.translate(-64, 64);
-			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
-			c.graphics.drawRect(0, 128, 128, 128);
-			m.translate(128, 0);
-			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
-			c.graphics.drawRect(128, 128, 128, 128);
-			m.translate(128, 0);
-			c.graphics.beginGradientFill("radial", dColor, dAlpha, dRatio, m);
-			c.graphics.drawRect(256, 128, 128, 128);
-			c.graphics.endFill();
-
+			if (isDice) {
+				// dice point
+				c.graphics.lineStyle(6, color02, 0.3);
+				// 1
+				c.graphics.beginFill(0xff0000, 0.8);
+				c.graphics.drawCircle(64, 64, 16);
+				c.graphics.beginFill(0x202020, 0.8);
+				// 2
+				c.graphics.drawCircle(288, 32, 10);
+				c.graphics.drawCircle(352, 96, 10);
+				// 3
+				c.graphics.drawCircle(288, 160, 10);
+				c.graphics.drawCircle(320, 192, 10);
+				c.graphics.drawCircle(352, 224, 10);
+				// 4
+				c.graphics.drawCircle(32, 160, 10);
+				c.graphics.drawCircle(32, 224, 10);
+				c.graphics.drawCircle(96, 160, 10);
+				c.graphics.drawCircle(96, 224, 10);
+				// 5
+				c.graphics.drawCircle(160, 160, 10);
+				c.graphics.drawCircle(192, 192, 10);
+				c.graphics.drawCircle(160, 224, 10);
+				c.graphics.drawCircle(224, 160, 10);
+				c.graphics.drawCircle(224, 224, 10);
+				// 6
+				c.graphics.drawCircle(160, 32, 10);
+				c.graphics.drawCircle(160, 64, 10);
+				c.graphics.drawCircle(160, 96, 10);
+				c.graphics.drawCircle(224, 32, 10);
+				c.graphics.drawCircle(224, 64, 10);
+				c.graphics.drawCircle(224, 96, 10);
+			}
 			m = new Matrix();
 			m.scale(0.666, 1);
 			b.draw(c, m);

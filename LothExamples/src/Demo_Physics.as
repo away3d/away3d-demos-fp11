@@ -57,8 +57,8 @@ package {
 
 	import flash.display.StageQuality;
 	import flash.display.StageScaleMode;
-	import flash.display.BitmapData;
 	import flash.display.StageAlign;
+	//import flash.display.BitmapData;
 	import flash.events.MouseEvent;
 	import flash.text.TextFormat;
 	import flash.system.System;
@@ -181,6 +181,7 @@ package {
 			// setup the camera
 			_view.camera.lens = new PerspectiveLens(70);
 			_view.camera.lens.far = 20000;
+			_view.camera.lens.near = 0.1;
 			// setup controller to be used on the camera
 			_cameraController = new HoverController(_view.camera, null, 0, 80, 2000, 10, 9);
 			_cameraController.minTiltAngle = -90;
@@ -223,26 +224,27 @@ package {
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
 
-			_material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
+			_material01 = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0x606060, 0x333333, false, [0.3, 0.3])));
+			//_material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
 			_material01.alphaBlending = true;
 			_material01.gloss = 100;
 			_material01.specular = 0.5;
 			_materials[0] = _material01;
 
-			_materialBoxeBrick = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapBrick()));
-			_materialBoxeBrick.alphaBlending = true;
+			_materialBoxeBrick = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0xB7502F, 0x6A2E23, false, [1, 1])));
+			//_materialBoxeBrick.alphaBlending = true;
 			_materialBoxeBrick.gloss = 40;
 			_materialBoxeBrick.specular = 1;
 			_materials[1] = _materialBoxeBrick;
 
-			_materialBoxeDice = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapDice()));
-			_materialBoxeDice.alphaBlending = true;
+			_materialBoxeDice = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0xEFEFEF, 0xAAAAAA, true, [1,1])));
+			//_materialBoxeDice.alphaBlending = true;
 			_materialBoxeDice.gloss = 40;
 			_materialBoxeDice.specular = 1;
 			_materials[2] = _materialBoxeDice;
 
 			_materialEyeBall = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapEyeBall()));
-			_materialEyeBall.alphaBlending = true;
+			//_materialEyeBall.alphaBlending = true;
 			_materialEyeBall.gloss = 10;
 			_materialEyeBall.specular = 1;
 			_materials[3] = _materialEyeBall;
