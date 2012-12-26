@@ -72,6 +72,8 @@ package {
 
 	import utils.AutoMapPhysics;
 
+	//import games.Particules;
+
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 	import com.bit101.components.Component;
@@ -168,6 +170,10 @@ package {
 			initMaterials();
 			initSceneObject();
 			initListeners();
+			
+			/*Particules.getInstance();
+			Particules.scene = _view.scene;
+			Particules.initParticlesTrail();*/
 		}
 
 		/**
@@ -214,7 +220,7 @@ package {
 
 			_lightPicker = new StaticLightPicker([_sunLight]);
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			_rimLightMethod = new RimLightMethod(0xffffff, 0.5, 2, RimLightMethod.ADD);
+			_rimLightMethod = new RimLightMethod(0xffffff, 0.25, 1, RimLightMethod.MIX);
 			// _shadowMethod.epsilon = .0007;
 		}
 
@@ -224,7 +230,7 @@ package {
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
 
-			_material01 = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0x606060, 0x333333, false, [0.3, 0.3])));
+			_material01 = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0x606060, 0x333333, false, [0.8, 0.1])));
 			//_material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
 			_material01.alphaBlending = true;
 			_material01.gloss = 100;
@@ -272,6 +278,8 @@ package {
 		 * Initialise scene object3d
 		 */
 		private function initSceneObject() : void {
+			
+			
 			var i : uint;
 			var j : uint;
 			var height : uint;
@@ -288,25 +296,25 @@ package {
 				case 0 :
 					OimoEngine.demoName = '0 - In the box';
 					OimoEngine.gravity(-1);
-					var ground : Mesh = new Mesh(new CubeGeometry(1000, 50, 1000), _material01);
+					var ground : Mesh = new Mesh(new CubeGeometry(2000, 50, 2000), _material01);
 					var wall0 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
 					var wall1 : Mesh = new Mesh(new CubeGeometry(50, 600, 1000), _material01);
-					var wall2 : Mesh = new Mesh(new CubeGeometry(1000, 600, 50), _material01);
-					var wall3 : Mesh = new Mesh(new CubeGeometry(1000, 600, 50), _material01);
+					var wall2 : Mesh = new Mesh(new CubeGeometry(950, 600, 50), _material01);
+					var wall3 : Mesh = new Mesh(new CubeGeometry(950, 600, 50), _material01);
 					ground.castsShadows = false;
 					wall0.castsShadows = false;
 					wall1.castsShadows = false;
 					wall2.castsShadows = false;
 					wall3.castsShadows = false;
-					OimoEngine.addCube(ground, 1000, 50, 1000, new Vector3D(0, 0, 0));
-					OimoEngine.addCube(wall0, 50, 600, 1000, new Vector3D(500, 300, 0));
-					OimoEngine.addCube(wall1, 50, 600, 1000, new Vector3D(-500, 300, 0));
-					OimoEngine.addCube(wall2, 1000, 600, 50, new Vector3D(0, 300, -500));
-					OimoEngine.addCube(wall3, 1000, 600, 50, new Vector3D(0, 300, 500));
+					OimoEngine.addCube(ground, 2000, 50, 2000, new Vector3D(0, -25, 0));
+					OimoEngine.addCube(wall0, 50, 600, 1000, new Vector3D(501, 300, 0));
+					OimoEngine.addCube(wall1, 50, 600, 1000, new Vector3D(-501, 300, 0));
+					OimoEngine.addCube(wall2, 950, 600, 50, new Vector3D(0, 300, -475));
+					OimoEngine.addCube(wall3, 950, 600, 50, new Vector3D(0, 300, 475));
 					// the big sphere
 					_sphere = new Mesh(new SphereGeometry(150, 30, 20), _materialEyeBall);
 					_sphere.geometry.scaleUV(2, 1);
-					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 500, 0), null, 1, 0.5, 0.5, false);
+					OimoEngine.addSphere(_sphere, 150, new Vector3D(0, 20000, 0), null, 1, 0.5, 0.5, false);
 					// reference mesh for clone
 					sphere = new Mesh(new SphereGeometry(50), _materialEyeBall);
 					sphere.geometry.scaleUV(2, 1);
@@ -454,9 +462,17 @@ package {
 			if (_sunLight.ambient < 0.3) _sunLight.ambient += 0.003;
 			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
 			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
+			
 			OimoEngine.update();
 			log(OimoEngine.info());
+			
 			_cameraController.update();
+			
+			/*if(_sphere){
+				Particules.followTarget1.transform = _sphere.transform;
+				Particules.followTarget2.transform = _sphere.transform;
+			}*/
+			
 			_view.render();
 		}
 
