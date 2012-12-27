@@ -32,6 +32,7 @@ package utils {
 		private static var _side : BitmapData;
 		private static var _bigCube : Mesh;
 		private static var _bigCubeMat : ColorMaterial;
+		private static var _fogColorOnMap : uint;
 		private var _preview : Sprite;
 
 		public function AutoMapSky() {
@@ -65,6 +66,10 @@ package utils {
 
 		static public function get skyMap() : BitmapCubeTexture {
 			return _skyMap;
+		}
+
+		static public function get fogColorOnMap() : uint {
+			return _fogColorOnMap;
 		}
 
 		static public function get fogColor() : uint {
@@ -114,7 +119,7 @@ package utils {
 		 */
 		static public function vectorSky(zenithColor : uint, horizonColor : uint, nadirColor : uint, quality : uint = 8, bitmaps : Vector.<BitmapData> = null, blend : String = "overlay") : BitmapCubeTexture {
 			var xl : uint;
-			if (bitmaps != null)xl = bitmaps[0].width;
+			if (bitmaps != null) xl = bitmaps[0].width;
 			else xl = 128 * quality;
 			var pinch : uint = xl / 3.6;
 
@@ -179,8 +184,10 @@ package utils {
 					_skyTextureBitmaps[i] = newMap[i];
 				}
 				skyFinal = new BitmapCubeTexture(newMap[0], newMap[1], newMap[2], newMap[3], newMap[4], newMap[5]);
+				_fogColorOnMap = uint("0x" + newMap[0].getPixel(xl >> 1, (xl >> 1)+5).toString(16));
 			} else {
 				skyFinal = new BitmapCubeTexture(_side, _side, _top, _floor, _side, _side);
+				_fogColorOnMap = uint("0x" + _side.getPixel(xl >> 1, (xl >> 1)+5).toString(16));
 			}
 
 			return skyFinal;
