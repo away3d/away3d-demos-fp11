@@ -57,7 +57,7 @@ package games {
 		private static var _p : Point;
 		private static var _cubePoints : Vector.<Vector3D>;
 		private static var _groundVertex : Vector.<uint>;
-		private static var _numCube : uint = 36;
+		private static var _numCube : uint;
 		// Debug option to see only perlin noize and grid
 		private static var _isMapTesting : Boolean = false;
 		// Optional cube position follow terrain mesh
@@ -84,7 +84,7 @@ package games {
 		/**
 		 * Globale initialiser
 		 */
-		public static function initGround(Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : uint = 12800, Height : int = 1000, Resolution : uint = 128) : void {
+		public static function initGround(Bitmaps : Vector.<BitmapData>, Material : TextureMaterial, Dimension : uint = 12800, Height : int = 1000, Resolution : uint = 128, skyNew : Boolean = false) : void {
 			_zoneHeight = Height;
 			_zoneDimension = Dimension;
 			_terrainMaterial = Material;
@@ -104,9 +104,15 @@ package games {
 			draw();
 
 			// ground bitmap scrolling
-			_ground00 = new BitmapScrolling(_bitmaps[6]);
-			_ground01 = new BitmapScrolling(_bitmaps[7]);
-			_ground02 = new BitmapScrolling(_bitmaps[8]);
+			if (skyNew) {
+				_ground00 = new BitmapScrolling(_bitmaps[2]);
+				_ground01 = new BitmapScrolling(_bitmaps[3]);
+				_ground02 = new BitmapScrolling(_bitmaps[4]);
+			} else {
+				_ground00 = new BitmapScrolling(_bitmaps[6]);
+				_ground01 = new BitmapScrolling(_bitmaps[7]);
+				_ground02 = new BitmapScrolling(_bitmaps[8]);
+			}
 
 			// find the map multyplicator for scrolling
 			findMultyplicator();

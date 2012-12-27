@@ -83,7 +83,7 @@ package {
 	import flash.events.Event;
 	import flash.ui.Keyboard;
 
-	import utils.AutoMapSky;
+	import utils.AutoSky;
 	import utils.LoaderPool;
 
 	import com.bit101.components.Style;
@@ -223,11 +223,11 @@ package {
 			initLights();
 
 			// random sky map
-			var skyN : uint = uint(1 + Math.random() * 6);
+			var skyN : uint = uint(1 + Math.random() * 14);
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
+			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
 			LoaderPool.log = log;
@@ -246,14 +246,14 @@ package {
 			randomSky();
 
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.8);
 			_waterMaterial.addMethod(_reflectionMethod);
 
 			// create noize terrain with image 6 7 8
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
 			FractalTerrain.addCubicReference(1);
-			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
 
 			// basic water ground
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
@@ -332,10 +332,10 @@ package {
 		 * Create random sky 
 		 */
 		private function randomSky() : void {
-			AutoMapSky.scene = _view.scene;
-			if (_isIntro) AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
-			else AutoMapSky.randomSky(null, _bitmaps, 8);
-			_fogMethode.fogColor = AutoMapSky.fogColor;
+			AutoSky.scene = _view.scene;
+			if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
+			else AutoSky.randomSky(null, _bitmaps, 8);
+			_fogMethode.fogColor = AutoSky.fogColor;
 		}
 
 		/**
@@ -351,7 +351,7 @@ package {
 			// create global fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 			// water method
-			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[5]), Cast.bitmapTexture(_bitmaps[5]));
 			// fresnelMethod
 			_fresnelMethod3 = new FresnelSpecularMethod();
 			_fresnelMethod3.normalReflectance = 0.4;
@@ -483,8 +483,8 @@ package {
 			else _isIntro = false;
 
 			if (_night > 0) {
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night, FARVIEW);
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, _night);
+				AutoSky.night(_night, FARVIEW);
 				_night--;
 			}
 

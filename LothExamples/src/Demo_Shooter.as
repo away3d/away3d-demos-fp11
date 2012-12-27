@@ -80,7 +80,7 @@ package {
 	import flash.events.Event;
 	import flash.ui.Keyboard;
 
-	import utils.AutoMapSky;
+	import utils.AutoSky;
 	import utils.LoaderPool;
 
 	import com.bit101.components.Style;
@@ -94,7 +94,7 @@ package {
 
 	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Shooter extends Sprite {
-		private const MOUNTAIGN_TOP : Number = 3000;
+		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
 		// start colors
@@ -156,7 +156,6 @@ package {
 		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 6000);
 		private var _cameraTarget : Vector3D = new Vector3D(0, 1000, 3000);
 		
-		//private var _fogColors:Array = [0x000000, 0x192e3f, 0x778cb9, 0x000000, 0x355641, 0x594930, 0x101115];
 
 		// private var _borderCube : Array;
 		/**
@@ -214,14 +213,13 @@ package {
 			initLights();
 
 			// random sky map
-			var skyN : uint = uint(1 + Math.random() * 6);
+			var skyN : uint = uint(1 + Math.random() * 14);
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
+			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
-			//fogColor = _fogColors[skyN];
 			
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
@@ -242,7 +240,7 @@ package {
 			_view.scene.addChild(_sphereTest);
 
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.6);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.6);
 			_waterMaterial.addMethod(_reflectionMethod);
 			_shipMaterial.addMethod(_reflectionMethod);
 
@@ -250,7 +248,7 @@ package {
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
 			FractalTerrain.addCubicReference(7);
-			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
 			FractalTerrain.move(-1, 0);
 			// create physical cube ship bump on it
 			// var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
@@ -385,11 +383,11 @@ package {
 		 * Create random sky 
 		 */
 		private function randomSky() : void {
-			AutoMapSky.scene = _view.scene;
-			if (_isIntro) AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
-			else AutoMapSky.randomSky(null, _bitmaps, 8);
-			fogColor = AutoMapSky.fogColorOnMap;
-			_fogMethode.fogColor =  AutoMapSky.fogColorOnMap;//AutoMapSky.fogColor;
+			AutoSky.scene = _view.scene;
+			if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
+			else AutoSky.randomSky(null, _bitmaps, 8);
+			fogColor = AutoSky.fogColorOnMap;
+			_fogMethode.fogColor =  AutoSky.fogColorOnMap;//AutoMapSky.fogColor;
 		}
 
 		/**
@@ -405,7 +403,7 @@ package {
 			// fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW+_cameraTarget.z, fogColor);
 			// water method
-			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[5]), Cast.bitmapTexture(_bitmaps[5]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.8;
@@ -472,8 +470,8 @@ package {
 			else _isIntro = false;
 
 			if (_night > 0) {
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night, FARVIEW);
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, _night);
+				AutoSky.night(_night, FARVIEW);
 				_night--;
 			}
 
@@ -512,7 +510,7 @@ package {
 			_player.position = FractalTerrain.cubePoints[24];
 
 			// _cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
-			// _cameraController.update();
+			//_cameraController.update();
 
 			// animate water material
 			_waterMethod.water1OffsetX += .001;
@@ -758,17 +756,17 @@ package {
 		private var _factor : Number = 4.66;
 
 		private function onStageMouseMove(e : MouseEvent) : void {
-			/*if (_isRotation) {
-			_cameraController.panAngle += (e.stageX - _prevMouseX);
-			_cameraController.tiltAngle += (e.stageY - _prevMouseY);
-			}*/
+			//if (_isRotation) {
+			//_cameraController.panAngle += (e.stageX - _prevMouseX);
+			//_cameraController.tiltAngle += (e.stageY - _prevMouseY);
+			//}
 			// if (_isShipControl) {
 			_position.x = -(e.stageX - (stage.stageWidth >> 1)) * _factor;
 			_position.y = -((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y;
 			_position.z = _cameraTarget.z;
 			// }
-			// _prevMouseX = e.stageX;
-			// _prevMouseY = e.stageY;
+			 _prevMouseX = e.stageX;
+			 _prevMouseY = e.stageY;
 		}
 
 		/**

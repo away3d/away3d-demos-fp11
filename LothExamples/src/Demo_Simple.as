@@ -80,12 +80,12 @@ package {
 	import flash.ui.Keyboard;
 	import flash.system.System;
 
-	import utils.AutoMapSky;
+	import utils.AutoSky;
 	import utils.LoaderPool;
 
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Simple extends Sprite {
-		private const FARVIEW : Number = 128 * 100;
+		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 400;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
@@ -181,13 +181,14 @@ package {
 			initLights();
 
 			// random sky map
-			var skyN : uint = uint(1 + Math.random() * 6);
+			var skyN : uint = uint(1 + Math.random() * 14);
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
+			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
+			
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -301,13 +302,13 @@ package {
 		 * Create random sky 
 		 */
 		private function randomSky() : void {
-			AutoMapSky.scene = _view.scene;
+			AutoSky.scene = _view.scene;
 			if (_isIntro) {
-				AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8, "overlay");
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, 100);
+				AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8, "overlay");
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, 100);
 			} else {
-				AutoMapSky.randomSky(null, _bitmaps, 4, "add");
-				_fogMethode.fogColor = AutoMapSky.fogColor;
+				AutoSky.randomSky(null, _bitmaps, 4, "add");
+				_fogMethode.fogColor = AutoSky.fogColor;
 			}
 		}
 
@@ -355,8 +356,8 @@ package {
 			else _isIntro = false;
 
 			if (_night > 0) {
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night, FARVIEW);
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, _night);
+				AutoSky.night(_night, FARVIEW);
 				_night--;
 			}
 

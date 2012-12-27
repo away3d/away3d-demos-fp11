@@ -80,7 +80,7 @@ package {
 	import flash.events.Event;
 	import flash.ui.Keyboard;
 
-	import utils.AutoMapSky;
+	import utils.AutoSky;
 	import utils.LoaderPool;
 
 	import com.bit101.components.Style;
@@ -207,11 +207,11 @@ package {
 			initLights();
 
 			// random sky map
-			var skyN : uint = uint(1 + Math.random() * 6);
+			var skyN : uint = uint(1 + Math.random() * 14);
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
+			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
 
@@ -231,7 +231,7 @@ package {
 			randomSky();
 
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.6);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.6);
 			_waterMaterial.addMethod(_reflectionMethod);
 			_shipMaterial.addMethod(_reflectionMethod);
 
@@ -239,7 +239,7 @@ package {
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
 			FractalTerrain.addCubicReference(7);
-			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
 
 			// create physical cube ship bump on it
 			//var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
@@ -257,14 +257,14 @@ package {
 				// if (type == 0) {
 				pb = Mesh(testMesh.clone());
 			    if (i == 24) pb.material = _boxMaterialPlus2;
-				//OimoEngine.addCube(pb, 190, 200, 190, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 2, 0.5, 0.5, true);
+				//OimoEngine.addCube(pb, 190, 200, 190, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), null, 2, 0.5, 0.5, true);
 
-				OimoEngine.addSphere(pb, 100, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), 0, null, 1, 0.8, 1, true);
+				OimoEngine.addSphere(pb, 100, FractalTerrain.cubePoints[i].add(new Vector3D(0, -100, 0)), null, 1, 0.8, 1, true);
 				// } 
 				/*else {
 				pb = Mesh(pboxeBig.clone());
 				pb.material = _boxMaterialPlus2;
-				OimoEngine.addCube(pb, 190, 1000, 190, new Vector3D(0, 0, 0), 0, null, 10, 0.5, 0.2, true);
+				OimoEngine.addCube(pb, 190, 1000, 190, new Vector3D(0, 0, 0), null, 10, 0.5, 0.2, true);
 				}*/
 			}
 
@@ -292,7 +292,7 @@ package {
 			shipboxe.castsShadows = false;
 			shipboxe.addChild(spaceShip);
 			shipboxe.addChild(spaceShip2);
-			OimoEngine.addCube(shipboxe, 600, 200, 600, FractalTerrain.cubePoints[24].add(new Vector3D(0, 100, 0)), 0, null, 1, 0.8, 1, false);
+			OimoEngine.addCube(shipboxe, 600, 200, 600, FractalTerrain.cubePoints[24].add(new Vector3D(0, 100, 0)), null, 1, 0.8, 1, false);
 			// joint test
 			// OimoEngine.addDistanceJoint(OimoEngine.rigids[FractalTerrain.numCube], OimoEngine.rigids[24], 20, true, new Vector3D(0, -100, 0), new Vector3D(0, 100, 0));
 			// OimoEngine.addHingeJoint(OimoEngine.rigids[24], OimoEngine.rigids[FractalTerrain.numCube], false,new Vector3D(1,0,1), new Vector3D(0,1,0) , new Vector3D(0,400,0), new Vector3D(0,0,0));
@@ -370,10 +370,10 @@ package {
 		 * Create random sky 
 		 */
 		private function randomSky() : void {
-			AutoMapSky.scene = _view.scene;
-			if (_isIntro) AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
-			else AutoMapSky.randomSky(null, _bitmaps, 8);
-			_fogMethode.fogColor = AutoMapSky.fogColor;
+			AutoSky.scene = _view.scene;
+			if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
+			else AutoSky.randomSky(null, _bitmaps, 8);
+			_fogMethode.fogColor = AutoSky.fogColor;
 		}
 
 		/**
@@ -389,7 +389,7 @@ package {
 			// fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 			// water method
-			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[5]), Cast.bitmapTexture(_bitmaps[5]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.8;
@@ -454,8 +454,8 @@ package {
 			else _isIntro = false;
 
 			if (_night > 0) {
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night, FARVIEW);
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, _night);
+				AutoSky.night(_night, FARVIEW);
 				_night--;
 			}
 

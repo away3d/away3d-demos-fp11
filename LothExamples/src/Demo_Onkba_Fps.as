@@ -94,7 +94,7 @@ package {
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 
-	import utils.AutoMapSky;
+	import utils.AutoSky;
 	import utils.LoaderPool;
 
 	import games.FractalTerrain;
@@ -272,17 +272,18 @@ package {
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
+			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
+			// 2 3 4
 			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
-			// hero map 9 10 11
+			// hero map 5 6 7
 			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
-			// gun map 12 13 14
+			// gun map 8 9 10 
 			_bitmapStrings.push("onkba/weapon_diffuse.jpg", "onkba/weapon_normals.jpg", "onkba/weapon_lightmap.jpg");
-			// bazooka map 15 16 17
+			// bazooka map 11 12 13
 			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
-			// Sia map 18
+			// Sia map 14 
 			_bitmapStrings.push("onkba/sia_diffuse.jpg");
-			// water map 19
+			// water map 15
 			_bitmapStrings.push("water_normals.jpg");
 
 			LoaderPool.log = log;
@@ -304,7 +305,7 @@ package {
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
 			FractalTerrain.addCubicReference(1);
-			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
 
 			// setup the player container
 			Player.getInstance();
@@ -404,10 +405,10 @@ package {
 		 * Create random sky 
 		 */
 		private function randomSky() : void {
-			AutoMapSky.scene = _view.scene;
-			if (_isIntro) AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
-			else AutoMapSky.randomSky(null, _bitmaps, 8);
-			_fogMethode.fogColor = AutoMapSky.fogColor;
+			AutoSky.scene = _view.scene;
+			if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
+			else AutoSky.randomSky(null, _bitmaps, 8);
+			_fogMethode.fogColor = AutoSky.fogColor;
 		}
 
 		/**
@@ -425,23 +426,23 @@ package {
 			// global fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
 			// water method
-			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[19]), Cast.bitmapTexture(_bitmaps[19]));
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[15]), Cast.bitmapTexture(_bitmaps[15]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.9;
 
 			// 0 - onkba hero
-			_onkbaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
-			_onkbaMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
-			_onkbaMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
+			_onkbaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[5]));
+			_onkbaMaterial.normalMap = Cast.bitmapTexture(_bitmaps[6]);
+			_onkbaMaterial.specularMap = Cast.bitmapTexture(_bitmaps[7]);
 			_onkbaMaterial.gloss = 25;
 			_onkbaMaterial.specular = 0.8;
 			_materials[0] = _onkbaMaterial;
 
 			// 1 - weapon
-			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[12]));
-			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[13]);
-			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[14]);
+			_gunMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[8]));
+			_gunMaterial.normalMap = Cast.bitmapTexture(_bitmaps[9]);
+			_gunMaterial.specularMap = Cast.bitmapTexture(_bitmaps[10]);
 			_gunMaterial.gloss = 20;
 			_gunMaterial.specular = 0.8;
 			_materials[1] = _gunMaterial;
@@ -492,15 +493,15 @@ package {
 			_materials[7] = _boneMaterial;
 
 			// 8 - bazooka
-			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[15]));
-			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[16]);
-			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[17]);
+			_gunMaterial2 = new TextureMaterial(Cast.bitmapTexture(_bitmaps[11]));
+			_gunMaterial2.normalMap = Cast.bitmapTexture(_bitmaps[12]);
+			_gunMaterial2.specularMap = Cast.bitmapTexture(_bitmaps[13]);
 			_gunMaterial2.gloss = 20;
 			_gunMaterial2.specular = 0.8;
 			_materials[8] = _gunMaterial2;
 
 			// 9 - hero shirt
-			_shirtMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[9]));
+			_shirtMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[5]));
 			// _shirtMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
 			// _shirtMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
 			_shirtMaterial.gloss = 5;
@@ -511,7 +512,7 @@ package {
 			_materials[9] = _shirtMaterial;
 
 			// 10 - sia hero
-			_siaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[18]));
+			_siaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[14]));
 			// _siaMaterial.normalMap = Cast.bitmapTexture(_bitmaps[10]);
 			// _siaMaterial.specularMap = Cast.bitmapTexture(_bitmaps[11]);
 			_siaMaterial.gloss = 25;
@@ -563,8 +564,8 @@ package {
 			else _isIntro = false;
 
 			if (_night > 0) {
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night, FARVIEW);
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, _night);
+				AutoSky.night(_night, FARVIEW);
 				_night--;
 			}
 
@@ -1183,7 +1184,6 @@ package {
 		public function addHeroEye() : void {
 			var eyeGeometry : SphereGeometry = new SphereGeometry(1, 32, 24);
 			eyeGeometry.scaleUV(2, 1);
-
 			_eyes = new ObjectContainer3D();
 			_eyeR = new Mesh(eyeGeometry, _eyesOpenMaterial);
 			_eyeR.castsShadows = false;

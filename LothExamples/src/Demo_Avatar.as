@@ -85,7 +85,7 @@ package {
 	import flash.ui.Keyboard;
 
 	import utils.AutoMapAvatar;
-	import utils.AutoMapSky;
+	import utils.AutoSky;
 	import utils.BitmapFilterEffects;
 	import utils.LoaderPool;
 
@@ -155,7 +155,7 @@ package {
 		private var animators : Vector.<SkeletonAnimator>;
 		private var chromosomes : Vector.<int>;
 		private const HAIR_COLOR : Array = [0x6E4C44, 0x4F4540, 0xFC6932, 0xE8593A, 0xFFB42B, 0x9A7F60, 0x494344, 0xBBC6CB];
-		private var _sTexture : Array;
+		//private var _sTexture : Array;
 		// navigation
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
@@ -225,13 +225,14 @@ package {
 			initLights();
 
 			// random sky map
-			var skyN : uint = uint(1 + Math.random() * 6);
+			var skyN : uint = uint(1 + Math.random() * 14);
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky" + skyN + "/negy.jpg", "sky" + skyN + "/posy.jpg", "sky" + skyN + "/posx.jpg", "sky" + skyN + "/negz.jpg", "sky" + skyN + "/posz.jpg", "sky" + skyN + "/negx.jpg");
+			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
+			
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -247,14 +248,14 @@ package {
 			// create skybox
 			randomSky();
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoMapSky.skyMap, 0.8);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.8);
 			_waterMaterial.addMethod(_reflectionMethod);
 
-			// create noize terrain with image 6 7 8
+			// create noize terrain with image 2 3 4
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
 			FractalTerrain.addCubicReference(1);
-			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
 			FractalTerrain.move(0, 1);
 
 			// basic water ground
@@ -331,13 +332,13 @@ package {
 		 * Create random sky 
 		 */
 		private function randomSky() : void {
-			AutoMapSky.scene = _view.scene;
+			AutoSky.scene = _view.scene;
 			if (_isIntro) {
-				AutoMapSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8, "overlay");
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, 100);
+				AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8, "overlay");
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, 100);
 			} else {
-				AutoMapSky.randomSky(null, _bitmaps, 4, "add");
-				_fogMethode.fogColor = AutoMapSky.fogColor;
+				AutoSky.randomSky(null, _bitmaps, 4, "add");
+				_fogMethode.fogColor = AutoSky.fogColor;
 			}
 		}
 
@@ -346,7 +347,7 @@ package {
 		 */
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
-			_sTexture = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
+			//_sTexture = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
 			
 			// shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
@@ -357,7 +358,7 @@ package {
 			// fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, 0x000000);
 			// water method
-			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[9]), Cast.bitmapTexture(_bitmaps[9]));
+			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[5]), Cast.bitmapTexture(_bitmaps[5]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = .4;
@@ -423,8 +424,8 @@ package {
 			else _isIntro = false;
 
 			if (_night > 0) {
-				_fogMethode.fogColor = AutoMapSky.darken(AutoMapSky.fogColor, _night);
-				AutoMapSky.night(_night, FARVIEW);
+				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, _night);
+				AutoSky.night(_night, FARVIEW);
 				_night--;
 			}
 
