@@ -86,13 +86,10 @@ package {
 	[SWF(backgroundColor="#000000", frameRate="60")]
 	public class Demo_Simple extends Sprite {
 		private const FARVIEW : Number = 12800;
-		private const FOGNEAR : Number = 400;
+		private const FOGNEAR : Number = 100;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
-		private var sunColor : uint = 0xFFFFFF;
-		private var skyColor : uint = 0x9090ee;
-		private var fogColor : uint = 0xd3eef9;
-		private var groundColor : uint = 0xd3eef9;
+		private var sunColor : uint = 0xFFFFEE;
 		// Stage manager and Stage3D instance proxy classes
 		private var _stage3DManager : Stage3DManager;
 		private var _stage3DProxy : Stage3DProxy;
@@ -185,10 +182,10 @@ package {
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
+			_bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
-			
+
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -198,48 +195,9 @@ package {
 		 * Initialise the scene objects
 		 */
 		private function initAfterBitmapLoad() : void {
-			// Create the NURBS mesh
-			// NURBS constructor
-			/*var controlNet : Vector.<NURBSVertex>;
-			controlNet.push(new NURBSVertex(-200, 0, -150, 1));
-			controlNet.push(new NURBSVertex(-200, -100, -75, 1));
-			controlNet.push(new NURBSVertex(-200, -100, 0, 1));
-			controlNet.push(new NURBSVertex(-200, -100, 75, 1));
-			controlNet.push(new NURBSVertex(-200, 0, 150, 1));
-
-			controlNet.push(new NURBSVertex(-100, -100, -150, 1));
-			controlNet.push(new NURBSVertex(-100, -100, -75, 1));
-			controlNet.push(new NURBSVertex(-100, -100, 0, 1));
-			controlNet.push(new NURBSVertex(-100, -100, 75, 1));
-			controlNet.push(new NURBSVertex(-100, -100, 150, 1));
-
-			controlNet.push(new NURBSVertex(0, -100, -150, 1));
-			controlNet.push(new NURBSVertex(0, -100, -75, 1));
-			controlNet.push(new NURBSVertex(0, 250, 0, 6));
-			controlNet.push(new NURBSVertex(0, -100, 75, 1));
-			controlNet.push(new NURBSVertex(0, -100, 150, 1));
-
-			controlNet.push(new NURBSVertex(100, -100, -150, 1));
-			controlNet.push(new NURBSVertex(100, -100, -75, 1));
-			controlNet.push(new NURBSVertex(100, -100, 0, 1));
-			controlNet.push(new NURBSVertex(100, -100, 75, 1));
-			controlNet.push(new NURBSVertex(100, -100, 150, 1));
-
-			controlNet.push(new NURBSVertex(200, 0, -150, 1));
-			controlNet.push(new NURBSVertex(200, -100, -75, 1));
-			controlNet.push(new NURBSVertex(200, -100, 0, 1));
-			controlNet.push(new NURBSVertex(200, -100, 75, 1));
-			controlNet.push(new NURBSVertex(200, 0, 150, 1));
-			// new NURBS(ctrlPnts, uNumPnts, vNumPnts, init);
-			var nurbsMesh : NURBSGeometry = new NURBSGeometry(controlNet, 5, 5, 5, 5, 20, 20);*/
-			// (controlNet, 5, 5, { name:"nurbsModel", uSegments:20, vSegments:20 });
-
-			// Init material and objects
-			initMaterials();
-			// var eee : Mesh = new Mesh(nurbsMesh, _simpleMaterial);
-			// _view.scene.addChild(eee);
-			// create skybox
 			randomSky();
+			// Init material
+			initMaterials();
 
 			// basic ground
 			_ground = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2), _terrainMaterial);
@@ -303,13 +261,8 @@ package {
 		 */
 		private function randomSky() : void {
 			AutoSky.scene = _view.scene;
-			if (_isIntro) {
-				AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8, "overlay");
-				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, 100);
-			} else {
-				AutoSky.randomSky(null, _bitmaps, 4, "add");
-				_fogMethode.fogColor = AutoSky.fogColor;
-			}
+			AutoSky.randomSky(null, _bitmaps, 4, "add");
+			if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
 		}
 
 		/**
@@ -319,7 +272,7 @@ package {
 			_materials = new Vector.<TextureMaterial>();
 
 			// fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, 0x000000);
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, AutoSky.fogColor);
 			// shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0007;
@@ -332,7 +285,7 @@ package {
 			_materials[0] = _simpleMaterial;
 
 			// 1 - terrain material
-			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFF0000)));
+			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x909090)));
 			_terrainMaterial.gloss = 5;
 			_terrainMaterial.specular = 0.2;
 			_materials[1] = _terrainMaterial;

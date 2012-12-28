@@ -51,7 +51,7 @@ package {
 	import away3d.core.pick.PickingColliderType;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.materials.methods.FogMethod;
-	import away3d.controllers.HoverController;
+	// import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.SphereGeometry;
 	import away3d.primitives.PlaneGeometry;
@@ -98,10 +98,7 @@ package {
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
 		// start colors
-		private var groundColor : uint = 0x333338;
-		private var fogColor : uint = 0x606060;
-		private var skyColor : uint = 0x445465;
-		private var sunColor : uint = 0xFFFFFF;
+		private var sunColor : uint = 0xFFFFEE;
 		// bitmaps
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
@@ -112,7 +109,7 @@ package {
 		private var _view : View3D;
 		private var _stats : AwayStats;
 		private var _lightPicker : StaticLightPicker;
-		private var _cameraController : HoverController;
+		// private var _cameraController : HoverController;
 		private var _night : Number = 100;
 		// scene objects
 		private var _player : ObjectContainer3D;
@@ -140,7 +137,7 @@ package {
 		private var _isIntro : Boolean = true;
 		private var _isRotation : Boolean;
 		private var _isRender : Boolean;
-		private var _isShipControl : Boolean;
+		// private var _isShipControl : Boolean;
 		// interface
 		private var _text : TextField;
 		private var _capture : BitmapData;
@@ -155,7 +152,6 @@ package {
 		private var _spMat : TextureMaterial;
 		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 6000);
 		private var _cameraTarget : Vector3D = new Vector3D(0, 1000, 3000);
-		
 
 		// private var _borderCube : Array;
 		/**
@@ -217,10 +213,10 @@ package {
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
+			_bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
-			
+
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -230,19 +226,11 @@ package {
 		 * Initialise the scene objects
 		 */
 		private function initAfterBitmapLoad() : void {
-			// create material
-			initMaterials();
-
 			// create skybox
 			randomSky();
 
-			_sphereTest = new Mesh(new SphereGeometry(100), _spMat);
-			_view.scene.addChild(_sphereTest);
-
-			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.6);
-			_waterMaterial.addMethod(_reflectionMethod);
-			_shipMaterial.addMethod(_reflectionMethod);
+			// create material
+			initMaterials();
 
 			// create fractal terrain with image 6 7 8
 			FractalTerrain.getInstance();
@@ -276,6 +264,9 @@ package {
 				OimoEngine.addCube(pb, 190, 1000, 190, new Vector3D(0, 0, 0), null, 10, 0.5, 0.2, true);
 				}*/
 			}
+
+			_sphereTest = new Mesh(new SphereGeometry(100), _shipMaterial);
+			_view.scene.addChild(_sphereTest);
 
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
@@ -324,7 +315,7 @@ package {
 
 			// create custom lens
 			_view.camera.lens = new PerspectiveLens(50);
-			_view.camera.lens.far = FARVIEW+_cameraTarget.z;
+			_view.camera.lens.far = FARVIEW + _cameraTarget.z;
 			_view.camera.lens.near = 1;
 			_view.forceMouseMove = true;
 			// setup controller to be used on the camera
@@ -384,10 +375,9 @@ package {
 		 */
 		private function randomSky() : void {
 			AutoSky.scene = _view.scene;
-			if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
-			else AutoSky.randomSky(null, _bitmaps, 8);
-			fogColor = AutoSky.fogColorOnMap;
-			_fogMethode.fogColor =  AutoSky.fogColorOnMap;//AutoMapSky.fogColor;
+			AutoSky.randomSky(null, _bitmaps, 8);
+			if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
+			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.skyMap;
 		}
 
 		/**
@@ -401,22 +391,25 @@ package {
 			_shadowMethod.epsilon = .0007;
 			_shadowMethod.alpha = 0.5;
 			// fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW+_cameraTarget.z, fogColor);
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW + _cameraTarget.z, AutoSky.fogColor);
 			// water method
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[5]), Cast.bitmapTexture(_bitmaps[5]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.8;
+			// reflection method
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.6);
 
 			// 0 _ water texture
-			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x30404060)));
+			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x50404060)));
 			_waterMaterial.alphaBlending = true;
 			_waterMaterial.repeat = true;
-			_waterMaterial.gloss = 20;
+			_waterMaterial.gloss = 10;
 			_waterMaterial.specular = 2;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
 			_waterMaterial.bothSides = true;
+			_waterMaterial.addMethod(_reflectionMethod);
 			_waterMaterial.addMethod(_fogMethode);
 			_materials[0] = _waterMaterial;
 
@@ -431,6 +424,7 @@ package {
 			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
 			_shipMaterial.gloss = 60;
 			_shipMaterial.specular = 1;
+			_shipMaterial.addMethod(_reflectionMethod);
 			_materials[2] = _shipMaterial;
 
 			// simulation box
@@ -510,7 +504,7 @@ package {
 			_player.position = FractalTerrain.cubePoints[24];
 
 			// _cameraController.lookAtPosition = new Vector3D(0, _player.y + 10, 0);
-			//_cameraController.update();
+			// _cameraController.update();
 
 			// animate water material
 			_waterMethod.water1OffsetX += .001;
@@ -756,17 +750,17 @@ package {
 		private var _factor : Number = 4.66;
 
 		private function onStageMouseMove(e : MouseEvent) : void {
-			//if (_isRotation) {
-			//_cameraController.panAngle += (e.stageX - _prevMouseX);
-			//_cameraController.tiltAngle += (e.stageY - _prevMouseY);
-			//}
+			// if (_isRotation) {
+			// _cameraController.panAngle += (e.stageX - _prevMouseX);
+			// _cameraController.tiltAngle += (e.stageY - _prevMouseY);
+			// }
 			// if (_isShipControl) {
 			_position.x = -(e.stageX - (stage.stageWidth >> 1)) * _factor;
 			_position.y = -((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y;
 			_position.z = _cameraTarget.z;
 			// }
-			 _prevMouseX = e.stageX;
-			 _prevMouseY = e.stageY;
+			_prevMouseX = e.stageX;
+			_prevMouseY = e.stageY;
 		}
 
 		/**

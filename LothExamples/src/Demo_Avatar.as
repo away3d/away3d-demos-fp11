@@ -96,8 +96,7 @@ package {
 
 	import games.FractalTerrain;
 
-	//import physics.OimoEngine;
-
+	// import physics.OimoEngine;
 	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Avatar extends Sprite {
 		private const MOUNTAIGN_TOP : Number = 1500;
@@ -105,10 +104,7 @@ package {
 		private const FOGNEAR : Number = 400;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
-		private var sunColor : uint = 0xFFFFFF;
-		private var skyColor : uint = 0x9090ee;
-		private var fogColor : uint = 0xd3eef9;
-		private var groundColor : uint = 0xd3eef9;
+		private var sunColor : uint = 0xFFFFEE;
 		// stage manager and Stage3D instance proxy classes
 		private var _stage3DManager : Stage3DManager;
 		private var _stage3DProxy : Stage3DProxy;
@@ -154,8 +150,8 @@ package {
 		private var _clones : Vector.<Mesh>;
 		private var animators : Vector.<SkeletonAnimator>;
 		private var chromosomes : Vector.<int>;
-		private const HAIR_COLOR : Array = [0x6E4C44, 0x4F4540, 0xFC6932, 0xE8593A, 0xFFB42B, 0x9A7F60, 0x494344, 0xBBC6CB];
-		//private var _sTexture : Array;
+		private const HAIR_COLOR : Array = [0x6E4C44, 0x4F4540, 0x336990, 0xE8593A, 0xFFB42B, 0x9A7F60, 0x494344, 0xBBC6CB];
+		// private var _sTexture : Array;
 		// navigation
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
@@ -219,7 +215,7 @@ package {
 		 */
 		private function initFinal(e : Stage3DEvent = null) : void {
 			initEngine();
-			//initOimoPhysics();
+			// initOimoPhysics();
 			initText();
 			initSetting();
 			initLights();
@@ -229,10 +225,10 @@ package {
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
+			_bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
-			
+
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
 			_bitmaps = LoaderPool.bitmaps;
@@ -242,14 +238,11 @@ package {
 		 * Initialise the scene objects
 		 */
 		private function initAfterBitmapLoad() : void {
-			// Init material and objects
-			initMaterials();
-
 			// create skybox
 			randomSky();
-			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.8);
-			_waterMaterial.addMethod(_reflectionMethod);
+
+			// Init material and objects
+			initMaterials();
 
 			// create noize terrain with image 2 3 4
 			FractalTerrain.getInstance();
@@ -305,10 +298,9 @@ package {
 		 * Initialise OimoPhysics engine
 		 */
 		/*private function initOimoPhysics() : void {
-			OimoEngine.getInstance();
-			OimoEngine.scene = _view.scene;
+		OimoEngine.getInstance();
+		OimoEngine.scene = _view.scene;
 		}*/
-
 		/**
 		 * Initialise the lights
 		 */
@@ -333,13 +325,10 @@ package {
 		 */
 		private function randomSky() : void {
 			AutoSky.scene = _view.scene;
-			if (_isIntro) {
-				AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8, "overlay");
-				_fogMethode.fogColor = AutoSky.darken(AutoSky.fogColor, 100);
-			} else {
-				AutoSky.randomSky(null, _bitmaps, 4, "add");
-				_fogMethode.fogColor = AutoSky.fogColor;
-			}
+			AutoSky.randomSky(null, _bitmaps, 4, "add");
+			if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
+			if (_rimLightMethod != null) _rimLightMethod.color = AutoSky.fogColor;
+			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.skyMap;
 		}
 
 		/**
@@ -347,14 +336,12 @@ package {
 		 */
 		private function initMaterials() : void {
 			_materials = new Vector.<TextureMaterial>();
-			//_sTexture = [Cast.bitmapTexture(_bitmaps[6]), Cast.bitmapTexture(_bitmaps[7]), Cast.bitmapTexture(_bitmaps[8])];
-			
 			// shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0007;
 			_shadowMethod.alpha = 0.5;
 			// Rim light method
-			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
+			_rimLightMethod = new RimLightMethod(AutoSky.fogColor, 0.5, 2, RimLightMethod.ADD);
 			// fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, 0x000000);
 			// water method
@@ -362,7 +349,8 @@ package {
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = .4;
-			
+			// reflection method
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.6);
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x22404060)));
@@ -371,6 +359,7 @@ package {
 			_waterMaterial.gloss = 100;
 			_waterMaterial.specular = 1;
 			_waterMaterial.normalMethod = _waterMethod;
+			_waterMaterial.addMethod(_reflectionMethod);
 			_waterMaterial.specularMethod = _fresnelMethod;
 			_materials[0] = _waterMaterial;
 
@@ -430,7 +419,7 @@ package {
 			}
 
 			FractalTerrain.update();
-			//_cameraController.lookAtPosition.y = FractalTerrain.getHeightAt(0, 0);
+			// _cameraController.lookAtPosition.y = FractalTerrain.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = FractalTerrain.cubePoints[0];
 			_cameraController.update();
 

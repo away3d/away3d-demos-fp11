@@ -100,10 +100,7 @@ package {
 		private const FARVIEW : Number = 30000;
 		private const FOGNEAR : Number = 300;
 		private const CAR_SIZE : Number = 0.4;
-		private var groundColor : uint = 0x333338;
-		private var sunColor : uint = 0xAAAAA9;
-		private var fogColor : uint = 0x333338;
-		private var skyColor : uint = 0x445465;
+		private var sunColor : uint = 0xFFFFEF;
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
 		// stage manager and Stage3D instance proxy classes
@@ -227,7 +224,7 @@ package {
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
+			_bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
 			LoaderPool.log = log;
@@ -239,15 +236,11 @@ package {
 		 * Initialise the scene object
 		 */
 		private function initAfterBitmapLoad() : void {
-			// Init material and objects
-			initMaterials();
-
 			// create skybox
 			randomSky();
 
-			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.8);
-			_waterMaterial.addMethod(_reflectionMethod);
+			// Init material and objects
+			initMaterials();
 
 			// create noize terrain with image 6 7 8
 			FractalTerrain.getInstance();
@@ -333,9 +326,10 @@ package {
 		 */
 		private function randomSky() : void {
 			AutoSky.scene = _view.scene;
-			if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
-			else AutoSky.randomSky(null, _bitmaps, 8);
-			_fogMethode.fogColor = AutoSky.fogColor;
+			AutoSky.randomSky(null, _bitmaps, 8);
+			if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
+			// if (_rimLightMethod != null) _rimLightMethod.color = AutoSky.fogColor;
+			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.skyMap;
 		}
 
 		/**
@@ -349,12 +343,14 @@ package {
 			_shadowMethod.epsilon = .0007;
 			_shadowMethod.alpha = 0.5;
 			// create global fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, AutoSky.fogColor);
 			// water method
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[5]), Cast.bitmapTexture(_bitmaps[5]));
 			// fresnelMethod
 			_fresnelMethod3 = new FresnelSpecularMethod();
 			_fresnelMethod3.normalReflectance = 0.4;
+			// reflection method
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.8);
 
 			// 0 - terrain material
 			_terrainMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, false, 0x00)));
@@ -432,6 +428,7 @@ package {
 			_waterMaterial.specular = 1;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod3;
+			_waterMaterial.addMethod(_reflectionMethod);
 			_materials[12] = _waterMaterial;
 
 			// apply light and effect for all material
@@ -489,15 +486,15 @@ package {
 			}
 
 			CarMove.update();
-			
+
 			// need to find solution in progress
-			//FractalTerrain.move(CarMove.position.x/1000, -CarMove.position.z/1000);
-			//FractalTerrain.update();
-			
+			// FractalTerrain.move(CarMove.position.x/1000, -CarMove.position.z/1000);
+			// FractalTerrain.update();
+
 			if (_visionCar) {
-				//_visionCar.position = FractalTerrain.cubePoints[0];
-				_visionCar.position = new Vector3D(CarMove.position.x*3 , FractalTerrain.getHeightAt(CarMove.position.x*3 , CarMove.position.z*3 ), CarMove.position.z*3 );
-				
+				// _visionCar.position = FractalTerrain.cubePoints[0];
+				_visionCar.position = new Vector3D(CarMove.position.x * 3, FractalTerrain.getHeightAt(CarMove.position.x * 3, CarMove.position.z * 3), CarMove.position.z * 3);
+
 				_visionCar.rotationY = CarMove.angle + 180;
 				_driveWheel.rotationZ = (CarMove.steering * 180);
 				// wheels steering

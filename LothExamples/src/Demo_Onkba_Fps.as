@@ -42,6 +42,7 @@ package {
 	import away3d.animators.data.Skeleton;
 	import away3d.animators.SkeletonAnimator;
 	import away3d.animators.SkeletonAnimationSet;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.animators.nodes.SkeletonClipNode;
 	import away3d.animators.transitions.CrossfadeTransition;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
@@ -109,10 +110,10 @@ package {
 		private const FOGNEAR : Number = 300;
 		private const HERO_SIZE : Number = 1.5;
 		// start colors
-		private var groundColor : uint = 0x333338;
 		private var sunColor : uint = 0xFFFFFF;
+		/*private var groundColor : uint = 0x333338;
 		private var fogColor : uint = 0x333338;
-		private var skyColor : uint = 0x445465;
+		private var skyColor : uint = 0x445465;*/
 		// bitmaps
 		private var _bitmapStrings : Vector.<String>;
 		private var _bitmaps : Vector.<BitmapData>;
@@ -161,6 +162,7 @@ package {
 		private var _fogMethode : FogMethod;
 		private var _fresnelMethod : FresnelSpecularMethod;
 		private var _waterMethod : SimpleWaterNormalMethod;
+		private var _reflectionMethod : EnvMapMethod;
 		// hero animation variables
 		private const ANIMATION : Array = ["Idle", "Walk", "WalkL", "WalkR", "Run", "CrouchIdle", "CrouchWalk", "Reload", "WaterIdle", "WaterSwim", "StandBack", "StandFace", "JumpDown", "TrowGrenade", "CrouchGrenade", "IdleDrive"];
 		// private const ANIMATION_FALL : Array = ["FallBack", "FallBackMid", "FallFace", "FallFaceBack", "FallRight", "FallRightMid", "FallLeft", "FallLeftMid"];
@@ -272,16 +274,16 @@ package {
 
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
-			_bitmapStrings.push("sky/pano_" +skyN + ".jpg", "sky/up_" + skyN + ".jpg");
+			_bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			// 2 3 4
 			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
 			// hero map 5 6 7
 			_bitmapStrings.push("onkba/onkba_diffuse.png", "onkba/onkba_normals.jpg", "onkba/onkba_lightmap.jpg");
-			// gun map 8 9 10 
+			// gun map 8 9 10
 			_bitmapStrings.push("onkba/weapon_diffuse.jpg", "onkba/weapon_normals.jpg", "onkba/weapon_lightmap.jpg");
 			// bazooka map 11 12 13
 			_bitmapStrings.push("onkba/weapon2_diffuse.jpg", "onkba/weapon2_normals.jpg", "onkba/weapon2_lightmap.jpg");
-			// Sia map 14 
+			// Sia map 14
 			_bitmapStrings.push("onkba/sia_diffuse.jpg");
 			// water map 15
 			_bitmapStrings.push("water_normals.jpg");
@@ -295,11 +297,10 @@ package {
 		 * Initialise the scene objects
 		 */
 		private function initAfterBitmapLoad() : void {
-			// create material
-			initMaterials();
-
 			// create skybox
 			randomSky();
+			// create material
+			initMaterials();
 
 			// create noize terrain with image 6 7 8
 			FractalTerrain.getInstance();
@@ -406,9 +407,12 @@ package {
 		 */
 		private function randomSky() : void {
 			AutoSky.scene = _view.scene;
-			if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
-			else AutoSky.randomSky(null, _bitmaps, 8);
-			_fogMethode.fogColor = AutoSky.fogColor;
+			//if (_isIntro) AutoSky.randomSky([skyColor, fogColor, groundColor], _bitmaps, 8);
+			//else 
+			AutoSky.randomSky(null, _bitmaps, 8);
+			if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
+			if (_rimLightMethod != null) _rimLightMethod.color = AutoSky.fogColor;
+			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.skyMap;
 		}
 
 		/**
@@ -422,14 +426,16 @@ package {
 			_shadowMethod.epsilon = .0007;
 			_shadowMethod.alpha = 0.5;
 			// global Rim light method
-			_rimLightMethod = new RimLightMethod(skyColor, 0.5, 2, RimLightMethod.ADD);
+			_rimLightMethod = new RimLightMethod(AutoSky.fogColor, 0.5, 2, RimLightMethod.ADD);
 			// global fog method
-			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, fogColor);
+			_fogMethode = new FogMethod(FOGNEAR, FARVIEW, AutoSky.fogColor);
 			// water method
 			_waterMethod = new SimpleWaterNormalMethod(Cast.bitmapTexture(_bitmaps[15]), Cast.bitmapTexture(_bitmaps[15]));
 			// fresnelMethod
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.9;
+			// reflection method
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.6);
 
 			// 0 - onkba hero
 			_onkbaMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[5]));
@@ -457,7 +463,7 @@ package {
 
 			// 3- eye ball open from bitmap diffuse onkba
 			b = new BitmapData(256 / 2, 256 / 2, false);
-			b.draw(_bitmaps[9], new Matrix(1, 0, 0, 1, -283 / 2, -197 / 2));
+			b.draw(_bitmaps[5], new Matrix(1, 0, 0, 1, -283 / 2, -197 / 2));
 			_eyesOpenMaterial = new TextureMaterial(Cast.bitmapTexture(b));
 			_eyesOpenMaterial.gloss = 100;
 			_eyesOpenMaterial.specular = 0.8;
@@ -536,6 +542,7 @@ package {
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
 			_waterMaterial.bothSides = true;
+			_waterMaterial.addMethod(_reflectionMethod);
 			_waterMaterial.addMethod(_fogMethode);
 			_materials[12] = _waterMaterial;
 
@@ -548,7 +555,7 @@ package {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
-				// if (i != 5) _materials[i].addMethod(_rimLightMethod);
+				if (i != 5) _materials[i].addMethod(_rimLightMethod);
 			}
 
 			_basicMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0x000000)));
@@ -1033,6 +1040,9 @@ package {
 					break;
 				case Keyboard.G:
 					trowGrenade();
+					break;
+				case Keyboard.N:
+					randomSky();
 					break;
 				case Keyboard.I:
 					fullScreen();

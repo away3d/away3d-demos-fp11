@@ -12,21 +12,21 @@ package utils {
 	import flash.display.Sprite;
 	import flash.display.Shape;
 	import flash.display.BitmapData;
-	import flash.events.MouseEvent;
 	import flash.filters.ColorMatrixFilter;
 	import flash.filters.DisplacementMapFilter;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 
-	[SWF(width="256",height="768")]
 	public class AutoSky extends Sprite {
 		private static var _sky : SkyBox;
 		private static var _scene : Scene3D;
 		private static var _skyMap : BitmapCubeTexture;
-		private static var _skyTextureBitmaps : Vector.<BitmapData>;
 		private static var _skyBitmaps : Vector.<BitmapData>;
-		private static var _blendmodes : Array = ["add", "darken", "hardlight", "lighten", "multiply", "overlay", "screen", "subtract"];
+		//private static var _colorsSkySet:Array = [0x445465];
+		// private static var _blendmodes : Array = ["add", "darken", "hardlight", "lighten", "multiply", "overlay", "screen", "subtract"];
+		private static var _blendmodes : Array = ["lighten", "multiply", "overlay"];
 		private static var _skyColor : uint = 0x333338;
+		private static var _middleColor : uint = 0x333338;
 		private static var _fogColor : uint = 0x333338;
 		private static var _groundColor : uint = 0x445465;
 		private static var _top : BitmapData;
@@ -34,44 +34,9 @@ package utils {
 		private static var _side : BitmapData;
 		private static var _bigCube : Mesh;
 		private static var _bigCubeMat : ColorMaterial;
-		private static var _fogColorOnMap : uint;
-		private var _preview : Sprite;
-
-		public function AutoSky() {
-			// juste for preview no need in demo
-			_preview = new Sprite();
-			addChild(_preview);
-			_preview.addEventListener(MouseEvent.CLICK, draw);
-			_preview.buttonMode = true;
-			draw();
-		}
-
-		/**
-		 * Create preview
-		 */
-		private function draw(e : MouseEvent = null) : void {
-			var s : Vector.<BitmapData> = new Vector.<BitmapData>(3);
-			s[0] = _side;
-			s[1] = _top;
-			s[2] = _floor;
-			_preview.graphics.clear();
-			_preview.graphics.beginBitmapFill(s[1]);
-			_preview.graphics.drawRect(0, 0, 256, 256);
-			_preview.graphics.endFill();
-			_preview.graphics.beginBitmapFill(s[0]);
-			_preview.graphics.drawRect(0, 256, 256, 256);
-			_preview.graphics.endFill();
-			_preview.graphics.beginBitmapFill(s[2]);
-			_preview.graphics.drawRect(0, 512, 256, 256);
-			_preview.graphics.endFill();
-		}
 
 		static public function get skyMap() : BitmapCubeTexture {
 			return _skyMap;
-		}
-
-		static public function get fogColorOnMap() : uint {
-			return _fogColorOnMap;
 		}
 
 		static public function get fogColor() : uint {
@@ -88,27 +53,28 @@ package utils {
 		static public function randomSky(colors : Array = null, Bitmaps : Vector.<BitmapData>=null, Quality : uint = 8, Blend : String = "overlay") : void {
 			var i : uint = 0;
 			var blend : String = Blend;
-			_skyTextureBitmaps = new Vector.<BitmapData>(6);
 			if (colors == null) {
 				_skyColor = randColor();
-				_fogColor = randColor();
+				_middleColor = randColor();
 				_groundColor = randColor();
-				blend = _blendmodes[uint(Math.random() * _blendmodes.length)];
 			} else {
 				_skyColor = colors[0];
-				_fogColor = colors[1];
+				_middleColor = colors[1];
 				_groundColor = colors[2];
 			}
+
+			blend = _blendmodes[uint(Math.random() * _blendmodes.length)];
 			// add real sky bitmap
 			var xl : uint = Bitmaps[1].width;
-			_fogColorOnMap = Bitmaps[0].getPixel(10, xl - 10);
+			_fogColor = Bitmaps[0].getPixel(10, xl - 10);
 			var p : Point = new Point(0, 0);
 			if (_skyBitmaps == null && Bitmaps != null) {
 				_skyBitmaps = new Vector.<BitmapData>(6);
 				for (i = 0; i < 6; i++) {
 					if (i == 1) _skyBitmaps[1] = Bitmaps[1];// top
-					else _skyBitmaps[i] = new BitmapData(xl, xl, false, _fogColorOnMap);
+					else _skyBitmaps[i] = new BitmapData(xl, xl, false, _fogColor);
 				}
+				// make copy of side panoramics bitmap
 				_skyBitmaps[2].copyPixels(Bitmaps[0], new Rectangle(xl * 2, 0, xl, xl), p);
 				_skyBitmaps[3].copyPixels(Bitmaps[0], new Rectangle(xl * 3, 0, xl, xl), p);
 				_skyBitmaps[4].copyPixels(Bitmaps[0], new Rectangle(xl, 0, xl, xl), p);
@@ -118,8 +84,7 @@ package utils {
 				_scene.removeChild(_sky);
 				_sky.dispose();
 			}
-
-			_skyMap = vectorSky(_skyColor, _fogColor, _groundColor, Quality, _skyBitmaps, blend);
+			_skyMap = vectorSky(_skyColor, _middleColor, _groundColor, Quality, _skyBitmaps, blend);
 			_sky = new SkyBox(_skyMap);
 			_scene.addChild(_sky);
 		}
@@ -132,7 +97,7 @@ package utils {
 			if (bitmaps != null) xl = bitmaps[0].width;
 			else xl = 128 * quality;
 			var pinch : uint = xl / 3.6;
-
+			nadirColor = horizonColor;
 			// sky color from bottom to top;
 			var color : Vector.<uint> = Vector.<uint>([lighten(nadirColor, 50), darken(nadirColor, 25), darken(nadirColor, 5), horizonColor, horizonColor, horizonColor, zenithColor, darken(zenithColor, 25)]);
 			// clear
@@ -182,22 +147,18 @@ package utils {
 					h = new Bitmap(bitmaps[listing[i]]);
 					newMap[i] = new BitmapData(xl, xl, false, 0x00);
 
-					if (i == 0 || i == 1 || i == 4 || i == 5)
-						s.addChild(new Bitmap(_side));
-					else if (i == 2)
-						s.addChild(new Bitmap(_top));
-					else
-						s.addChild(new Bitmap(_floor));
+					if (i == 0 || i == 1 || i == 4 || i == 5) s.addChild(new Bitmap(_side));
+					else if (i == 2) s.addChild(new Bitmap(_top));
+					else s.addChild(new Bitmap(_floor));
 					s.addChild(h);
 					h.blendMode = blend;
 					newMap[i].draw(s);
-					_skyTextureBitmaps[i] = newMap[i];
 				}
 				skyFinal = new BitmapCubeTexture(newMap[0], newMap[1], newMap[2], newMap[3], newMap[4], newMap[5]);
-				_fogColorOnMap = uint("0x" + newMap[0].getPixel(xl >> 1, uint((xl / 3) * 2)).toString(16));
+				_fogColor = uint("0x" + newMap[0].getPixel(xl >> 1, uint((xl / 2) + 30)).toString(16));
 			} else {
 				skyFinal = new BitmapCubeTexture(_side, _side, _top, _floor, _side, _side);
-				_fogColorOnMap = uint("0x" + _side.getPixel(xl >> 1, uint((xl / 3) * 2)).toString(16));
+				_fogColor = uint("0x" + _side.getPixel(xl >> 1, uint((xl / 2) + 30)).toString(16));
 			}
 
 			return skyFinal;
