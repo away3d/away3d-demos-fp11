@@ -128,7 +128,7 @@ package games {
 		/**
 		 * Initialise the particles
 		 */
-		public static function initParticlesTrail() : void {
+		public static function initParticlesTrail(c1:uint=0xff0000, c2:uint=0xff9000) : void {
 			// setup the base geometry for one particle
 			var plane : Geometry = new PlaneGeometry(50, 50, 1, 1, false);
 
@@ -137,7 +137,7 @@ package games {
 			var setTransforms : Vector.<ParticleGeometryTransform> = new Vector.<ParticleGeometryTransform>();
 			var particleTransform : ParticleGeometryTransform;
 			// var uvTransform : Matrix;
-			for (var i : int = 0; i < 1000; i++) {
+			for (var i : int = 0; i < 100; i++) {
 				geometrySet.push(plane);
 				particleTransform = new ParticleGeometryTransform();
 				/*uvTransform = new Matrix();
@@ -157,28 +157,32 @@ package games {
 			_particleAnimationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
 			//_particleAnimationSet.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
 			//_particleAnimationSet.addAnimation(_particleFollowNode = new ParticleFollowNode(true, false));
-			_particleAnimationSet.addAnimation(_particleFollowNode = new ParticleFollowNode(true, true));
-			_particleAnimationSet.initParticleFunc = initParticleProperties;
+			_particleAnimationSet.addAnimation(_particleFollowNode = new ParticleFollowNode(true, false));
+			_particleAnimationSet.initParticleFunc = initParticleFollowFunc;
 
 			// setup the particle material
-			var material01 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(createSpote(0xff0000)));
-			material01.blendMode = BlendMode.ADD;
-			var material02 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(createSpote(0xff9000)));
-			material02.blendMode = BlendMode.ADD;
-
+			var material01 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(createSpote(c1)));
+			material01.alphaBlending = true;
+			//material01.blendMode = BlendMode.ADD;
+			//material01.blendMode = BlendMode.;
+			var material02 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(createSpote(c2)));
+			material02.alphaBlending = true;
+			//material02.blendMode = BlendMode.ADD;
+//material02.blendMode = BlendMode.OVERLAY;
 			// create follow targets
 			_followTarget1 = new Object3D();
 			_followTarget2 = new Object3D();
 
 			// create the particle meshes
 			_particleMesh1 = new Mesh(_particleGeometry, material01);
-			_particleMesh1.y = 250;
+			_particleMesh1.x = 100;
 			_scene.addChild(_particleMesh1);
 
 			//_particleMesh2 = _particleMesh1.clone() as Mesh;
 			_particleMesh2 = new Mesh(_particleGeometry, material02);
 			//_particleMesh2.material = material02;
-			_particleMesh2.y = 250;
+			_particleMesh2.x = 100;
+			//_particleMesh2.y = 100;
 			_scene.addChild(_particleMesh2);
 
 			// create and start the particle animators
@@ -196,10 +200,12 @@ package games {
 		/**
 		 * Initialiser function for particle properties
 		 */
-		private static function initParticleProperties(properties : ParticleProperties) : void {
-			properties.startTime = Math.random() * 4.1;
-			properties.duration = 4;
-			properties[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 100 - 50, Math.random() * 100 - 200, Math.random() * 100 - 50);
+		private static function initParticleFollowFunc(properties : ParticleProperties) : void {
+			properties.startTime = Math.random() * 2.1;
+			properties.duration = 0.5;
+			//properties[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 100 - 50, Math.random() * 100 - 200, Math.random() * 100 - 50);
+		properties[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 200 + 100,  Math.random() * 50 - 25, Math.random() * 50 - 25);
+		
 		}
 
 		/**

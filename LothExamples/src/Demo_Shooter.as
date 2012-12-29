@@ -36,6 +36,7 @@ THE SOFTWARE.
 
  */
 package {
+	import games.Particules;
 	import away3d.core.managers.Stage3DManager;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;
@@ -89,6 +90,7 @@ package {
 	import com.bit101.components.Component;
 
 	import games.FractalTerrain;
+	import games.Particules;
 
 	import physics.OimoEngine;
 
@@ -238,6 +240,11 @@ package {
 			FractalTerrain.addCubicReference(7);
 			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
 			FractalTerrain.move(-1, 0);
+			
+			Particules.getInstance();
+			Particules.scene = _view.scene;
+			Particules.initParticlesTrail(0x999999, 0x353535);
+			
 			// create physical cube ship bump on it
 			// var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
 			var testMesh : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
@@ -498,7 +505,9 @@ package {
 			// update physic engine
 			OimoEngine.update();
 
-			//
+			// particule
+			Particules.followTarget1.transform = _sphereTest.transform;
+			Particules.followTarget2.transform = _sphereTest.transform;
 
 			// player follow terrain
 			_player.position = FractalTerrain.cubePoints[24];
