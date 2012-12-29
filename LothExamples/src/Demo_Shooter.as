@@ -1,12 +1,12 @@
 /*
 
-RANDOM LAND
+SCROLING SHOOTER
 
 Demonstrates:
 
 How to use the Loader3D object to load an embedded internal awd model.
-How to create character interaction in physic world
-How to set custom material on a model.
+How to create ship control interaction in physic world
+How to use particule in a game
 
 Code, model and map by LoTh
 3dflashlo@gmail.com
@@ -36,7 +36,6 @@ THE SOFTWARE.
 
  */
 package {
-	import games.Particules;
 	import away3d.core.managers.Stage3DManager;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;

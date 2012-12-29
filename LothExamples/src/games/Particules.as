@@ -1,6 +1,4 @@
 package games {
-	
-
 	import away3d.primitives.PlaneGeometry;
 	import away3d.tools.helpers.ParticleGeometryHelper;
 	import away3d.tools.helpers.data.ParticleGeometryTransform;
@@ -15,12 +13,12 @@ package games {
 	import away3d.animators.ParticleAnimator;
 	import away3d.animators.nodes.ParticleVelocityNode;
 	import away3d.animators.nodes.ParticleBillboardNode;
-	//import away3d.animators.nodes.ParticleColorNode;
+	// import away3d.animators.nodes.ParticleColorNode;
 	import away3d.animators.nodes.ParticleFollowNode;
 	import away3d.animators.data.ParticlePropertiesMode;
 	import away3d.animators.data.ParticleProperties;
 
-	//import flash.geom.ColorTransform;
+	// import flash.geom.ColorTransform;
 	import flash.display.BitmapData;
 	import flash.display.Shape;
 	import flash.geom.Vector3D;
@@ -128,16 +126,16 @@ package games {
 		/**
 		 * Initialise the particles
 		 */
-		public static function initParticlesTrail(c1:uint=0xff0000, c2:uint=0xff9000) : void {
+		public static function initParticlesTrail(c1 : uint = 0xff0000, c2 : uint = 0xff9000) : void {
 			// setup the base geometry for one particle
-			var plane : Geometry = new PlaneGeometry(50, 50, 1, 1, false);
+			var plane : Geometry = new PlaneGeometry(25, 25, 1, 1, false);
 
 			// create the particle geometry
 			var geometrySet : Vector.<Geometry> = new Vector.<Geometry>();
 			var setTransforms : Vector.<ParticleGeometryTransform> = new Vector.<ParticleGeometryTransform>();
 			var particleTransform : ParticleGeometryTransform;
 			// var uvTransform : Matrix;
-			for (var i : int = 0; i < 100; i++) {
+			for (var i : int = 0; i < 300; i++) {
 				geometrySet.push(plane);
 				particleTransform = new ParticleGeometryTransform();
 				/*uvTransform = new Matrix();
@@ -155,20 +153,20 @@ package games {
 			// define the particle animations and init function
 			_particleAnimationSet.addAnimation(new ParticleBillboardNode());
 			_particleAnimationSet.addAnimation(new ParticleVelocityNode(ParticlePropertiesMode.LOCAL_STATIC));
-			//_particleAnimationSet.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
-			//_particleAnimationSet.addAnimation(_particleFollowNode = new ParticleFollowNode(true, false));
+			// _particleAnimationSet.addAnimation(new ParticleColorNode(ParticlePropertiesMode.GLOBAL, true, false, false, false, new ColorTransform(), new ColorTransform(1, 1, 1, 0)));
+			// _particleAnimationSet.addAnimation(_particleFollowNode = new ParticleFollowNode(true, false));
 			_particleAnimationSet.addAnimation(_particleFollowNode = new ParticleFollowNode(true, false));
 			_particleAnimationSet.initParticleFunc = initParticleFollowFunc;
 
 			// setup the particle material
 			var material01 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(createSpote(c1)));
 			material01.alphaBlending = true;
-			//material01.blendMode = BlendMode.ADD;
-			//material01.blendMode = BlendMode.;
+			// material01.blendMode = BlendMode.ADD;
+			// material01.blendMode = BlendMode.;
 			var material02 : TextureMaterial = new TextureMaterial(Cast.bitmapTexture(createSpote(c2)));
 			material02.alphaBlending = true;
-			//material02.blendMode = BlendMode.ADD;
-//material02.blendMode = BlendMode.OVERLAY;
+			// material02.blendMode = BlendMode.ADD;
+			// material02.blendMode = BlendMode.OVERLAY;
 			// create follow targets
 			_followTarget1 = new Object3D();
 			_followTarget2 = new Object3D();
@@ -178,11 +176,11 @@ package games {
 			_particleMesh1.x = 100;
 			_scene.addChild(_particleMesh1);
 
-			//_particleMesh2 = _particleMesh1.clone() as Mesh;
+			// _particleMesh2 = _particleMesh1.clone() as Mesh;
 			_particleMesh2 = new Mesh(_particleGeometry, material02);
-			//_particleMesh2.material = material02;
+			// _particleMesh2.material = material02;
 			_particleMesh2.x = 100;
-			//_particleMesh2.y = 100;
+			// _particleMesh2.y = 100;
 			_scene.addChild(_particleMesh2);
 
 			// create and start the particle animators
@@ -201,11 +199,10 @@ package games {
 		 * Initialiser function for particle properties
 		 */
 		private static function initParticleFollowFunc(properties : ParticleProperties) : void {
-			properties.startTime = Math.random() * 2.1;
+			properties.startTime = Math.random() * 10 - 10;
 			properties.duration = 0.5;
-			//properties[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 100 - 50, Math.random() * 100 - 200, Math.random() * 100 - 50);
-		properties[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 200 + 100,  Math.random() * 50 - 25, Math.random() * 50 - 25);
-		
+			// properties[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 100 - 50, Math.random() * 100 - 200, Math.random() * 100 - 50);
+			properties[ParticleVelocityNode.VELOCITY_VECTOR3D] = new Vector3D(Math.random() * 200 + 100, Math.random() * 100 - 50, Math.random() * 100 - 50);
 		}
 
 		/**
@@ -238,14 +235,12 @@ package games {
 		 * Create sprite3d to control direction
 		 */
 		private static function createSpote(color : uint = 0x3366FF) : BitmapData {
-			var b : BitmapData = new BitmapData(128, 128, true, 0x00000000);
+			var b : BitmapData = new BitmapData(64, 64, true, 0x00000000);
 			var c : Shape = new Shape();
 			var m : Matrix = new Matrix();
-			m.createGradientBox(128, 128, 0, 0, 0);
-			// m.translate(-64, -64);
-			c.graphics.beginGradientFill("radial", [color, color], [0xff, 0x00], [0x00, 0xff], m);
-			// c.graphics.beginFill(0xffffff, 1);
-			c.graphics.drawRect(0, 0, 128, 128);
+			m.createGradientBox(64, 64, 0, 0, 0);
+			c.graphics.beginGradientFill("radial", [color, color], [0x11, 0x00], [0x00, 0xff], m);
+			c.graphics.drawRect(0, 0, 64, 64);
 			c.graphics.endFill();
 			b.draw(c);
 			return b;

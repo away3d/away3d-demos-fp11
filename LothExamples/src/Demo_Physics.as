@@ -44,7 +44,9 @@ package {
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.materials.methods.RimLightMethod;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.SphereGeometry;
@@ -58,7 +60,7 @@ package {
 	import flash.display.StageQuality;
 	import flash.display.StageScaleMode;
 	import flash.display.StageAlign;
-	//import flash.display.BitmapData;
+	import flash.display.BitmapData;
 	import flash.events.MouseEvent;
 	import flash.text.TextFormat;
 	import flash.system.System;
@@ -70,10 +72,11 @@ package {
 
 	import physics.OimoEngine;
 
+	import utils.AutoSky;
+	import utils.LoaderPool;
 	import utils.AutoMapPhysics;
 
-	//import games.Particules;
-
+	// import games.Particules;
 	import com.bit101.components.Style;
 	import com.bit101.components.PushButton;
 	import com.bit101.components.Component;
@@ -92,8 +95,11 @@ package {
 		private var _sunLight : DirectionalLight;
 		private var _lightPicker : StaticLightPicker;
 		private var _cameraController : HoverController;
+		// material methode
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _rimLightMethod : RimLightMethod;
+		private var _fogMethode : FogMethod;
+		private var _reflectionMethod : EnvMapMethod;
 		// material
 		private var _material01 : TextureMaterial;
 		private var _materialEyeBall : TextureMaterial;
@@ -108,6 +114,7 @@ package {
 		private var _text : TextField;
 		private var _currentDemo : uint;
 		private var _maxDemo : uint;
+		private var _bitmaps : Vector.<BitmapData>;
 		// ui
 		private var _menu : Sprite;
 		private var _sliderGravity : HUISlider;
@@ -162,18 +169,44 @@ package {
 		private function initFinal(e : Stage3DEvent = null) : void {
 			_currentDemo = 0;
 			_maxDemo = 4;
+
 			initEngine();
 			initText();
 			initSetting();
 			initLights();
 			initOimoPhysics();
-			initMaterials();
-			initSceneObject();
-			initListeners();
+
+			// random sky map
+			var skyN : uint = uint(1 + Math.random() * 14);
+
+			// kickoff asset loading
+			var bitmapStrings : Vector.<String> = new Vector.<String>();
+			bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
+
+			LoaderPool.log = log;
+			LoaderPool.loadBitmaps(bitmapStrings, initAfterBitmapLoad);
+			_bitmaps = LoaderPool.bitmaps;
+
+			/*initMaterials();
+			 */
 			
 			/*Particules.getInstance();
 			Particules.scene = _view.scene;
 			Particules.initParticlesTrail();*/
+		}
+
+		/**
+		 * Initialise the scene objects
+		 */
+		private function initAfterBitmapLoad() : void {
+			// create skybox
+			randomSky();
+
+			// create material
+			initMaterials();
+
+			initSceneObject();
+			initListeners();
 		}
 
 		/**
@@ -220,39 +253,57 @@ package {
 
 			_lightPicker = new StaticLightPicker([_sunLight]);
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
-			_rimLightMethod = new RimLightMethod(0xffffff, 0.25, 1, RimLightMethod.MIX);
+			
 			// _shadowMethod.epsilon = .0007;
+		}
+
+		/**
+		 * Create random sky 
+		 */
+		private function randomSky(e : Event = null) : void {
+			AutoSky.scene = _view.scene;
+			AutoSky.randomSky(null, _bitmaps, 8);
+		    if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
+			if (_rimLightMethod != null) _rimLightMethod.color = AutoSky.fogColor;
+			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.skyMap;
 		}
 
 		/**
 		 * Initialise scene materials
 		 */
 		private function initMaterials() : void {
+			// methodes
+			_rimLightMethod = new RimLightMethod(AutoSky.fogColor, 0.5, 2, RimLightMethod.ADD);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.4);
+			_fogMethode = new FogMethod(300, 20000, AutoSky.fogColor);
+			
 			_materials = new Vector.<TextureMaterial>();
 
 			_material01 = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0x606060, 0x333333, false, [0.8, 0.1])));
-			//_material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
+			// _material01 = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44888888)));
 			_material01.alphaBlending = true;
 			_material01.gloss = 100;
 			_material01.specular = 0.5;
 			_materials[0] = _material01;
 
 			_materialBoxeBrick = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0xB7502F, 0x6A2E23, false, [1, 1])));
-			//_materialBoxeBrick.alphaBlending = true;
+			// _materialBoxeBrick.alphaBlending = true;
 			_materialBoxeBrick.gloss = 40;
 			_materialBoxeBrick.specular = 1;
 			_materials[1] = _materialBoxeBrick;
 
-			_materialBoxeDice = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0xEFEFEF, 0xAAAAAA, true, [1,1])));
-			//_materialBoxeDice.alphaBlending = true;
-			_materialBoxeDice.gloss = 40;
+			_materialBoxeDice = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapCube(0xEFEFEF, 0xAAAAAA, true, [1, 1])));
+			// _materialBoxeDice.alphaBlending = true;
+			_materialBoxeDice.gloss = 30;
 			_materialBoxeDice.specular = 1;
+			_materialBoxeDice.addMethod(_reflectionMethod);
 			_materials[2] = _materialBoxeDice;
 
 			_materialEyeBall = new TextureMaterial(Cast.bitmapTexture(AutoMapPhysics.bitmapEyeBall()));
-			//_materialEyeBall.alphaBlending = true;
-			_materialEyeBall.gloss = 10;
+			// _materialEyeBall.alphaBlending = true;
+			_materialEyeBall.gloss = 30;
 			_materialEyeBall.specular = 1;
+			_materialEyeBall.addMethod(_reflectionMethod);
 			_materials[3] = _materialEyeBall;
 
 			// for all material
@@ -260,7 +311,9 @@ package {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
+				
 				if (i != 0) _materials[i].addMethod(_rimLightMethod);
+				 _materials[i].addMethod(_fogMethode);
 			}
 
 			stage.quality = StageQuality.LOW;
@@ -278,8 +331,6 @@ package {
 		 * Initialise scene object3d
 		 */
 		private function initSceneObject() : void {
-			
-			
 			var i : uint;
 			var j : uint;
 			var height : uint;
@@ -462,17 +513,17 @@ package {
 			if (_sunLight.ambient < 0.3) _sunLight.ambient += 0.003;
 			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
 			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
-			
+
 			OimoEngine.update();
 			log(OimoEngine.info());
-			
+
 			_cameraController.update();
-			
+
 			/*if(_sphere){
-				Particules.followTarget1.transform = _sphere.transform;
-				Particules.followTarget2.transform = _sphere.transform;
+			Particules.followTarget1.transform = _sphere.transform;
+			Particules.followTarget2.transform = _sphere.transform;
 			}*/
-			
+
 			_view.render();
 		}
 
@@ -532,8 +583,9 @@ package {
 			new PushButton(_menu, 30, -29, ">", showSetting).setSize(30, 30);
 			new PushButton(_menu, 65, -29, "prev", prevDemo).setSize(60, 30);
 			new PushButton(_menu, 130, -29, "next", nextDemo).setSize(60, 30);
+			new PushButton(_menu, 130+65, -29, "sky", randomSky).setSize(60, 30);
 
-			_sliderGravity = new HUISlider(_menu, 250, -32, "Gravity", setGravity);
+			_sliderGravity = new HUISlider(_menu, 270, -32, "Gravity", setGravity);
 			_sliderGravity.labelPrecision = 2;
 			_sliderGravity.minimum = -1;
 			_sliderGravity.maximum = 1;
@@ -541,7 +593,7 @@ package {
 			_sliderGravity.value = -1;
 		}
 
-		private function setGravity(event : Event) : void {
+		private function setGravity(e : Event) : void {
 			OimoEngine.gravity(_sliderGravity.value);
 		}
 
