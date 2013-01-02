@@ -173,13 +173,13 @@ package games {
 
 			// create the particle meshes
 			_particleMesh1 = new Mesh(_particleGeometry, material01);
-			_particleMesh1.x = 100;
+			_particleMesh1.x = 120;
 			_scene.addChild(_particleMesh1);
 
 			// _particleMesh2 = _particleMesh1.clone() as Mesh;
 			_particleMesh2 = new Mesh(_particleGeometry, material02);
 			// _particleMesh2.material = material02;
-			_particleMesh2.x = 100;
+			_particleMesh2.x = 120;
 			// _particleMesh2.y = 100;
 			_scene.addChild(_particleMesh2);
 

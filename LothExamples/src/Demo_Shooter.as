@@ -36,6 +36,10 @@ THE SOFTWARE.
 
  */
 package {
+	import away3d.events.AssetEvent;
+	import away3d.library.AssetLibrary;
+	import away3d.library.assets.AssetType;
+	import away3d.loaders.parsers.AWDParser;
 	import away3d.core.managers.Stage3DManager;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;
@@ -95,6 +99,9 @@ package {
 
 	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Shooter extends Sprite {
+		// R_bot 100 model
+		[Embed(source="assets/ship.awd", mimeType="application/octet-stream")]
+		private var ShipModel : Class;
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
@@ -153,6 +160,11 @@ package {
 		private var _spMat : TextureMaterial;
 		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 6000);
 		private var _cameraTarget : Vector3D = new Vector3D(0, 1000, 3000);
+		// ship variable
+		private var _banking : int = 0;
+		private var _position : Vector3D = new Vector3D();
+		private var _factor : Number = 4.66;
+		private var _onMouseMove:Boolean;
 
 		// private var _borderCube : Array;
 		/**
@@ -233,17 +245,22 @@ package {
 			// create material
 			initMaterials();
 
+			// parse ship model
+			AssetLibrary.enableParser(AWDParser);
+			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			AssetLibrary.loadData(new ShipModel());
+
 			// create fractal terrain with image 6 7 8
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
 			FractalTerrain.addCubicReference(7);
 			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
 			FractalTerrain.move(-1, 0);
-			
+
 			Particules.getInstance();
 			Particules.scene = _view.scene;
 			Particules.initParticlesTrail(0x999999, 0x353535);
-			
+
 			// create physical cube ship bump on it
 			// var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
 			var testMesh : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
@@ -271,7 +288,7 @@ package {
 				}*/
 			}
 
-			_sphereTest = new Mesh(new SphereGeometry(100), _shipMaterial);
+			_sphereTest = new Mesh(new SphereGeometry(1), _shipMaterial);
 			_view.scene.addChild(_sphereTest);
 
 			// create plane for water
@@ -461,6 +478,17 @@ package {
 		}
 
 		/**
+		 * Listener function for asset complete event on loader
+		 */
+		private function onAssetComplete(event : AssetEvent) : void {
+			if (event.asset.assetType == AssetType.MESH) {
+				var mesh : Mesh = event.asset as Mesh;
+				mesh.material = _shipMaterial;
+				if (mesh.name == "Ship") _sphereTest.addChild(mesh);
+			}
+		}
+
+		/**
 		 * Render loop
 		 */
 		private function onEnterFrame(event : Event = null) : void {
@@ -475,10 +503,15 @@ package {
 				_night--;
 			}
 
+			if (_banking != 0 && !_onMouseMove) {
+				if (_banking > 0) _banking--;
+				else _banking++;
+			}
+
 			// if (_cameraController.distance > 1000) _cameraController.distance--;
 
-			_sphereTest.position = _position;
-
+			_sphereTest.position = _position.add(new Vector3D(0, 50, 0));
+			_sphereTest.rotationX = _banking;
 			FractalTerrain.update();
 			// OimoEngine.update();
 			// update physics static boxe
@@ -521,6 +554,7 @@ package {
 			_waterMethod.water2OffsetY += .0006;
 
 			_view.render();
+			_onMouseMove=false;
 		}
 
 		/**
@@ -754,10 +788,11 @@ package {
 			stopListeners();
 		}
 
-		private var _position : Vector3D = new Vector3D();
-		private var _factor : Number = 4.66;
-
 		private function onStageMouseMove(e : MouseEvent) : void {
+			_onMouseMove = true;
+			if (_prevMouseY > e.stageY) _banking--;
+			else if (_prevMouseY < e.stageY) _banking++;
+
 			// if (_isRotation) {
 			// _cameraController.panAngle += (e.stageX - _prevMouseX);
 			// _cameraController.tiltAngle += (e.stageY - _prevMouseY);
