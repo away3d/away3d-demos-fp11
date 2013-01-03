@@ -267,7 +267,6 @@ package {
 			// init bullet systeme
 			Bullet.init(_bulletMaterial, 3000);
 			Bullet.scene = _view.scene;
-			
 
 			// create physical cube ship bump on it
 			// var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
@@ -456,10 +455,12 @@ package {
 			_shipMaterial.addMethod(_reflectionMethod);
 			_materials[2] = _shipMaterial;
 
-_bulletMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
-_bulletMaterial.gloss = 30;
-_bulletMaterial.specular = 1;
-_materials[3] = _bulletMaterial;
+			// 3 - bullet material
+			_bulletMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFFAA33)));
+			_bulletMaterial.gloss = 30;
+			_bulletMaterial.specular = 1;
+			_materials[3] = _bulletMaterial;
+
 			// simulation box
 			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x12cccc99)));
 			_boxMaterial.gloss = 60;
