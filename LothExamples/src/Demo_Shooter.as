@@ -43,7 +43,7 @@ package {
 	import away3d.core.managers.Stage3DManager;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;
-	import away3d.events.MouseEvent3D;
+	// import away3d.events.MouseEvent3D;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.methods.SimpleWaterNormalMethod;
@@ -94,6 +94,7 @@ package {
 
 	import games.FractalTerrain;
 	import games.Particules;
+	import games.shooters.Bullet;
 
 	import physics.OimoEngine;
 
@@ -127,6 +128,7 @@ package {
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
 		private var _shipMaterial : TextureMaterial;
+		private var _bulletMaterial : TextureMaterial;
 		private var _boxMaterial : TextureMaterial;
 		private var _boxMaterialPlus : TextureMaterial;
 		private var _boxMaterialPlus2 : TextureMaterial;
@@ -140,10 +142,10 @@ package {
 		// navigation
 		private var _prevMouseX : Number;
 		private var _prevMouseY : Number;
-		private var _mouseMove : Boolean;
+		// private var _mouseMove : Boolean;
 		// demo testing
 		private var _isIntro : Boolean = true;
-		private var _isRotation : Boolean;
+		// private var _isRotation : Boolean;
 		private var _isRender : Boolean;
 		// private var _isShipControl : Boolean;
 		// interface
@@ -158,13 +160,14 @@ package {
 		private var _isChangeResolution : Boolean = false;
 		private var _sphereTest : Mesh;
 		private var _spMat : TextureMaterial;
-		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 6000);
+		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 5000);
 		private var _cameraTarget : Vector3D = new Vector3D(0, 1000, 3000);
 		// ship variable
 		private var _banking : int = 0;
 		private var _position : Vector3D = new Vector3D();
 		private var _factor : Number = 4.66;
-		private var _onMouseMove:Boolean;
+		private var _isMouseMove : Boolean;
+		private var _isShooting : Boolean;
 
 		// private var _borderCube : Array;
 		/**
@@ -261,6 +264,11 @@ package {
 			Particules.scene = _view.scene;
 			Particules.initParticlesTrail(0x999999, 0x353535);
 
+			// init bullet systeme
+			Bullet.init(_bulletMaterial, 3000);
+			Bullet.scene = _view.scene;
+			
+
 			// create physical cube ship bump on it
 			// var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
 			var testMesh : Mesh = new Mesh(new SphereGeometry(100), _boxMaterial);
@@ -294,11 +302,9 @@ package {
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
-			_groundWater.mouseEnabled = true;
+			_groundWater.mouseEnabled = false;
 			_groundWater.pickingCollider = PickingColliderType.BOUNDS_ONLY;
 			_view.scene.addChild(_groundWater);
-			_groundWater.addEventListener(MouseEvent3D.MOUSE_UP, onGroundMouseOver);
-			_groundWater.addEventListener(MouseEvent3D.MOUSE_MOVE, onGroundMouseOver);
 
 			initListeners();
 			log(message());
@@ -307,8 +313,8 @@ package {
 			var spaceShip : Mesh = new Mesh(new SphereGeometry(120, 30, 20), _shipMaterial);
 			var spaceShip2 : Mesh = new Mesh(new SphereGeometry(300, 30, 20), _shipMaterial);
 			spaceShip2.scaleY = 0.22;
-			spaceShip2.addEventListener(MouseEvent3D.MOUSE_DOWN, onShipMouseDown);
-			spaceShip2.mouseEnabled = true;
+			// spaceShip2.addEventListener(MouseEvent3D.MOUSE_DOWN, onShipMouseDown);
+			// spaceShip2.mouseEnabled = true;
 
 			// create physics ships
 			var shipboxe : Mesh = new Mesh(new CubeGeometry(600, 200, 600), _boxMaterialPlus);
@@ -337,7 +343,7 @@ package {
 			addChild(_view);
 
 			// create custom lens
-			_view.camera.lens = new PerspectiveLens(50);
+			_view.camera.lens = new PerspectiveLens(70);
 			_view.camera.lens.far = FARVIEW + _cameraTarget.z;
 			_view.camera.lens.near = 1;
 			_view.forceMouseMove = true;
@@ -450,6 +456,10 @@ package {
 			_shipMaterial.addMethod(_reflectionMethod);
 			_materials[2] = _shipMaterial;
 
+_bulletMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
+_bulletMaterial.gloss = 30;
+_bulletMaterial.specular = 1;
+_materials[3] = _bulletMaterial;
 			// simulation box
 			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x12cccc99)));
 			_boxMaterial.gloss = 60;
@@ -468,7 +478,7 @@ package {
 			_boxMaterialPlus2.alphaBlending = true;
 
 			_spMat = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0xFFAAAAAA)));
-			_materials[3] = _spMat;
+			_materials[4] = _spMat;
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
 				_materials[i].lightPicker = _lightPicker;
@@ -503,7 +513,7 @@ package {
 				_night--;
 			}
 
-			if (_banking != 0 && !_onMouseMove) {
+			if (_banking != 0 && !_isMouseMove) {
 				if (_banking > 0) _banking--;
 				else _banking++;
 			}
@@ -512,6 +522,7 @@ package {
 
 			_sphereTest.position = _position.add(new Vector3D(0, 50, 0));
 			_sphereTest.rotationX = _banking;
+			Bullet.update();
 			FractalTerrain.update();
 			// OimoEngine.update();
 			// update physics static boxe
@@ -554,7 +565,7 @@ package {
 			_waterMethod.water2OffsetY += .0006;
 
 			_view.render();
-			_onMouseMove=false;
+			_isMouseMove = false;
 		}
 
 		/**
@@ -761,47 +772,31 @@ package {
 			if (!_isRender) onEnterFrame();
 		}
 
-		private function onGroundMouseOver(e : MouseEvent3D) : void {
-			// if (_mouseMove) FractalTerrain.move(-((stage.stageWidth >> 1) - mouseX ) / (stage.stageWidth >> 1), -((stage.stageHeight >> 1) - mouseY) / (stage.stageHeight >> 1));
-			// else FractalTerrain.stop();
-		}
-
-		private function onShipMouseDown(e : MouseEvent3D) : void {
-			_mouseMove = false;
-			_isRotation = true;
-		}
-
 		private function onStageMouseDown(e : MouseEvent) : void {
 			if (e.stageY > stage.stageHeight - 30) return;
-			_prevMouseX = e.stageX;
-			_prevMouseY = e.stageY;
-			_mouseMove = true;
+			_isShooting = true;
+			Bullet.shot(_position);
+			// var b : Bullet = new Bullet(e.stageX + 20, e.stageY - 10);
+			// addChild(b);
 		}
 
 		private function onStageMouseUp(e : Event) : void {
-			_mouseMove = false;
-			_isRotation = false;
+			_isShooting = false;
 		}
 
 		private function onStageMouseLeave(e : Event) : void {
-			_mouseMove = false;
 			stopListeners();
 		}
 
 		private function onStageMouseMove(e : MouseEvent) : void {
-			_onMouseMove = true;
+			_isMouseMove = true;
 			if (_prevMouseY > e.stageY) _banking--;
 			else if (_prevMouseY < e.stageY) _banking++;
 
-			// if (_isRotation) {
-			// _cameraController.panAngle += (e.stageX - _prevMouseX);
-			// _cameraController.tiltAngle += (e.stageY - _prevMouseY);
-			// }
-			// if (_isShipControl) {
 			_position.x = -(e.stageX - (stage.stageWidth >> 1)) * _factor;
 			_position.y = -((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y;
 			_position.z = _cameraTarget.z;
-			// }
+
 			_prevMouseX = e.stageX;
 			_prevMouseY = e.stageY;
 		}
@@ -810,11 +805,7 @@ package {
 		 * mouseWheel listener
 		 */
 		private function onStageMouseWheel(e : MouseEvent) : void {
-			/*_cameraController.distance -= e.delta * 5;
-			if (_cameraController.distance < 50)
-			_cameraController.distance = 50;
-			else if (_cameraController.distance > 2000)
-			_cameraController.distance = 2000;*/
+			// _cameraController.distance -= e.delta * 5;
 		}
 
 		/**
