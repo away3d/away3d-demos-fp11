@@ -576,7 +576,7 @@ package {
 				_night--;
 			}
 
-			FractalTerrain.update();
+			//FractalTerrain.update();
 
 			if ( FractalTerrain.cubePoints[0].y < SWIM_TOP) {
 				_isSwiming = true;

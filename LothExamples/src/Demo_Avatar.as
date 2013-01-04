@@ -418,7 +418,7 @@ package {
 				_night--;
 			}
 
-			FractalTerrain.update();
+			//FractalTerrain.update();
 			// _cameraController.lookAtPosition.y = FractalTerrain.getHeightAt(0, 0);
 			_cameraController.lookAtPosition = FractalTerrain.cubePoints[0];
 			_cameraController.update();

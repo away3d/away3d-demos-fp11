@@ -461,7 +461,7 @@ package {
 
 			if (_cameraController.distance > 1000) _cameraController.distance--;
 
-			FractalTerrain.update();
+			//FractalTerrain.update();
 			//OimoEngine.update();
 			// update physics static boxe
 			// var type : uint;
@@ -482,7 +482,7 @@ package {
 			//OimoEngine.rigids[FractalTerrain.numCube].linearVelocity.init();
 			//OimoEngine.rigids[FractalTerrain.numCube].angularVelocity.init();
 			// update physic engine
-			OimoEngine.update();
+			//OimoEngine.update();
 
 			// 
 

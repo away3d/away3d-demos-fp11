@@ -514,7 +514,7 @@ package {
 			if (_sunLight.specular < 1) _sunLight.specular += 0.01;
 			if (_sunLight.diffuse < 1) _sunLight.diffuse += 0.01;
 
-			OimoEngine.update();
+			//OimoEngine.update();
 			log(OimoEngine.info());
 
 			_cameraController.update();

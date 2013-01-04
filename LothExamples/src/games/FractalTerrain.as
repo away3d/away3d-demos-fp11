@@ -15,6 +15,8 @@ package games {
 	import flash.geom.Vector3D;
 	import flash.geom.Rectangle;
 	import flash.geom.Point;
+	import flash.events.Event;
+	import flash.display.Sprite;
 
 	import utils.BitmapScrolling;
 	import utils.BitmapFilterEffects;
@@ -25,7 +27,7 @@ package games {
 	 * TerrainDiffuseMethod and flash bitmap filters
 	 * Author : Loth
 	 */
-	public class FractalTerrain {
+	public class FractalTerrain extends Sprite{
 		private static var Singleton : FractalTerrain;
 		private static var _zoneDimension : uint = 12800;
 		private static var _zoneHeight : int = 1000;
@@ -67,10 +69,7 @@ package games {
 		 * Singleton enforcer
 		 */
 		public static function getInstance() : FractalTerrain {
-			if (Singleton == null) {
-				Singleton = new FractalTerrain();
-				// FractalTerrainStatic.init();
-			}
+			if (Singleton == null) Singleton = new FractalTerrain();
 			return Singleton;
 		}
 
@@ -139,6 +138,9 @@ package games {
 			if (_isMapTesting) initTerrainGrid();
 			updateMaterial();
 			updateTerrain();
+
+			// separate enterframe
+			Singleton.addEventListener(Event.ENTER_FRAME, update);
 		}
 
 		/**
@@ -213,7 +215,7 @@ package games {
 		/**
 		 * Update function on enterFrame
 		 */
-		public static function update() : void {
+		private static function update(e : Event = null) : void {
 			if (_isMove) {
 				for (var i : uint = 0; i < _numOctaves; i++) {
 					Point(_offsets[i]).x += _ease.x;

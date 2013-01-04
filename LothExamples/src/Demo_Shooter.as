@@ -83,6 +83,8 @@ package {
 	import flash.system.System;
 	import flash.events.Event;
 	import flash.ui.Keyboard;
+	import flash.utils.Timer;
+	import flash.events.TimerEvent;
 
 	import utils.AutoSky;
 	import utils.LoaderPool;
@@ -172,6 +174,13 @@ package {
 		private var _isMouseMove : Boolean;
 		private var _isShooting : Boolean;
 		private var _tmpShoot : int;
+		// game variable
+		private var _enemyInterval : int = 1;
+		private var _bossInterval : int = 30;
+		private var _powerupInterval : int = 10;
+		private var _enemyTimer : Timer;
+		private var _bossTimer : Timer;
+		private var _powerupTimer : Timer;
 
 		// private var _borderCube : Array;
 		/**
@@ -272,8 +281,10 @@ package {
 			AssetLibrary.loadData(new ShipModel());
 
 			// init bullet for ship
-			Bullet.init(_bulletMaterial, 3000);
+			Bullet.getInstance();
 			Bullet.scene = _view.scene;
+			Bullet.init(_bulletMaterial, 3000);
+			
 
 			// create physical cube ship bump on it
 			// var testMesh : Mesh = new Mesh(new CubeGeometry(190, 200, 190), _boxMaterial);
@@ -336,11 +347,52 @@ package {
 		}
 
 		private function initAfterModelLoad() : void {
-			Enemy.init(_enemyShip, 3000, 1500);
+			Enemy.getInstance();
 			Enemy.scene = _view.scene;
-			Enemy.addEnemy(new Vector3D(-1000, 600, _position.z));
-			Enemy.addEnemy(new Vector3D(-1000, 1200, _position.z));
-			Enemy.addEnemy(new Vector3D(-1000, 2000, _position.z));
+			Enemy.init(_enemyShip, 3000, 1500, _cameraTarget.z);
+			
+			initLevel();
+		}
+
+		private function initLevel() : void {
+			// init ship release timer, release enemy ship once a second
+			
+			_enemyTimer = new Timer(1000* _enemyInterval, 0);
+			_enemyTimer.addEventListener("timer", enemyTimerHandler);
+			_enemyTimer.start();
+			
+
+			// init minibss release timer
+			/*_bossTimer = new Timer(1000 * _bossInterval, 0);
+			_bossTimer.addEventListener("timer", miniBossTimerHandler);
+			_bossTimer.start();
+
+			// init powerup release timer
+			_powerupTimer = new Timer(1000 * _powerupInterval, 0);
+			_powerupTimer.addEventListener("timer", powerupHandler);
+			_powerupTimer.start();*/
+		}
+
+		// this event fires every second and releases an enemy ship
+		private function enemyTimerHandler(event : TimerEvent) : void {
+			Enemy.addEnemy();
+		}
+
+		// this event fires every 30 seconds and releases a miniboss
+		private function miniBossTimerHandler(event : TimerEvent) : void {
+			//var m = new MiniBoss();
+		}
+
+		// this event fires every 10 seconds and releases a power-up
+		private function powerupHandler(event : TimerEvent) : void {
+			//var m = new Powerup();
+		}
+
+		// this stop all the timers created in this LevelManager
+		private function stop():void {
+			_enemyTimer.stop();
+			//_bossTimer.stop();
+			//_powerupTimer.stop();
 		}
 
 		/**
@@ -547,11 +599,15 @@ package {
 
 			_sphereTest.position = _position.add(new Vector3D(0, 50, 0));
 			_sphereTest.rotationX = _banking;
-			Bullet.update();
-			Enemy.update();
-
-			FractalTerrain.update();
-			// OimoEngine.update();
+			
+			// not use 
+			//Enemy.update();
+			//Bullet.update();
+			
+			//FractalTerrain.update();
+			//OimoEngine.update();
+			
+			
 			// update physics static boxe
 			// var type : uint;
 			for (var i : uint = 0; i < FractalTerrain.numCube; ++i) {
@@ -571,8 +627,7 @@ package {
 			// +_position.y;
 			// OimoEngine.rigids[FractalTerrain.numCube].linearVelocity.init();
 			// OimoEngine.rigids[FractalTerrain.numCube].angularVelocity.init();
-			// update physic engine
-			OimoEngine.update();
+			
 
 			// particule
 			Particules.followTarget1.transform = _sphereTest.transform;

@@ -63,6 +63,9 @@ package physics {
 			_joints = new Vector.<Joint>();
 			_meshs = new Vector.<Mesh>();
 			_world = new World();
+
+			// separate enterframe
+			Singleton.addEventListener(Event.ENTER_FRAME, update);
 		}
 
 		/**
@@ -82,7 +85,7 @@ package physics {
 		/**
 		 * Update physics world
 		 */
-		static public function update() : void {
+		static private function update(e : Event = null) : void {
 			var i : uint;
 			var length : uint = _meshs.length;
 			for ( i = 0; i < length; ++i) {
