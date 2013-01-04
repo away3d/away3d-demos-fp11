@@ -95,6 +95,7 @@ package {
 	import games.FractalTerrain;
 	import games.Particules;
 	import games.shooters.Bullet;
+	import games.shooters.Enemy;
 
 	import physics.OimoEngine;
 
@@ -128,6 +129,7 @@ package {
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
 		private var _shipMaterial : TextureMaterial;
+		private var _enemyMaterial : TextureMaterial;
 		private var _bulletMaterial : TextureMaterial;
 		private var _boxMaterial : TextureMaterial;
 		private var _boxMaterialPlus : TextureMaterial;
@@ -153,6 +155,7 @@ package {
 		private var _capture : BitmapData;
 		private var _topPause : Sprite;
 		// ui
+		private var _enemyShip : Mesh;
 		private var _menu : Sprite;
 		private var _sliderComplex : HUISlider;
 		private var _sliderHeight : HUISlider;
@@ -168,6 +171,7 @@ package {
 		private var _factor : Number = 4.66;
 		private var _isMouseMove : Boolean;
 		private var _isShooting : Boolean;
+		private var _tmpShoot : int;
 
 		// private var _borderCube : Array;
 		/**
@@ -248,11 +252,6 @@ package {
 			// create material
 			initMaterials();
 
-			// parse ship model
-			AssetLibrary.enableParser(AWDParser);
-			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
-			AssetLibrary.loadData(new ShipModel());
-
 			// create fractal terrain with image 6 7 8
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
@@ -264,7 +263,15 @@ package {
 			Particules.scene = _view.scene;
 			Particules.initParticlesTrail(0x999999, 0x353535);
 
-			// init bullet systeme
+			_sphereTest = new Mesh(new SphereGeometry(1), _shipMaterial);
+			_view.scene.addChild(_sphereTest);
+
+			// parse ship model
+			AssetLibrary.enableParser(AWDParser);
+			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			AssetLibrary.loadData(new ShipModel());
+
+			// init bullet for ship
 			Bullet.init(_bulletMaterial, 3000);
 			Bullet.scene = _view.scene;
 
@@ -294,9 +301,6 @@ package {
 				OimoEngine.addCube(pb, 190, 1000, 190, new Vector3D(0, 0, 0), null, 10, 0.5, 0.2, true);
 				}*/
 			}
-
-			_sphereTest = new Mesh(new SphereGeometry(1), _shipMaterial);
-			_view.scene.addChild(_sphereTest);
 
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
@@ -329,6 +333,14 @@ package {
 
 			// load spaceship mesh
 			// load("SpaceShip.awd"+ "?uniq=" + _id);
+		}
+
+		private function initAfterModelLoad() : void {
+			Enemy.init(_enemyShip, 3000, 1500);
+			Enemy.scene = _view.scene;
+			Enemy.addEnemy(new Vector3D(-1000, 600, _position.z));
+			Enemy.addEnemy(new Vector3D(-1000, 1200, _position.z));
+			Enemy.addEnemy(new Vector3D(-1000, 2000, _position.z));
 		}
 
 		/**
@@ -456,10 +468,17 @@ package {
 			_materials[2] = _shipMaterial;
 
 			// 3 - bullet material
-			_bulletMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFFAA33)));
+			_bulletMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFFFFFF)));
 			_bulletMaterial.gloss = 30;
 			_bulletMaterial.specular = 1;
-			_materials[3] = _bulletMaterial;
+			// _materials[3] = _bulletMaterial;
+
+			// 2 - ship material
+			_enemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x99cc99)));
+			_enemyMaterial.gloss = 60;
+			_enemyMaterial.specular = 1;
+			_enemyMaterial.addMethod(_reflectionMethod);
+			_materials[3] = _enemyMaterial;
 
 			// simulation box
 			_boxMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x12cccc99)));
@@ -496,6 +515,11 @@ package {
 				var mesh : Mesh = event.asset as Mesh;
 				mesh.material = _shipMaterial;
 				if (mesh.name == "Ship") _sphereTest.addChild(mesh);
+				if (mesh.name == "Enemy") {
+					_enemyShip = mesh;
+					_enemyShip.material = _enemyMaterial;
+					initAfterModelLoad();
+				}
 			}
 		}
 
@@ -524,6 +548,8 @@ package {
 			_sphereTest.position = _position.add(new Vector3D(0, 50, 0));
 			_sphereTest.rotationX = _banking;
 			Bullet.update();
+			Enemy.update();
+
 			FractalTerrain.update();
 			// OimoEngine.update();
 			// update physics static boxe
@@ -538,9 +564,8 @@ package {
 				OimoEngine.rigids[i].linearVelocity.init();
 				OimoEngine.rigids[i].angularVelocity.init();
 			}
-
+			// move the last rigid body the shipbox
 			OimoEngine.rigids[FractalTerrain.numCube].position.x = ((FractalTerrain.cubePoints[24].x) * USCALE);
-			// +_position.x;
 			OimoEngine.rigids[FractalTerrain.numCube].position.z = ((FractalTerrain.cubePoints[24].z) * USCALE);
 			OimoEngine.rigids[FractalTerrain.numCube].position.y = ((FractalTerrain.cubePoints[24].y + 110) * USCALE);
 			// +_position.y;
@@ -553,6 +578,12 @@ package {
 			Particules.followTarget1.transform = _sphereTest.transform;
 			Particules.followTarget2.transform = _sphereTest.transform;
 
+			if (_isShooting ) {
+				if (_tmpShoot == 8) {
+					Bullet.shot(_position);
+					_tmpShoot = 0;
+				} else _tmpShoot++;
+			}
 			// player follow terrain
 			_player.position = FractalTerrain.cubePoints[24];
 
@@ -776,9 +807,7 @@ package {
 		private function onStageMouseDown(e : MouseEvent) : void {
 			if (e.stageY > stage.stageHeight - 30) return;
 			_isShooting = true;
-			Bullet.shot(_position);
-			// var b : Bullet = new Bullet(e.stageX + 20, e.stageY - 10);
-			// addChild(b);
+			_tmpShoot = 8;
 		}
 
 		private function onStageMouseUp(e : Event) : void {
