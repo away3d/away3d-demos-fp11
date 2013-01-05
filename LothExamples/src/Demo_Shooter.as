@@ -152,9 +152,9 @@ package {
 		// camera position
 		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 5000);
 		private var _cameraTarget : Vector3D = new Vector3D(0, 1000, 3000);
-		// ship variable
+		// player ship variable
+		private var _position : Vector3D = new Vector3D(0, 1000, 3000);
 		private var _banking : int = 0;
-		private var _position : Vector3D = new Vector3D();
 		private var _factor : Number = 4.66;
 		private var _isMouseMove : Boolean;
 		private var _isShooting : Boolean;
@@ -510,6 +510,7 @@ package {
 
 			_view.render();
 			_isMouseMove = false;
+			log("poition x:"+ _position.x + " y:"+_position.y);
 		}
 
 		/**
@@ -612,8 +613,8 @@ package {
 			if (_prevMouseY > e.stageY) _banking--;
 			else if (_prevMouseY < e.stageY) _banking++;
 
-			_position.x = -(e.stageX - (stage.stageWidth >> 1)) * _factor;
-			_position.y = -((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y;
+			_position.x = int(-(e.stageX - (stage.stageWidth >> 1)) * _factor);
+			_position.y = int(-((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y);
 			_position.z = _cameraTarget.z;
 
 			_prevMouseX = e.stageX;
@@ -723,8 +724,6 @@ package {
 		private function message() : String {
 			var mes : String = "Click to shoot\n";
 			// mes += "Click on ship for rotation\n";
-			// mes += "I - full screen\n";
-			// mes += "N - random sky\n";
 			return mes;
 		}
 
