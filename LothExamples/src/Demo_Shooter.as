@@ -89,8 +89,10 @@ package {
 
 	import games.FractalTerrain;
 	import games.Particules;
+	
 	import games.shooters.Bullet;
 	import games.shooters.Enemy;
+	import games.shooters.Stat;
 
 	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Shooter extends Sprite {
@@ -261,6 +263,10 @@ package {
 			AssetLibrary.enableParser(AWDParser);
 			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			AssetLibrary.loadData(new ShipModel());
+			
+			// init game statistic
+			Stat.getInstance();
+			Stat.initStats();
 
 			// init bullet for ship
 			Bullet.getInstance();
@@ -510,7 +516,7 @@ package {
 
 			_view.render();
 			_isMouseMove = false;
-			log("poition x:"+ _position.x + " y:"+_position.y);
+			log("poition x:"+ _position.x + " y:"+_position.y+"\n"+Stat.score);
 		}
 
 		/**
@@ -613,8 +619,8 @@ package {
 			if (_prevMouseY > e.stageY) _banking--;
 			else if (_prevMouseY < e.stageY) _banking++;
 
-			_position.x = int(-(e.stageX - (stage.stageWidth >> 1)) * _factor);
-			_position.y = int(-((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y);
+			_position.x = (-(e.stageX - (stage.stageWidth >> 1)) * _factor) >> 0;
+			_position.y = (-((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y) >> 0;
 			_position.z = _cameraTarget.z;
 
 			_prevMouseX = e.stageX;
