@@ -89,10 +89,11 @@ package {
 
 	import games.FractalTerrain;
 	import games.Particules;
-	
 	import games.shooters.Bullet;
+	import games.shooters.BulletEnemy;
 	import games.shooters.Enemy;
 	import games.shooters.Stat;
+	import games.shooters.Ship;
 
 	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Shooter extends Sprite {
@@ -128,6 +129,7 @@ package {
 		private var _shipMaterial : TextureMaterial;
 		private var _enemyMaterial : TextureMaterial;
 		private var _bulletMaterial : TextureMaterial;
+		private var _bulletEnemyMaterial : TextureMaterial;
 		// methodes
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _reflectionMethod : EnvMapMethod;
@@ -263,15 +265,24 @@ package {
 			AssetLibrary.enableParser(AWDParser);
 			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			AssetLibrary.loadData(new ShipModel());
-			
+
 			// init game statistic
 			Stat.getInstance();
 			Stat.initStats();
+
+			// init player ship
+			Ship.getInstance();
+			Ship.initShip();
 
 			// init bullet for ship
 			Bullet.getInstance();
 			Bullet.scene = _view.scene;
 			Bullet.init(_bulletMaterial, 3000);
+
+			// init enemy bullet
+			BulletEnemy.getInstance();
+			BulletEnemy.scene = _view.scene;
+			BulletEnemy.init(_bulletEnemyMaterial, 3000);
 
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
@@ -454,8 +465,8 @@ package {
 
 			// bullet material
 			_bulletMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFFFFFF)));
-			_bulletMaterial.gloss = 30;
-			_bulletMaterial.specular = 1;
+
+			_bulletEnemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFF9000)));
 		}
 
 		/**
@@ -494,6 +505,8 @@ package {
 				else _banking++;
 			}
 
+			// player and ship
+			Ship.position = _position.add(new Vector3D(0, 50, 0));
 			_player.position = _position.add(new Vector3D(0, 50, 0));
 			_player.rotationX = _banking;
 
@@ -516,7 +529,7 @@ package {
 
 			_view.render();
 			_isMouseMove = false;
-			log("poition x:"+ _position.x + " y:"+_position.y+"\n"+Stat.score);
+			log("poition x:" + _position.x + " y:" + _position.y + "\n" + Stat.score);
 		}
 
 		/**
