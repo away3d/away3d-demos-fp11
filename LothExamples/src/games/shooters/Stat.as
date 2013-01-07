@@ -2,7 +2,9 @@ package games.shooters {
 	import flash.display.Sprite;
 	import flash.events.Event;
 
-	//
+	/**
+	 * Shooter game satistics 
+	 */
 	public class Stat extends Sprite {
 		private static var Singleton : Stat;
 		private static var _score : String;
@@ -14,9 +16,6 @@ package games.shooters {
 		private static var shots : int;
 		private static var _gameComplete : int;
 
-		/*private static var _aliensCaptured : int;
-		private static var _aliensEjected : int;
-		private static var _aliensCapturedInAir : int;*/
 		/**
 		 * Singleton enforcer
 		 */
@@ -39,9 +38,6 @@ package games.shooters {
 			misses = 0;
 			shots = 0;
 			_gameComplete = 0;
-			// _aliensCaptured = 0;
-			// _aliensEjected = 0;
-			// _aliensCapturedInAir = 0;
 
 			// separate enterframe
 			Singleton.addEventListener(Event.ENTER_FRAME, update);

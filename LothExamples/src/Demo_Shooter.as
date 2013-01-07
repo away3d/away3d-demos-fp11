@@ -128,8 +128,6 @@ package {
 		private var _waterMaterial : TextureMaterial;
 		private var _shipMaterial : TextureMaterial;
 		private var _enemyMaterial : TextureMaterial;
-		private var _bulletMaterial : TextureMaterial;
-		private var _bulletEnemyMaterial : TextureMaterial;
 		// methodes
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _reflectionMethod : EnvMapMethod;
@@ -277,12 +275,12 @@ package {
 			// init bullet for ship
 			Bullet.getInstance();
 			Bullet.scene = _view.scene;
-			Bullet.init(_bulletMaterial, 3000);
+			Bullet.init(3000);
 
 			// init enemy bullet
 			BulletEnemy.getInstance();
 			BulletEnemy.scene = _view.scene;
-			BulletEnemy.init(_bulletEnemyMaterial, 3000);
+			BulletEnemy.init(3000);
 
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
@@ -462,11 +460,6 @@ package {
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
 			}
-
-			// bullet material
-			_bulletMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFFFFFF)));
-
-			_bulletEnemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(4, 4, false, 0xFF9000)));
 		}
 
 		/**

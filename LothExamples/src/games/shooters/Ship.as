@@ -1,9 +1,12 @@
 package games.shooters {
 	import flash.geom.Vector3D;
 	import flash.display.Sprite;
-	import flash.events.Event;
+	//import flash.events.Event;
 
-	//
+	/**
+	 * Ship
+	 * health and position dispatch
+	 */
 	public class Ship extends Sprite {
 		private static var Singleton : Ship;
 		private static var _position : Vector3D;
@@ -32,7 +35,7 @@ package games.shooters {
 			_maxHealth = 100;
 			reset();
 			// separate enterframe
-			Singleton.addEventListener(Event.ENTER_FRAME, update);
+			//Singleton.addEventListener(Event.ENTER_FRAME, update);
 		}
 
 		public static function reset() : void {
@@ -57,7 +60,7 @@ package games.shooters {
 		private static function kill() : void {
 		}
 
-		private static function update(e : Event = null) : void {
-		}
+		/*private static function update(e : Event = null) : void {
+		}*/
 	}
 }
