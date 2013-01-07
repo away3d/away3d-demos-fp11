@@ -281,6 +281,9 @@ package {
 			BulletEnemy.getInstance();
 			BulletEnemy.scene = _view.scene;
 			BulletEnemy.init(3000);
+			
+			Enemy.getInstance();
+			Enemy.scene = _view.scene;
 
 			// create plane for water
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
@@ -293,8 +296,7 @@ package {
 		}
 
 		private function initAfterModelLoad() : void {
-			Enemy.getInstance();
-			Enemy.scene = _view.scene;
+			
 			Enemy.init(_enemyShip, 3000, 1500, _cameraTarget.z);
 
 			initLevel();
@@ -543,6 +545,10 @@ package {
 			stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+			
+			Enemy.start();
+			Bullet.start();
+			BulletEnemy.start();
 		}
 
 		/**
@@ -562,6 +568,10 @@ package {
 
 			// mouse come back
 			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
+			
+			Enemy.pause();
+			Bullet.pause();
+			BulletEnemy.pause();
 		}
 
 		/**

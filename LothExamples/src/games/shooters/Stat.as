@@ -1,6 +1,5 @@
 package games.shooters {
 	import flash.display.Sprite;
-	import flash.events.Event;
 
 	/**
 	 * Shooter game satistics 
@@ -38,20 +37,21 @@ package games.shooters {
 			misses = 0;
 			shots = 0;
 			_gameComplete = 0;
-
-			// separate enterframe
-			Singleton.addEventListener(Event.ENTER_FRAME, update);
+			
+			update();
 		}
 
 		public static function updateStat(type : String, val : int) : void {
 			Stat[type] += val;
+			update();
 		}
 
 		public static function setStat(type : String, val : int) : void {
 			Stat[type] = val;
+			update();
 		}
 
-		private static function update(e : Event = null) : void {
+		private static function update() : void {
 			_score = "SCORE " + points + "\n";
 			_score = "HEALTH " + shipHealth + "\n";
 			_score += "Kill " + kills + "\n";
