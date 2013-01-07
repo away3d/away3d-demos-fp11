@@ -281,7 +281,7 @@ package {
 			BulletEnemy.getInstance();
 			BulletEnemy.scene = _view.scene;
 			BulletEnemy.init(3000);
-			
+
 			Enemy.getInstance();
 			Enemy.scene = _view.scene;
 
@@ -290,16 +290,12 @@ package {
 			_groundWater.geometry.scaleUV(40, 40);
 			_groundWater.mouseEnabled = false;
 			_view.scene.addChild(_groundWater);
-
-			initListeners();
-			log(message());
 		}
 
 		private function initAfterModelLoad() : void {
-			
 			Enemy.init(_enemyShip, 3000, 1500, _cameraTarget.z);
-
-			initLevel();
+			initListeners();
+			log(message());
 		}
 
 		private function initLevel() : void {
@@ -318,6 +314,12 @@ package {
 			_powerupTimer = new Timer(1000 * _powerupInterval, 0);
 			_powerupTimer.addEventListener("timer", powerupHandler);
 			_powerupTimer.start();
+		}
+
+		private function levelPause() : void {
+			_enemyTimer.stop();
+			_bossTimer.stop();
+			_powerupTimer.stop();
 		}
 
 		// this event fires every second and releases an enemy ship
@@ -545,10 +547,12 @@ package {
 			stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
-			
+
 			Enemy.start();
 			Bullet.start();
 			BulletEnemy.start();
+
+			initLevel();
 		}
 
 		/**
@@ -568,10 +572,12 @@ package {
 
 			// mouse come back
 			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
-			
+
 			Enemy.pause();
 			Bullet.pause();
 			BulletEnemy.pause();
+
+			levelPause();
 		}
 
 		/**

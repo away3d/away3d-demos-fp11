@@ -37,7 +37,7 @@ package games.shooters {
 			misses = 0;
 			shots = 0;
 			_gameComplete = 0;
-			
+
 			update();
 		}
 
