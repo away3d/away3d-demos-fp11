@@ -6,6 +6,9 @@ package games.shooters {
 	import flash.geom.Vector3D;
 	import flash.display.Sprite;
 
+	import com.greensock.TweenNano;
+	import com.greensock.easing.Expo;
+
 	// import flash.events.Event;
 	/**
 	 * Ship
@@ -76,15 +79,17 @@ package games.shooters {
 
 		private static function dislocate() : void {
 			var i : int;
-			var degree1 : Number = Math.random() * Math.PI ;
-			var degree2 : Number = Math.random() * Math.PI * 2;
-			var r : Number = Math.random() * 50 + 400;
+			var degree1 : Number, degree2 : Number,  r : Number;
+			var velocity : Vector3D, rotation : Vector3D;
+			var m : Mesh;
 			for (i = 0; i < _shipMeshs.length; i++) {
+				m = _shipMeshs[i];
 				degree1 = Math.random() * Math.PI ;
 				degree2 = Math.random() * Math.PI * 2;
 				r = Math.random() * 50 + 200;
-				_shipMeshs[i].moveTo(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
-				_shipMeshs[i].rotateTo(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+				velocity = new Vector3D(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+				rotation = new Vector3D(Math.random() * 360, Math.random() * 360, Math.random() * 360);
+				TweenNano.to(m, 2, {x:velocity.x, y:velocity.y, z:velocity.z, rotationX:rotation.x, rotationY:rotation.y, rotationZ:rotation.z, ease:Expo.easeOut});
 			}
 		}
 
