@@ -39,10 +39,11 @@ package {
 	import away3d.events.AssetEvent;
 	import away3d.library.AssetLibrary;
 	import away3d.library.assets.AssetType;
-	import away3d.loaders.parsers.AWDParser;
+	import away3d.loaders.parsers.AWD2Parser;
 	import away3d.core.managers.Stage3DManager;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;
+	import away3d.events.LoaderEvent;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.methods.SimpleWaterNormalMethod;
@@ -97,7 +98,6 @@ package {
 
 	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Shooter extends Sprite {
-		// R_bot 100 model
 		[Embed(source="assets/ship.awd", mimeType="application/octet-stream")]
 		private var ShipModel : Class;
 		private const MOUNTAIGN_TOP : Number = 2000;
@@ -122,11 +122,13 @@ package {
 		private var _enemyShip : Mesh;
 		private var _groundWater : Mesh;
 		private var _sunLight : DirectionalLight;
+		private var _shipMeshs : Vector.<Mesh>;
 		// materials
 		private var _materials : Vector.<TextureMaterial>;
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
 		private var _shipMaterial : TextureMaterial;
+		private var _shipWindowMaterial : TextureMaterial;
 		private var _enemyMaterial : TextureMaterial;
 		// methodes
 		private var _shadowMethod : NearShadowMapMethod;
@@ -260,8 +262,10 @@ package {
 			Particules.initParticlesTrail(0x999999, 0x353535);
 
 			// parse ship model
-			AssetLibrary.enableParser(AWDParser);
-			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			_shipMeshs = new Vector.<Mesh>();
+			AssetLibrary.enableParser(AWD2Parser);
+			AssetLibrary.addEventListener(AssetEvent.MESH_COMPLETE, onAssetComplete);
+			AssetLibrary.addEventListener(LoaderEvent.RESOURCE_COMPLETE, initAfterModelParse);
 			AssetLibrary.loadData(new ShipModel());
 
 			// init game statistic
@@ -270,7 +274,6 @@ package {
 
 			// init player ship
 			Ship.getInstance();
-			Ship.initShip();
 
 			// init bullet for ship
 			Bullet.getInstance();
@@ -292,15 +295,37 @@ package {
 			_view.scene.addChild(_groundWater);
 		}
 
-		private function initAfterModelLoad() : void {
+		/**
+		 * Listener function for full asset complete 
+		 */
+		private function initAfterModelParse(event : LoaderEvent = null) : void {
+			// init enemy ship
 			Enemy.init(_enemyShip, 3000, 1500, _cameraTarget.z);
+
+			// init player ship
+			Ship.initShip(_shipMeshs, _player, _shipMaterial, _shipWindowMaterial);
+
 			initListeners();
-			log(message());
 		}
 
-		private function initLevel() : void {
-			// init ship release timer, release enemy ship once a second
+		/**
+		 * Listener function on each mesh complete 
+		 */
+		private function onAssetComplete(event : AssetEvent) : void {
+			if (event.asset.assetType == AssetType.MESH) {
+				var mesh : Mesh = event.asset as Mesh;
+				if (mesh.name.substr(0, 4) == "ship") _shipMeshs.push(mesh);
+				if (mesh.name == "Enemy") {
+					_enemyShip = mesh;
+					_enemyShip.material = _enemyMaterial;
+				}
+			}
+		}
 
+		/**
+		 * Create timer for this level
+		 */
+		private function initLevel() : void {
 			_enemyTimer = new Timer(1000 * _enemyInterval, 0);
 			_enemyTimer.addEventListener("timer", enemyTimerHandler);
 			_enemyTimer.start();
@@ -316,6 +341,9 @@ package {
 			_powerupTimer.start();
 		}
 
+		/**
+		 * stop all timer created in this level
+		 */
 		private function levelPause() : void {
 			_enemyTimer.stop();
 			_bossTimer.stop();
@@ -337,12 +365,6 @@ package {
 			// var m = new Powerup();
 		}
 
-		// this stop all the timers created in this LevelManager
-		/*private function stop() : void {
-		_enemyTimer.stop();
-		_bossTimer.stop();
-		_powerupTimer.stop();
-		}*/
 		/**
 		 * Initialise the engine
 		 */
@@ -448,37 +470,31 @@ package {
 			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
 			_shipMaterial.gloss = 60;
 			_shipMaterial.specular = 1;
+			_shipMaterial.bothSides = true;
 			_shipMaterial.addMethod(_reflectionMethod);
 			_materials[2] = _shipMaterial;
 
-			// 3 - enemy ship material
+			// 3 - ship window material
+			_shipWindowMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44999999)));
+			_shipWindowMaterial.gloss = 60;
+			_shipWindowMaterial.specular = 1;
+			// _shipWindowMaterial.bothSides = true;
+			_shipWindowMaterial.alphaBlending = true;
+			_shipWindowMaterial.addMethod(_reflectionMethod);
+			_materials[3] = _shipWindowMaterial;
+
+			// 4 - enemy ship material
 			_enemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x99cc99)));
 			_enemyMaterial.gloss = 60;
 			_enemyMaterial.specular = 1;
 			_enemyMaterial.addMethod(_reflectionMethod);
-			_materials[3] = _enemyMaterial;
+			_materials[4] = _enemyMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
 				_materials[i].ambient = 1;
-			}
-		}
-
-		/**
-		 * Listener function for asset complete event on loader
-		 */
-		private function onAssetComplete(event : AssetEvent) : void {
-			if (event.asset.assetType == AssetType.MESH) {
-				var mesh : Mesh = event.asset as Mesh;
-				mesh.material = _shipMaterial;
-				if (mesh.name == "Ship") _player.addChild(mesh);
-				if (mesh.name == "Enemy") {
-					_enemyShip = mesh;
-					_enemyShip.material = _enemyMaterial;
-					initAfterModelLoad();
-				}
 			}
 		}
 

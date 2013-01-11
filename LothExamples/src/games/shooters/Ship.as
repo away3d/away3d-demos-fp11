@@ -1,4 +1,8 @@
 package games.shooters {
+	import away3d.entities.Mesh;
+	import away3d.containers.ObjectContainer3D;
+	import away3d.materials.TextureMaterial;
+
 	import flash.geom.Vector3D;
 	import flash.display.Sprite;
 
@@ -10,6 +14,7 @@ package games.shooters {
 	public class Ship extends Sprite {
 		private static var Singleton : Ship;
 		private static var _position : Vector3D;
+		private static var _shipMeshs : Vector.<Mesh>;
 		// defines the current health of the ship
 		private static var _health : Number;
 		private static var _maxHealth : Number;
@@ -31,16 +36,95 @@ package games.shooters {
 		}
 
 		// resets all stats to zero for a new game
-		public static function initShip() : void {
+		public static function initShip(shipParts : Vector.<Mesh>, container : ObjectContainer3D, mat : TextureMaterial, mat2 : TextureMaterial) : void {
 			_maxHealth = 100;
+			_shipMeshs = shipParts;
+			var m : Mesh;
+			var i : int;
+
+			// add the reverse wing to ship
+			for (i = 0; i < shipParts.length; i++) {
+				if (shipParts[i].name == "ship_wing") {
+					m = Mesh(shipParts[i].clone());
+					m.name = "ship_wing_r";
+					m.scaleZ = -1;
+					m.z = 45;
+					_shipMeshs.push(m);
+				}
+				if (shipParts[i].name == "ship_wing_end") {
+					m = Mesh(shipParts[i].clone());
+					m.name = "ship_wing_end_r";
+					m.scaleZ = -1;
+					m.z = 90;
+					_shipMeshs.push(m);
+				}
+			}
+
+			for (i = 0; i < _shipMeshs.length; i++) {
+				if (_shipMeshs[i].name == "ship_cockpit_glass") _shipMeshs[i].material = mat2;
+				else _shipMeshs[i].material = mat;
+				container.addChild(_shipMeshs[i]);
+				if (_shipMeshs[i].name == "ship_wing_end") _shipMeshs[i].rotationX = 25;
+				if (_shipMeshs[i].name == "ship_wing_end_r") _shipMeshs[i].rotationX = -25;
+			}
+
 			reset();
+
 			// separate enterframe
 			// Singleton.addEventListener(Event.ENTER_FRAME, update);
+		}
+
+		private static function dislocate() : void {
+			var i : int;
+			var degree1 : Number = Math.random() * Math.PI ;
+			var degree2 : Number = Math.random() * Math.PI * 2;
+			var r : Number = Math.random() * 50 + 400;
+			for (i = 0; i < _shipMeshs.length; i++) {
+				degree1 = Math.random() * Math.PI ;
+				degree2 = Math.random() * Math.PI * 2;
+				r = Math.random() * 50 + 200;
+				_shipMeshs[i].moveTo(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+				_shipMeshs[i].rotateTo(r * Math.sin(degree1) * Math.cos(degree2), r * Math.cos(degree1) * Math.cos(degree2), r * Math.sin(degree2));
+			}
+		}
+
+		private static function rebuild() : void {
+			var i : int;
+			var m : Mesh;
+			for (i = 0; i < _shipMeshs.length; i++) {
+				m = _shipMeshs[i];
+				m.moveTo(0, 0, 0);
+				m.rotateTo(0, 0, 0);
+				if (m.name == "ship_body_0") m.x = 70;
+				if (m.name == "ship_body_2") m.x = -50;
+				if (m.name == "ship_body_3") m.x = -100;
+				if (m.name == "ship_wing") m.z = -45;
+				if (m.name == "ship_wing_r") m.z = 45;
+				if (m.name == "ship_wing_end") {
+					m.z = -90;
+					m.y = -32;
+					m.rotationX = 25;
+				}
+				if (m.name == "ship_wing_end_r") {
+					m.z = 90;
+					m.y = -32;
+					m.rotationX = -25;
+				}
+				if (m.name == "ship_cockpit_glass") {
+					m.x = -33;
+					m.y = 30;
+				}
+				if (m.name == "ship_cockpit") {
+					m.x = -33;
+					m.y = 30;
+				}
+			}
 		}
 
 		public static function reset() : void {
 			_health = _maxHealth;
 			Stat.setStat("shipHealth", _health);
+			rebuild();
 		}
 
 		public static function takeDamage(d : int) : void {
@@ -58,6 +142,7 @@ package games.shooters {
 		}
 
 		private static function kill() : void {
+			dislocate();
 		}
 		/*private static function update(e : Event = null) : void {
 		}*/
