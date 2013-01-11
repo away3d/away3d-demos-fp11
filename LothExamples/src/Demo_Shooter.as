@@ -100,6 +100,8 @@ package {
 	public class Demo_Shooter extends Sprite {
 		[Embed(source="assets/ship.awd", mimeType="application/octet-stream")]
 		private var ShipModel : Class;
+		[Embed(source="assets/ship.jpg")]
+		private var ShipBitmap : Class;
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
@@ -444,7 +446,7 @@ package {
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.8;
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.6);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.3);
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x50404060)));
@@ -467,7 +469,7 @@ package {
 			_materials[1] = _terrainMaterial;
 
 			// 2 - ship material
-			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x999999)));
+			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(ShipBitmap));
 			_shipMaterial.gloss = 60;
 			_shipMaterial.specular = 1;
 			_shipMaterial.bothSides = true;
