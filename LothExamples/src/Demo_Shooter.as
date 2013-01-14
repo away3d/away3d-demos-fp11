@@ -215,6 +215,7 @@ package {
 			_stage3DProxy = _stage3DManager.getFreeStage3DProxy();
 			_stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, initFinal);
 			_stage3DProxy.color = 0x000000;
+			_stage3DProxy.antiAlias = 4;
 		}
 
 		/**
@@ -446,7 +447,7 @@ package {
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.8;
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.3);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.1);
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x50404060)));

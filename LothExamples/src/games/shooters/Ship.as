@@ -18,7 +18,10 @@ package games.shooters {
 		private static var Singleton : Ship;
 		private static var _position : Vector3D;
 		private static var _shipMeshs : Vector.<Mesh>;
+		private static var _wheelsMeshs : Vector.<Mesh>;
+		private static var _axisMeshs : Vector.<Mesh>;
 		// defines the current health of the ship
+		private static var _life : int;
 		private static var _health : Number;
 		private static var _maxHealth : Number;
 
@@ -41,9 +44,11 @@ package games.shooters {
 		// resets all stats to zero for a new game
 		public static function initShip(shipParts : Vector.<Mesh>, container : ObjectContainer3D, mat : TextureMaterial, mat2 : TextureMaterial) : void {
 			_maxHealth = 100;
+			_life = 3;
 			_shipMeshs = shipParts;
-			var m : Mesh;
-			var i : int;
+			_wheelsMeshs = new Vector.<Mesh>(5, true);
+			_axisMeshs = new Vector.<Mesh>(3, true);
+			var m : Mesh, i : int, j : int;
 
 			// add the reverse wing to ship
 			for (i = 0; i < shipParts.length; i++) {
@@ -51,26 +56,54 @@ package games.shooters {
 					m = Mesh(shipParts[i].clone());
 					m.name = "ship_wing_r";
 					m.scaleZ = -1;
-					m.z = 45;
 					_shipMeshs.push(m);
 				}
 				if (shipParts[i].name == "ship_wing_end") {
 					m = Mesh(shipParts[i].clone());
 					m.name = "ship_wing_end_r";
 					m.scaleZ = -1;
-					m.z = 90;
 					_shipMeshs.push(m);
 				}
+				// axe of wheels
+				if (shipParts[i].name == "ship_axe_av") _axisMeshs[0] = shipParts[i];
+				if (shipParts[i].name == "ship_axe_ar") {
+					m = Mesh(shipParts[i].clone());
+					m.name = "ship_axe_ar_r";
+					_shipMeshs.push(m);
+					_axisMeshs[1] = shipParts[i];
+					_axisMeshs[2] = m;
+				}
+				// add all wheels
+				if (shipParts[i].name == "ship_wheel") {
+					shipParts[i].material = mat;
+					for (j = 0; j < 5;++j) {
+						m = Mesh(shipParts[i].clone());
+						m.name = "ship_wheel_" + j;
+						_wheelsMeshs[j] = m;
+					}
+				}
 			}
+			// place new wheels
+			_wheelsMeshs[0].position = new Vector3D(-13, -14, 0);
+			_wheelsMeshs[1].position = new Vector3D(0, -14, 6);
+			_wheelsMeshs[2].position = new Vector3D(0, -14, -6);
+			_wheelsMeshs[3].position = new Vector3D(0, -14, 6);
+			_wheelsMeshs[4].position = new Vector3D(0, -14, -6);
+			// add wheels to right axis
+			_axisMeshs[0].addChild(_wheelsMeshs[0]);
+			_axisMeshs[1].addChild(_wheelsMeshs[1]);
+			_axisMeshs[1].addChild(_wheelsMeshs[2]);
+			_axisMeshs[2].addChild(_wheelsMeshs[3]);
+			_axisMeshs[2].addChild(_wheelsMeshs[4]);
 
 			for (i = 0; i < _shipMeshs.length; i++) {
-				if (_shipMeshs[i].name == "ship_cockpit_glass") _shipMeshs[i].material = mat2;
-				else _shipMeshs[i].material = mat;
-				container.addChild(_shipMeshs[i]);
-				if (_shipMeshs[i].name == "ship_wing_end") _shipMeshs[i].rotationX = 25;
-				if (_shipMeshs[i].name == "ship_wing_end_r") _shipMeshs[i].rotationX = -25;
+				m = _shipMeshs[i];
+				if (m.name == "ship_cockpit_glass") m.material = mat2;
+				else m.material = mat;
+				if (m.name != "ship_wheel") container.addChild(m);
 			}
 
+			// finaly reposition all mesh
 			reset();
 
 			// separate enterframe
@@ -83,7 +116,7 @@ package games.shooters {
 			var m : Mesh;
 			for (i = 0; i < _shipMeshs.length; i++) {
 				m = _shipMeshs[i];
-				velocity = new Vector3D(Math.random() * 300 -150, -(Math.random() * 400+200) , Math.random() * 300 -150);
+				velocity = new Vector3D(Math.random() * 300 - 150, -(Math.random() * 400 + 200), Math.random() * 300 - 150);
 				rotation = new Vector3D(Math.random() * 360, Math.random() * 360, Math.random() * 360);
 				TweenNano.to(m, 2, {x:velocity.x, y:velocity.y, z:velocity.z, rotationX:rotation.x, rotationY:rotation.y, rotationZ:rotation.z, ease:Quad.easeOut});
 			}
@@ -101,24 +134,19 @@ package games.shooters {
 				if (m.name == "ship_body_3") m.x = -100;
 				if (m.name == "ship_wing") m.z = -45;
 				if (m.name == "ship_wing_r") m.z = 45;
+				if (m.name == "ship_axe_ar") m.position = new Vector3D(40, -30, 18);
+				if (m.name == "ship_axe_ar_r") m.position = new Vector3D(40, -30, -18);
+				if (m.name == "ship_axe_av") m.position = new Vector3D(-77, -30, 0);
 				if (m.name == "ship_wing_end") {
-					m.z = -90;
-					m.y = -32;
+					m.position = new Vector3D(0, -32, -90);
 					m.rotationX = 25;
 				}
 				if (m.name == "ship_wing_end_r") {
-					m.z = 90;
-					m.y = -32;
+					m.position = new Vector3D(0, -32, 90);
 					m.rotationX = -25;
 				}
-				if (m.name == "ship_cockpit_glass") {
-					m.x = -33;
-					m.y = 30;
-				}
-				if (m.name == "ship_cockpit") {
-					m.x = -33;
-					m.y = 30;
-				}
+				if (m.name == "ship_cockpit_glass") m.position = new Vector3D(-33, 30, 0);
+				if (m.name == "ship_cockpit") m.position = new Vector3D(-33, 30, 0);
 			}
 		}
 
