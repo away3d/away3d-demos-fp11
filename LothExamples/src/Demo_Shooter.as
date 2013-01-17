@@ -44,6 +44,7 @@ package {
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;
 	import away3d.events.LoaderEvent;
+	import away3d.controllers.HoverController;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.methods.SimpleWaterNormalMethod;
@@ -102,6 +103,8 @@ package {
 		private var ShipModel : Class;
 		[Embed(source="assets/ship.jpg")]
 		private var ShipBitmap : Class;
+		[Embed(source="assets/pilote.jpg")]
+		private var PiloteBitmap : Class;
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
@@ -130,6 +133,7 @@ package {
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
 		private var _shipMaterial : TextureMaterial;
+		private var _piloteMaterial : TextureMaterial;
 		private var _shipWindowMaterial : TextureMaterial;
 		private var _enemyMaterial : TextureMaterial;
 		// methodes
@@ -145,6 +149,7 @@ package {
 		private var _isIntro : Boolean = true;
 		// private var _isRotation : Boolean;
 		private var _isRender : Boolean;
+		private var _isInGame : Boolean;
 		// private var _isShipControl : Boolean;
 		// interface
 		private var _text : TextField;
@@ -158,11 +163,13 @@ package {
 		// camera position
 		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 5000);
 		private var _cameraTarget : Vector3D = new Vector3D(0, 1000, 3000);
+		private var _cameraController : HoverController;
 		// player ship variable
 		private var _position : Vector3D = new Vector3D(0, 1000, 3000);
 		private var _banking : int = 0;
 		private var _factor : Number = 4.66;
 		private var _isMouseMove : Boolean;
+		private var _isMouseDown : Boolean;
 		private var _isShooting : Boolean;
 		private var _tmpShoot : int;
 		// game variable
@@ -306,7 +313,7 @@ package {
 			Enemy.init(_enemyShip, 3000, 1500, _cameraTarget.z);
 
 			// init player ship
-			Ship.initShip(_shipMeshs, _player, _shipMaterial, _shipWindowMaterial);
+			Ship.initShip(_shipMeshs, _player, _shipMaterial, _piloteMaterial, _shipWindowMaterial);
 
 			initListeners();
 		}
@@ -328,7 +335,18 @@ package {
 		/**
 		 * Create timer for this level
 		 */
-		private function initLevel() : void {
+		private function initLevel(e : Event = null) : void {
+			if (_isInGame && e) return;
+
+			_view.camera.position = _cameraFixed;
+			_view.camera.lookAt(_cameraTarget);
+
+			// start onEnterframe
+			Enemy.start();
+			Bullet.start();
+			BulletEnemy.start();
+
+			// init enemy release Timer
 			_enemyTimer = new Timer(1000 * _enemyInterval, 0);
 			_enemyTimer.addEventListener("timer", enemyTimerHandler);
 			_enemyTimer.start();
@@ -342,12 +360,20 @@ package {
 			_powerupTimer = new Timer(1000 * _powerupInterval, 0);
 			_powerupTimer.addEventListener("timer", powerupHandler);
 			_powerupTimer.start();
+
+			_isInGame = true;
 		}
 
 		/**
 		 * stop all timer created in this level
 		 */
 		private function levelPause() : void {
+			// stop onEnterframe
+			Enemy.pause();
+			Bullet.pause();
+			BulletEnemy.pause();
+
+			// stop level timer
 			_enemyTimer.stop();
 			_bossTimer.stop();
 			_powerupTimer.stop();
@@ -384,13 +410,22 @@ package {
 			_view.camera.lens.near = 1;
 			_view.forceMouseMove = false;
 
-			_view.camera.y = 1000;
+			/*_view.camera.y = 1000;
 			_view.camera.position = _cameraFixed;
-			_view.camera.lookAt(_cameraTarget);
+			_view.camera.lookAt(_cameraTarget);*/
 
 			// setup the player container
 			_player = new ObjectContainer3D();
 			_view.scene.addChild(_player);
+			_player.position = _cameraTarget;
+
+			// setup controller to be used on the camera
+			_cameraController = new HoverController(_view.camera, _player, 22, 0, 500, 10, 90);
+			_cameraController.tiltAngle = 10;
+			_cameraController.panAngle = 22;
+			_cameraController.minTiltAngle = -10;
+			_cameraController.maxTiltAngle = 60;
+			_cameraController.autoUpdate = false;
 
 			// add stats
 			addChild(_stats = new AwayStats(_view, false, true));
@@ -447,7 +482,7 @@ package {
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.8;
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.1);
+			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.2);
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x50404060)));
@@ -477,21 +512,28 @@ package {
 			_shipMaterial.addMethod(_reflectionMethod);
 			_materials[2] = _shipMaterial;
 
-			// 3 - ship window material
+			// 3 - ship material
+			_piloteMaterial = new TextureMaterial(Cast.bitmapTexture(PiloteBitmap));
+			_piloteMaterial.gloss = 60;
+			_piloteMaterial.specular = 1;
+			_piloteMaterial.addMethod(_reflectionMethod);
+			_materials[3] = _piloteMaterial;
+
+			// 4 - ship window material
 			_shipWindowMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44999999)));
 			_shipWindowMaterial.gloss = 60;
 			_shipWindowMaterial.specular = 1;
 			// _shipWindowMaterial.bothSides = true;
 			_shipWindowMaterial.alphaBlending = true;
 			_shipWindowMaterial.addMethod(_reflectionMethod);
-			_materials[3] = _shipWindowMaterial;
+			_materials[4] = _shipWindowMaterial;
 
-			// 4 - enemy ship material
+			// 5 - enemy ship material
 			_enemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x99cc99)));
 			_enemyMaterial.gloss = 60;
 			_enemyMaterial.specular = 1;
 			_enemyMaterial.addMethod(_reflectionMethod);
-			_materials[4] = _enemyMaterial;
+			_materials[5] = _enemyMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
@@ -516,26 +558,31 @@ package {
 				_night--;
 			}
 
-			if (_banking != 0 && !_isMouseMove) {
-				if (_banking > 0) _banking--;
-				else _banking++;
-			}
+			if (_isInGame) {
+				// ship banking
+				if (_banking != 0 && !_isMouseMove) {
+					if (_banking > 0) _banking--;
+					else _banking++;
+				}
+				// player and ship
+				Ship.position = _position.add(new Vector3D(0, 50, 0));
+				_player.position = _position.add(new Vector3D(0, 50, 0));
+				_player.rotationX = _banking;
 
-			// player and ship
-			Ship.position = _position.add(new Vector3D(0, 50, 0));
-			_player.position = _position.add(new Vector3D(0, 50, 0));
-			_player.rotationX = _banking;
+				// ship bullet shoot
+				if (_isShooting ) {
+					if (_tmpShoot == 8) {
+						Bullet.shot(_position);
+						_tmpShoot = 0;
+					} else _tmpShoot++;
+				}
+			} else {
+				_cameraController.update();
+			}
 
 			// particule
 			Particules.followTarget1.transform = _player.transform;
 			Particules.followTarget2.transform = _player.transform;
-
-			if (_isShooting ) {
-				if (_tmpShoot == 8) {
-					Bullet.shot(_position);
-					_tmpShoot = 0;
-				} else _tmpShoot++;
-			}
 
 			// animate water material
 			_waterMethod.water1OffsetX += .001;
@@ -567,11 +614,7 @@ package {
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onStageMouseWheel);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
 
-			Enemy.start();
-			Bullet.start();
-			BulletEnemy.start();
-
-			initLevel();
+			if (_isInGame) initLevel();
 		}
 
 		/**
@@ -592,11 +635,7 @@ package {
 			// mouse come back
 			stage.addEventListener(MouseEvent.MOUSE_OVER, initListeners);
 
-			Enemy.pause();
-			Bullet.pause();
-			BulletEnemy.pause();
-
-			levelPause();
+			if (_isInGame) levelPause();
 		}
 
 		/**
@@ -643,12 +682,19 @@ package {
 
 		private function onStageMouseDown(e : MouseEvent) : void {
 			if (e.stageY > stage.stageHeight - 30) return;
-			_isShooting = true;
-			_tmpShoot = 8;
+			if (_isInGame) {
+				_isShooting = true;
+				_tmpShoot = 8;
+			} else {
+				_prevMouseX = e.stageX;
+				_prevMouseY = e.stageY;
+				_isMouseDown = true;
+			}
 		}
 
 		private function onStageMouseUp(e : Event) : void {
 			_isShooting = false;
+			_isMouseDown = false;
 		}
 
 		private function onStageMouseLeave(e : Event) : void {
@@ -657,22 +703,33 @@ package {
 
 		private function onStageMouseMove(e : MouseEvent) : void {
 			_isMouseMove = true;
-			if (_prevMouseY > e.stageY) _banking--;
-			else if (_prevMouseY < e.stageY) _banking++;
+			if (_isInGame) {
+				if (_prevMouseY > e.stageY) _banking--;
+				else if (_prevMouseY < e.stageY) _banking++;
 
-			_position.x = (-(e.stageX - (stage.stageWidth >> 1)) * _factor) >> 0;
-			_position.y = (-((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y) >> 0;
-			_position.z = _cameraTarget.z;
-
+				_position.x = (-(e.stageX - (stage.stageWidth >> 1)) * _factor) >> 0;
+				_position.y = (-((e.stageY - (stage.stageHeight >> 1)) * _factor) + _cameraTarget.y) >> 0;
+				_position.z = _cameraTarget.z;
+			} else {
+				if (_isMouseDown) {
+					_cameraController.panAngle += (e.stageX - _prevMouseX);
+					_cameraController.tiltAngle += (e.stageY - _prevMouseY);
+				}
+			}
 			_prevMouseX = e.stageX;
 			_prevMouseY = e.stageY;
 		}
 
 		/**
-		 * mouseWheel listener
+		 * Listener mouseWheel 
 		 */
 		private function onStageMouseWheel(e : MouseEvent) : void {
-			// _cameraController.distance -= e.delta * 5;
+			if (_isInGame) return;
+			_cameraController.distance -= e.delta * 5;
+			if (_cameraController.distance < 50)
+				_cameraController.distance = 50;
+			else if (_cameraController.distance > 2000)
+				_cameraController.distance = 2000;
 		}
 
 		/**
@@ -699,6 +756,8 @@ package {
 			new PushButton(_menu, 170, -29, "fractal", switchFractal).setSize(60, 30);
 			new PushButton(_menu, 430, -29, "sky", randomSky).setSize(60, 30);
 			new PushButton(_menu, 495, -29, "full screen", fullScreen).setSize(80, 30);
+
+			new PushButton(_menu, 30, -100, "Start Game", initLevel).setSize(80, 60);
 
 			_sliderHeight = new HUISlider(_menu, 235, -20, "height", setTerrainHeight);
 			_sliderHeight.maximum = 4000;
