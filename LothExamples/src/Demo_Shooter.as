@@ -267,8 +267,9 @@ package {
 			// movable ground
 			FractalTerrain.getInstance();
 			FractalTerrain.scene = _view.scene;
+			// FractalTerrain.addCubicReference(1);
 			// FractalTerrain.addCubicReference(7);
-			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 128, true);
+			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 64, true);
 			FractalTerrain.move(-1, 0);
 
 			// particule

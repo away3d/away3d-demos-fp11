@@ -20,6 +20,9 @@ package games.shooters {
 		private static var _shipMeshs : Vector.<Mesh>;
 		private static var _wheelsMeshs : Vector.<Mesh>;
 		private static var _axisMeshs : Vector.<Mesh>;
+		private static var _pistonMeshs : Vector.<Mesh>;
+		private static var _wingMeshs : Vector.<Mesh>;
+		private static var _shipBody : Mesh;
 		// defines the current health of the ship
 		private static var _life : int;
 		private static var _health : Number;
@@ -48,10 +51,17 @@ package games.shooters {
 			_shipMeshs = shipParts;
 			_wheelsMeshs = new Vector.<Mesh>(5, true);
 			_axisMeshs = new Vector.<Mesh>(3, true);
+			_pistonMeshs = new Vector.<Mesh>(4, true);
+			_wingMeshs = new Vector.<Mesh>(2, true);
+
 			var m : Mesh, i : int, j : int;
 
 			// add the reverse wing to ship
 			for (i = 0; i < shipParts.length; i++) {
+				if (shipParts[i].name == "ship_body_1") {
+					_shipBody = shipParts[i];
+				}
+
 				if (shipParts[i].name == "ship_wing") {
 					m = Mesh(shipParts[i].clone());
 					m.name = "ship_wing_r";
@@ -59,9 +69,11 @@ package games.shooters {
 					_shipMeshs.push(m);
 				}
 				if (shipParts[i].name == "ship_wing_end") {
+					_wingMeshs[0] = shipParts[i];
 					m = Mesh(shipParts[i].clone());
 					m.name = "ship_wing_end_r";
 					m.scaleZ = -1;
+					_wingMeshs[1] = m;
 					_shipMeshs.push(m);
 				}
 				// axe of wheels
@@ -82,7 +94,34 @@ package games.shooters {
 						_wheelsMeshs[j] = m;
 					}
 				}
+				// add piston Mesh
+				if (shipParts[i].name == "ship_piston") {
+					_pistonMeshs[0] = Mesh(shipParts[i].clone());
+					_pistonMeshs[1] = Mesh(shipParts[i].clone());
+				}
+				if (shipParts[i].name == "ship_piston_end") {
+					_pistonMeshs[2] = Mesh(shipParts[i].clone());
+					_pistonMeshs[3] = Mesh(shipParts[i].clone());
+				}
 			}
+
+			// ship_piston
+			// ship_piston_end
+			for (i = 0; i < 4; i++) {
+				_pistonMeshs[i].material = mat;
+			}
+			_shipBody.addChild(_pistonMeshs[0]);
+			_shipBody.addChild(_pistonMeshs[1]);
+			_wingMeshs[0].addChild(_pistonMeshs[2]);
+			_wingMeshs[1].addChild(_pistonMeshs[3]);
+			_pistonMeshs[0].position = new Vector3D(40, 22, -35);
+			_pistonMeshs[1].position = new Vector3D(40, 22, 35);
+			_pistonMeshs[2].position = new Vector3D(40, 5, -80);
+			_pistonMeshs[3].position = new Vector3D(40, 5, -80);
+			_pistonMeshs[0].rotationX = -7;
+			_pistonMeshs[1].rotationX = 180 - _pistonMeshs[0].rotationX;
+			_pistonMeshs[2].rotationX = _pistonMeshs[3].rotationX = -32;
+
 			// place new wheels
 			_wheelsMeshs[0].position = new Vector3D(-13, -14, 0);
 			_wheelsMeshs[1].position = new Vector3D(0, -14, 6);
@@ -101,7 +140,7 @@ package games.shooters {
 				if (m.name == "ship_cockpit_glass") m.material = mat3;
 				else if (m.name == "ship_pilote" || m.name == "ship_pilote_head" || m.name == "ship_pilote_control") m.material = mat2;
 				else m.material = mat;
-				if (m.name != "ship_wheel") container.addChild(m);
+				if (m.name != "ship_wheel" && m.name != "ship_piston" && m.name != "ship_piston_end") container.addChild(m);
 			}
 
 			// finaly reposition all mesh
