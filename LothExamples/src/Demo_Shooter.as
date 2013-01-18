@@ -51,6 +51,8 @@ package {
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.materials.methods.NearShadowMapMethod;
+	import away3d.materials.methods.LightMapMethod;
+	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.materials.methods.EnvMapMethod;
 	import away3d.containers.ObjectContainer3D;
@@ -58,6 +60,7 @@ package {
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.PlaneGeometry;
 	import away3d.lights.DirectionalLight;
+	import away3d.materials.LightSources;
 	import away3d.containers.View3D;
 	import away3d.debug.AwayStats;
 	import away3d.entities.Mesh;
@@ -103,8 +106,12 @@ package {
 		private var ShipModel : Class;
 		[Embed(source="assets/ship.jpg")]
 		private var ShipBitmap : Class;
+		[Embed(source="assets/ship_occ.jpg")]
+		private var ShipBitmapOcc : Class;
 		[Embed(source="assets/pilote.jpg")]
 		private var PiloteBitmap : Class;
+		[Embed(source="assets/pilote_occ.jpg")]
+		private var PiloteBitmapOcc : Class;
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
@@ -120,7 +127,6 @@ package {
 		private var _view : View3D;
 		private var _stats : AwayStats;
 		private var _lightPicker : StaticLightPicker;
-		// private var _cameraController : HoverController;
 		private var _night : Number = 100;
 		// scene objects
 		private var _player : ObjectContainer3D;
@@ -139,6 +145,7 @@ package {
 		// methodes
 		private var _shadowMethod : NearShadowMapMethod;
 		private var _reflectionMethod : EnvMapMethod;
+		private var _rimMethod : RimLightMethod;
 		private var _fresnelMethod : FresnelSpecularMethod;
 		private var _waterMethod : SimpleWaterNormalMethod;
 		private var _fogMethode : FogMethod;
@@ -147,10 +154,8 @@ package {
 		private var _prevMouseY : Number;
 		// demo testing
 		private var _isIntro : Boolean = true;
-		// private var _isRotation : Boolean;
 		private var _isRender : Boolean;
 		private var _isInGame : Boolean;
-		// private var _isShipControl : Boolean;
 		// interface
 		private var _text : TextField;
 		private var _capture : BitmapData;
@@ -160,7 +165,7 @@ package {
 		private var _sliderComplex : HUISlider;
 		private var _sliderHeight : HUISlider;
 		private var _isChangeResolution : Boolean = false;
-		// camera position
+		// camera control and position
 		private var _cameraFixed : Vector3D = new Vector3D(0, 1400, 5000);
 		private var _cameraTarget : Vector3D = new Vector3D(0, 1000, 3000);
 		private var _cameraController : HoverController;
@@ -410,10 +415,6 @@ package {
 			_view.camera.lens.near = 1;
 			_view.forceMouseMove = false;
 
-			/*_view.camera.y = 1000;
-			_view.camera.position = _cameraFixed;
-			_view.camera.lookAt(_cameraTarget);*/
-
 			// setup the player container
 			_player = new ObjectContainer3D();
 			_view.scene.addChild(_player);
@@ -451,7 +452,7 @@ package {
 			_view.scene.addChild(_sunLight);
 
 			// create light picker for materials
-			_lightPicker = new StaticLightPicker([_sunLight]);
+			// _lightPicker = new StaticLightPicker([_sunLight]);
 		}
 
 		/**
@@ -460,8 +461,23 @@ package {
 		private function randomSky(e : Event = null) : void {
 			AutoSky.scene = _view.scene;
 			AutoSky.randomSky(null, _bitmaps, 8);
+
 			if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
-			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.skyMap;
+			if (_rimMethod != null) _rimMethod.color = AutoSky.fogColor;
+			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.miniSkyMap;
+
+			_lightPicker = new StaticLightPicker([_sunLight, AutoSky.skyProbe(_cameraTarget)]);
+			// _lightPicker = new StaticLightPicker([_sunLight, AutoSky.skyProbe(new Vector3D(0,1000,0))]);
+			// for all material
+			if (_materials != null) {
+				for (var i : int; i < _materials.length; i++) {
+					_materials[i].lightPicker = _lightPicker;
+					// _materials[i].shadowMethod = _shadowMethod;
+					_materials[i].ambient = 0;
+					// _materials[i].diffuseLightSources = LightSources.PROBES;
+					_materials[i].specularLightSources = LightSources.LIGHTS;
+				}
+			}
 		}
 
 		/**
@@ -482,7 +498,9 @@ package {
 			_fresnelMethod = new FresnelSpecularMethod();
 			_fresnelMethod.normalReflectance = 0.8;
 			// reflection method
-			_reflectionMethod = new EnvMapMethod(AutoSky.skyMap, 0.2);
+			_reflectionMethod = new EnvMapMethod(AutoSky.miniSkyMap, 0.8);
+			// rim method
+			_rimMethod = new RimLightMethod(AutoSky.fogColor, 0.4, 5, RimLightMethod.ADD);
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x50404060)));
@@ -506,25 +524,30 @@ package {
 
 			// 2 - ship material
 			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(ShipBitmap));
-			_shipMaterial.gloss = 60;
-			_shipMaterial.specular = 1;
+			_shipMaterial.gloss = 25;
+			_shipMaterial.specular = 0.7;
 			_shipMaterial.bothSides = true;
-			_shipMaterial.addMethod(_reflectionMethod);
+			// _shipMaterial.addMethod(_reflectionMethod);
+			_shipMaterial.addMethod(_rimMethod);
+			_shipMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(ShipBitmapOcc)));
 			_materials[2] = _shipMaterial;
 
 			// 3 - ship material
 			_piloteMaterial = new TextureMaterial(Cast.bitmapTexture(PiloteBitmap));
-			_piloteMaterial.gloss = 60;
-			_piloteMaterial.specular = 1;
-			_piloteMaterial.addMethod(_reflectionMethod);
+			_piloteMaterial.gloss = 25;
+			_piloteMaterial.specular = 0.7;
+			// _piloteMaterial.addMethod(_reflectionMethod);
+			_piloteMaterial.addMethod(_rimMethod);
+			_piloteMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(PiloteBitmapOcc)));
 			_materials[3] = _piloteMaterial;
 
 			// 4 - ship window material
-			_shipWindowMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x44999999)));
-			_shipWindowMaterial.gloss = 60;
-			_shipWindowMaterial.specular = 1;
-			// _shipWindowMaterial.bothSides = true;
+			_shipWindowMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x669999AA)));
+			_shipWindowMaterial.gloss = 120;
+			_shipWindowMaterial.specular = 1.5;
+			_shipWindowMaterial.bothSides = true;
 			_shipWindowMaterial.alphaBlending = true;
+			_shipWindowMaterial.specularMethod = _fresnelMethod;
 			_shipWindowMaterial.addMethod(_reflectionMethod);
 			_materials[4] = _shipWindowMaterial;
 
@@ -532,14 +555,18 @@ package {
 			_enemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x99cc99)));
 			_enemyMaterial.gloss = 60;
 			_enemyMaterial.specular = 1;
-			_enemyMaterial.addMethod(_reflectionMethod);
+			_enemyMaterial.addMethod(_rimMethod);
+			// _enemyMaterial.addMethod(_reflectionMethod);
 			_materials[5] = _enemyMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
 				_materials[i].lightPicker = _lightPicker;
 				_materials[i].shadowMethod = _shadowMethod;
-				_materials[i].ambient = 1;
+				// _materials[i].ambient = 1;
+				_materials[i].ambient = 0;
+				_materials[i].diffuseLightSources = LightSources.PROBES;
+				_materials[i].specularLightSources = LightSources.LIGHTS;
 			}
 		}
 
@@ -605,9 +632,7 @@ package {
 				removeGrayPauseEffect();
 				stage.removeEventListener(MouseEvent.MOUSE_OVER, initListeners);
 			}
-			// add render loop
 			_stage3DProxy.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			// navigation
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);

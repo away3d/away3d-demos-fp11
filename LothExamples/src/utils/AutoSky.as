@@ -1,5 +1,5 @@
 package utils {
-	import flash.geom.Rectangle;
+	import flash.geom.Vector3D;
 
 	import away3d.containers.Scene3D;
 	import away3d.entities.Mesh;
@@ -7,10 +7,12 @@ package utils {
 	import away3d.primitives.CubeGeometry;
 	import away3d.textures.BitmapCubeTexture;
 	import away3d.primitives.SkyBox;
+	import away3d.lights.LightProbe;
 
 	import flash.display.Bitmap;
 	import flash.display.Sprite;
 	import flash.display.Shape;
+	import flash.geom.Rectangle;
 	import flash.display.BitmapData;
 	import flash.filters.ColorMatrixFilter;
 	import flash.filters.DisplacementMapFilter;
@@ -21,8 +23,10 @@ package utils {
 		private static var _sky : SkyBox;
 		private static var _scene : Scene3D;
 		private static var _skyMap : BitmapCubeTexture;
+		private static var _miniSkyMap : BitmapCubeTexture;
 		private static var _skyBitmaps : Vector.<BitmapData>;
-		//private static var _colorsSkySet:Array = [0x445465];
+		private static var _finalSkyBitmaps : Vector.<BitmapData>;
+		// private static var _colorsSkySet:Array = [0x445465];
 		// private static var _blendmodes : Array = ["add", "darken", "hardlight", "lighten", "multiply", "overlay", "screen", "subtract"];
 		private static var _blendmodes : Array = ["lighten", "multiply", "overlay"];
 		private static var _skyColor : uint = 0x333338;
@@ -37,6 +41,10 @@ package utils {
 
 		static public function get skyMap() : BitmapCubeTexture {
 			return _skyMap;
+		}
+
+		static public function get miniSkyMap() : BitmapCubeTexture {
+			return _miniSkyMap;
 		}
 
 		static public function get fogColor() : uint {
@@ -140,6 +148,7 @@ package utils {
 				var s : Sprite;
 				var h : Bitmap;
 				var newMap : Vector.<BitmapData> = new Vector.<BitmapData>(6);
+				_finalSkyBitmaps = new Vector.<BitmapData>(6, true);
 				var listing : Array = [2, 5, 1, 0, 4, 3];
 
 				for (var i : int = 0; i < 6; i++) {
@@ -153,6 +162,7 @@ package utils {
 					s.addChild(h);
 					h.blendMode = blend;
 					newMap[i].draw(s);
+					_finalSkyBitmaps[i] = newMap[i];
 				}
 				skyFinal = new BitmapCubeTexture(newMap[0], newMap[1], newMap[2], newMap[3], newMap[4], newMap[5]);
 				_fogColor = uint("0x" + newMap[0].getPixel(xl >> 1, uint((xl / 2) + 30)).toString(16));
@@ -160,7 +170,7 @@ package utils {
 				skyFinal = new BitmapCubeTexture(_side, _side, _top, _floor, _side, _side);
 				_fogColor = uint("0x" + _side.getPixel(xl >> 1, uint((xl / 2) + 30)).toString(16));
 			}
-
+			createMiniSky();
 			return skyFinal;
 		}
 
@@ -182,6 +192,34 @@ package utils {
 				_bigCubeMat = null;
 				_bigCube = null;
 			}
+		}
+
+		/**
+		 * create new bitmapCubeTexture with little map
+		 */
+		private static function createMiniSky() : void {
+			var b : BitmapData;
+			var miniSky : Vector.<BitmapData> = new Vector.<BitmapData>(6, true);
+			var Mat : Matrix = new Matrix();
+			// Mat.scale(0.125, 0.125);
+			Mat.scale(0.0625, 0.0625);
+			for (var i : int = 0; i < 6; ++i) {
+				// b = new BitmapData(128, 128, false, 0x000000);
+				b = new BitmapData(64, 64, false, 0x000000);
+				b.draw(_finalSkyBitmaps[i], Mat, null, null, null, true);
+				miniSky[i] = b;
+			}
+			_miniSkyMap = new BitmapCubeTexture(miniSky[0], miniSky[1], miniSky[2], miniSky[3], miniSky[4], miniSky[5]);
+		}
+
+		/**
+		 * create probe light from mini sky map in 128
+		 */
+		public static function skyProbe(p : Vector3D = null) : LightProbe {
+			var lightProbe : LightProbe = new LightProbe(_miniSkyMap);
+			_scene.addChild(lightProbe);
+			if (p != null) lightProbe.position = p;
+			return lightProbe;
 		}
 
 		/**

@@ -27,7 +27,7 @@ package games {
 	 * TerrainDiffuseMethod and flash bitmap filters
 	 * Author : Loth
 	 */
-	public class FractalTerrain extends Sprite{
+	public class FractalTerrain extends Sprite {
 		private static var Singleton : FractalTerrain;
 		private static var _zoneDimension : uint = 12800;
 		private static var _zoneHeight : int = 1000;
@@ -235,7 +235,8 @@ package games {
 			_ground01.move(-_ease.x * _multy.y, -_ease.y * _multy.y);
 			_ground02.move(-_ease.x * _multy.z, -_ease.y * _multy.z);
 			_terrainMethod = new TerrainDiffuseMethod([Cast.bitmapTexture(_ground02.getMap()), Cast.bitmapTexture(_ground01.getMap()), Cast.bitmapTexture(_ground00.getMap())], Cast.bitmapTexture(_layerBitmap[0]), _tiles);
-			_terrainMaterial.normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground, 5, 0.5, -1, -1));
+			_terrainMaterial.normalMap = Cast.bitmapTexture(BitmapFilterEffects.normalMap(_ground, 3, 1, -1, -1));
+
 			if (_isMapTesting) _terrainMaterial.texture = Cast.bitmapTexture(_layerBitmap[0]);
 			else _terrainMaterial.diffuseMethod = _terrainMethod;
 		}

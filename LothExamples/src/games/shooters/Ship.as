@@ -99,7 +99,7 @@ package games.shooters {
 			for (i = 0; i < _shipMeshs.length; i++) {
 				m = _shipMeshs[i];
 				if (m.name == "ship_cockpit_glass") m.material = mat3;
-				else if(m.name == "ship_pilote" || m.name == "ship_pilote_head"|| m.name == "ship_pilote_control") m.material = mat2;
+				else if (m.name == "ship_pilote" || m.name == "ship_pilote_head" || m.name == "ship_pilote_control") m.material = mat2;
 				else m.material = mat;
 				if (m.name != "ship_wheel") container.addChild(m);
 			}
@@ -130,7 +130,7 @@ package games.shooters {
 				m = _shipMeshs[i];
 				m.moveTo(0, 0, 0);
 				m.rotateTo(0, 0, 0);
-				
+
 				if (m.name == "ship_pilote") m.x = -55;
 				if (m.name == "ship_pilote_control") m.x = -55;
 				if (m.name == "ship_pilote_head") m.position = new Vector3D(-55, 26, 0);
