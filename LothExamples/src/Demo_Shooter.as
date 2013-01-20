@@ -37,13 +37,12 @@ THE SOFTWARE.
  */
 package {
 	import away3d.events.AssetEvent;
-	import away3d.library.AssetLibrary;
 	import away3d.library.assets.AssetType;
-	import away3d.loaders.parsers.AWD2Parser;
 	import away3d.core.managers.Stage3DManager;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.events.Stage3DEvent;
 	import away3d.events.LoaderEvent;
+	import away3d.loaders.Loader3D;
 	import away3d.controllers.HoverController;
 	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
@@ -102,16 +101,6 @@ package {
 
 	[SWF(backgroundColor="#000000", frameRate="60", width = "1200", height = "600")]
 	public class Demo_Shooter extends Sprite {
-		[Embed(source="assets/ship.awd", mimeType="application/octet-stream")]
-		private var ShipModel : Class;
-		[Embed(source="assets/ship.jpg")]
-		private var ShipBitmap : Class;
-		[Embed(source="assets/ship_occ.jpg")]
-		private var ShipBitmapOcc : Class;
-		[Embed(source="assets/pilote.jpg")]
-		private var PiloteBitmap : Class;
-		[Embed(source="assets/pilote_occ.jpg")]
-		private var PiloteBitmapOcc : Class;
 		private const MOUNTAIGN_TOP : Number = 2000;
 		private const FARVIEW : Number = 12800;
 		private const FOGNEAR : Number = 3200;
@@ -248,6 +237,7 @@ package {
 			_bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
 			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
 			_bitmapStrings.push("water_normals.jpg");
+			_bitmapStrings.push("shooter/ship.jpg", "shooter/ship_occ.jpg", "shooter/pilote.jpg", "shooter/pilote_occ.jpg");
 
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
@@ -277,13 +267,6 @@ package {
 			Particules.scene = _view.scene;
 			Particules.initParticlesTrail(0x999999, 0x353535);
 
-			// parse ship model
-			_shipMeshs = new Vector.<Mesh>();
-			AssetLibrary.enableParser(AWD2Parser);
-			AssetLibrary.addEventListener(AssetEvent.MESH_COMPLETE, onAssetComplete);
-			AssetLibrary.addEventListener(LoaderEvent.RESOURCE_COMPLETE, initAfterModelParse);
-			AssetLibrary.loadData(new ShipModel());
-
 			// init game statistic
 			Stat.getInstance();
 			Stat.initStats();
@@ -309,12 +292,21 @@ package {
 			_groundWater.geometry.scaleUV(40, 40);
 			_groundWater.mouseEnabled = false;
 			_view.scene.addChild(_groundWater);
+			
+			
+			// load ship model
+			_shipMeshs = new Vector.<Mesh>();
+			LoaderPool.loadObject("shooter/ship.awd", onAssetComplete, onResourceComplete);
 		}
-
+		
 		/**
 		 * Listener function for full asset complete 
 		 */
-		private function initAfterModelParse(event : LoaderEvent = null) : void {
+		private function onResourceComplete(e : LoaderEvent = null) : void {
+			var loader3d : Loader3D = e.target as Loader3D;
+			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
+			
 			// init enemy ship
 			Enemy.init(_enemyShip, 3000, 1500, _cameraTarget.z);
 
@@ -449,7 +441,7 @@ package {
 			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.6);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.1);
 			_view.scene.addChild(_sunLight);
 
 			// create light picker for materials
@@ -524,22 +516,22 @@ package {
 			_materials[1] = _terrainMaterial;
 
 			// 2 - ship material
-			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(ShipBitmap));
+			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
 			_shipMaterial.gloss = 25;
 			_shipMaterial.specular = 0.7;
 			_shipMaterial.bothSides = true;
 			// _shipMaterial.addMethod(_reflectionMethod);
 			_shipMaterial.addMethod(_rimMethod);
-			_shipMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(ShipBitmapOcc)));
+			_shipMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(_bitmaps[7])));
 			_materials[2] = _shipMaterial;
 
 			// 3 - ship material
-			_piloteMaterial = new TextureMaterial(Cast.bitmapTexture(PiloteBitmap));
+			_piloteMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[8]));
 			_piloteMaterial.gloss = 25;
 			_piloteMaterial.specular = 0.7;
 			// _piloteMaterial.addMethod(_reflectionMethod);
 			_piloteMaterial.addMethod(_rimMethod);
-			_piloteMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(PiloteBitmapOcc)));
+			_piloteMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(_bitmaps[9])));
 			_materials[3] = _piloteMaterial;
 
 			// 4 - ship window material
