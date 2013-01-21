@@ -1,16 +1,25 @@
 package physics {
+	import away3d.primitives.CubeGeometry;
 	// import awayphysics.dynamics.character.AWPKinematicCharacterController;
-	import awayphysics.collision.shapes.AWPBvhTriangleMeshShape;
-	import awayphysics.collision.dispatch.AWPCollisionObject;
 	import awayphysics.collision.shapes.AWPStaticPlaneShape;
-	import awayphysics.collision.shapes.AWPCollisionShape;
 	// import awayphysics.collision.dispatch.AWPGhostObject;
-	import awayphysics.collision.shapes.AWPSphereShape;
-	import awayphysics.collision.shapes.AWPBoxShape;
 	import awayphysics.dynamics.AWPDynamicsWorld;
 	// import awayphysics.data.AWPCollisionFlags;
 	import awayphysics.dynamics.AWPRigidBody;
 	// import awayphysics.events.AWPEvent;
+	import awayphysics.collision.shapes.AWPBoxShape;
+	import awayphysics.dynamics.vehicle.AWPWheelInfo;
+	import awayphysics.dynamics.vehicle.AWPVehicleTuning;
+	import awayphysics.dynamics.vehicle.AWPRaycastVehicle;
+	import awayphysics.collision.shapes.AWPSphereShape;
+	// import awayphysics.collision.shapes.AWPCapsuleShape;
+	import awayphysics.collision.shapes.AWPCylinderShape;
+	import awayphysics.collision.shapes.AWPCompoundShape;
+	import awayphysics.collision.shapes.AWPCollisionShape;
+	import awayphysics.collision.shapes.AWPConvexHullShape;
+	import awayphysics.collision.dispatch.AWPCollisionObject;
+	import awayphysics.collision.shapes.AWPBvhTriangleMeshShape;
+
 	import away3d.entities.Mesh;
 
 	import flash.display.Sprite;
@@ -87,6 +96,8 @@ package physics {
 				case 'cube':
 					shape = new AWPBoxShape(size.x, size.y, size.z);
 					break;
+				case 'cylinder':
+					shape = new AWPCylinderShape(size.x, size.y);
 				case 'plane':
 					shape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));
 					break;
@@ -147,24 +158,85 @@ package physics {
 		}
 
 		/**
+		 * Convex shape
+		 */
+		private static function createConvexShape(mesh : Mesh) : AWPCompoundShape {
+			var shapeConvex : AWPConvexHullShape = new AWPConvexHullShape(mesh.geometry);
+			var shape : AWPCompoundShape = new AWPCompoundShape();
+			shape.addChildShape(shapeConvex);
+			return shape;
+		}
+
+		public static function addCarSimulator() : void {
+			// create the chassis body
+			var content : Mesh = new Mesh(new CubeGeometry(20, 20, 20), null);
+			var carShape : AWPCompoundShape = createConvexShape(Mesh(content.clone()));
+			// var carShape : AWPBoxShape = new AWPBoxShape(20, 20, 20);
+			var wheels : Vector.<Mesh> = new Vector.<Mesh>(4);
+			// createCarWheels();
+			var carBody : AWPRigidBody = new AWPRigidBody(carShape, content, 1000);
+			carBody.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
+			carBody.friction = 0.5;
+			carBody.restitution = 0.0;
+			carBody.linearDamping = 0.3;
+			carBody.angularDamping = 0.3;
+			var scale : Number = 2.54;
+			// add to world physics
+			_world.addRigidBody(carBody);
+
+			// create veicule setting
+			var turning : AWPVehicleTuning = new AWPVehicleTuning();
+			with (turning) {
+				frictionSlip = 1.1;
+				// friction between the tyre and the ground. 0.8 for realistic cars, can increased for better handling
+				suspensionStiffness = 60;
+				// 10.0 = Offroad buggy, 50 = Sports car, 200 = F1 Car
+				suspensionDamping = 0.2;
+				// 0.1 to 0.3 are good values
+				suspensionCompression = 0.8;
+				maxSuspensionTravelCm = 3 * scale;
+				// The maximum distance the suspension can be compressed (centimetres)
+				maxSuspensionForce = 100000;
+			}
+
+			// car vehicle
+			var car : AWPRaycastVehicle = new AWPRaycastVehicle(turning, carBody);
+			_world.addVehicle(car);
+
+			// wheels setting
+			var radius : int = 17 * scale;
+			var suspResist : int = 5 * scale;
+			var posX : int = 39 * scale;
+			var posY : int = 17 * scale;
+			var posZ : int = 60 * scale;
+
+			var wDirection : Vector3D = new Vector3D(0, -1, 0);
+			var wAxeCS : Vector3D = new Vector3D(-1, 0, 0);
+			car.addWheel(wheels[0], new Vector3D(posX, posY, posZ), wDirection, wAxeCS, suspResist, radius, turning, true);
+			car.addWheel(wheels[1], new Vector3D(-posX, posY, posZ), wDirection, wAxeCS, suspResist, radius, turning, true);
+			car.addWheel(wheels[2], new Vector3D(posX, posY, -posZ), wDirection, wAxeCS, suspResist, radius, turning, false);
+			car.addWheel(wheels[3], new Vector3D(-posX, posY, -posZ), wDirection, wAxeCS, suspResist, radius, turning, false);
+
+			// wheels settings
+			for (var i : int = 0; i < car.getNumWheels(); i++) {
+				var wheel : AWPWheelInfo = car.getWheelInfo(i);
+				wheel.wheelsDampingRelaxation = 4.5;
+				// 4.5;
+				wheel.wheelsDampingCompression = 4.5;
+				// 4.5;
+				wheel.suspensionRestLength1 = 5 * scale;
+				// 9 * _scale;
+				wheel.rollInfluence = 0.2;
+				// 0.01;
+			}
+		}
+
+		/**
 		 * Get physics world information
 		 */
 		static public function info() : String {
 			var inf : String;
-			/*_fps += (1000 / _world.performance.totalTime - _fps) * 0.5;
-			if (_fps > 1000 || _fps != _fps) _fps = 1000;
-			inf = _demoName + "\n";
-			inf += "Rigid Body Count: " + _world.numRigidBodies;
-			inf += "\n" + "Shape Count: " + _world.numShapes + "\n";
-			inf += "Contacts Count: " + _world.numContacts + "\n\n";
-			inf += "Broad Phase Time: " + _world.performance.broadPhaseTime;
-			inf += "ms\n" + "Narrow Phase Time: " + _world.performance.narrowPhaseTime;
-			inf += "ms\n" + "Constraints Time: " + _world.performance.constraintsTime;
-			inf += "ms\n" + "Update Time: " + _world.performance.updateTime;
-			inf += "ms\n" + "Total Time: " + _world.performance.totalTime;
-			inf += "ms\n" + "Physics FPS: " + _fps.toFixed(2) + "\n";*/
 			return inf;
 		}
-		
 	}
 }

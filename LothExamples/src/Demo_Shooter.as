@@ -146,6 +146,7 @@ package {
 		private var _isIntro : Boolean = true;
 		private var _isRender : Boolean;
 		private var _isInGame : Boolean;
+		private var _isProbeLight : Boolean = false;
 		// interface
 		private var _text : TextField;
 		private var _capture : BitmapData;
@@ -260,7 +261,7 @@ package {
 			// FractalTerrain.addCubicReference(1);
 			// FractalTerrain.addCubicReference(7);
 			FractalTerrain.initGround(_bitmaps, _terrainMaterial, FARVIEW * 2, MOUNTAIGN_TOP, 64, true);
-			FractalTerrain.move(-1, 0);
+			FractalTerrain.move(-0.2, 0);
 
 			// particule
 			Particules.getInstance();
@@ -291,6 +292,7 @@ package {
 			_groundWater = new Mesh(new PlaneGeometry(FARVIEW * 2, FARVIEW * 2, 6, 6), _waterMaterial);
 			_groundWater.geometry.scaleUV(40, 40);
 			_groundWater.mouseEnabled = false;
+			// _groundWater.castsShadows = false;
 			_view.scene.addChild(_groundWater);
 
 			// load ship model
@@ -440,11 +442,8 @@ package {
 			_sunLight.diffuse = 0;
 			_sunLight.specular = 0;
 			_sunLight.castsShadows = true;
-			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.1);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.5);
 			_view.scene.addChild(_sunLight);
-
-			// create light picker for materials
-			// _lightPicker = new StaticLightPicker([_sunLight]);
 		}
 
 		/**
@@ -454,20 +453,51 @@ package {
 			AutoSky.scene = _view.scene;
 			AutoSky.randomSky(null, _bitmaps, 8);
 
+			if (_materials != null) applyLightToMaterial();
+		}
+
+		/**
+		 * apply lightspicker to material
+		 */
+		private function applyLightToMaterial() : void {
+			// methode update from sky
+			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.miniSkyMap;
 			if (_fogMethode != null) _fogMethode.fogColor = AutoSky.fogColor;
 			if (_rimMethod != null) _rimMethod.color = AutoSky.fogColor;
-			if (_reflectionMethod != null) _reflectionMethod.envMap = AutoSky.miniSkyMap;
 
-			_lightPicker = new StaticLightPicker([_sunLight, AutoSky.skyProbe(_cameraTarget)]);
-			// _lightPicker = new StaticLightPicker([_sunLight, AutoSky.skyProbe(new Vector3D(0,1000,0))]);
-			// for all material
-			if (_materials != null) {
-				for (var i : int; i < _materials.length; i++) {
-					_materials[i].lightPicker = _lightPicker;
-					// _materials[i].shadowMethod = _shadowMethod;
+			// define lights style
+			if (_isProbeLight) _lightPicker = new StaticLightPicker([_sunLight, AutoSky.skyProbe(new Vector3D(0, 500, 0))]);
+			else _lightPicker = new StaticLightPicker([_sunLight]);
+
+			for (var i : int; i < _materials.length; i++) {
+				_materials[i].lightPicker = _lightPicker;
+				_materials[i].shadowMethod = _shadowMethod;
+				if (_isProbeLight) {
 					_materials[i].ambient = 0;
-					// _materials[i].diffuseLightSources = LightSources.PROBES;
+					_materials[i].diffuseLightSources = LightSources.PROBES;
 					_materials[i].specularLightSources = LightSources.LIGHTS;
+				} else {
+					_materials[i].ambient = 1;
+					_materials[i].diffuseLightSources = LightSources.LIGHTS;
+					_materials[i].specularLightSources = LightSources.LIGHTS;
+				}
+			}
+		}
+
+		/**
+		 * Optional add RimLightMethode to the materials
+		 */
+		private function applyRimLight(e : Event = null) : void {
+			var i : int;
+			if (_rimMethod != null) {
+				for (i = 0; i < _materials.length; i++) {
+					if (i == 2 || i == 3 || i == 4 || i == 6) _materials[i].removeMethod(_rimMethod);
+				}
+				_rimMethod = null;
+			} else {
+				_rimMethod = new RimLightMethod(AutoSky.fogColor, 0.4, 5, RimLightMethod.ADD);
+				for (i = 0; i < _materials.length; i++) {
+					if (i == 2 || i == 3 || i == 4 || i == 6) _materials[i].addMethod(_rimMethod);
 				}
 			}
 		}
@@ -481,7 +511,7 @@ package {
 			// shadow method
 			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
 			_shadowMethod.epsilon = .0007;
-			_shadowMethod.alpha = 0.5;
+			_shadowMethod.alpha = 0.3;
 			// fog method
 			_fogMethode = new FogMethod(FOGNEAR, FARVIEW + _cameraTarget.z, AutoSky.fogColor);
 			// water method
@@ -491,8 +521,6 @@ package {
 			_fresnelMethod.normalReflectance = 0.8;
 			// reflection method
 			_reflectionMethod = new EnvMapMethod(AutoSky.miniSkyMap, 0.8);
-			// rim method
-			_rimMethod = new RimLightMethod(AutoSky.fogColor, 0.4, 5, RimLightMethod.ADD);
 
 			// 0 _ water texture
 			_waterMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(128, 128, true, 0x50404060)));
@@ -502,7 +530,6 @@ package {
 			_waterMaterial.specular = 2;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
-			// _waterMaterial.bothSides = true;
 			_waterMaterial.addMethod(_reflectionMethod);
 			_waterMaterial.addMethod(_fogMethode);
 			_materials[0] = _waterMaterial;
@@ -518,7 +545,7 @@ package {
 			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
 			_shipMaterial.gloss = 25;
 			_shipMaterial.specular = 0.7;
-			_shipMaterial.addMethod(_rimMethod);
+			// _shipMaterial.addMethod(_reflectionMethod);
 			_materials[2] = _shipMaterial;
 
 			// 3 - ship material bothSide
@@ -526,14 +553,13 @@ package {
 			_shipMaterialBoth.gloss = 25;
 			_shipMaterialBoth.specular = 0.7;
 			_shipMaterialBoth.bothSides = true;
-			_shipMaterialBoth.addMethod(_rimMethod);
+			// _shipMaterialBoth.addMethod(_reflectionMethod);
 			_materials[3] = _shipMaterialBoth;
 
 			// 4 - pilot material
 			_piloteMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[7]));
 			_piloteMaterial.gloss = 25;
 			_piloteMaterial.specular = 0.7;
-			_piloteMaterial.addMethod(_rimMethod);
 			_materials[4] = _piloteMaterial;
 
 			// 5 - ship window material
@@ -549,19 +575,10 @@ package {
 			_enemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x99cc99)));
 			_enemyMaterial.gloss = 60;
 			_enemyMaterial.specular = 1;
-			_enemyMaterial.addMethod(_rimMethod);
 			// _enemyMaterial.addMethod(_reflectionMethod);
 			_materials[6] = _enemyMaterial;
 
-			// for all material
-			for (var i : int; i < _materials.length; i++) {
-				_materials[i].lightPicker = _lightPicker;
-				_materials[i].shadowMethod = _shadowMethod;
-				// _materials[i].ambient = 1;
-				_materials[i].ambient = 0;
-				// _materials[i].diffuseLightSources = LightSources.PROBES;
-				_materials[i].specularLightSources = LightSources.LIGHTS;
-			}
+			applyLightToMaterial();
 		}
 
 		/**
@@ -606,10 +623,10 @@ package {
 			Particules.followTarget2.transform = _player.transform;
 
 			// animate water material
-			_waterMethod.water1OffsetX += .001;
+			/*_waterMethod.water1OffsetX += .001;
 			_waterMethod.water1OffsetY += .001;
 			_waterMethod.water2OffsetX += .0007;
-			_waterMethod.water2OffsetY += .0006;
+			_waterMethod.water2OffsetY += .0006;*/
 
 			_view.render();
 			_isMouseMove = false;
@@ -774,7 +791,9 @@ package {
 			new PushButton(_menu, 135, -29, "256", switch256).setSize(30, 30);
 			new PushButton(_menu, 170, -29, "fractal", switchFractal).setSize(60, 30);
 			new PushButton(_menu, 430, -29, "sky", randomSky).setSize(60, 30);
-			new PushButton(_menu, 495, -29, "full screen", fullScreen).setSize(80, 30);
+			new PushButton(_menu, 495, -29, "probe on/off", switchLightMethode).setSize(80, 30);
+			new PushButton(_menu, 495, -62, "rim on/off", applyRimLight).setSize(80, 30);
+			new PushButton(_menu, 580, -29, "full screen", fullScreen).setSize(80, 30);
 
 			new PushButton(_menu, 30, -100, "Start Game", initLevel).setSize(80, 60);
 
@@ -789,6 +808,12 @@ package {
 			_sliderComplex.maximum = 0.3;
 			_sliderComplex.tick = 0.001;
 			_sliderComplex.value = 0.12;
+		}
+
+		private function switchLightMethode(e : Event) : void {
+			if (_isProbeLight) _isProbeLight = false;
+			else _isProbeLight = true;
+			applyLightToMaterial();
 		}
 
 		private function setTerrainHeight(event : Event) : void {
