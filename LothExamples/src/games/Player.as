@@ -99,7 +99,6 @@ package games {
 			b.draw(g);
 			material = new TextureMaterial(Cast.bitmapTexture(b));
 			material.alphaBlending = true;
-			// var s : Sprite3D = new Sprite3D(material, 128, 128);
 			var s : Mesh = new Mesh(new PlaneGeometry(64, 64), material);
 			s.rotationY = 180;
 			s.castsShadows = false;

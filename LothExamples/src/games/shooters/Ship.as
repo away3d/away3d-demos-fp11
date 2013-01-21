@@ -45,7 +45,7 @@ package games.shooters {
 		}
 
 		// resets all stats to zero for a new game
-		public static function initShip(shipParts : Vector.<Mesh>, container : ObjectContainer3D, mat : TextureMaterial, mat2 : TextureMaterial, mat3 : TextureMaterial) : void {
+		public static function initShip(shipParts : Vector.<Mesh>, container : ObjectContainer3D, mat : TextureMaterial, mat2 : TextureMaterial, mat3 : TextureMaterial, mat4 : TextureMaterial) : void {
 			_maxHealth = 100;
 			_life = 3;
 			_shipMeshs = shipParts;
@@ -108,7 +108,8 @@ package games.shooters {
 			// ship_piston
 			// ship_piston_end
 			for (i = 0; i < 4; i++) {
-				_pistonMeshs[i].material = mat;
+				if (i == 3) _pistonMeshs[i].material = mat4;
+				else _pistonMeshs[i].material = mat;
 			}
 			_shipBody.addChild(_pistonMeshs[0]);
 			_shipBody.addChild(_pistonMeshs[1]);
@@ -139,6 +140,7 @@ package games.shooters {
 				m = _shipMeshs[i];
 				if (m.name == "ship_cockpit_glass") m.material = mat3;
 				else if (m.name == "ship_pilote" || m.name == "ship_pilote_head" || m.name == "ship_pilote_control") m.material = mat2;
+				else if (m.name == "ship_wing_end_r" || m.name == "ship_wing_r" ) m.material = mat4;
 				else m.material = mat;
 				if (m.name != "ship_wheel" && m.name != "ship_piston" && m.name != "ship_piston_end") container.addChild(m);
 			}

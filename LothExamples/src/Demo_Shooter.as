@@ -50,7 +50,7 @@ package {
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.materials.methods.NearShadowMapMethod;
-	import away3d.materials.methods.LightMapMethod;
+	// import away3d.materials.methods.LightMapMethod;
 	import away3d.materials.methods.RimLightMethod;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.materials.methods.EnvMapMethod;
@@ -128,6 +128,7 @@ package {
 		private var _terrainMaterial : TextureMaterial;
 		private var _waterMaterial : TextureMaterial;
 		private var _shipMaterial : TextureMaterial;
+		private var _shipMaterialBoth : TextureMaterial;
 		private var _piloteMaterial : TextureMaterial;
 		private var _shipWindowMaterial : TextureMaterial;
 		private var _enemyMaterial : TextureMaterial;
@@ -235,9 +236,8 @@ package {
 			// kickoff asset loading
 			_bitmapStrings = new Vector.<String>();
 			_bitmapStrings.push("sky/pano_" + skyN + ".jpg", "sky/up_" + skyN + ".jpg");
-			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg");
-			_bitmapStrings.push("water_normals.jpg");
-			_bitmapStrings.push("shooter/ship.jpg", "shooter/ship_occ.jpg", "shooter/pilote.jpg", "shooter/pilote_occ.jpg");
+			_bitmapStrings.push("rock.jpg", "sand2.jpg", "arid.jpg", "water_normals.jpg");
+			_bitmapStrings.push("shooter/ship.jpg", "shooter/pilote.jpg");
 
 			LoaderPool.log = log;
 			LoaderPool.loadBitmaps(_bitmapStrings, initAfterBitmapLoad);
@@ -292,13 +292,12 @@ package {
 			_groundWater.geometry.scaleUV(40, 40);
 			_groundWater.mouseEnabled = false;
 			_view.scene.addChild(_groundWater);
-			
-			
+
 			// load ship model
 			_shipMeshs = new Vector.<Mesh>();
 			LoaderPool.loadObject("shooter/ship.awd", onAssetComplete, onResourceComplete);
 		}
-		
+
 		/**
 		 * Listener function for full asset complete 
 		 */
@@ -306,12 +305,12 @@ package {
 			var loader3d : Loader3D = e.target as Loader3D;
 			loader3d.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader3d.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
-			
+
 			// init enemy ship
 			Enemy.init(_enemyShip, 3000, 1500, _cameraTarget.z);
 
 			// init player ship
-			Ship.initShip(_shipMeshs, _player, _shipMaterial, _piloteMaterial, _shipWindowMaterial);
+			Ship.initShip(_shipMeshs, _player, _shipMaterial, _piloteMaterial, _shipWindowMaterial, _shipMaterialBoth);
 
 			initListeners();
 		}
@@ -503,7 +502,7 @@ package {
 			_waterMaterial.specular = 2;
 			_waterMaterial.normalMethod = _waterMethod;
 			_waterMaterial.specularMethod = _fresnelMethod;
-			_waterMaterial.bothSides = true;
+			// _waterMaterial.bothSides = true;
 			_waterMaterial.addMethod(_reflectionMethod);
 			_waterMaterial.addMethod(_fogMethode);
 			_materials[0] = _waterMaterial;
@@ -519,38 +518,40 @@ package {
 			_shipMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
 			_shipMaterial.gloss = 25;
 			_shipMaterial.specular = 0.7;
-			_shipMaterial.bothSides = true;
-			// _shipMaterial.addMethod(_reflectionMethod);
 			_shipMaterial.addMethod(_rimMethod);
-			_shipMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(_bitmaps[7])));
 			_materials[2] = _shipMaterial;
 
-			// 3 - ship material
-			_piloteMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[8]));
+			// 3 - ship material bothSide
+			_shipMaterialBoth = new TextureMaterial(Cast.bitmapTexture(_bitmaps[6]));
+			_shipMaterialBoth.gloss = 25;
+			_shipMaterialBoth.specular = 0.7;
+			_shipMaterialBoth.bothSides = true;
+			_shipMaterialBoth.addMethod(_rimMethod);
+			_materials[3] = _shipMaterialBoth;
+
+			// 4 - pilot material
+			_piloteMaterial = new TextureMaterial(Cast.bitmapTexture(_bitmaps[7]));
 			_piloteMaterial.gloss = 25;
 			_piloteMaterial.specular = 0.7;
-			// _piloteMaterial.addMethod(_reflectionMethod);
 			_piloteMaterial.addMethod(_rimMethod);
-			_piloteMaterial.addMethod(new LightMapMethod(Cast.bitmapTexture(_bitmaps[9])));
-			_materials[3] = _piloteMaterial;
+			_materials[4] = _piloteMaterial;
 
-			// 4 - ship window material
+			// 5 - ship window material
 			_shipWindowMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, true, 0x669999AA)));
 			_shipWindowMaterial.gloss = 120;
 			_shipWindowMaterial.specular = 1.5;
-			_shipWindowMaterial.bothSides = true;
 			_shipWindowMaterial.alphaBlending = true;
 			_shipWindowMaterial.specularMethod = _fresnelMethod;
 			_shipWindowMaterial.addMethod(_reflectionMethod);
-			_materials[4] = _shipWindowMaterial;
+			_materials[5] = _shipWindowMaterial;
 
-			// 5 - enemy ship material
+			// 6 - enemy ship material
 			_enemyMaterial = new TextureMaterial(Cast.bitmapTexture(new BitmapData(64, 64, false, 0x99cc99)));
 			_enemyMaterial.gloss = 60;
 			_enemyMaterial.specular = 1;
 			_enemyMaterial.addMethod(_rimMethod);
 			// _enemyMaterial.addMethod(_reflectionMethod);
-			_materials[5] = _enemyMaterial;
+			_materials[6] = _enemyMaterial;
 
 			// for all material
 			for (var i : int; i < _materials.length; i++) {
@@ -558,7 +559,7 @@ package {
 				_materials[i].shadowMethod = _shadowMethod;
 				// _materials[i].ambient = 1;
 				_materials[i].ambient = 0;
-				_materials[i].diffuseLightSources = LightSources.PROBES;
+				// _materials[i].diffuseLightSources = LightSources.PROBES;
 				_materials[i].specularLightSources = LightSources.LIGHTS;
 			}
 		}
