@@ -20,7 +20,7 @@ package {
 	import awayphysics.collision.shapes.AWPCylinderShape;
 	import awayphysics.collision.shapes.AWPSphereShape;
 	import awayphysics.collision.shapes.AWPStaticPlaneShape;
-    import awayphysics.collision.dispatch.AWPCollisionObject;
+	import awayphysics.collision.dispatch.AWPCollisionObject;
 	import awayphysics.dynamics.AWPDynamicsWorld;
 	import awayphysics.dynamics.AWPRigidBody;
 	import awayphysics.debug.AWPDebugDraw;
@@ -35,7 +35,7 @@ package {
 	import flash.utils.ByteArray;
 	import flash.ui.Keyboard;
 	import flash.utils.getTimer;
-    
+	
 	import utils.PerlinShape;
 	
 	[SWF(backgroundColor="#000000",frameRate="60",width="1024",height="768")]
@@ -47,7 +47,7 @@ package {
 		private var _physicsWorld:AWPDynamicsWorld;
 		private var _sphereShape:AWPSphereShape;
 		private var _timeStep:Number = 1.0 / 60;
-        
+		
 		private var _field:Mesh;
 		private var _fieldSubGeometry:SubGeometry
 		private var _bump:BitmapData;
@@ -114,7 +114,7 @@ package {
 			// init the physics world
 			_physicsWorld = AWPDynamicsWorld.getInstance();
 			_physicsWorld.initWithDbvtBroadphase();
-            _physicsWorld.collisionCallbackOn = false;
+			_physicsWorld.collisionCallbackOn = false;
 			_physicsWorld.scaling = 200;
 			_physicsWorld.gravity = new Vector3D(0, -10, 0);
 			
@@ -174,7 +174,7 @@ package {
 			var wallShape:AWPBoxShape = new AWPBoxShape(_dimension, 3000, 100);
 			var wallRigidbody:AWPRigidBody = new AWPRigidBody(wallShape, mesh, 0);
 			_physicsWorld.addRigidBody(wallRigidbody);
-			wallRigidbody.position = new Vector3D(0, 1000, (_dimension / 2)+50);
+			wallRigidbody.position = new Vector3D(0, 1000, (_dimension / 2) + 50);
 			
 			mesh = new Mesh(new CubeGeometry(100, 3000, _dimension), material);
 			_view.scene.addChild(mesh);
@@ -182,7 +182,7 @@ package {
 			var wallShape2:AWPBoxShape = new AWPBoxShape(100, 3000, _dimension);
 			var wallRigidbody2:AWPRigidBody = new AWPRigidBody(wallShape2, mesh, 0);
 			_physicsWorld.addRigidBody(wallRigidbody2);
-			wallRigidbody2.position = new Vector3D((_dimension / 2)+50, 1000, 0);
+			wallRigidbody2.position = new Vector3D((_dimension / 2) + 50, 1000, 0);
 			
 			mesh = new Mesh(new CubeGeometry(100, 3000, _dimension), material);
 			_view.scene.addChild(mesh);
@@ -190,7 +190,7 @@ package {
 			var wallShape3:AWPBoxShape = new AWPBoxShape(100, 3000, _dimension);
 			var wallRigidbody3:AWPRigidBody = new AWPRigidBody(wallShape3, mesh, 0);
 			_physicsWorld.addRigidBody(wallRigidbody3);
-			wallRigidbody3.position = new Vector3D(-(_dimension / 2)-50, 1000, 0);
+			wallRigidbody3.position = new Vector3D(-(_dimension / 2) - 50, 1000, 0);
 			
 			material = new ColorMaterial(0xfc6a11);
 			material.lightPicker = lightPicker;
@@ -211,7 +211,7 @@ package {
 				_view.scene.addChild(mesh);
 				body = new AWPRigidBody(boxShape, mesh, 1);
 				body.friction = .6;
-                body.restitution = 0;
+				body.restitution = 0;
 				//body.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;;
 				x = int(-2000 + Math.random() * 4000);
 				z = int(-2000 + Math.random() * 4000);
@@ -274,7 +274,7 @@ package {
 			var col:int = _bump.getPixel((x / _dimension + .5) * (_size + 1), (-z / _dimension + .5) * (_size + 1)) & 0xffffff;
 			return int(_fieldHeight * col / 0xffffff - _positionY);
 		}
-        
+		
 		private function move():void {
 			var i:uint;
 			for (i = 0; i < _numOctaves; ++i) {
@@ -312,18 +312,19 @@ package {
 		}
 		
 		private function updatePhysicsField():void {
-            var i:int;
-            var bodyLength:int =  _physicsWorld.rigidBodies.length;
-            for (i=0; i < bodyLength; ++i) {
-				if(_physicsWorld.rigidBodies[i].activationState == AWPCollisionObject.ISLAND_SLEEPING)_physicsWorld.rigidBodies[i].activate(true);
+			var i:int;
+			var bodyLength:int = _physicsWorld.rigidBodies.length;
+			for (i = 0; i < bodyLength; ++i) {
+				if (_physicsWorld.rigidBodies[i].activationState == AWPCollisionObject.ISLAND_SLEEPING)
+					_physicsWorld.rigidBodies[i].activate(true);
 			}
-            _terrainShape.update(_heights, _fieldHeight);
+			_terrainShape.update(_heights, _fieldHeight);
 		}
 		
 		private function updateBody():void {
 			var i:uint, x:int, y:int, z:int;
-            var cubeLength:int = _rigidCubes.length;
-            var sphereLength:int = _rigidSpheres.length;
+			var cubeLength:int = _rigidCubes.length;
+			var sphereLength:int = _rigidSpheres.length;
 			for (i = 0; i < cubeLength; ++i) {
 				if (_rigidCubes[i].position.y < 0) {
 					x = int(-2000 + Math.random() * 4000);
@@ -366,11 +367,11 @@ package {
 			_rigidSpheres.push(body);
 			body.applyCentralImpulse(impulse);
 		}
-        
+		
 		private function handleEnterFrame(e:Event):void {
-            updateBody();
-            _physicsWorld.step(_timeStep, 4, _timeStep);
-           
+			updateBody();
+			_physicsWorld.step(_timeStep, 4, _timeStep);
+			
 			debugDraw.debugDrawWorld();
 			_view.render();
 		}
