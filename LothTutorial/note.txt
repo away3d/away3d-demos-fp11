@@ -13,10 +13,11 @@ Make a 2 copy of this tree for leaves and flowers
 
 We have 3 mesh Foliage001 for trunk and branches
 Foliage002 for leaves and Foliage003 for Flowers
-now i link Foliage002 and Foliage003 to Foliage001.
+
+now link Foliage002 and Foliage003 to Foliage001.
 (double click on trunk select all tree).
 
-image_1
+image_1.jpg
 
 Export this model in awd 
 remove awd option Include skinning data in Scene & Geometry
@@ -32,5 +33,18 @@ see script exemple Basic_Tree.as
 
 
 2°/ smooth mesh UV
-one of best technics in modelisation is low polygone modelisation.
-imagine you want make a nice death nature with some fruits and cup.
+one of best technics is low polygone modelisation.
+imagine you want make a still life with some fruits and cup.
+
+first create a simple apple (basic sphere 8 face) and make simple uv like 
+
+image_2.jpg
+
+apply TurboSmooth modifier and check Explicit Normal if you don't check this option
+in away3d you see bad line in the end of uv 
+
+add a noise modifier to add some different seed for clones.
+
+
+
+ 
