@@ -1,0 +1,36 @@
+AWD export in deep
+
+AWD is a great and light plugins for export object from max 
+let's see some usefull trick you have to know for best use.
+
+1*/ the link 
+awd don't export multyMaterial, imagine you want make a tree 
+Trunk , leaves and flower don't have the same texture they need different mesh for each.
+but we also need simple methode for placing tree.
+
+First create a new AEC floriage in 3dsmax, remove leaves and flower 
+Make a 2 copy of this tree for leaves and flowers 
+
+We have 3 mesh Foliage001 for trunk and branches
+Foliage002 for leaves and Foliage003 for Flowers
+now i link Foliage002 and Foliage003 to Foliage001.
+(double click on trunk select all tree).
+
+image_1
+
+Export this model in awd 
+remove awd option Include skinning data in Scene & Geometry
+remove all in material and all in animation.
+
+Now in away3d you just have to import and add to scene Foliage001
+use Foliage002 and Foliage003 name to change material.
+
+now you can clone move or rotate you tree simply with Foliage001 other mesh is link to trunk
+note: don't add to scene other mesh or you lose link and see this mesh at 0,0,0 
+
+see script exemple Basic_Tree.as
+
+
+2°/ smooth mesh UV
+one of best technics in modelisation is low polygone modelisation.
+imagine you want make a nice death nature with some fruits and cup.
