@@ -40,10 +40,17 @@ first create a simple apple (basic sphere 8 face) and make simple uv like
 
 image_2.jpg
 
-apply TurboSmooth modifier and check Explicit Normal if you don't check this option
+apply TurboSmooth modifier and select Explicit Normal if you don't select this option
 in away3d you see bad line in the end of uv 
 
 add a noise modifier to add some different seed for clones.
+
+for cup use simple modelisation and twofold symmetry 
+apply turboSmooth with Explicit Normal.
+
+image_3.jpg
+
+image_4.jpg
 
 
 

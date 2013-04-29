@@ -53,6 +53,7 @@ package {
 	import away3d.materials.methods.*;
 	import away3d.lights.shadowmaps.CascadeShadowMapper;
 	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.tools.helpers.MeshHelper;
 	
 	import flash.display.*;
 	import flash.events.*;
@@ -77,14 +78,13 @@ package {
 		private var _fogMethod:FogMethod;
 		
 		//scene objects
-		private var _plane:Mesh;
-		private var _fieldSubGeometry:SubGeometry;
-		private var _tree:Mesh;
+		private var _backSphere:Mesh;
 		
 		//scene material
 		private var _cupMaterial:TextureMultiPassMaterial;
 		private var _appleMaterial:TextureMultiPassMaterial;
 		private var _boxMaterial:TextureMultiPassMaterial;
+		private var _backgroundMaterial:TextureMaterial;
 		
 		//mouse navigation 
 		private var _move:Boolean = false;
@@ -113,7 +113,7 @@ package {
 			//setup the camera
 			_view.camera.lens = new PerspectiveLens(60);
 			_view.camera.lens.near = 10;
-			_view.camera.lens.far = 1000;
+			_view.camera.lens.far = 2000;
 			
 			//setup the camera controller
 			_controller = new HoverController(_view.camera, null, 0, 2, 200, -5, 90);
@@ -130,8 +130,8 @@ package {
 			_view.scene.addChild(_sunLight);
 			
 			_pinLight = new PointLight();
-			_pinLight.color = 0x5555FF;
-			_pinLight.ambient = 0.0;
+			_pinLight.color = 0x4f6139;
+			_pinLight.ambient = 0.2;
 			_pinLight.diffuse = 1;
 			_pinLight.specular = 0.5;
 			_pinLight.position = new Vector3D(-200, 0, 200);
@@ -150,13 +150,13 @@ package {
 			_cascadeMethod.alpha = 0.6;
 			
 			_fogMethod = new FogMethod(0, 500, _bgColor);
-			_outlineMethod = new OutlineMethod(0x000000, 1, true, true);
+			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, true);
 			
 			//init materials
 			_cupMaterial = new TextureMultiPassMaterial(new BitmapTexture(cup()));
 			_appleMaterial = new TextureMultiPassMaterial(new BitmapTexture(apple()));
 			_boxMaterial = new TextureMultiPassMaterial(new BitmapTexture(desk()));
-			
+			_backgroundMaterial = new TextureMaterial(new BitmapTexture(background()))
 			_cupMaterial.lightPicker = _lightPicker;
 			_appleMaterial.lightPicker = _lightPicker;
 			_boxMaterial.lightPicker = _lightPicker;
@@ -172,6 +172,17 @@ package {
 			_cupMaterial.addMethod(_fogMethod);
 			_appleMaterial.addMethod(_fogMethod);
 			_boxMaterial.addMethod(_fogMethod);
+			
+			_boxMaterial.gloss = 10;
+			_cupMaterial.gloss = 5;
+			_appleMaterial.gloss = 60;
+			
+			//create background invers sphere
+			_backSphere = new Mesh(new SphereGeometry(500, 20, 16), _backgroundMaterial);
+			_backSphere.geometry.convertToSeparateBuffers();
+			MeshHelper.invertFaces(_backSphere);
+			_backSphere.castsShadows = false;
+			_view.scene.addChild(_backSphere);
 			
 			// parse still life model
 			parseTreeModel();
@@ -279,11 +290,33 @@ package {
 		private function cup():BitmapData {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
-			m.createGradientBox(32, 64, RadDeg(-90));
-			s.graphics.beginGradientFill("linear", [0x89a04e, 0x4a691d, 0x89a04e], [1, 1, 1], [0x00, 0x80, 0xFF], m, "reflect");
-			s.graphics.drawRect(0, 0, 64, 64);
+			m.createGradientBox(512, 512, 0);
+			m.translate(-256, -256);
+			s.graphics.beginGradientFill("radial", [0x31380f, 0x4a691d, 0x89a04e], [1, 1, 1], [0x40, 0xAA, 0xEE], m);
+			s.graphics.drawRect(0, 0, 256, 256);
 			s.graphics.endFill();
-			var b:BitmapData = new BitmapData(64, 64, false, 0x00000000);
+			m = new Matrix();
+			m.createGradientBox(512, 512, 0);
+			m.translate(-256, 0);
+			s.graphics.beginGradientFill("radial", [0x38280f, 0x4a691d, 0x89a04e], [1, 1, 1], [0x40, 0xAA, 0xEE], m);
+			s.graphics.drawRect(0, 256, 256, 256);
+			s.graphics.endFill();
+			m = new Matrix();
+			m.createGradientBox(70, 180, 0);
+			m.translate(260, 0);
+			s.graphics.beginGradientFill("linear", [0x89a04e, 0x4a691d, 0x89a04e], [1, 1, 1], [0x00, 0x80, 0xFF], m);
+			s.graphics.drawRect(260, 0, 70, 180);
+			s.graphics.endFill();
+			s.graphics.beginFill(0x89a04e);
+			s.graphics.drawRect(330, 0, 182, 512);
+			s.graphics.endFill();
+			m = new Matrix();
+			m.createGradientBox(5, 64, 0);
+			m.translate(403, 0);
+			s.graphics.beginGradientFill("linear", [0x89a04e, 0x4a691d, 0x435f1a], [1, 1, 1], [0x00, 0x80, 0xFF], m, "reflect");
+			s.graphics.drawRect(403, 0, 40, 512);
+			s.graphics.endFill();
+			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
 			b.draw(s);
 			return b;
 		}
@@ -314,6 +347,18 @@ package {
 			s.graphics.drawRect(0, 0, 64, 64);
 			s.graphics.endFill();
 			var b:BitmapData = new BitmapData(64, 64, false, 0x00000000);
+			b.draw(s);
+			return b;
+		}
+		
+		private function background():BitmapData {
+			var s:Sprite = new Sprite();
+			var m:Matrix = new Matrix();
+			m.createGradientBox(512, 512, RadDeg(-90));
+			s.graphics.beginGradientFill("linear", [0x1c2005, 0x2a3a13, 0x3c4f21, 0x4f6139], [1, 1, 1, 1], [0x60, 0x90, 0xAA, 0xFF], m);
+			s.graphics.drawRect(0, 0, 512, 512);
+			s.graphics.endFill();
+			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
 			b.draw(s);
 			return b;
 		}
