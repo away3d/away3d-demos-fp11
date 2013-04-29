@@ -4,7 +4,7 @@
 
    Demonstrates:
 
-   How to use AWD link for easy import
+   How to use AWD smooth modelisation uv
 
    Code by loth
    3dflashlo@gmail.com
@@ -73,7 +73,8 @@ package {
 		private var _baseShadowMethod:DitheredShadowMapMethod;
 		private var _cascadeMethod:CascadeShadowMapMethod;
 		private var _cascadeShadowMapper:CascadeShadowMapper;
-		private var _fog:FogMethod;
+		private var _outlineMethod:OutlineMethod;
+		private var _fogMethod:FogMethod;
 		
 		//scene objects
 		private var _plane:Mesh;
@@ -148,7 +149,8 @@ package {
 			_cascadeMethod.epsilon = .0007;
 			_cascadeMethod.alpha = 0.6;
 			
-			_fog = new FogMethod(0, 500, _bgColor);
+			_fogMethod = new FogMethod(0, 500, _bgColor);
+			_outlineMethod = new OutlineMethod(0x000000, 1, true, true);
 			
 			//init materials
 			_cupMaterial = new TextureMultiPassMaterial(new BitmapTexture(cup()));
@@ -163,9 +165,13 @@ package {
 			_appleMaterial.shadowMethod = _cascadeMethod;
 			_boxMaterial.shadowMethod = _cascadeMethod;
 			
-			_cupMaterial.addMethod(_fog);
-			_appleMaterial.addMethod(_fog);
-			_boxMaterial.addMethod(_fog);
+			_cupMaterial.addMethod(_outlineMethod);
+			_appleMaterial.addMethod(_outlineMethod);
+			_boxMaterial.addMethod(_outlineMethod);
+			
+			_cupMaterial.addMethod(_fogMethod);
+			_appleMaterial.addMethod(_fogMethod);
+			_boxMaterial.addMethod(_fogMethod);
 			
 			// parse still life model
 			parseTreeModel();
