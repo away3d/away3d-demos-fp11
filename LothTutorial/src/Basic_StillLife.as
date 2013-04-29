@@ -39,7 +39,7 @@ package {
 	import away3d.controllers.HoverController;
 	import away3d.core.base.SubGeometry;
 	import away3d.entities.*;
-	import away3d.lights.DirectionalLight;
+	import away3d.lights.*;
 	import away3d.materials.*;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.primitives.*;
@@ -58,7 +58,7 @@ package {
 	import flash.events.*;
 	import flash.geom.*;
 	
-	[SWF(backgroundColor="#7eace7",frameRate="60")]
+	[SWF(backgroundColor="#4a691d",frameRate="60")]
 	
 	public class Basic_StillLife extends Sprite {
 		[Embed(source="/../embeds/stillLife.awd",mimeType="application/octet-stream")]
@@ -68,6 +68,7 @@ package {
 		private var _view:View3D;
 		private var _controller:HoverController;
 		private var _sunLight:DirectionalLight;
+		private var _pinLight:PointLight;
 		private var _lightPicker:StaticLightPicker;
 		private var _baseShadowMethod:DitheredShadowMapMethod;
 		private var _cascadeMethod:CascadeShadowMapMethod;
@@ -82,6 +83,7 @@ package {
 		//scene material
 		private var _cupMaterial:TextureMultiPassMaterial;
 		private var _appleMaterial:TextureMultiPassMaterial;
+		private var _boxMaterial:TextureMultiPassMaterial;
 		
 		//mouse navigation 
 		private var _move:Boolean = false;
@@ -90,8 +92,8 @@ package {
 		private var _lastMouseX:Number;
 		private var _lastMouseY:Number;
 		
-		private var _bgColor:uint = 0x7eace7;
-		private var _center:Vector3D = new Vector3D(0, 0, 0);
+		private var _bgColor:uint = 0x4a691d;
+		private var _center:Vector3D = new Vector3D(0, 10, 0);
 		private var _azimuth:Number = 10;
 		private var _altitude:Number = 20;
 		
@@ -113,7 +115,7 @@ package {
 			_view.camera.lens.far = 1000;
 			
 			//setup the camera controller
-			_controller = new HoverController(_view.camera, null, 0, 10, 150, -5, 90);
+			_controller = new HoverController(_view.camera, null, 0, 2, 200, -5, 90);
 			_controller.wrapPanAngle = true;
 			_controller.autoUpdate = false;
 			_controller.lookAtPosition = _center;
@@ -125,10 +127,19 @@ package {
 			_sunLight.diffuse = 1;
 			_sunLight.specular = 1;
 			_view.scene.addChild(_sunLight);
-			_lightPicker = new StaticLightPicker([_sunLight]);
+			
+			_pinLight = new PointLight();
+			_pinLight.color = 0x5555FF;
+			_pinLight.ambient = 0.0;
+			_pinLight.diffuse = 1;
+			_pinLight.specular = 0.5;
+			_pinLight.position = new Vector3D(-200, 0, 200);
+			_view.scene.addChild(_pinLight);
+			
+			_lightPicker = new StaticLightPicker([_sunLight, _pinLight]);
 			
 			_cascadeShadowMapper = new CascadeShadowMapper(3);
-			_cascadeShadowMapper.lightOffset = 20000;
+			_cascadeShadowMapper.lightOffset = 2000;
 			_sunLight.castsShadows = false;
 			_sunLight.shadowMapper = _cascadeShadowMapper;
 			_sunLight.shadowMapper.depthMapSize = 2048;
@@ -137,20 +148,24 @@ package {
 			_cascadeMethod.epsilon = .0007;
 			_cascadeMethod.alpha = 0.6;
 			
-			_fog = new FogMethod(0, 2500, _bgColor);
+			_fog = new FogMethod(0, 500, _bgColor);
 			
 			//init materials
 			_cupMaterial = new TextureMultiPassMaterial(new BitmapTexture(cup()));
 			_appleMaterial = new TextureMultiPassMaterial(new BitmapTexture(apple()));
+			_boxMaterial = new TextureMultiPassMaterial(new BitmapTexture(desk()));
 			
 			_cupMaterial.lightPicker = _lightPicker;
 			_appleMaterial.lightPicker = _lightPicker;
+			_boxMaterial.lightPicker = _lightPicker;
 			
 			_cupMaterial.shadowMethod = _cascadeMethod;
 			_appleMaterial.shadowMethod = _cascadeMethod;
+			_boxMaterial.shadowMethod = _cascadeMethod;
 			
 			_cupMaterial.addMethod(_fog);
 			_appleMaterial.addMethod(_fog);
+			_boxMaterial.addMethod(_fog);
 			
 			// parse still life model
 			parseTreeModel();
@@ -192,6 +207,9 @@ package {
 				}
 				if (m.name == "cup") {
 					m.material = _cupMaterial;
+				}
+				if (m.name == "box") {
+					m.material = _boxMaterial;
 				}
 			}
 		}
@@ -255,8 +273,8 @@ package {
 		private function cup():BitmapData {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
-			m.createGradientBox(32, 64, 0);
-			s.graphics.beginGradientFill("linear", [0x32321d, 0x51523a, 0x7d7d64], [1, 1, 1], [0x00, 0x80, 0xFF], m, "reflect");
+			m.createGradientBox(32, 64, RadDeg(-90));
+			s.graphics.beginGradientFill("linear", [0x89a04e, 0x4a691d, 0x89a04e], [1, 1, 1], [0x00, 0x80, 0xFF], m, "reflect");
 			s.graphics.drawRect(0, 0, 64, 64);
 			s.graphics.endFill();
 			var b:BitmapData = new BitmapData(64, 64, false, 0x00000000);
@@ -267,8 +285,26 @@ package {
 		private function apple():BitmapData {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
-			m.createGradientBox(32, 64, 0);
-			s.graphics.beginGradientFill("linear", [0x32321d, 0x51523a, 0x7d7d64], [1, 1, 1], [0x00, 0x80, 0xFF], m, "reflect");
+			m.createGradientBox(64, 32, RadDeg(90));
+			s.graphics.beginGradientFill("linear", [0x46381e, 0xfad553, 0xd82102, 0xa43f11], [1, 1, 1, 1], [0x00, 0x30, 0xAA, 0xFF], m, "reflect");
+			s.graphics.drawRect(0, 0, 64, 64);
+			s.graphics.endFill();
+			s.graphics.beginFill(0x8f4518);
+			s.graphics.drawRect(0, 0, 13, 9);
+			s.graphics.endFill();
+			s.graphics.beginFill(0x46381e);
+			s.graphics.drawRect(13, 0, 4, 4);
+			s.graphics.endFill();
+			var b:BitmapData = new BitmapData(64, 64, false, 0x00000000);
+			b.draw(s);
+			return b;
+		}
+		
+		private function desk():BitmapData {
+			var s:Sprite = new Sprite();
+			var m:Matrix = new Matrix();
+			m.createGradientBox(64, 64, 0);
+			s.graphics.beginGradientFill("linear", [0x8f4518, 0x4e2a08, 0x72300d], [1, 1, 1], [0x00, 0x80, 0xFF], m);
 			s.graphics.drawRect(0, 0, 64, 64);
 			s.graphics.endFill();
 			var b:BitmapData = new BitmapData(64, 64, false, 0x00000000);
