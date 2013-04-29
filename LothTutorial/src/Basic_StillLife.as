@@ -84,6 +84,7 @@ package {
 		private var _cupMaterial:TextureMultiPassMaterial;
 		private var _appleMaterial:TextureMultiPassMaterial;
 		private var _boxMaterial:TextureMultiPassMaterial;
+		private var _lockMaterial:TextureMultiPassMaterial;
 		private var _backgroundMaterial:TextureMaterial;
 		
 		//mouse navigation 
@@ -94,9 +95,9 @@ package {
 		private var _lastMouseY:Number;
 		
 		private var _bgColor:uint = 0x4a691d;
-		private var _center:Vector3D = new Vector3D(0, 10, 0);
-		private var _azimuth:Number = 10;
-		private var _altitude:Number = 20;
+		private var _center:Vector3D = new Vector3D(0, 5, 0);
+		private var _azimuth:Number = 45;
+		private var _altitude:Number = -90;
 		
 		/**
 		 * Constructor
@@ -113,10 +114,10 @@ package {
 			//setup the camera
 			_view.camera.lens = new PerspectiveLens(60);
 			_view.camera.lens.near = 10;
-			_view.camera.lens.far = 2000;
+			_view.camera.lens.far = 1000;
 			
 			//setup the camera controller
-			_controller = new HoverController(_view.camera, null, 0, 2, 200, -5, 90);
+			_controller = new HoverController(_view.camera, null, 180, 3, 230, -5, 90);
 			_controller.wrapPanAngle = true;
 			_controller.autoUpdate = false;
 			_controller.lookAtPosition = _center;
@@ -124,16 +125,16 @@ package {
 			//init light & Shadow
 			_sunLight = new DirectionalLight();
 			_sunLight.color = 0xFFFFEF;
-			_sunLight.ambient = 0.5;
+			_sunLight.ambient = 0.0;
 			_sunLight.diffuse = 1;
-			_sunLight.specular = 1;
+			_sunLight.specular = 0.5;
 			_view.scene.addChild(_sunLight);
 			
 			_pinLight = new PointLight();
 			_pinLight.color = 0x4f6139;
-			_pinLight.ambient = 0.2;
-			_pinLight.diffuse = 1;
-			_pinLight.specular = 0.5;
+			_pinLight.ambient = 0.5;
+			_pinLight.diffuse = 0.5;
+			_pinLight.specular = 0.3;
 			_pinLight.position = new Vector3D(-200, 0, 200);
 			_view.scene.addChild(_pinLight);
 			
@@ -146,44 +147,52 @@ package {
 			_sunLight.shadowMapper.depthMapSize = 2048;
 			_baseShadowMethod = new DitheredShadowMapMethod(_sunLight);
 			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
-			_cascadeMethod.epsilon = .0007;
-			_cascadeMethod.alpha = 0.6;
+			//_cascadeMethod.epsilon = .0007;
+			_cascadeMethod.alpha = 0.85;
 			
-			_fogMethod = new FogMethod(0, 500, _bgColor);
+			_fogMethod = new FogMethod(200, 800, _bgColor);
 			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, true);
 			
 			//init materials
 			_cupMaterial = new TextureMultiPassMaterial(new BitmapTexture(cup()));
 			_appleMaterial = new TextureMultiPassMaterial(new BitmapTexture(apple()));
 			_boxMaterial = new TextureMultiPassMaterial(new BitmapTexture(desk()));
-			_backgroundMaterial = new TextureMaterial(new BitmapTexture(background()))
+			_lockMaterial = new TextureMultiPassMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x7e5104)));
+			_backgroundMaterial = new TextureMaterial(new BitmapTexture(background()));
+			
 			_cupMaterial.lightPicker = _lightPicker;
 			_appleMaterial.lightPicker = _lightPicker;
 			_boxMaterial.lightPicker = _lightPicker;
+			_lockMaterial.lightPicker = _lightPicker;
 			
 			_cupMaterial.shadowMethod = _cascadeMethod;
 			_appleMaterial.shadowMethod = _cascadeMethod;
 			_boxMaterial.shadowMethod = _cascadeMethod;
+			_lockMaterial.shadowMethod = _cascadeMethod;
 			
-			_cupMaterial.addMethod(_outlineMethod);
-			_appleMaterial.addMethod(_outlineMethod);
-			_boxMaterial.addMethod(_outlineMethod);
-			
+			/*_cupMaterial.addMethod(_outlineMethod);
+			   _appleMaterial.addMethod(_outlineMethod);
+			   _boxMaterial.addMethod(_outlineMethod);
+			 */
 			_cupMaterial.addMethod(_fogMethod);
 			_appleMaterial.addMethod(_fogMethod);
 			_boxMaterial.addMethod(_fogMethod);
+			_lockMaterial.addMethod(_fogMethod);
 			
-			_boxMaterial.gloss = 10;
+			_boxMaterial.specular = 0.3;
+			_boxMaterial.gloss = 30;
 			_cupMaterial.gloss = 5;
 			_appleMaterial.gloss = 60;
+			_lockMaterial.gloss = 120;
+			_lockMaterial.specular = 2;
 			
 			//create background invers sphere
-			_backSphere = new Mesh(new SphereGeometry(500, 20, 16), _backgroundMaterial);
+			_backSphere = new Mesh(new SphereGeometry(400, 20, 16), _backgroundMaterial);
 			_backSphere.geometry.convertToSeparateBuffers();
 			MeshHelper.invertFaces(_backSphere);
 			_backSphere.castsShadows = false;
 			_view.scene.addChild(_backSphere);
-			
+			_backSphere.rotationZ = -35;
 			// parse still life model
 			parseTreeModel();
 			
@@ -228,6 +237,9 @@ package {
 				if (m.name == "box") {
 					m.material = _boxMaterial;
 				}
+				if (m.name.substring(0, 4) == "lock") {
+					m.material = _lockMaterial;
+				}
 			}
 		}
 		
@@ -236,11 +248,11 @@ package {
 		 */
 		private function _onEnterFrame(e:Event):void {
 			// light update
-			_altitude += 0.1;
+			_altitude += 0.05;
 			if (_altitude >= 360)
 				_altitude = .1;
 			
-			_sunLight.position = Orbit(_altitude, _azimuth, 2000).add(_center);
+			_sunLight.position = Orbit(_altitude, _azimuth, 1000).add(_center);
 			_sunLight.lookAt(_center);
 			// controller update
 			if (_move) {
@@ -280,8 +292,8 @@ package {
 			_controller.distance -= ev.delta * 5;
 			if (_controller.distance < 100)
 				_controller.distance = 100;
-			else if (_controller.distance > 2000)
-				_controller.distance = 2000;
+			else if (_controller.distance > 500)
+				_controller.distance = 500;
 		}
 		
 		/**
@@ -355,7 +367,7 @@ package {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
 			m.createGradientBox(512, 512, RadDeg(-90));
-			s.graphics.beginGradientFill("linear", [0x1c2005, 0x2a3a13, 0x3c4f21, 0x4f6139], [1, 1, 1, 1], [0x60, 0x90, 0xAA, 0xFF], m);
+			s.graphics.beginGradientFill("linear", [0x1c2005, 0x2a3a13, 0x3c4f21, 0x4f6139], [1, 1, 1, 1], [0x30, 0x90, 0xAA, 0xFF], m);
 			s.graphics.drawRect(0, 0, 512, 512);
 			s.graphics.endFill();
 			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
