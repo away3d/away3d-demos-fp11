@@ -1,9 +1,12 @@
+exemple link
+http://3dflashlo.free.fr/tutorial/index.html
+
 AWD export in deep
 
 AWD is a great and light plugins for export object from max 
 let's see some usefull trick you have to know for best use.
 
-1*/ the link 
+1*/ FOREST _ the link 
 awd don't export multyMaterial, imagine you want make a tree 
 Trunk , leaves and flower don't have the same texture they need different mesh for each.
 but we also need simple methode for placing tree.
@@ -32,7 +35,7 @@ note: don't add to scene other mesh or you lose link and see this mesh at 0,0,0
 see script exemple Basic_Tree.as
 
 
-2°/ smooth mesh UV
+2°/ STILL LIFE _ smooth mesh UV
 one of best technics is low polygone modelisation.
 imagine you want make a still life with some fruits and cup.
 

@@ -109,12 +109,13 @@ package {
 			//setup the view
 			_view = new View3D();
 			_view.backgroundColor = _bgColor;
+			_view.antiAlias = 8;
 			addChild(_view);
 			
 			//setup the camera
 			_view.camera.lens = new PerspectiveLens(60);
 			_view.camera.lens.near = 10;
-			_view.camera.lens.far = 1000;
+			_view.camera.lens.far = 2000;
 			
 			//setup the camera controller
 			_controller = new HoverController(_view.camera, null, 180, 3, 230, -5, 90);
@@ -147,7 +148,7 @@ package {
 			_sunLight.shadowMapper.depthMapSize = 2048;
 			_baseShadowMethod = new DitheredShadowMapMethod(_sunLight);
 			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
-			//_cascadeMethod.epsilon = .0007;
+			_cascadeMethod.epsilon = .0007;
 			_cascadeMethod.alpha = 0.85;
 			
 			_fogMethod = new FogMethod(200, 800, _bgColor);
@@ -170,10 +171,11 @@ package {
 			_boxMaterial.shadowMethod = _cascadeMethod;
 			_lockMaterial.shadowMethod = _cascadeMethod;
 			
-			/*_cupMaterial.addMethod(_outlineMethod);
-			   _appleMaterial.addMethod(_outlineMethod);
-			   _boxMaterial.addMethod(_outlineMethod);
-			 */
+			_cupMaterial.addMethod(_outlineMethod);
+			_appleMaterial.addMethod(_outlineMethod);
+			_boxMaterial.addMethod(_outlineMethod);
+			_lockMaterial.addMethod(_outlineMethod);
+			
 			_cupMaterial.addMethod(_fogMethod);
 			_appleMaterial.addMethod(_fogMethod);
 			_boxMaterial.addMethod(_fogMethod);
@@ -248,11 +250,11 @@ package {
 		 */
 		private function _onEnterFrame(e:Event):void {
 			// light update
-			_altitude += 0.05;
+			_altitude += 0.1;
 			if (_altitude >= 360)
 				_altitude = .1;
 			
-			_sunLight.position = Orbit(_altitude, _azimuth, 1000).add(_center);
+			_sunLight.position = Orbit(_altitude, _azimuth, 2000).add(_center);
 			_sunLight.lookAt(_center);
 			// controller update
 			if (_move) {
