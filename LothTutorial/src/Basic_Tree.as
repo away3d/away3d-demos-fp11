@@ -5,6 +5,7 @@
    Demonstrates:
 
    How to use AWD link for easy import
+   How to create layered terrain on fly
 
    Code by loth
    3dflashlo@gmail.com
@@ -53,6 +54,7 @@ package {
 	import away3d.materials.methods.*;
 	import away3d.lights.shadowmaps.CascadeShadowMapper;
 	import away3d.cameras.lenses.PerspectiveLens;
+	import flash.filters.BlurFilter;
 	
 	import flash.display.*;
 	import flash.events.*;
@@ -70,13 +72,18 @@ package {
 		private var _controller:HoverController;
 		private var _sunLight:DirectionalLight;
 		private var _lightPicker:StaticLightPicker;
+		
+		//scene methode
 		private var _baseShadowMethod:DitheredShadowMapMethod;
 		private var _cascadeMethod:CascadeShadowMapMethod;
 		private var _cascadeShadowMapper:CascadeShadowMapper;
+		private var _terrainMethode:TerrainDiffuseMethod;
+		private var _specularMethod:FresnelSpecularMethod;
 		private var _fog:FogMethod;
 		
 		//scene objects
 		private var _plane:Mesh;
+		private var _planeMask:Mesh;
 		private var _fieldSubGeometry:SubGeometry;
 		private var _tree:Mesh;
 		
@@ -85,22 +92,23 @@ package {
 		private var _trunkMaterial:TextureMultiPassMaterial;
 		private var _leaveMaterial:TextureMultiPassMaterial;
 		private var _flowerMaterial:TextureMultiPassMaterial;
+		private var _maskMaterial:TextureMaterial;
 		
 		//mouse navigation 
 		private var _move:Boolean = false;
-		private var _lastPanAngle:Number;
-		private var _lastTiltAngle:Number;
-		private var _lastMouseX:Number;
-		private var _lastMouseY:Number;
+		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 1000]);
 		
-		private var _bgColor:uint = 0x7eace7;
-		private var _center:Vector3D = new Vector3D(0, 200, 0);
+		private var _bgColor:uint = 0x527096; //7eace7;
+		private var _center:Vector3D = new Vector3D(0, 50, 0);
 		private var _azimuth:Number = 10;
 		private var _altitude:Number = 20;
 		
 		//field variable
-		private var _terrainHeight:int = 600;
+		private var _terrainResolution:int = 128;
+		private var _terrainHeight:int = 300;
+		private var _terrainDistance:int = 1000;
 		private var _bump:BitmapData;
+		private const _textures:Vector.<BitmapTexture> = new Vector.<BitmapTexture>();
 		
 		/**
 		 * Constructor
@@ -112,15 +120,16 @@ package {
 			//setup the view
 			_view = new View3D();
 			_view.backgroundColor = _bgColor;
+			_view.antiAlias = 8;
 			addChild(_view);
 			
 			//setup the camera
-			_view.camera.lens = new PerspectiveLens(60);
+			_view.camera.lens = new PerspectiveLens(70);
 			_view.camera.lens.near = 10;
-			_view.camera.lens.far = 10000;
+			_view.camera.lens.far = 2000;
 			
 			//setup the camera controller
-			_controller = new HoverController(_view.camera, null, 0, 10, 2000, -5, 90);
+			_controller = new HoverController(_view.camera, null, 0, 3, 800, -5, 90);
 			_controller.wrapPanAngle = true;
 			_controller.autoUpdate = false;
 			_controller.lookAtPosition = _center;
@@ -128,7 +137,7 @@ package {
 			//init light & Shadow
 			_sunLight = new DirectionalLight();
 			_sunLight.color = 0xFFFFEF;
-			_sunLight.ambient = 0.5;
+			_sunLight.ambient = 0.8;
 			_sunLight.diffuse = 1;
 			_sunLight.specular = 1;
 			_view.scene.addChild(_sunLight);
@@ -144,10 +153,10 @@ package {
 			_cascadeMethod.epsilon = .0007;
 			_cascadeMethod.alpha = 0.6;
 			
-			_fog = new FogMethod(0, 2500, _bgColor);
+			_fog = new FogMethod(300, 1500, _bgColor);
 			
 			//ground noise
-			_bump = new BitmapData(128, 128, false, 0x000000);
+			_bump = new BitmapData(_terrainResolution, _terrainResolution, false, 0xffffff);
 			//init materials
 			_groundMaterial = new TextureMultiPassMaterial(new BitmapTexture(_bump));
 			_trunkMaterial = new TextureMultiPassMaterial(new BitmapTexture(trunk()));
@@ -155,6 +164,8 @@ package {
 			_leaveMaterial.alphaThreshold = 0.5;
 			_flowerMaterial = new TextureMultiPassMaterial(new BitmapTexture(flower()));
 			_flowerMaterial.alphaThreshold = 0.5;
+			
+			_maskMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x354961)));
 			
 			_groundMaterial.lightPicker = _lightPicker;
 			_trunkMaterial.lightPicker = _lightPicker;
@@ -170,21 +181,32 @@ package {
 			_trunkMaterial.addMethod(_fog);
 			_leaveMaterial.addMethod(_fog);
 			_flowerMaterial.addMethod(_fog);
+			_maskMaterial.addMethod(_fog);
 			
+			_specularMethod = new FresnelSpecularMethod();
+			_specularMethod.normalReflectance = 0.2;
+			_groundMaterial.specularMethod = _specularMethod;
+			_groundMaterial.gloss = 60;
 			//setup the scene
-			_plane = new Mesh(new PlaneGeometry(5000, 5000, 127, 127), _groundMaterial);
+			_plane = new Mesh(new PlaneGeometry(_terrainDistance, _terrainDistance, _terrainResolution - 1, _terrainResolution - 1), _groundMaterial);
 			_plane.geometry.convertToSeparateBuffers();
+			// _plane.castsShadows = false;
 			_view.scene.addChild(_plane);
 			// get the field sugGeometry referency
 			_fieldSubGeometry = _plane.geometry.subGeometries[0] as SubGeometry;
 			_fieldSubGeometry.autoDeriveVertexNormals = true;
 			_fieldSubGeometry.autoDeriveVertexTangents = true;
+			
+			_planeMask = new Mesh(new PlaneGeometry(_terrainDistance * 2, _terrainDistance * 2), _maskMaterial);
+			_view.scene.addChild(_planeMask);
+			_planeMask.y = 2;
+			_planeMask.castsShadows = false;
 			//create terrain noise
 			updateFieldGeometry();
 			//get center of camera
-			_center.y = getHeightAt() + 100;
+			_center.y = getHeightAt() + 50;
 			
-			// parse tree model
+			//parse tree model
 			parseTreeModel();
 			
 			//setup the render loop
@@ -240,15 +262,25 @@ package {
 			//_view.scene.addChild(_tree);
 			// create some clones
 			var m:Mesh;
-			var x:int, z:int;
+			var x:int, y:int, z:int;
 			for (var i:uint; i < 30; ++i) {
 				m = _tree.clone() as Mesh;
-				m.scale(0.5 + Math.random() * 2);
-				x = -1250 + (Math.random() * 2500);
-				z = -1250 + (Math.random() * 2500);
-				m.position = new Vector3D(x, getHeightAt(x, z) - 20, z);
-				m.rotationY = Math.random() * 360;
-				_view.scene.addChild(m);
+				m.scale(0.3 + Math.random() * 0.8);
+				
+				x = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
+				z = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
+				y = getHeightAt(x, z) - 20;
+				while (y < 50) {
+					x = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
+					z = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
+					y = getHeightAt(x, z) - 20;
+					
+					m.position = new Vector3D(x, y, z);
+					m.rotationX = Math.random() * 5;
+					m.rotationZ = Math.random() * 5;
+					m.rotationY = Math.random() * 360;
+					_view.scene.addChild(m);
+				}
 			}
 		}
 		
@@ -265,8 +297,8 @@ package {
 			_sunLight.lookAt(_center);
 			// controller update
 			if (_move) {
-				_controller.panAngle = 0.3 * (stage.mouseX - _lastMouseX) + _lastPanAngle;
-				_controller.tiltAngle = 0.3 * (stage.mouseY - _lastMouseY) + _lastTiltAngle;
+				_controller.panAngle = 0.3 * (stage.mouseX - _mouseNav[0]) + _mouseNav[2];
+				_controller.tiltAngle = 0.3 * (stage.mouseY - _mouseNav[1]) + _mouseNav[3];
 			}
 			_controller.lookAtPosition = _center;
 			_controller.update();
@@ -286,23 +318,22 @@ package {
 		 */
 		private function onMouseUp(event:Event):void {
 			_move = false;
-		
 		}
 		
 		private function onMouseDown(event:MouseEvent):void {
-			_lastPanAngle = _controller.panAngle;
-			_lastTiltAngle = _controller.tiltAngle;
-			_lastMouseX = stage.mouseX;
-			_lastMouseY = stage.mouseY;
+			_mouseNav[0] = stage.mouseX;
+			_mouseNav[1] = stage.mouseY;
+			_mouseNav[2] = _controller.panAngle;
+			_mouseNav[3] = _controller.tiltAngle;
 			_move = true;
 		}
 		
 		private function onMouseWheel(ev:MouseEvent):void {
 			_controller.distance -= ev.delta * 5;
-			if (_controller.distance < 100)
-				_controller.distance = 100;
-			else if (_controller.distance > 2000)
-				_controller.distance = 2000;
+			if (_controller.distance < _mouseNav[4])
+				_controller.distance = _mouseNav[4];
+			else if (_controller.distance > _mouseNav[5])
+				_controller.distance = _mouseNav[5];
 		}
 		
 		/**
@@ -310,27 +341,36 @@ package {
 		 */
 		private function updateFieldGeometry():void {
 			_bump.lock();
-			_bump.perlinNoise(128 * 0.12, 128 * 0.12, 1, int(Math.random() * 0xffffffff), false, true, 7, true, [new Point(0, 0)]);
+			_bump.perlinNoise(_terrainResolution * 0.12, _terrainResolution * 0.12, 1, int(Math.random() * 0xffffffff), false, true, 7, true, [new Point(0, 0)]);
+			_bump.draw(islandMapCache());
 			_bump.unlock();
 			var i:uint, px:uint, c:uint;
 			var v:Vector.<Number> = _fieldSubGeometry.vertexData;
 			var l:uint = v.length;
 			for (i = 1; i < l; i += 3, ++c) {
-				px = _bump.getPixel(c % 128, 128 - (c / 128));
+				px = _bump.getPixel(c % _terrainResolution, _terrainResolution - (c / _terrainResolution));
 				// Displace y position by the range
 				v[i] = (_terrainHeight * px / 0xffffff);
 			}
 			// update plane geometry
 			_fieldSubGeometry.updateVertexData(v);
 			// update plane texture
-			BitmapTexture(TextureMultiPassMaterial(_groundMaterial).texture).invalidateContent();
+			//BitmapTexture(TextureMultiPassMaterial(_groundMaterial).texture).invalidateContent();
+			// material method
+			_textures[0] = new BitmapTexture(new BitmapData(64, 64, false, 0x5b4237));
+			_textures[1] = new BitmapTexture(new BitmapData(64, 64, false, 0xb99c56));
+			_textures[2] = new BitmapTexture(new BitmapData(64, 64, false, _bgColor));
+			_textures[3] = new BitmapTexture(layerTerrainBitmap(_bump));
+			
+			_terrainMethode = new TerrainDiffuseMethod([_textures[0], _textures[1], _textures[2]], _textures[3], [1, 10, 10, 10]);
+			_groundMaterial.diffuseMethod = _terrainMethode;
 		}
 		
 		/**
 		 * get height possition on terrain
 		 */
 		private function getHeightAt(x:Number = 0, z:Number = 0):Number {
-			var col:int = _bump.getPixel((x / 5000 + .5) * (128 + 1), (-z / 5000 + .5) * (128 + 1)) & 0xffffff;
+			var col:int = _bump.getPixel((x / _terrainDistance + .5) * (_terrainResolution + 1), (-z / _terrainDistance + .5) * (_terrainResolution + 1)) & 0xffffff;
 			return int(_terrainHeight * col / 0xffffff);
 		}
 		
@@ -385,6 +425,45 @@ package {
 			var b:BitmapData = new BitmapData(64, 64, true, 0x00000000);
 			b.draw(s);
 			return b;
+		}
+		
+		private function islandMapCache():BitmapData {
+			var groundAdd:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, true, 0x000000);
+			var g:Sprite = new Sprite();
+			var m:Matrix = new Matrix();
+			m.createGradientBox(_terrainResolution, _terrainResolution);
+			g.graphics.beginGradientFill("radial", [0x000000, 0x000000, 0x000000, 0x000000], [0, 0.2, 0.5, 1], [0x00, 0x99, 0xAA, 0xEF], m);
+			g.graphics.drawRect(0, 0, _terrainResolution, _terrainResolution);
+			groundAdd.draw(g);
+			g.graphics.clear();
+			return groundAdd;
+		}
+		
+		private function layerTerrainBitmap(B:BitmapData):BitmapData {
+			var layerTop:Array = [0x555555, 0x161616]
+			var layer00:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, false, 0x000000);
+			var layer01:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, true, 0x000000);
+			var layer02:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, true, 0x000000);
+			var rect:Rectangle = B.rect;
+			var p:Point = new Point();
+			// red _ top
+			layer00 = B.clone();
+			layer00.colorTransform(rect, new ColorTransform(1, 0, 0, 1, 255, 0, 0, 0));
+			// green _ mid
+			layer01.threshold(B, rect, p, ">", 0xFF000000 + layerTop[0], 0x0000000, 0xFFFFFFFF, true);
+			layer01.colorTransform(rect, new ColorTransform(0, 1, 0, 1, 0, 255, 0, 0));
+			layer01.applyFilter(layer01, rect, p, new BlurFilter(12, 12, 2));
+			// blue _ bottom
+			layer02.threshold(B, rect, p, ">", 0xFF000000 + layerTop[1], 0x0000000, 0xFFFFFFFF, true);
+			layer02.colorTransform(rect, new ColorTransform(0, 0, 1, 1, 0, 0, 255, 0));
+			layer02.applyFilter(layer02, rect, p, new BlurFilter(6, 6, 2));
+			
+			// copy chanel from other layer to base layer
+			layer00.draw(layer01);
+			layer00.draw(layer02);
+			layer01.dispose();
+			layer02.dispose();
+			return layer00;
 		}
 		
 		/**
