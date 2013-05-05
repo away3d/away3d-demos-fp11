@@ -90,6 +90,7 @@ package {
 		private var _man:Mesh;
 		private var _spaceSuit:Mesh;
 		private var _helmet:Mesh;
+		private var _backpack:Mesh;
 		private var _backSphere:Mesh;
 		private const _bipedMeshs:Vector.<Mesh> = new Vector.<Mesh>;
 		
@@ -272,6 +273,7 @@ package {
 			_spaceSuit.animator = _animator;
 			
 			_view.scene.addChild(_helmet);
+			_view.scene.addChild(_backpack);
 			
 			//add the 3dsmax biped mesh just for test
 			for (var i:uint; i < _bipedMeshs.length; ++i) {
@@ -291,6 +293,7 @@ package {
 			if (_animator && _animator.globalPose.numJointPoses == 16) {
 				
 				_helmet.transform = _animator.globalPose.jointPoses[15].toMatrix3D();
+				_backpack.transform = _animator.globalPose.jointPoses[8].toMatrix3D();
 				
 				if (_isWithBiped) {
 					// pelvis
@@ -308,7 +311,7 @@ package {
 					_bipedMeshs[17].transform = _animator.globalPose.jointPoses[6].toMatrix3D();
 					_bipedMeshs[18].transform = _animator.globalPose.jointPoses[7].toMatrix3D();
 					_bipedMeshs[18].yaw(60);
-					// shest
+					// chest
 					_bipedMeshs[5].transform = _animator.globalPose.jointPoses[8].toMatrix3D();
 					_bipedMeshs[6].transform = _animator.globalPose.jointPoses[8].toMatrix3D();
 					_bipedMeshs[6].translate(new Vector3D(0, 1, 0), 7);
@@ -340,6 +343,9 @@ package {
 				} else if (m.name == "helmet") {
 					m.material = _helmetMaterial;
 					_helmet = m;
+				} else if (m.name == "backpack") {
+					m.material = _helmetMaterial;
+					_backpack = m;
 				} else {
 					if (m.name.substring(7, 8) == "R") {
 						m.material = _rightMaterial;
@@ -459,7 +465,7 @@ package {
 		 * Math function
 		 */
 		private function Orbit(H:Number, V:Number, D:Number):Vector3D {
-			var p:Vector3D = new Vector3D()
+			var p:Vector3D = new Vector3D();
 			var phi:Number = RadDeg(H);
 			var theta:Number = RadDeg(V);
 			p.x = (D * Math.sin(phi) * Math.cos(theta));
