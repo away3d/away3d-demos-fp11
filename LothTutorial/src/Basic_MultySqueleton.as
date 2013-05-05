@@ -83,6 +83,7 @@ package {
 		private var _outlineMethod:OutlineMethod;
 		private var _outlineMethod2:OutlineMethod;
 		private var _fogMethod:FogMethod;
+		private var _fogMethod2:FogMethod;
 		
 		//scene objects
 		private var _plane:Mesh;
@@ -110,8 +111,8 @@ package {
 		
 		//mouse navigation 
 		private var _move:Boolean = false;
-		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 800]);
-		private var _center:Vector3D = new Vector3D(0, 30, 0);
+		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 300]);
+		private var _center:Vector3D = new Vector3D(0, 40, 0);
 		
 		private var _bgColor:uint = 0x4a69ff;
 		private var _azimuth:Number = 45;
@@ -134,7 +135,7 @@ package {
 			//setup the camera
 			_view.camera.lens = new PerspectiveLens(60);
 			_view.camera.lens.near = 10;
-			_view.camera.lens.far = 2000;
+			_view.camera.lens.far = 1000;
 			
 			//setup the camera controller
 			_controller = new HoverController(_view.camera, null, 140, 5, 100, -5, 90);
@@ -145,24 +146,25 @@ package {
 			//init light & Shadow
 			_sunLight = new DirectionalLight();
 			_sunLight.color = 0xFFFFEF;
-			_sunLight.ambient = 0.0;
+			_sunLight.ambient = 0.5;
 			_sunLight.diffuse = 1;
-			_sunLight.specular = 0.5;
+			_sunLight.specular = 1;
 			_view.scene.addChild(_sunLight);
 			
 			_pinLight = new PointLight();
-			_pinLight.color = 0x4f6139;
-			_pinLight.ambient = 0.5;
+			_pinLight.color = 0x4b61ff;
+			_pinLight.ambient = 0;
 			_pinLight.diffuse = 0.5;
-			_pinLight.specular = 0.3;
-			_pinLight.position = new Vector3D(-200, 0, 200);
+			_pinLight.specular = 0.5;
+			_pinLight.position = new Vector3D(-100, 100, -200);
 			_view.scene.addChild(_pinLight);
 			
 			_lightPicker = new StaticLightPicker([_sunLight, _pinLight]);
 			
 			//setup methods
 			_shadowMapMethod = new FilteredShadowMapMethod(_sunLight);
-			_fogMethod = new FogMethod(200, 800, _bgColor);
+			_fogMethod = new FogMethod(10, 600, _bgColor);
+			_fogMethod2 = new FogMethod(0, 300, 0xffffff);
 			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, false);
 			_outlineMethod2 = new OutlineMethod(0x000000, 0.5, true, false);
 			
@@ -174,7 +176,10 @@ package {
 			_leftMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x3333ff)));
 			_midMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0xffff33)));
 			_backgroundMaterial = new TextureMaterial(new BitmapTexture(background()));
-			_groundMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, _bgColor)));
+			_groundMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0xffffff)));
+			_groundMaterial.blendMode = "multiply";
+			_groundMaterial.ambient = 1.5;
+			_groundMaterial.specular = 0;
 			
 			_manMaterial.lightPicker = _lightPicker;
 			_spaceMaterial.lightPicker = _lightPicker;
@@ -207,7 +212,7 @@ package {
 			_rightMaterial.addMethod(_fogMethod);
 			_leftMaterial.addMethod(_fogMethod);
 			_midMaterial.addMethod(_fogMethod);
-			_groundMaterial.addMethod(_fogMethod);
+			_groundMaterial.addMethod(_fogMethod2);
 			
 			_helmetMaterial.gloss = 120;
 			_manMaterial.gloss = 60;
@@ -219,12 +224,13 @@ package {
 			MeshHelper.invertFaces(_backSphere);
 			_backSphere.castsShadows = false;
 			_view.scene.addChild(_backSphere);
-			_backSphere.rotationZ = -35;
+			_backSphere.rotationZ = -7;
 			
 			//parse model
 			parseManModel();
 			
-			_plane = new Mesh(new PlaneGeometry(200, 200), _groundMaterial), _view.scene.addChild(_plane);
+			_plane = new Mesh(new PlaneGeometry(500, 500), _groundMaterial), _view.scene.addChild(_plane);
+			_plane.castsShadows = false;
 			_plane.y = -3;
 			
 			//setup the render loop
