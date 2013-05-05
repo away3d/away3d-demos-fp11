@@ -81,12 +81,14 @@ package {
 		private var _lightPicker:StaticLightPicker;
 		private var _shadowMapMethod:FilteredShadowMapMethod;
 		private var _outlineMethod:OutlineMethod;
+		private var _outlineMethod2:OutlineMethod;
 		private var _fogMethod:FogMethod;
 		
 		//scene objects
 		private var _plane:Mesh;
 		private var _man:Mesh;
 		private var _spaceSuit:Mesh;
+		private var _helmet:Mesh;
 		private var _backSphere:Mesh;
 		private const _bipedMeshs:Vector.<Mesh> = new Vector.<Mesh>;
 		
@@ -99,6 +101,7 @@ package {
 		//scene material
 		private var _manMaterial:TextureMaterial;
 		private var _spaceMaterial:TextureMaterial;
+		private var _helmetMaterial:TextureMaterial;
 		private var _groundMaterial:TextureMaterial
 		private var _rightMaterial:TextureMaterial;
 		private var _leftMaterial:TextureMaterial;
@@ -113,6 +116,7 @@ package {
 		private var _bgColor:uint = 0x4a69ff;
 		private var _azimuth:Number = 45;
 		private var _altitude:Number = -90;
+		private var _isWithBiped:Boolean = true;
 		
 		/**
 		 * Constructor
@@ -160,10 +164,12 @@ package {
 			_shadowMapMethod = new FilteredShadowMapMethod(_sunLight);
 			_fogMethod = new FogMethod(200, 800, _bgColor);
 			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, false);
+			_outlineMethod2 = new OutlineMethod(0x000000, 0.5, true, false);
 			
 			//init materials
 			_manMaterial = new TextureMaterial(new BitmapTexture(manMap()));
 			_spaceMaterial = new TextureMaterial(new BitmapTexture(spaceMap()));
+			_helmetMaterial = new TextureMaterial(new BitmapTexture(spaceMap()));
 			_rightMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x33ff33)));
 			_leftMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x3333ff)));
 			_midMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0xffff33)));
@@ -172,6 +178,7 @@ package {
 			
 			_manMaterial.lightPicker = _lightPicker;
 			_spaceMaterial.lightPicker = _lightPicker;
+			_helmetMaterial.lightPicker = _lightPicker;
 			_rightMaterial.lightPicker = _lightPicker;
 			_leftMaterial.lightPicker = _lightPicker;
 			_midMaterial.lightPicker = _lightPicker;
@@ -179,6 +186,7 @@ package {
 			
 			_manMaterial.shadowMethod = _shadowMapMethod;
 			_spaceMaterial.shadowMethod = _shadowMapMethod;
+			_helmetMaterial.shadowMethod = _shadowMapMethod;
 			_rightMaterial.shadowMethod = _shadowMapMethod;
 			_leftMaterial.shadowMethod = _shadowMapMethod;
 			_midMaterial.shadowMethod = _shadowMapMethod;
@@ -190,13 +198,18 @@ package {
 			_spaceMaterial.addMethod(_outlineMethod);
 			_spaceMaterial.alphaBlending = true;
 			
+			_helmetMaterial.addMethod(_outlineMethod2);
+			_helmetMaterial.alphaBlending = true;
+			
 			_manMaterial.addMethod(_fogMethod);
 			_spaceMaterial.addMethod(_fogMethod);
+			_helmetMaterial.addMethod(_fogMethod);
 			_rightMaterial.addMethod(_fogMethod);
 			_leftMaterial.addMethod(_fogMethod);
 			_midMaterial.addMethod(_fogMethod);
 			_groundMaterial.addMethod(_fogMethod);
 			
+			_helmetMaterial.gloss = 120;
 			_manMaterial.gloss = 60;
 			_spaceMaterial.gloss = 10;
 			
@@ -212,7 +225,7 @@ package {
 			parseManModel();
 			
 			_plane = new Mesh(new PlaneGeometry(200, 200), _groundMaterial), _view.scene.addChild(_plane);
-			_plane.y = -5;
+			_plane.y = -3;
 			
 			//setup the render loop
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
@@ -252,6 +265,8 @@ package {
 			_view.scene.addChild(_spaceSuit);
 			_spaceSuit.animator = _animator;
 			
+			_view.scene.addChild(_helmet);
+			
 			//add the 3dsmax biped mesh just for test
 			for (var i:uint; i < _bipedMeshs.length; ++i) {
 				if (i > 0) {
@@ -267,35 +282,40 @@ package {
 		/**
 		 * move biped mesh to follow bones
 		 */
-		public function updateBiped():void {
+		public function updateMeshBone():void {
 			if (_animator && _animator.globalPose.numJointPoses == 16) {
-				// pelvis
-				_bipedMeshs[1].transform = _animator.globalPose.jointPoses[0].toMatrix3D();
-				_bipedMeshs[1].roll(-90);
-				// pelvis
-				_bipedMeshs[2].transform = _animator.globalPose.jointPoses[1].toMatrix3D();
-				//leg L
-				_bipedMeshs[19].transform = _animator.globalPose.jointPoses[2].toMatrix3D();
-				_bipedMeshs[20].transform = _animator.globalPose.jointPoses[3].toMatrix3D();
-				_bipedMeshs[21].transform = _animator.globalPose.jointPoses[4].toMatrix3D();
-				_bipedMeshs[21].yaw(60);
-				// leg R
-				_bipedMeshs[16].transform = _animator.globalPose.jointPoses[5].toMatrix3D();
-				_bipedMeshs[17].transform = _animator.globalPose.jointPoses[6].toMatrix3D();
-				_bipedMeshs[18].transform = _animator.globalPose.jointPoses[7].toMatrix3D();
-				_bipedMeshs[18].yaw(60);
-				// shest
-				_bipedMeshs[5].transform = _animator.globalPose.jointPoses[8].toMatrix3D();
-				// arm R
-				_bipedMeshs[9].transform = _animator.globalPose.jointPoses[9].toMatrix3D();
-				_bipedMeshs[10].transform = _animator.globalPose.jointPoses[10].toMatrix3D();
-				_bipedMeshs[11].transform = _animator.globalPose.jointPoses[11].toMatrix3D();
-				//arm L
-				_bipedMeshs[13].transform = _animator.globalPose.jointPoses[12].toMatrix3D();
-				_bipedMeshs[14].transform = _animator.globalPose.jointPoses[13].toMatrix3D();
-				_bipedMeshs[15].transform = _animator.globalPose.jointPoses[14].toMatrix3D();
-				//head 
-				_bipedMeshs[7].transform = _animator.globalPose.jointPoses[15].toMatrix3D();
+				
+				_helmet.transform = _animator.globalPose.jointPoses[15].toMatrix3D();
+				
+				if (_isWithBiped) {
+					// pelvis
+					_bipedMeshs[1].transform = _animator.globalPose.jointPoses[0].toMatrix3D();
+					_bipedMeshs[1].roll(-90);
+					// pelvis
+					_bipedMeshs[2].transform = _animator.globalPose.jointPoses[1].toMatrix3D();
+					//leg L
+					_bipedMeshs[19].transform = _animator.globalPose.jointPoses[2].toMatrix3D();
+					_bipedMeshs[20].transform = _animator.globalPose.jointPoses[3].toMatrix3D();
+					_bipedMeshs[21].transform = _animator.globalPose.jointPoses[4].toMatrix3D();
+					_bipedMeshs[21].yaw(60);
+					// leg R
+					_bipedMeshs[16].transform = _animator.globalPose.jointPoses[5].toMatrix3D();
+					_bipedMeshs[17].transform = _animator.globalPose.jointPoses[6].toMatrix3D();
+					_bipedMeshs[18].transform = _animator.globalPose.jointPoses[7].toMatrix3D();
+					_bipedMeshs[18].yaw(60);
+					// shest
+					_bipedMeshs[5].transform = _animator.globalPose.jointPoses[8].toMatrix3D();
+					// arm R
+					_bipedMeshs[9].transform = _animator.globalPose.jointPoses[9].toMatrix3D();
+					_bipedMeshs[10].transform = _animator.globalPose.jointPoses[10].toMatrix3D();
+					_bipedMeshs[11].transform = _animator.globalPose.jointPoses[11].toMatrix3D();
+					//arm L
+					_bipedMeshs[13].transform = _animator.globalPose.jointPoses[12].toMatrix3D();
+					_bipedMeshs[14].transform = _animator.globalPose.jointPoses[13].toMatrix3D();
+					_bipedMeshs[15].transform = _animator.globalPose.jointPoses[14].toMatrix3D();
+					//head 
+					_bipedMeshs[7].transform = _animator.globalPose.jointPoses[15].toMatrix3D();
+				}
 			}
 		}
 		
@@ -309,6 +329,9 @@ package {
 				} else if (m.name == "space_suit") {
 					m.material = _spaceMaterial;
 					_spaceSuit = m;
+				} else if (m.name == "helmet") {
+					m.material = _helmetMaterial;
+					_helmet = m;
 				} else {
 					if (m.name.substring(7, 8) == "R") {
 						m.material = _rightMaterial;
@@ -349,7 +372,7 @@ package {
 			_controller.lookAtPosition = _center;
 			_controller.update();
 			
-			updateBiped();
+			updateMeshBone();
 			
 			_view.render();
 		}
