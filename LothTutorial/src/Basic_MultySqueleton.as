@@ -1,10 +1,11 @@
 /*
 
-   3D Still Life example in Away3d
+   3D SpaceMan example in Away3d
 
    Demonstrates:
 
-   How to use AWD smooth modelisation uv
+   How to use AWD animation
+   How to add multy mesh to same animator
 
    Code by loth
    3dflashlo@gmail.com
@@ -54,6 +55,12 @@ package {
 	import away3d.lights.shadowmaps.CascadeShadowMapper;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.tools.helpers.MeshHelper;
+	import away3d.materials.methods.FilteredShadowMapMethod;
+	import away3d.animators.transitions.CrossfadeTransition;
+	import away3d.animators.data.Skeleton;
+	import away3d.animators.SkeletonAnimator;
+	import away3d.animators.SkeletonAnimationSet;
+	import away3d.animators.nodes.SkeletonClipNode;
 	
 	import flash.display.*;
 	import flash.events.*;
@@ -61,9 +68,9 @@ package {
 	
 	[SWF(backgroundColor="#4a691d",frameRate="60")]
 	
-	public class Basic_StillLife extends Sprite {
-		[Embed(source="/../embeds/stillLife.awd",mimeType="application/octet-stream")]
-		public static var STILLLIFE:Class;
+	public class Basic_MultySqueleton extends Sprite {
+		[Embed(source="/../embeds/man.awd",mimeType="application/octet-stream")]
+		public static var MAN:Class;
 		
 		//engine variables
 		private var _view:View3D;
@@ -71,35 +78,45 @@ package {
 		private var _sunLight:DirectionalLight;
 		private var _pinLight:PointLight;
 		private var _lightPicker:StaticLightPicker;
-		private var _baseShadowMethod:DitheredShadowMapMethod;
-		private var _cascadeMethod:CascadeShadowMapMethod;
-		private var _cascadeShadowMapper:CascadeShadowMapper;
+		private var _shadowMapMethod:FilteredShadowMapMethod;
 		private var _outlineMethod:OutlineMethod;
 		private var _fogMethod:FogMethod;
 		
 		//scene objects
+		private var _plane:Mesh;
+		private var _man:Mesh;
+		private var _spaceSuit:Mesh;
 		private var _backSphere:Mesh;
+		private const _bipedMeshs:Vector.<Mesh> = new Vector.<Mesh>;
+		
+		//animations
+		private var _squeleton:Skeleton;
+		private var _animationSet:SkeletonAnimationSet;
+		private var _animator:SkeletonAnimator;
+		private const AnimName:Array = ["Breathe", "Walk", "Run", "Sit"];
 		
 		//scene material
-		private var _cupMaterial:TextureMultiPassMaterial;
-		private var _appleMaterial:TextureMultiPassMaterial;
-		private var _boxMaterial:TextureMultiPassMaterial;
-		private var _lockMaterial:TextureMultiPassMaterial;
+		private var _manMaterial:TextureMaterial;
+		private var _spaceMaterial:TextureMaterial;
+		private var _groundMaterial:TextureMaterial
+		private var _rightMaterial:TextureMaterial;
+		private var _leftMaterial:TextureMaterial;
+		private var _midMaterial:TextureMaterial;
 		private var _backgroundMaterial:TextureMaterial;
 		
 		//mouse navigation 
 		private var _move:Boolean = false;
 		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 800]);
-		private var _center:Vector3D = new Vector3D(0, 5, 0);
+		private var _center:Vector3D = new Vector3D(0, 30, 0);
 		
-		private var _bgColor:uint = 0x4a691d;
+		private var _bgColor:uint = 0x4a69ff;
 		private var _azimuth:Number = 45;
 		private var _altitude:Number = -90;
 		
 		/**
 		 * Constructor
 		 */
-		public function Basic_StillLife() {
+		public function Basic_MultySqueleton() {
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			
@@ -115,7 +132,7 @@ package {
 			_view.camera.lens.far = 2000;
 			
 			//setup the camera controller
-			_controller = new HoverController(_view.camera, null, 180, 3, 230, -5, 90);
+			_controller = new HoverController(_view.camera, null, 140, 5, 100, -5, 90);
 			_controller.wrapPanAngle = true;
 			_controller.autoUpdate = false;
 			_controller.lookAtPosition = _center;
@@ -138,52 +155,49 @@ package {
 			
 			_lightPicker = new StaticLightPicker([_sunLight, _pinLight]);
 			
-			_cascadeShadowMapper = new CascadeShadowMapper(3);
-			_cascadeShadowMapper.lightOffset = 2000;
-			_sunLight.castsShadows = false;
-			_sunLight.shadowMapper = _cascadeShadowMapper;
-			_sunLight.shadowMapper.depthMapSize = 2048;
-			_baseShadowMethod = new DitheredShadowMapMethod(_sunLight);
-			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
-			_cascadeMethod.epsilon = .0007;
-			_cascadeMethod.alpha = 0.85;
-			
+			//setup methods
+			_shadowMapMethod = new FilteredShadowMapMethod(_sunLight);
 			_fogMethod = new FogMethod(200, 800, _bgColor);
-			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, true);
+			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, false);
 			
 			//init materials
-			_cupMaterial = new TextureMultiPassMaterial(new BitmapTexture(cup()));
-			_appleMaterial = new TextureMultiPassMaterial(new BitmapTexture(apple()));
-			_boxMaterial = new TextureMultiPassMaterial(new BitmapTexture(desk()));
-			_lockMaterial = new TextureMultiPassMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x7e5104)));
+			_manMaterial = new TextureMaterial(new BitmapTexture(manMap()));
+			_spaceMaterial = new TextureMaterial(new BitmapTexture(spaceMap()));
+			_rightMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x33ff33)));
+			_leftMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x3333ff)));
+			_midMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0xffff33)));
 			_backgroundMaterial = new TextureMaterial(new BitmapTexture(background()));
+			_groundMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, _bgColor)));
 			
-			_cupMaterial.lightPicker = _lightPicker;
-			_appleMaterial.lightPicker = _lightPicker;
-			_boxMaterial.lightPicker = _lightPicker;
-			_lockMaterial.lightPicker = _lightPicker;
+			_manMaterial.lightPicker = _lightPicker;
+			_spaceMaterial.lightPicker = _lightPicker;
+			_rightMaterial.lightPicker = _lightPicker;
+			_leftMaterial.lightPicker = _lightPicker;
+			_midMaterial.lightPicker = _lightPicker;
+			_groundMaterial.lightPicker = _lightPicker;
 			
-			_cupMaterial.shadowMethod = _cascadeMethod;
-			_appleMaterial.shadowMethod = _cascadeMethod;
-			_boxMaterial.shadowMethod = _cascadeMethod;
-			_lockMaterial.shadowMethod = _cascadeMethod;
+			_manMaterial.shadowMethod = _shadowMapMethod;
+			_spaceMaterial.shadowMethod = _shadowMapMethod;
+			_rightMaterial.shadowMethod = _shadowMapMethod;
+			_leftMaterial.shadowMethod = _shadowMapMethod;
+			_midMaterial.shadowMethod = _shadowMapMethod;
+			_groundMaterial.shadowMethod = _shadowMapMethod;
 			
-			_cupMaterial.addMethod(_outlineMethod);
-			_appleMaterial.addMethod(_outlineMethod);
-			_boxMaterial.addMethod(_outlineMethod);
-			_lockMaterial.addMethod(_outlineMethod);
+			_manMaterial.addMethod(_outlineMethod);
+			_manMaterial.alphaBlending = true;
 			
-			_cupMaterial.addMethod(_fogMethod);
-			_appleMaterial.addMethod(_fogMethod);
-			_boxMaterial.addMethod(_fogMethod);
-			_lockMaterial.addMethod(_fogMethod);
+			_spaceMaterial.addMethod(_outlineMethod);
+			_spaceMaterial.alphaBlending = true;
 			
-			_boxMaterial.specular = 0.3;
-			_boxMaterial.gloss = 30;
-			_cupMaterial.gloss = 5;
-			_appleMaterial.gloss = 60;
-			_lockMaterial.gloss = 120;
-			_lockMaterial.specular = 2;
+			_manMaterial.addMethod(_fogMethod);
+			_spaceMaterial.addMethod(_fogMethod);
+			_rightMaterial.addMethod(_fogMethod);
+			_leftMaterial.addMethod(_fogMethod);
+			_midMaterial.addMethod(_fogMethod);
+			_groundMaterial.addMethod(_fogMethod);
+			
+			_manMaterial.gloss = 60;
+			_spaceMaterial.gloss = 10;
 			
 			//create background invers sphere
 			_backSphere = new Mesh(new SphereGeometry(400, 20, 16), _backgroundMaterial);
@@ -192,14 +206,18 @@ package {
 			_backSphere.castsShadows = false;
 			_view.scene.addChild(_backSphere);
 			_backSphere.rotationZ = -35;
-			// parse still life model
-			parseSceneModel();
+			
+			//parse model
+			parseManModel();
+			
+			_plane = new Mesh(new PlaneGeometry(200, 200), _groundMaterial), _view.scene.addChild(_plane);
+			_plane.y = -5;
 			
 			//setup the render loop
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			stage.addEventListener(Event.RESIZE, onResize);
 			
-			//mouse navigation
+			//setup mouse navigation
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
@@ -211,8 +229,8 @@ package {
 		/**
 		 * parse tree model
 		 */
-		private function parseSceneModel():void {
-			AssetLibrary.loadData(new STILLLIFE(), null, null, new AWD2Parser());
+		private function parseManModel():void {
+			AssetLibrary.loadData(new MAN(), null, null, new AWD2Parser());
 			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			AssetLibrary.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
 		}
@@ -220,25 +238,94 @@ package {
 		private function onResourceComplete(event:LoaderEvent):void {
 			AssetLibrary.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			AssetLibrary.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
+			
+			//add the man model
+			_view.scene.addChild(_man);
+			_animator = new SkeletonAnimator(_animationSet, _squeleton);
+			_man.animator = _animator;
+			_animator.play(AnimName[1]);
+			_animator.playbackSpeed = 0.2;
+			
+			//add space suit model with same animator
+			//in 3dsmax make a copy of man with skin and apply push modifier
+			_view.scene.addChild(_spaceSuit);
+			_spaceSuit.animator = _animator;
+			
+			//add the 3dsmax biped mesh just for test
+			for (var i:uint; i < _bipedMeshs.length; ++i) {
+				if (i > 0) {
+					if (i == 4)
+						_bipedMeshs[i].visible = false;
+					if (i != 3 && i != 4 && i != 6 && i != 12 && i != 8)
+						_view.scene.addChild(_bipedMeshs[i])
+				}
+			}
+		
+		}
+		
+		/**
+		 * move biped mesh to follow bones
+		 */
+		public function updateBiped():void {
+			if (_animator && _animator.globalPose.numJointPoses == 16) {
+				// pelvis
+				_bipedMeshs[1].transform = _animator.globalPose.jointPoses[0].toMatrix3D();
+				_bipedMeshs[1].roll(-90);
+				// pelvis
+				_bipedMeshs[2].transform = _animator.globalPose.jointPoses[1].toMatrix3D();
+				//leg L
+				_bipedMeshs[19].transform = _animator.globalPose.jointPoses[2].toMatrix3D();
+				_bipedMeshs[20].transform = _animator.globalPose.jointPoses[3].toMatrix3D();
+				_bipedMeshs[21].transform = _animator.globalPose.jointPoses[4].toMatrix3D();
+				_bipedMeshs[21].yaw(60);
+				// leg R
+				_bipedMeshs[16].transform = _animator.globalPose.jointPoses[5].toMatrix3D();
+				_bipedMeshs[17].transform = _animator.globalPose.jointPoses[6].toMatrix3D();
+				_bipedMeshs[18].transform = _animator.globalPose.jointPoses[7].toMatrix3D();
+				_bipedMeshs[18].yaw(60);
+				// shest
+				_bipedMeshs[5].transform = _animator.globalPose.jointPoses[8].toMatrix3D();
+				// arm R
+				_bipedMeshs[9].transform = _animator.globalPose.jointPoses[9].toMatrix3D();
+				_bipedMeshs[10].transform = _animator.globalPose.jointPoses[10].toMatrix3D();
+				_bipedMeshs[11].transform = _animator.globalPose.jointPoses[11].toMatrix3D();
+				//arm L
+				_bipedMeshs[13].transform = _animator.globalPose.jointPoses[12].toMatrix3D();
+				_bipedMeshs[14].transform = _animator.globalPose.jointPoses[13].toMatrix3D();
+				_bipedMeshs[15].transform = _animator.globalPose.jointPoses[14].toMatrix3D();
+				//head 
+				_bipedMeshs[7].transform = _animator.globalPose.jointPoses[15].toMatrix3D();
+			}
 		}
 		
 		private function onAssetComplete(event:AssetEvent):void {
 			var m:Mesh;
 			if (event.asset.assetType == AssetType.MESH) {
 				m = event.asset as Mesh;
-				_view.scene.addChild(m);
-				if (m.name.substring(0, 5) == "apple") {
-					m.material = _appleMaterial;
+				if (m.name == "man_mid") {
+					m.material = _manMaterial;
+					_man = m;
+				} else if (m.name == "space_suit") {
+					m.material = _spaceMaterial;
+					_spaceSuit = m;
+				} else {
+					if (m.name.substring(7, 8) == "R") {
+						m.material = _rightMaterial;
+					} else if (m.name.substring(7, 8) == "L") {
+						m.material = _leftMaterial;
+					} else {
+						m.material = _midMaterial;
+					}
+					//remove biped part than not linked with bone
+					if (m.name.substring(9) != "Toe0" && m.name.substring(9) != "Finger0")
+						_bipedMeshs.push(m);
 				}
-				if (m.name == "cup") {
-					m.material = _cupMaterial;
-				}
-				if (m.name == "box") {
-					m.material = _boxMaterial;
-				}
-				if (m.name.substring(0, 4) == "lock") {
-					m.material = _lockMaterial;
-				}
+				
+			} else if (event.asset.assetType == AssetType.SKELETON) {
+				_squeleton = event.asset as Skeleton;
+				_animationSet = new SkeletonAnimationSet(3);
+			} else if (event.asset.assetType == AssetType.ANIMATION_NODE) {
+				_animationSet.addAnimation(event.asset as SkeletonClipNode);
 			}
 		}
 		
@@ -260,6 +347,9 @@ package {
 			}
 			_controller.lookAtPosition = _center;
 			_controller.update();
+			
+			updateBiped();
+			
 			_view.render();
 		}
 		
@@ -297,66 +387,26 @@ package {
 		/**
 		 * create bitmapData
 		 */
-		private function cup():BitmapData {
-			var s:Sprite = new Sprite();
-			var m:Matrix = new Matrix();
-			m.createGradientBox(512, 512, 0);
-			m.translate(-256, -256);
-			s.graphics.beginGradientFill("radial", [0x31380f, 0x4a691d, 0x89a04e], [1, 1, 1], [0x40, 0xAA, 0xEE], m);
-			s.graphics.drawRect(0, 0, 256, 256);
-			s.graphics.endFill();
-			m = new Matrix();
-			m.createGradientBox(512, 512, 0);
-			m.translate(-256, 0);
-			s.graphics.beginGradientFill("radial", [0x38280f, 0x4a691d, 0x89a04e], [1, 1, 1], [0x40, 0xAA, 0xEE], m);
-			s.graphics.drawRect(0, 256, 256, 256);
-			s.graphics.endFill();
-			m = new Matrix();
-			m.createGradientBox(70, 180, 0);
-			m.translate(260, 0);
-			s.graphics.beginGradientFill("linear", [0x89a04e, 0x4a691d, 0x89a04e], [1, 1, 1], [0x00, 0x80, 0xFF], m);
-			s.graphics.drawRect(260, 0, 70, 180);
-			s.graphics.endFill();
-			s.graphics.beginFill(0x89a04e);
-			s.graphics.drawRect(330, 0, 182, 512);
-			s.graphics.endFill();
-			m = new Matrix();
-			m.createGradientBox(5, 64, 0);
-			m.translate(403, 0);
-			s.graphics.beginGradientFill("linear", [0x89a04e, 0x4a691d, 0x435f1a], [1, 1, 1], [0x00, 0x80, 0xFF], m, "reflect");
-			s.graphics.drawRect(403, 0, 40, 512);
-			s.graphics.endFill();
-			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
-			b.draw(s);
-			return b;
-		}
-		
-		private function apple():BitmapData {
+		private function manMap():BitmapData {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
 			m.createGradientBox(64, 32, RadDeg(90));
-			s.graphics.beginGradientFill("linear", [0x46381e, 0xfad553, 0xd82102, 0xa43f11], [1, 1, 1, 1], [0x00, 0x30, 0xAA, 0xFF], m, "reflect");
+			s.graphics.beginGradientFill("linear", [0x46381e, 0xfad553, 0xd82102, 0xa43f11], [0.3, 0.6, 0.9, 0.5], [0x00, 0x30, 0xAA, 0xFF], m, "reflect");
 			s.graphics.drawRect(0, 0, 64, 64);
 			s.graphics.endFill();
-			s.graphics.beginFill(0x8f4518);
-			s.graphics.drawRect(0, 0, 13, 9);
-			s.graphics.endFill();
-			s.graphics.beginFill(0x46381e);
-			s.graphics.drawRect(13, 0, 4, 4);
-			s.graphics.endFill();
-			var b:BitmapData = new BitmapData(64, 64, false, 0x00000000);
+			var b:BitmapData = new BitmapData(64, 64, true, 0x00000000);
 			b.draw(s);
 			return b;
 		}
 		
-		private function desk():BitmapData {
+		private function spaceMap():BitmapData {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
-			m.createGradientBox(64, 64, 0);
-			s.graphics.beginGradientFill("linear", [0x8f4518, 0x4e2a08, 0x72300d], [1, 1, 1], [0x00, 0x80, 0xFF], m);
+			m.createGradientBox(64, 32, RadDeg(90));
+			s.graphics.beginGradientFill("linear", [0x505050, 0x606060, 0x808080, 0xcccccc], [0.3, 0.6, 0.9, 0.5], [0x00, 0x30, 0xAA, 0xFF], m, "reflect");
 			s.graphics.drawRect(0, 0, 64, 64);
 			s.graphics.endFill();
-			var b:BitmapData = new BitmapData(64, 64, false, 0x00000000);
+			var b:BitmapData = new BitmapData(64, 64, true, 0x00000000);
 			b.draw(s);
 			return b;
 		}
@@ -365,7 +415,7 @@ package {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
 			m.createGradientBox(512, 512, RadDeg(-90));
-			s.graphics.beginGradientFill("linear", [0x1c2005, 0x2a3a13, 0x3c4f21, 0x4f6139], [1, 1, 1, 1], [0x30, 0x90, 0xAA, 0xFF], m);
+			s.graphics.beginGradientFill("linear", [0x1c2060, 0x2a3a80, 0x3c4fff, 0x4f61ff], [1, 1, 1, 1], [0x30, 0x90, 0xAA, 0xFF], m);
 			s.graphics.drawRect(0, 0, 512, 512);
 			s.graphics.endFill();
 			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
