@@ -6,6 +6,7 @@
 
    How to use AWD animation
    How to add multy mesh to same animator
+   How to link mesh to bones structur
 
    Code by loth
    3dflashlo@gmail.com
@@ -66,7 +67,7 @@ package {
 	import flash.events.*;
 	import flash.geom.*;
 	
-	[SWF(backgroundColor="#4a691d",frameRate="60")]
+	[SWF(backgroundColor="#4a69ff",frameRate="60")]
 	
 	public class Basic_MultySqueleton extends Sprite {
 		[Embed(source="/../embeds/man.awd",mimeType="application/octet-stream")]
