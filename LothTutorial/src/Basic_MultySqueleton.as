@@ -278,11 +278,10 @@ package {
 				if (i > 0) {
 					if (i == 4)
 						_bipedMeshs[i].visible = false;
-					if (i != 3 && i != 4 && i != 6 && i != 12 && i != 8)
+					if (i != 3 && i != 4 && i != 12 && i != 8)
 						_view.scene.addChild(_bipedMeshs[i])
 				}
 			}
-		
 		}
 		
 		/**
@@ -311,6 +310,9 @@ package {
 					_bipedMeshs[18].yaw(60);
 					// shest
 					_bipedMeshs[5].transform = _animator.globalPose.jointPoses[8].toMatrix3D();
+					_bipedMeshs[6].transform = _animator.globalPose.jointPoses[8].toMatrix3D();
+					_bipedMeshs[6].translate(new Vector3D(0, 1, 0), 7);
+					_bipedMeshs[6].translate(new Vector3D(0, 0, 1), -1);
 					// arm R
 					_bipedMeshs[9].transform = _animator.globalPose.jointPoses[9].toMatrix3D();
 					_bipedMeshs[10].transform = _animator.globalPose.jointPoses[10].toMatrix3D();
