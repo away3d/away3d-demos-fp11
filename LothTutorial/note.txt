@@ -55,6 +55,34 @@ image_3.jpg
 
 image_4.jpg
 
+final modelisation process 
+
+image_5.jpg
+
+see script exemple Basic_StillLife.as
+
+
 3°/ MULTY MESH ON SQUELETON
+
+For animation sometime you need some suit or object like gun follow bones
+In 3dsmax a great tools for animation is biped but awd dont understand structure of biped 
+we need apply bones techniques. 
+Biped object are also export so i change there mesh to more real squeleton
+see in code how to move them, normally we not need. 
+
+add to biped a some bones (16 in that exemple)
+
+image_6.jpg
+
+For man mesh i use symmetry , is more easy to change model like that. 
+Uv don't need to be full unwarp
+
+For space suit use a copy of man mesh with skin and change the model 
+we need exact same skin for unsing the same animator in away3d 
+
+Backpack and helmet is liked with bones but need attach them in code 
+
+see script exemple Basic_MultySqueleton.as
+
 
  
