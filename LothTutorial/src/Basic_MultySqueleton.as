@@ -1,6 +1,6 @@
 /*
 
-   3D SpaceMan example in Away3d
+   3D SpaceMan Squeleton example in Away3d
 
    Demonstrates:
 
@@ -44,6 +44,7 @@ package {
 	import away3d.lights.*;
 	import away3d.materials.*;
 	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.lights.shadowmaps.*;
 	import away3d.primitives.*;
 	import away3d.textures.BitmapTexture;
 	import away3d.utils.*;
@@ -53,7 +54,6 @@ package {
 	import away3d.events.AssetEvent;
 	import away3d.events.LoaderEvent;
 	import away3d.materials.methods.*;
-	import away3d.lights.shadowmaps.CascadeShadowMapper;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.tools.helpers.MeshHelper;
 	import away3d.materials.methods.FilteredShadowMapMethod;
@@ -79,7 +79,9 @@ package {
 		private var _sunLight:DirectionalLight;
 		private var _pinLight:PointLight;
 		private var _lightPicker:StaticLightPicker;
-		private var _shadowMapMethod:FilteredShadowMapMethod;
+		
+		//scene methodes
+		private var _shadowMethod:NearShadowMapMethod;
 		private var _outlineMethod:OutlineMethod;
 		private var _outlineMethod2:OutlineMethod;
 		private var _fogMethod:FogMethod;
@@ -150,6 +152,7 @@ package {
 			_sunLight.ambient = 0.5;
 			_sunLight.diffuse = 1;
 			_sunLight.specular = 1;
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.5);
 			_view.scene.addChild(_sunLight);
 			
 			_pinLight = new PointLight();
@@ -162,8 +165,9 @@ package {
 			
 			_lightPicker = new StaticLightPicker([_sunLight, _pinLight]);
 			
-			//setup methods
-			_shadowMapMethod = new FilteredShadowMapMethod(_sunLight);
+			//setup methodes
+			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_shadowMethod.epsilon = .0007;
 			_fogMethod = new FogMethod(10, 600, _bgColor);
 			_fogMethod2 = new FogMethod(0, 300, 0xffffff);
 			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, false);
@@ -190,13 +194,13 @@ package {
 			_midMaterial.lightPicker = _lightPicker;
 			_groundMaterial.lightPicker = _lightPicker;
 			
-			_manMaterial.shadowMethod = _shadowMapMethod;
-			_spaceMaterial.shadowMethod = _shadowMapMethod;
-			_helmetMaterial.shadowMethod = _shadowMapMethod;
-			_rightMaterial.shadowMethod = _shadowMapMethod;
-			_leftMaterial.shadowMethod = _shadowMapMethod;
-			_midMaterial.shadowMethod = _shadowMapMethod;
-			_groundMaterial.shadowMethod = _shadowMapMethod;
+			_manMaterial.shadowMethod = _shadowMethod;
+			_spaceMaterial.shadowMethod = _shadowMethod;
+			_helmetMaterial.shadowMethod = _shadowMethod;
+			_rightMaterial.shadowMethod = _shadowMethod;
+			_leftMaterial.shadowMethod = _shadowMethod;
+			_midMaterial.shadowMethod = _shadowMethod;
+			_groundMaterial.shadowMethod = _shadowMethod;
 			
 			_manMaterial.addMethod(_outlineMethod);
 			_manMaterial.alphaBlending = true;

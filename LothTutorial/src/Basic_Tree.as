@@ -46,6 +46,7 @@ package {
 	import away3d.primitives.*;
 	import away3d.textures.BitmapTexture;
 	import away3d.utils.*;
+	import away3d.lights.shadowmaps.*;
 	import away3d.loaders.parsers.AWD2Parser;
 	import away3d.library.assets.AssetType;
 	import away3d.library.AssetLibrary;
@@ -54,8 +55,9 @@ package {
 	import away3d.materials.methods.*;
 	import away3d.lights.shadowmaps.CascadeShadowMapper;
 	import away3d.cameras.lenses.PerspectiveLens;
-	import flash.filters.BlurFilter;
+	import away3d.tools.helpers.MeshHelper;
 	
+	import flash.filters.BlurFilter;
 	import flash.display.*;
 	import flash.events.*;
 	import flash.geom.*;
@@ -73,10 +75,8 @@ package {
 		private var _sunLight:DirectionalLight;
 		private var _lightPicker:StaticLightPicker;
 		
-		//scene methode
-		private var _baseShadowMethod:DitheredShadowMapMethod;
-		private var _cascadeMethod:CascadeShadowMapMethod;
-		private var _cascadeShadowMapper:CascadeShadowMapper;
+		//scene methodes
+		private var _shadowMethod:NearShadowMapMethod;
 		private var _terrainMethode:TerrainDiffuseMethod;
 		private var _specularMethod:FresnelSpecularMethod;
 		private var _outlineMethod:OutlineMethod;
@@ -87,27 +87,30 @@ package {
 		private var _planeMask:Mesh;
 		private var _fieldSubGeometry:SubGeometry;
 		private var _tree:Mesh;
+		private var _backSphere:Mesh;
 		
 		//scene material
-		private var _groundMaterial:TextureMultiPassMaterial;
-		private var _trunkMaterial:TextureMultiPassMaterial;
-		private var _leaveMaterial:TextureMultiPassMaterial;
-		private var _flowerMaterial:TextureMultiPassMaterial;
+		private var _groundMaterial:TextureMaterial;
+		private var _trunkMaterial:TextureMaterial;
+		private var _leaveMaterial:TextureMaterial;
+		private var _flowerMaterial:TextureMaterial;
 		private var _maskMaterial:TextureMaterial;
+		private var _backgroundMaterial:TextureMaterial;
 		
 		//mouse navigation 
 		private var _move:Boolean = false;
-		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 1000]);
+		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 900]);
 		
-		private var _bgColor:uint = 0x527096; //7eace7;
+		private var _bgColor:uint = 0x527096;
 		private var _center:Vector3D = new Vector3D(0, 50, 0);
 		private var _azimuth:Number = 10;
 		private var _altitude:Number = 20;
 		
 		//field variable
-		private var _terrainResolution:int = 128;
-		private var _terrainHeight:int = 300;
-		private var _terrainDistance:int = 1000;
+		private var _fieldResolution:int = 128;
+		private var _fieldDistance:int = 1000;
+		private var _fieldHeight:int = 300;
+		
 		private var _bump:BitmapData;
 		private const _textures:Vector.<BitmapTexture> = new Vector.<BitmapTexture>();
 		
@@ -130,43 +133,39 @@ package {
 			_view.camera.lens.far = 2000;
 			
 			//setup the camera controller
-			_controller = new HoverController(_view.camera, null, 0, 3, 800, -5, 90);
+			_controller = new HoverController(_view.camera, null, 0, 3, 800, -5, 35);
 			_controller.wrapPanAngle = true;
 			_controller.autoUpdate = false;
 			_controller.lookAtPosition = _center;
 			
-			//init light & Shadow
+			//setup lights
 			_sunLight = new DirectionalLight();
 			_sunLight.color = 0xFFFFEF;
 			_sunLight.ambient = 0.8;
 			_sunLight.diffuse = 1;
 			_sunLight.specular = 1;
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.5);
 			_view.scene.addChild(_sunLight);
 			_lightPicker = new StaticLightPicker([_sunLight]);
 			
-			_cascadeShadowMapper = new CascadeShadowMapper(3);
-			_cascadeShadowMapper.lightOffset = 20000;
-			_sunLight.castsShadows = false;
-			_sunLight.shadowMapper = _cascadeShadowMapper;
-			_sunLight.shadowMapper.depthMapSize = 2048;
-			_baseShadowMethod = new DitheredShadowMapMethod(_sunLight);
-			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
-			_cascadeMethod.epsilon = .0007;
-			_cascadeMethod.alpha = 0.6;
-			
+			//setup methodes
+			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_shadowMethod.epsilon = .0007;
 			_fog = new FogMethod(300, 1500, _bgColor);
 			_outlineMethod = new OutlineMethod(0x2c2421, 2, true, false);
 			
-			//ground noise
-			_bump = new BitmapData(_terrainResolution, _terrainResolution, false, 0xffffff);
-			//init materials
-			_groundMaterial = new TextureMultiPassMaterial(new BitmapTexture(_bump));
-			_trunkMaterial = new TextureMultiPassMaterial(new BitmapTexture(trunk()));
-			_leaveMaterial = new TextureMultiPassMaterial(new BitmapTexture(leave()));
+			//setup field noise
+			_bump = new BitmapData(_fieldResolution, _fieldResolution, false, 0xffffff);
+			
+			//setup materials
+			_groundMaterial = new TextureMaterial(new BitmapTexture(_bump));
+			_trunkMaterial = new TextureMaterial(new BitmapTexture(trunk()));
+			_leaveMaterial = new TextureMaterial(new BitmapTexture(leave()));
 			_leaveMaterial.alphaThreshold = 0.5;
-			_flowerMaterial = new TextureMultiPassMaterial(new BitmapTexture(flower()));
+			_flowerMaterial = new TextureMaterial(new BitmapTexture(flower()));
 			_flowerMaterial.alphaThreshold = 0.5;
 			
+			_backgroundMaterial = new TextureMaterial(new BitmapTexture(background()));
 			_maskMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x354961)));
 			
 			_groundMaterial.lightPicker = _lightPicker;
@@ -174,11 +173,11 @@ package {
 			_leaveMaterial.lightPicker = _lightPicker;
 			_flowerMaterial.lightPicker = _lightPicker;
 			
-			_groundMaterial.shadowMethod = _cascadeMethod;
-			_trunkMaterial.shadowMethod = _cascadeMethod;
-			_leaveMaterial.shadowMethod = _cascadeMethod;
-			_flowerMaterial.shadowMethod = _cascadeMethod;
-			
+			_groundMaterial.shadowMethod = _shadowMethod;
+			_trunkMaterial.shadowMethod = _shadowMethod;
+			/*_leaveMaterial.shadowMethod = _cascadeMethod;
+			   _flowerMaterial.shadowMethod = _cascadeMethod;
+			 */
 			_groundMaterial.addMethod(_outlineMethod);
 			
 			_groundMaterial.addMethod(_fog);
@@ -191,8 +190,17 @@ package {
 			_specularMethod.normalReflectance = 0.2;
 			_groundMaterial.specularMethod = _specularMethod;
 			_groundMaterial.gloss = 60;
+			
+			//create background invers sphere
+			_backSphere = new Mesh(new SphereGeometry(1000, 20, 16), _backgroundMaterial);
+			_backSphere.geometry.convertToSeparateBuffers();
+			MeshHelper.invertFaces(_backSphere);
+			_backSphere.castsShadows = false;
+			_view.scene.addChild(_backSphere);
+			//_backSphere.rotationZ = -35;
+			
 			//setup the scene
-			_plane = new Mesh(new PlaneGeometry(_terrainDistance, _terrainDistance, _terrainResolution - 1, _terrainResolution - 1), _groundMaterial);
+			_plane = new Mesh(new PlaneGeometry(_fieldDistance, _fieldDistance, _fieldResolution - 1, _fieldResolution - 1), _groundMaterial);
 			_plane.geometry.convertToSeparateBuffers();
 			// _plane.castsShadows = false;
 			_view.scene.addChild(_plane);
@@ -201,7 +209,7 @@ package {
 			_fieldSubGeometry.autoDeriveVertexNormals = true;
 			_fieldSubGeometry.autoDeriveVertexTangents = true;
 			
-			_planeMask = new Mesh(new PlaneGeometry(_terrainDistance * 2, _terrainDistance * 2), _maskMaterial);
+			_planeMask = new Mesh(new PlaneGeometry(_fieldDistance * 2, _fieldDistance * 2), _maskMaterial);
 			_view.scene.addChild(_planeMask);
 			_planeMask.y = 2;
 			_planeMask.castsShadows = false;
@@ -271,12 +279,12 @@ package {
 				m = _tree.clone() as Mesh;
 				m.scale(0.3 + Math.random() * 0.8);
 				
-				x = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
-				z = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
+				x = -(_fieldDistance / 2) + (Math.random() * _fieldDistance);
+				z = -(_fieldDistance / 2) + (Math.random() * _fieldDistance);
 				y = getHeightAt(x, z) - 20;
 				while (y < 50) {
-					x = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
-					z = -(_terrainDistance / 2) + (Math.random() * _terrainDistance);
+					x = -(_fieldDistance / 2) + (Math.random() * _fieldDistance);
+					z = -(_fieldDistance / 2) + (Math.random() * _fieldDistance);
 					y = getHeightAt(x, z) - 20;
 					
 					m.position = new Vector3D(x, y, z);
@@ -344,28 +352,32 @@ package {
 		 * create noise terrain
 		 */
 		private function updateFieldGeometry():void {
+			stage.quality = "HIGH";
 			_bump.lock();
-			_bump.perlinNoise(_terrainResolution * 0.12, _terrainResolution * 0.12, 1, int(Math.random() * 0xffffffff), false, true, 7, true, [new Point(0, 0)]);
+			_bump.perlinNoise(_fieldResolution * 0.1, _fieldResolution * 0.1, 1, int(Math.random() * 0xffffffff), false, true, 7, true, [new Point(0, 0)]);
 			_bump.draw(islandMapCache());
 			_bump.unlock();
 			var i:uint, px:uint, c:uint;
 			var v:Vector.<Number> = _fieldSubGeometry.vertexData;
 			var l:uint = v.length;
 			for (i = 1; i < l; i += 3, ++c) {
-				px = _bump.getPixel(c % _terrainResolution, _terrainResolution - (c / _terrainResolution));
+				px = _bump.getPixel(c % _fieldResolution, _fieldResolution - (c / _fieldResolution));
 				// Displace y position by the range
-				v[i] = (_terrainHeight * px / 0xffffff);
+				v[i] = (_fieldHeight * px / 0xffffff);
 			}
 			// update plane geometry
 			_fieldSubGeometry.updateVertexData(v);
-			// update plane texture
-			//BitmapTexture(TextureMultiPassMaterial(_groundMaterial).texture).invalidateContent();
+			
+			// update field texture
+			BitmapTexture(TextureMaterial(_groundMaterial).texture).invalidateContent();
+			
 			// material method
 			_textures[0] = new BitmapTexture(new BitmapData(64, 64, false, 0x5b4237));
 			_textures[1] = new BitmapTexture(new BitmapData(64, 64, false, 0xb99c56));
 			_textures[2] = new BitmapTexture(new BitmapData(64, 64, false, _bgColor));
-			_textures[3] = new BitmapTexture(layerTerrainBitmap(_bump));
 			
+			_textures[3] = new BitmapTexture(layerTerrainBitmap(_bump));
+			stage.quality = "LOW";
 			_terrainMethode = new TerrainDiffuseMethod([_textures[0], _textures[1], _textures[2]], _textures[3], [1, 10, 10, 10]);
 			_groundMaterial.diffuseMethod = _terrainMethode;
 		}
@@ -374,8 +386,8 @@ package {
 		 * get height possition on terrain
 		 */
 		private function getHeightAt(x:Number = 0, z:Number = 0):Number {
-			var col:int = _bump.getPixel((x / _terrainDistance + .5) * (_terrainResolution + 1), (-z / _terrainDistance + .5) * (_terrainResolution + 1)) & 0xffffff;
-			return int(_terrainHeight * col / 0xffffff);
+			var col:int = _bump.getPixel((x / _fieldDistance + .5) * (_fieldResolution + 1), (-z / _fieldDistance + .5) * (_fieldResolution + 1)) & 0xffffff;
+			return int(_fieldHeight * col / 0xffffff);
 		}
 		
 		/**
@@ -431,13 +443,25 @@ package {
 			return b;
 		}
 		
+		private function background():BitmapData {
+			var s:Sprite = new Sprite();
+			var m:Matrix = new Matrix();
+			m.createGradientBox(512, 512, RadDeg(-90));
+			s.graphics.beginGradientFill("linear", [0x527096, 0x87a2c3, 0xd0dded, 0xeef2f6], [1, 1, 1, 1], [0x30, 0x90, 0xAA, 0xFF], m);
+			s.graphics.drawRect(0, 0, 512, 512);
+			s.graphics.endFill();
+			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
+			b.draw(s);
+			return b;
+		}
+		
 		private function islandMapCache():BitmapData {
-			var groundAdd:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, true, 0x000000);
+			var groundAdd:BitmapData = new BitmapData(_fieldResolution, _fieldResolution, true, 0x000000);
 			var g:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
-			m.createGradientBox(_terrainResolution, _terrainResolution);
-			g.graphics.beginGradientFill("radial", [0x000000, 0x000000, 0x000000, 0x000000], [0, 0.2, 0.5, 1], [0x00, 0x99, 0xAA, 0xEF], m);
-			g.graphics.drawRect(0, 0, _terrainResolution, _terrainResolution);
+			m.createGradientBox(_fieldResolution, _fieldResolution);
+			g.graphics.beginGradientFill("radial", [0x000000, 0x000000, 0x000000, 0x000000], [0, 0.4, 0.7, 1], [0x00, 0x99, 0xBB, 0xEF], m);
+			g.graphics.drawRect(0, 0, _fieldResolution, _fieldResolution);
 			groundAdd.draw(g);
 			g.graphics.clear();
 			return groundAdd;
@@ -445,9 +469,9 @@ package {
 		
 		private function layerTerrainBitmap(B:BitmapData):BitmapData {
 			var layerTop:Array = [0x555555, 0x161616]
-			var layer00:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, false, 0x000000);
-			var layer01:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, true, 0x000000);
-			var layer02:BitmapData = new BitmapData(_terrainResolution, _terrainResolution, true, 0x000000);
+			var layer00:BitmapData = new BitmapData(_fieldResolution, _fieldResolution, false, 0x000000);
+			var layer01:BitmapData = new BitmapData(_fieldResolution, _fieldResolution, true, 0x000000);
+			var layer02:BitmapData = new BitmapData(_fieldResolution, _fieldResolution, true, 0x000000);
 			var rect:Rectangle = B.rect;
 			var p:Point = new Point();
 			// red _ top

@@ -45,13 +45,13 @@ package {
 	import away3d.primitives.*;
 	import away3d.textures.BitmapTexture;
 	import away3d.utils.*;
+	import away3d.lights.shadowmaps.*;
 	import away3d.loaders.parsers.AWD2Parser;
 	import away3d.library.assets.AssetType;
 	import away3d.library.AssetLibrary;
 	import away3d.events.AssetEvent;
 	import away3d.events.LoaderEvent;
 	import away3d.materials.methods.*;
-	import away3d.lights.shadowmaps.CascadeShadowMapper;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.tools.helpers.MeshHelper;
 	
@@ -71,9 +71,9 @@ package {
 		private var _sunLight:DirectionalLight;
 		private var _pinLight:PointLight;
 		private var _lightPicker:StaticLightPicker;
-		private var _baseShadowMethod:DitheredShadowMapMethod;
-		private var _cascadeMethod:CascadeShadowMapMethod;
-		private var _cascadeShadowMapper:CascadeShadowMapper;
+		
+		//scene methodes
+		private var _shadowMethod:NearShadowMapMethod;
 		private var _outlineMethod:OutlineMethod;
 		private var _fogMethod:FogMethod;
 		
@@ -81,10 +81,10 @@ package {
 		private var _backSphere:Mesh;
 		
 		//scene material
-		private var _cupMaterial:TextureMultiPassMaterial;
-		private var _appleMaterial:TextureMultiPassMaterial;
-		private var _boxMaterial:TextureMultiPassMaterial;
-		private var _lockMaterial:TextureMultiPassMaterial;
+		private var _cupMaterial:TextureMaterial;
+		private var _appleMaterial:TextureMaterial;
+		private var _boxMaterial:TextureMaterial;
+		private var _lockMaterial:TextureMaterial;
 		private var _backgroundMaterial:TextureMaterial;
 		
 		//mouse navigation 
@@ -126,6 +126,7 @@ package {
 			_sunLight.ambient = 0.0;
 			_sunLight.diffuse = 1;
 			_sunLight.specular = 0.5;
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.5);
 			_view.scene.addChild(_sunLight);
 			
 			_pinLight = new PointLight();
@@ -138,24 +139,17 @@ package {
 			
 			_lightPicker = new StaticLightPicker([_sunLight, _pinLight]);
 			
-			_cascadeShadowMapper = new CascadeShadowMapper(3);
-			_cascadeShadowMapper.lightOffset = 2000;
-			_sunLight.castsShadows = false;
-			_sunLight.shadowMapper = _cascadeShadowMapper;
-			_sunLight.shadowMapper.depthMapSize = 2048;
-			_baseShadowMethod = new DitheredShadowMapMethod(_sunLight);
-			_cascadeMethod = new CascadeShadowMapMethod(_baseShadowMethod);
-			_cascadeMethod.epsilon = .0007;
-			_cascadeMethod.alpha = 0.85;
-			
+			//setup methodes
+			_shadowMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_shadowMethod.epsilon = .0007;
 			_fogMethod = new FogMethod(200, 800, _bgColor);
 			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, false);
 			
 			//init materials
-			_cupMaterial = new TextureMultiPassMaterial(new BitmapTexture(cup()));
-			_appleMaterial = new TextureMultiPassMaterial(new BitmapTexture(apple()));
-			_boxMaterial = new TextureMultiPassMaterial(new BitmapTexture(desk()));
-			_lockMaterial = new TextureMultiPassMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x7e5104)));
+			_cupMaterial = new TextureMaterial(new BitmapTexture(cup()));
+			_appleMaterial = new TextureMaterial(new BitmapTexture(apple()));
+			_boxMaterial = new TextureMaterial(new BitmapTexture(desk()));
+			_lockMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x7e5104)));
 			_backgroundMaterial = new TextureMaterial(new BitmapTexture(background()));
 			
 			_cupMaterial.lightPicker = _lightPicker;
@@ -163,10 +157,10 @@ package {
 			_boxMaterial.lightPicker = _lightPicker;
 			_lockMaterial.lightPicker = _lightPicker;
 			
-			_cupMaterial.shadowMethod = _cascadeMethod;
-			_appleMaterial.shadowMethod = _cascadeMethod;
-			_boxMaterial.shadowMethod = _cascadeMethod;
-			_lockMaterial.shadowMethod = _cascadeMethod;
+			_cupMaterial.shadowMethod = _shadowMethod;
+			_appleMaterial.shadowMethod = _shadowMethod;
+			_boxMaterial.shadowMethod = _shadowMethod;
+			_lockMaterial.shadowMethod = _shadowMethod;
 			
 			_cupMaterial.addMethod(_outlineMethod);
 			_appleMaterial.addMethod(_outlineMethod);
