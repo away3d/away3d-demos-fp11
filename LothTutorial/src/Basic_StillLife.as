@@ -149,7 +149,7 @@ package {
 			_cascadeMethod.alpha = 0.85;
 			
 			_fogMethod = new FogMethod(200, 800, _bgColor);
-			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, true);
+			_outlineMethod = new OutlineMethod(0x000000, 0.5, true, false);
 			
 			//init materials
 			_cupMaterial = new TextureMultiPassMaterial(new BitmapTexture(cup()));
@@ -377,7 +377,7 @@ package {
 		 * Math function
 		 */
 		private function Orbit(H:Number, V:Number, D:Number):Vector3D {
-			var p:Vector3D = new Vector3D()
+			var p:Vector3D = new Vector3D();
 			var phi:Number = RadDeg(H);
 			var theta:Number = RadDeg(V);
 			p.x = (D * Math.sin(phi) * Math.cos(theta));

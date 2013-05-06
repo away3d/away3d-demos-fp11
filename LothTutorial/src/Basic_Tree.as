@@ -79,6 +79,7 @@ package {
 		private var _cascadeShadowMapper:CascadeShadowMapper;
 		private var _terrainMethode:TerrainDiffuseMethod;
 		private var _specularMethod:FresnelSpecularMethod;
+		private var _outlineMethod:OutlineMethod;
 		private var _fog:FogMethod;
 		
 		//scene objects
@@ -154,6 +155,7 @@ package {
 			_cascadeMethod.alpha = 0.6;
 			
 			_fog = new FogMethod(300, 1500, _bgColor);
+			_outlineMethod = new OutlineMethod(0x2c2421, 2, true, false);
 			
 			//ground noise
 			_bump = new BitmapData(_terrainResolution, _terrainResolution, false, 0xffffff);
@@ -176,6 +178,8 @@ package {
 			_trunkMaterial.shadowMethod = _cascadeMethod;
 			_leaveMaterial.shadowMethod = _cascadeMethod;
 			_flowerMaterial.shadowMethod = _cascadeMethod;
+			
+			_groundMaterial.addMethod(_outlineMethod);
 			
 			_groundMaterial.addMethod(_fog);
 			_trunkMaterial.addMethod(_fog);
