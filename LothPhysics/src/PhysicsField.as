@@ -18,9 +18,11 @@ package {
 	import away3d.textures.BitmapTexture;
 	import away3d.materials.methods.TerrainDiffuseMethod;
 	import away3d.materials.methods.FresnelSpecularMethod;
+	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.textures.CubeReflectionTexture;
+	import away3d.tools.helpers.MeshHelper;
 	
 	import awayphysics.collision.shapes.AWPBoxShape;
 	import awayphysics.collision.shapes.AWPConeShape;
@@ -47,7 +49,7 @@ package {
 	
 	import utils.PerlinShape;
 	
-	[SWF(backgroundColor="#808080",frameRate="60",width="600",height="600")]
+	[SWF(backgroundColor="#c4d6e7",frameRate="60",width="600",height="600")]
 	
 	public class PhysicsField extends Sprite {
 		private var _view:View3D;
@@ -55,11 +57,14 @@ package {
 		private var _sunLight:DirectionalLight;
 		private var _light:PointLight;
 		private var _lightPicker:StaticLightPicker;
-		private var _bgColor:uint = 0x808080;
+		private var _bgColor:uint = 0xc4d6e7;
+		private var _skySphere:Mesh;
+		private var _skyMaterial:TextureMaterial;
 		
 		//methodes
 		private var _reflectionTexture:CubeReflectionTexture;
 		private var _fresnelMethod:FresnelEnvMapMethod;
+		private var _fogMethod:FogMethod;
 		
 		//field variables
 		private var _resolution:int = 64;
@@ -132,6 +137,7 @@ package {
 			_view.scene.addChild(_light);
 			
 			_lightPicker = new StaticLightPicker([_sunLight, _light]);
+			_fogMethod = new FogMethod(1000, _dimension, _bgColor);
 			
 			//setup the camera
 			_view.camera.lens = new PerspectiveLens(70);
@@ -139,7 +145,7 @@ package {
 			_view.camera.lens.far = 10000;
 			
 			//setup the camera controller
-			_controller = new HoverController(_view.camera, null, 0, 20, 2500, -5, 35);
+			_controller = new HoverController(_view.camera, null, 0, 20, 2000, 0, 35);
 			_controller.wrapPanAngle = true;
 			_controller.autoUpdate = false;
 			_controller.lookAtPosition = _center;
@@ -188,12 +194,12 @@ package {
 			
 			//setup the field material
 			_fieldMaterial = new TextureMaterial(new BitmapTexture(_bump));
-			//_fieldMaterial = new TextureMaterial(new BitmapTexture(b01.clone()));
 			_fieldMaterial.lightPicker = _lightPicker;
 			_fieldMaterial.diffuseMethod = _terrainMethode;
 			_fieldMaterial.specularMethod = _specularMethod;
 			_fieldMaterial.specular = 0.3;
 			_fieldMaterial.gloss = 100;
+			_fieldMaterial.addMethod(_fogMethod);
 			
 			//setup the field Mesh
 			_field = new Mesh(new PlaneGeometry(_dimension, _dimension, _resolution - 1, _resolution - 1, true, false), _fieldMaterial);
@@ -209,6 +215,14 @@ package {
 			
 			updateField();
 			initPhysicsField();
+			
+			//create background invers sphere
+			_skyMaterial = new TextureMaterial(new BitmapTexture(background()));
+			_skySphere = new Mesh(new SphereGeometry(_dimension / 2, 20, 16), _skyMaterial);
+			_skySphere.geometry.convertToSeparateBuffers();
+			MeshHelper.invertFaces(_skySphere);
+			_skySphere.castsShadows = false;
+			_view.scene.addChild(_skySphere);
 			
 			initShip();
 			
@@ -490,6 +504,22 @@ package {
 			_layers[0].draw(_layers[2]);
 			_layers[0].unlock;
 			return _layers[0];
+		}
+		
+		private function background():BitmapData {
+			var s:Sprite = new Sprite();
+			var m:Matrix = new Matrix();
+			m.createGradientBox(512, 512, RadDeg(-90));
+			s.graphics.beginGradientFill("linear", [_bgColor, 0x55b2de, 0x0685d6, 0x041984], [1, 1, 1, 1], [0x80, 0xAA, 0xCC, 0xFF], m);
+			s.graphics.drawRect(0, 0, 512, 512);
+			s.graphics.endFill();
+			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
+			b.draw(s);
+			return b;
+		}
+		
+		private function RadDeg(d:Number):Number {
+			return (d * (Math.PI / 180));
 		}
 	}
 }
