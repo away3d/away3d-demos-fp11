@@ -8,6 +8,7 @@ package {
 	import away3d.lights.DirectionalLight;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.FresnelEnvMapMethod;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.ConeGeometry;
 	import away3d.primitives.CubeGeometry;
@@ -19,6 +20,7 @@ package {
 	import away3d.materials.methods.FresnelSpecularMethod;
 	import away3d.controllers.HoverController;
 	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.textures.CubeReflectionTexture;
 	
 	import awayphysics.collision.shapes.AWPBoxShape;
 	import awayphysics.collision.shapes.AWPConeShape;
@@ -52,8 +54,12 @@ package {
 		private var _controller:HoverController;
 		private var _sunLight:DirectionalLight;
 		private var _light:PointLight;
-		private var lightPicker:StaticLightPicker;
+		private var _lightPicker:StaticLightPicker;
 		private var _bgColor:uint = 0x808080;
+		
+		//methodes
+		private var _reflectionTexture:CubeReflectionTexture;
+		private var _fresnelMethod:FresnelEnvMapMethod;
 		
 		//field variables
 		private var _resolution:int = 64;
@@ -99,6 +105,8 @@ package {
 		private var _ship:Mesh;
 		private var _shipBody:AWPRigidBody;
 		private var _shipJoint:AWPHingeConstraint;
+		private var _shipdMaterial:TextureMaterial;
+		private var _rootBox:AWPRigidBody;
 		
 		public function PhysicsField() {
 			if (stage)
@@ -123,7 +131,7 @@ package {
 			_light.z = 2000;
 			_view.scene.addChild(_light);
 			
-			lightPicker = new StaticLightPicker([_sunLight, _light]);
+			_lightPicker = new StaticLightPicker([_sunLight, _light]);
 			
 			//setup the camera
 			_view.camera.lens = new PerspectiveLens(70);
@@ -181,7 +189,7 @@ package {
 			//setup the field material
 			_fieldMaterial = new TextureMaterial(new BitmapTexture(_bump));
 			//_fieldMaterial = new TextureMaterial(new BitmapTexture(b01.clone()));
-			_fieldMaterial.lightPicker = lightPicker;
+			_fieldMaterial.lightPicker = _lightPicker;
 			_fieldMaterial.diffuseMethod = _terrainMethode;
 			_fieldMaterial.specularMethod = _specularMethod;
 			_fieldMaterial.specular = 0.3;
@@ -202,43 +210,8 @@ package {
 			updateField();
 			initPhysicsField();
 			
-			// create a wall
-			/*var material:ColorMaterial = new ColorMaterial(0x402525);
-			   material.lightPicker = lightPicker;
-			   material.specular = 0.2;
+			initShip();
 			
-			   material = new ColorMaterial(0xfc6a11);
-			 material.lightPicker = lightPicker;*/
-			
-			// create rigidbody shapes
-			
-			/*var boxShape:AWPBoxShape = new AWPBoxShape(200, 200, 200);
-			
-			   // create rigidbodies
-			   var mesh:Mesh;
-			   var body:AWPRigidBody;
-			   var i:int, x:int, y:int, z:int;
-			   for (i = 0; i < 18; i++) {
-			   // create boxes
-			   material = new ColorMaterial(Math.random() * 0xffffff);
-			   material.lightPicker = lightPicker;
-			   // material.color =;
-			   mesh = new Mesh(new CubeGeometry(200, 200, 200), material);
-			   _view.scene.addChild(mesh);
-			   body = new AWPRigidBody(boxShape, mesh, 1);
-			   body.friction = .6;
-			   body.restitution = 0;
-			   //body.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;;
-			   x = int(-2000 + Math.random() * 4000);
-			   z = int(-2000 + Math.random() * 4000);
-			   y = getHeightAt(x, z) + 200;
-			   body.position = new Vector3D(x, y, z);
-			   body.ccdSweptSphereRadius = 0.5;
-			   body.ccdMotionThreshold = 1;
-			   _physicsWorld.addRigidBody(body);
-			   _rigidCubes.push(body);
-			   }
-			 */
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 			stage.addEventListener(Event.ENTER_FRAME, handleEnterFrame);
 			
@@ -247,6 +220,43 @@ package {
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 			stage.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+		}
+		
+		private function initShip():void {
+			var b:Mesh = new Mesh(new CubeGeometry(10, 10, 10), new ColorMaterial());
+			var bshape:AWPBoxShape = new AWPBoxShape(10, 10, 10);
+			_rootBox = new AWPRigidBody(bshape, null, 0);
+			_rootBox.position = _center.add(new Vector3D(0, -5, 0));
+			_physicsWorld.addRigidBody(_rootBox);
+			//_view.scene.addChild(b);
+			
+			_reflectionTexture = new CubeReflectionTexture(128);
+			_reflectionTexture.farPlaneDistance = 2000;
+			_reflectionTexture.nearPlaneDistance = 40;
+			_reflectionTexture.position = _center;
+			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
+			_fresnelMethod.normalReflectance = .6;
+			_fresnelMethod.fresnelPower = 2;
+			
+			_shipdMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x333333)));
+			_shipdMaterial.lightPicker = _lightPicker;
+			_shipdMaterial.addMethod(_fresnelMethod);
+			
+			_ship = new Mesh(new SphereGeometry(150), _shipdMaterial);
+			_ship.scaleY = (0.5);
+			//var shape:AWPSphereShape = new AWPSphereShape(100);
+			var shape:AWPBoxShape = new AWPBoxShape(200, 100, 200);
+			_shipBody = new AWPRigidBody(shape, _ship, 1);
+			_shipBody.position = _center.add(new Vector3D(0, 50, 0));
+			_shipBody.ccdSweptSphereRadius = 0.5;
+			_shipBody.ccdMotionThreshold = 1;
+			
+			//body.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;;
+			_physicsWorld.addRigidBody(_shipBody);
+			_view.scene.addChild(_ship);
+			
+			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, -55, 0), new Vector3D(0, 1, 0), _rootBox, new Vector3D(0, 5, 0), new Vector3D(0, 1, 0))
+			_physicsWorld.addConstraint(_shipJoint, true);
 		}
 		
 		/**
@@ -278,7 +288,9 @@ package {
 			_textures[3].bitmapData = layerTerrainBitmap(_bump);
 			BitmapTexture(TextureMaterial(_fieldMaterial).texture).invalidateContent();
 			
-			_center.y = getHeightAt() + 50;
+			_center.y = getHeightAt();
+			if (_rootBox)
+				_rootBox.position = _center.add(new Vector3D(0, -5, 0));
 		}
 		
 		/**
@@ -305,15 +317,21 @@ package {
 		private function keyDownHandler(event:KeyboardEvent):void {
 			switch (event.keyCode) {
 				case Keyboard.UP: 
+				case Keyboard.W: 
+				case Keyboard.Z: 
 					_position.z++;
 					break;
 				case Keyboard.DOWN: 
+				case Keyboard.S: 
 					_position.z--;
 					break;
 				case Keyboard.LEFT: 
+				case Keyboard.A: 
+				case Keyboard.Q: 
 					_position.x++;
 					break;
 				case Keyboard.RIGHT: 
+				case Keyboard.D: 
 					_position.x--;
 					break;
 			}
@@ -324,7 +342,7 @@ package {
 			_terrainShape = new PerlinShape(_resolution, _resolution, _dimension, _dimension, _elevation, _heights);
 			_terrainBody = new AWPRigidBody(_terrainShape, null, 0);
 			_terrainBody.friction = 0.5;
-			_terrainBody.restitution = 0.1;
+			_terrainBody.restitution = 0.01;
 			_physicsWorld.addRigidBody(_terrainBody);
 		}
 		
@@ -374,7 +392,7 @@ package {
 			
 			// shoot a sphere
 			var material:ColorMaterial = new ColorMaterial(Math.random() * 0xffffff);
-			material.lightPicker = lightPicker;
+			material.lightPicker = _lightPicker;
 			
 			var sphere:Mesh = new Mesh(new SphereGeometry(50), material);
 			_view.scene.addChild(sphere);
@@ -399,6 +417,11 @@ package {
 			
 			updateBody();
 			_physicsWorld.step(_timeStep, 4, _timeStep);
+			
+			if (_reflectionTexture) {
+				_reflectionTexture.position = _shipBody.position;
+				_reflectionTexture.render(_view);
+			}
 			
 			debugDraw.debugDrawWorld();
 			_view.render();
