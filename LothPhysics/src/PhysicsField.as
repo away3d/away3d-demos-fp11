@@ -24,8 +24,15 @@ package {
 	import away3d.cameras.lenses.PerspectiveLens;
 	import away3d.textures.CubeReflectionTexture;
 	import away3d.tools.helpers.MeshHelper;
+	import away3d.loaders.parsers.AWD2Parser;
+	import away3d.library.assets.AssetType;
+	import away3d.library.AssetLibrary;
+	import away3d.events.AssetEvent;
+	import away3d.events.LoaderEvent;
+	
 	import awayphysics.collision.dispatch.AWPGhostObject;
 	import awayphysics.collision.shapes.AWPCapsuleShape;
+	import awayphysics.collision.shapes.AWPConvexHullShape;
 	import awayphysics.data.AWPCollisionFlags;
 	import awayphysics.dynamics.character.AWPKinematicCharacterController;
 	import awayphysics.events.AWPEvent;
@@ -58,11 +65,18 @@ package {
 	
 	import utils.PerlinShape;
 	
-	[SWF(backgroundColor="#c4d6e7",frameRate="60",width="600",height="600")]
+	[SWF(backgroundColor="#c4d6e7",frameRate="60",width="1200",height="600")]
 	
 	public class PhysicsField extends Sprite {
+		[Embed(source="/../embeds/terrain.jpg")]
+		private var TERRAIN:Class;
+		
+		[Embed(source="/../embeds/ship.awd",mimeType="application/octet-stream")]
+		public static var SHIP:Class;
+		
 		[Embed(source="/../embeds/NormalMap.pbj",mimeType="application/octet-stream")]
 		private var NormalMapClass:Class;
+		
 		private var _normalMapShader:Shader = new Shader(new NormalMapClass());
 		private var _normalMapFilters:Array = [new ShaderFilter(_normalMapShader)];
 		private var _normalBitmap:BitmapData;
@@ -76,7 +90,6 @@ package {
 		private var _lightPicker:StaticLightPicker;
 		private var _bgColor:uint = 0xc4d6e7;
 		private var _skySphere:Mesh;
-		private var _skyMaterial:TextureMaterial;
 		
 		//methodes
 		private var _reflectionTexture:CubeReflectionTexture;
@@ -84,6 +97,7 @@ package {
 		private var _fogMethod:FogMethod;
 		
 		//field variables
+		
 		private var _resolution:int = 64;
 		private var _dimension:int = 10000;
 		private var _elevation:int = 2000;
@@ -96,7 +110,8 @@ package {
 		private const _textures:Vector.<BitmapTexture> = new Vector.<BitmapTexture>();
 		private const _layers:Vector.<BitmapData> = new Vector.<BitmapData>();
 		private const _heights:Vector.<Number> = new Vector.<Number>();
-		
+		private const _groundBitmaps:Vector.<BitmapData> = new Vector.<BitmapData>(3, true);
+		private const _grounds:Vector.<BitmapScrolling> = new Vector.<BitmapScrolling>(3, true);
 		private var _sphereMaterial:ColorMaterial;
 		
 		//perlin noise variable
@@ -104,13 +119,15 @@ package {
 		private var _bump:BitmapData;
 		private var _bumpBig:BitmapData;
 		private var _island:BitmapData;
-		private var _ease:Vector3D;
 		private var _fractal:Boolean;
 		private var _numOctaves:uint;
 		private var _offsets:Array;
 		private var _complex:Number;
 		private var _seed:int;
-		private var _position:Vector3D = new Vector3D(0, 0, 0);
+		private var _tiles:Array = [1, 25, 25, 25];
+		private var _position:Vector3D = new Vector3D();
+		private var _ease:Vector3D = new Vector3D();
+		private var _multy:Vector3D = new Vector3D();
 		private var _positionY:int = 0;
 		
 		//physics
@@ -128,14 +145,13 @@ package {
 		private const collsionBox:int = 2;
 		private const collsionBox2:int = 4;
 		private const collsionNull:int = 0;
-		private const collsionHero:int = 8;
-		//private const collsionCone : int = 8;
-		//private const collsionSphere : int = 16;
+		private const collsionBullet:int = 8;
+		private const collsionPlane:int = 16;
 		private const collisionAll:int = -1;
 		
 		//mouse navigation
 		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 5000]);
-		private var _center:Vector3D = new Vector3D(0, 50, 0);
+		private var _center:Vector3D = new Vector3D(0, 0, 0);
 		private var _move:Boolean = false;
 		private var _speed:Number = 0.5;
 		//plane
@@ -144,6 +160,8 @@ package {
 		
 		//ship
 		private var _ship:Mesh;
+		private var _shipTop:Mesh;
+		private var _shipShape:Mesh;
 		private var _shipBody:AWPRigidBody;
 		private var _shipJoint:AWPHingeConstraint;
 		private var _shipdMaterial:TextureMaterial;
@@ -152,7 +170,9 @@ package {
 		private var _tf:TextField;
 		private var _title:TextField;
 		
-		private var _sf:Mesh;
+		private var _target:Mesh;
+		private var _isDebug:Boolean = false;
+		private var _isWithField:Boolean;
 		
 		public function PhysicsField() {
 			if (stage)
@@ -188,7 +208,7 @@ package {
 			_sunLight = new DirectionalLight(0, -1, 0.85);
 			_view.scene.addChild(_sunLight);
 			_light = new PointLight();
-			_light.y = 2000;
+			_light.y = 4000;
 			_view.scene.addChild(_light);
 			_lightPicker = new StaticLightPicker([_sunLight, _light]);
 			
@@ -200,25 +220,23 @@ package {
 			_view.camera.lens.near = 10;
 			_view.camera.lens.far = _dimension;
 			
-			_sf = new Mesh(new CubeGeometry(50, 50, 100), new ColorMaterial(0x00ff00));
-			_view.scene.addChild(_sf);
+			var targetMaterial:TextureMaterial = new TextureMaterial(new BitmapTexture(targetBitmap()));
+			//targetMaterial.alphaBlending = true;
+			targetMaterial.alphaThreshold = 0.5;
+			_target = new Mesh(new PlaneGeometry(100, 100, 1, 1, false, true), targetMaterial);
+			_view.scene.addChild(_target);
 			
 			//setup the camera controller
 			_controller = new HoverController(_view.camera, null, 0, 20, 1000, 0, 35);
 			_controller.wrapPanAngle = true;
 			_controller.autoUpdate = false;
-			_controller.lookAtPosition = _center;
 			
 			//setup the physics world
 			_physicsWorld = AWPDynamicsWorld.getInstance();
 			_physicsWorld.initWithDbvtBroadphase();
 			_physicsWorld.collisionCallbackOn = false;
-			_physicsWorld.scaling = 100;
+			_physicsWorld.scaling = 200;
 			_physicsWorld.gravity = new Vector3D(0, -10, 0);
-			
-			//setup the physics debug
-			debugDraw = new AWPDebugDraw(_view, _physicsWorld);
-			debugDraw.debugMode |= AWPDebugDraw.DBG_DrawTransform;
 			
 			_sphereMaterial = new ColorMaterial(0xCCCCCC, 1);
 			_sphereMaterial.lightPicker = _lightPicker;
@@ -227,14 +245,24 @@ package {
 			_sphereMaterial.gloss = 300;
 			
 			// setup the plane
-			_planeMaterial = new ColorMaterial(_bgColor, 0.1);
+			_planeMaterial = new ColorMaterial(_bgColor, 0.3);
 			_planeMaterial.lightPicker = _lightPicker;
 			_planeMaterial.addMethod(_fogMethod);
 			_planeMaterial.specular = 1;
-			_planeMaterial.gloss = 10;
-			_plane = new Mesh(new PlaneGeometry(_dimension, _dimension, 6, 6), _planeMaterial);
+			_planeMaterial.gloss = 20;
+			_plane = new Mesh(new PlaneGeometry(_dimension, _dimension), _planeMaterial);
 			_view.scene.addChild(_plane);
-			_plane.y = _elevation - _elevation / 1.618;
+			
+			//mouse interaction
+			_plane.addEventListener(MouseEvent3D.MOUSE_UP, on3DMouseUp);
+			_plane.mouseEnabled = true;
+			
+			//physics plane
+			var shape:AWPStaticPlaneShape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));
+			var body:AWPRigidBody = new AWPRigidBody(shape, null, 0);
+			_physicsWorld.addRigidBodyWithGroup(body, collsionPlane, collisionAll);
+			
+			//_plane.y = _elevation - _elevation / 1.618;
 			
 			//_plane.mouseEnabled = true;
 			//_plane.mouseChildren = true;
@@ -242,19 +270,72 @@ package {
 			// _plane.pickingCollider = PickingColliderType.AS3_FIRST_ENCOUNTERED;
 			//_plane.addEventListener(MouseEvent3D.MOUSE_UP, on3DMouseUp);
 			
+			//create background invers sphere
+			var skyMaterial:TextureMaterial = new TextureMaterial(new BitmapTexture(background()));
+			_skySphere = new Mesh(new SphereGeometry(_dimension / 2, 20, 16), skyMaterial);
+			_skySphere.geometry.convertToSeparateBuffers();
+			MeshHelper.invertFaces(_skySphere);
+			_skySphere.castsShadows = false;
+			_view.scene.addChild(_skySphere);
+			
+			//parse tree model
+			parseShipModel();
+			
+			initField();
+			
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			stage.addEventListener(Event.ENTER_FRAME, handleEnterFrame);
+			stage.addEventListener(Event.RESIZE, onResize);
+			onResize();
+			
+			//mouse navigation
+			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			stage.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+		}
+		
+		private function parseShipModel():void {
+			AssetLibrary.loadData(new SHIP(), null, null, new AWD2Parser());
+			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			AssetLibrary.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
+		}
+		
+		private function onResourceComplete(event:LoaderEvent):void {
+			AssetLibrary.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			AssetLibrary.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceComplete);
+			initShip();
+		}
+		
+		private function onAssetComplete(event:AssetEvent):void {
+			var m:Mesh;
+			if (event.asset.assetType == AssetType.MESH) {
+				m = event.asset as Mesh;
+				if (m.name == "shape") {
+					_shipShape = m;
+				}
+				if (m.name == "ship") {
+					_ship = m;
+				}
+				if (m.name == "shipTop") {
+					_shipTop = m;
+				}
+			}
+		}
+		
+		private function initField():void {
 			//setup perlin noise variable
 			_fractal = true;
 			_offsets = [];
 			_numOctaves = 1;
 			_complex = 0.11; //12;
-			_ease = new Vector3D();
 			_seed = int(Math.random() * 0xffffffff);
 			for (var u:uint = 0; u < _numOctaves; ++u) {
 				_offsets[u] = new Point(0, 0);
 			}
-			
+			_positionY = 700;
 			//setup the field deformation bitmap
-			
 			var b00:BitmapData = new BitmapData(_resolution, _resolution, false);
 			var b01:BitmapData = new BitmapData(_resolution * _factor, _resolution * _factor, false);
 			var b02:BitmapData = new BitmapData(_resolution * _factor, _resolution * _factor, true);
@@ -265,17 +346,42 @@ package {
 			_bigMatrix = new Matrix();
 			_bigMatrix.scale(_factor, _factor);
 			
+			//setup tile field texture 
+			var terrainTiles:BitmapData = Bitmap(new TERRAIN()).bitmapData;
+			var bSize:int = 512;
+			var r:Rectangle;
+			_groundBitmaps[0] = new BitmapData(bSize, bSize, false);
+			_groundBitmaps[1] = new BitmapData(bSize, bSize, false);
+			_groundBitmaps[2] = new BitmapData(bSize, bSize, false);
+			
+			r = new Rectangle(0, 0, bSize, bSize);
+			_groundBitmaps[2].copyPixels(terrainTiles, r, new Point());
+			r = new Rectangle(bSize, 0, bSize, bSize);
+			_groundBitmaps[0].copyPixels(terrainTiles, r, new Point());
+			r = new Rectangle(bSize * 2, 0, bSize, bSize);
+			_groundBitmaps[1].copyPixels(terrainTiles, r, new Point());
+			
+			//setup scrolling bitmap texture
+			_grounds[0] = new BitmapScrolling(_groundBitmaps[0]);
+			_grounds[1] = new BitmapScrolling(_groundBitmaps[1]);
+			_grounds[2] = new BitmapScrolling(_groundBitmaps[2]);
+			
+			//setup move multiplycator
+			_multy.x = _tiles[1] * (bSize / _resolution);
+			_multy.y = _tiles[2] * (bSize / _resolution);
+			_multy.z = _tiles[3] * (bSize / _resolution);
+			
 			//setup material & terrain methode
 			_layers[0] = b01.clone();
 			_layers[1] = b02.clone();
 			_layers[2] = b02.clone();
-			_textures[0] = new BitmapTexture(new BitmapData(64, 64, false, 0x30cc40));
-			_textures[1] = new BitmapTexture(new BitmapData(64, 64, false, 0xb99c56));
-			_textures[2] = new BitmapTexture(new BitmapData(64, 64, false, 0xcccc00));
-			_textures[3] = new BitmapTexture(b01.clone()); //new BitmapTexture(layerTerrainBitmap());
-			_terrainMethode = new TerrainDiffuseMethod([_textures[0], _textures[1], _textures[2]], _textures[3], [1, 10, 10, 10]);
+			_textures[0] = new BitmapTexture(_grounds[0]);
+			_textures[1] = new BitmapTexture(_grounds[1]);
+			_textures[2] = new BitmapTexture(_grounds[2]);
+			
+			_textures[3] = new BitmapTexture(b01.clone());
+			_terrainMethode = new TerrainDiffuseMethod([_textures[0], _textures[1], _textures[2]], _textures[3], _tiles);
 			_specularMethod = new FresnelSpecularMethod();
-			//_specularMethod.fresnelPower = 300;
 			_specularMethod.normalReflectance = 0.4;
 			
 			//normal
@@ -301,6 +407,8 @@ package {
 			_field = new Mesh(new PlaneGeometry(_dimension, _dimension, _resolution - 1, _resolution - 1, true, false), _fieldMaterial);
 			_field.geometry.convertToSeparateBuffers();
 			_field.pickingCollider = PickingColliderType.AS3_FIRST_ENCOUNTERED;
+			
+			//mouse interaction
 			_field.addEventListener(MouseEvent3D.MOUSE_UP, on3DMouseUp);
 			_field.mouseEnabled = true;
 			
@@ -311,44 +419,21 @@ package {
 			_view.scene.addChild(_field);
 			
 			updateField();
-			initPhysicsField();
 			
-			//create background invers sphere
-			_skyMaterial = new TextureMaterial(new BitmapTexture(background()));
-			_skySphere = new Mesh(new SphereGeometry(_dimension / 2, 20, 16), _skyMaterial);
-			_skySphere.geometry.convertToSeparateBuffers();
-			MeshHelper.invertFaces(_skySphere);
-			_skySphere.castsShadows = false;
-			_view.scene.addChild(_skySphere);
-			initShip();
+			//setup physics field
+			_terrainShape = new PerlinShape(_resolution, _resolution, _dimension, _dimension, _elevation, _heights);
+			_terrainBody = new AWPRigidBody(_terrainShape, null, 0);
+			_terrainBody.friction = 0.5;
+			_terrainBody.restitution = 0.1;
+			_physicsWorld.addRigidBodyWithGroup(_terrainBody, collsionGround, collisionAll);
 			
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-			stage.addEventListener(Event.ENTER_FRAME, handleEnterFrame);
-			stage.addEventListener(Event.RESIZE, onResize);
-			onResize();
-			
-			//mouse navigation
-			stage.addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
-			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			stage.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+			_isWithField = true;
 		}
-		private var _hero:AWPKinematicCharacterController
 		
 		private function initShip():void {
-			
-			/* var cshape:AWPCapsuleShape = new AWPCapsuleShape(100, 30);
-			   var ghostObject:AWPGhostObject = new AWPGhostObject(cshape, null);
-			   ghostObject.friction = 0.3;
-			   ghostObject.collisionFlags = AWPCollisionFlags.CF_CHARACTER_OBJECT;
-			   _hero = new AWPKinematicCharacterController(ghostObject, 0.1);
-			   _physicsWorld.addCharacter(_hero, collsionHero, collsionGround);
-			   //_physicsWorld.addRigidBodyWithGroup(_hero, collsionHero, collsionGround);
-			   _hero.warp(_center.add(new Vector3D(0,1000,0)));
-			 */
-			var bshape:AWPBoxShape = new AWPBoxShape(100, 20, 100);
+			var bshape:AWPBoxShape = new AWPBoxShape(100, 70, 100);
 			_rootBox = new AWPRigidBody(bshape, null, 0);
-			_rootBox.position = _center.add(new Vector3D(0, 0, 0));
+			_rootBox.position = _center;
 			//_physicsWorld.addRigidBody(_rootBox);
 			_physicsWorld.addRigidBodyWithGroup(_rootBox, collsionBox2, collsionNull);
 			
@@ -363,20 +448,25 @@ package {
 			_shipdMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x333333)));
 			_shipdMaterial.lightPicker = _lightPicker;
 			_shipdMaterial.addMethod(_fresnelMethod);
+			_ship.material = _shipdMaterial;
+			_shipTop.material = _shipdMaterial;
 			
-			_ship = new Mesh(new SphereGeometry(130), _shipdMaterial);
-			_ship.scaleY = (0.5);
+			//_ship = new Mesh(new SphereGeometry(130), _shipdMaterial);
+			//_ship.scaleY = (0.5);
+			// _ship.geometry.subGeometries[0].
 			// _ship.movePivot(0, -100, 0);
 			//var shape:AWPSphereShape = new AWPSphereShape(100);
-			var shape:AWPCylinderShape = new AWPCylinderShape(120, 200);
+			//var shape:AWPCylinderShape = new AWPCylinderShape(100, 200);
+			var shape:AWPConvexHullShape = new AWPConvexHullShape(_shipShape.geometry);
 			//var shape:AWPBoxShape = new AWPBoxShape(200, 200, 200);
-			_shipBody = new AWPRigidBody(shape, _ship, 1);
-			_shipBody.position = _center.add(new Vector3D(0, 100, 0));
-			_shipBody.friction = 0.3;
-			_shipBody.restitution = 0;
+			
+			_shipBody = new AWPRigidBody(shape, _ship, 2);
+			_shipBody.position = _center.add(new Vector3D(0, 50, 0));
+			_shipBody.friction = 0.5;
+			_shipBody.restitution = 0.1;
 			_shipBody.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
-			_shipBody.ccdSweptSphereRadius = 0.5;
-			_shipBody.ccdMotionThreshold = 1;
+			//	_shipBody.ccdSweptSphereRadius = 1;
+			//_shipBody.ccdMotionThreshold = 2;
 			//   _shipBody.linearDamping = 2;
 			//	_shipBody.angularDamping = 2;
 			//_shipBody.collisionFlags = AWPCollisionFlags.CF_CHARACTER_OBJECT;
@@ -385,13 +475,14 @@ package {
 			//_shipBody.ccdSweptSphereRadius = 0.5;
 			//_shipBody.ccdMotionThreshold = 1;
 			//_physicsWorld.addRigidBody(_shipBody);
-			_physicsWorld.addRigidBodyWithGroup(_shipBody, collsionBox, collisionAll);
+			_physicsWorld.addRigidBodyWithGroup(_shipBody, collsionBox, collsionGround | collsionPlane);
 			
+			_ship.addChild(_shipTop);
 			_view.scene.addChild(_ship);
 			
-			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, -100, 0), new Vector3D(0, 1, 0), _rootBox, new Vector3D(0, 5, 0), new Vector3D(0, 1, 0));
+			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, 0, 0), new Vector3D(0, 1, 0), _rootBox, new Vector3D(0, 70, 0), new Vector3D(0, 1, 0));
 			_physicsWorld.addConstraint(_shipJoint, true);
-			_shipJoint.setLimit(1, 30, 0.9, 0.9, 0.3);
+			_shipJoint.setLimit(5, 70, 0.9, 0.1, 1);
 			//  _shipJoint.angularOnly = true;
 		}
 		
@@ -420,7 +511,7 @@ package {
 				_bumpBig.unlock();
 			}
 			
-			var i:uint, px:uint, c:uint, n:uint;
+			var i:uint, px:uint, c:uint, n:int;
 			var len:uint = _fieldSubGeometry.vertexData.length;
 			
 			for (i = 1; i < len; i += 3, ++c) {
@@ -475,11 +566,25 @@ package {
 		private function move():void {
 			var i:uint;
 			for (i = 0; i < _numOctaves; ++i) {
-				_offsets[i].x = _position.x;
-				_offsets[i].y = _position.z;
+				_offsets[i].offset(_ease.x, _ease.z);
 			}
+			_position = new Vector3D(_offsets[0].x, 0, _offsets[0].y)
+			//update field mesh
 			updateField();
-			updatePhysicsField();
+			
+			//update physics field
+			_terrainShape.update(_heights, _elevation);
+			
+			//update field material
+			_grounds[0].move(-_ease.x * _multy.x, -_ease.z * _multy.x);
+			_grounds[1].move(-_ease.x * _multy.y, -_ease.z * _multy.y);
+			_grounds[2].move(-_ease.x * _multy.z, -_ease.z * _multy.z);
+			_textures[0].bitmapData = _grounds[0];
+			_textures[1].bitmapData = _grounds[1];
+			_textures[2].bitmapData = _grounds[2];
+			_textures[0].invalidateContent();
+			_textures[1].invalidateContent();
+			_textures[2].invalidateContent();
 		}
 		
 		private function keyDownHandler(event:KeyboardEvent):void {
@@ -488,46 +593,77 @@ package {
 				case Keyboard.W: 
 				case Keyboard.Z: 
 					_position.z += _speed;
+					_ease.z = _speed;
 					break;
 				case Keyboard.DOWN: 
 				case Keyboard.S: 
 					_position.z -= _speed;
+					_ease.z = -_speed;
 					break;
 				case Keyboard.LEFT: 
 				case Keyboard.A: 
 				case Keyboard.Q: 
 					_position.x += _speed;
+					_ease.x = _speed;
 					break;
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
 					_position.x -= _speed;
+					_ease.x = -_speed;
+					break;
+				case Keyboard.N: 
+					debugMode();
 					break;
 			}
-			move();
+			if (_isWithField)
+				move();
 		}
 		
-		private function initPhysicsField():void {
-			_terrainShape = new PerlinShape(_resolution, _resolution, _dimension, _dimension, _elevation, _heights);
-			_terrainBody = new AWPRigidBody(_terrainShape, null, 0);
-			_terrainBody.friction = 0.1;
-			_terrainBody.restitution = 0.0;
-			//_physicsWorld.addRigidBody(_terrainBody);
-			_physicsWorld.addRigidBodyWithGroup(_terrainBody, collsionGround, collisionAll);
-		
+		private function keyUpHandler(event:KeyboardEvent):void {
+			switch (event.keyCode) {
+				case Keyboard.UP: 
+				case Keyboard.W: 
+				case Keyboard.Z: 
+					_ease.z = 0;
+					break;
+				case Keyboard.DOWN: 
+				case Keyboard.S: 
+					_ease.z = 0;
+					break;
+				case Keyboard.LEFT: 
+				case Keyboard.A: 
+				case Keyboard.Q: 
+					_ease.x = 0;
+					break;
+				case Keyboard.RIGHT: 
+				case Keyboard.D: 
+					_ease.x = 0;
+					break;
+			}
 		}
 		
-		private function updatePhysicsField():void {
-			/*var i:int;
-			   var bodyLength:int = _physicsWorld.rigidBodies.length;
+		private function debugMode():void {
+			if (_isDebug) {
+				_isDebug = false;
+				debugDraw.debugMode = AWPDebugDraw.DBG_NoDebug;
+				debugDraw.debugDrawWorld();
+			} else {
+				_isDebug = true;
+				debugDraw = new AWPDebugDraw(_view, _physicsWorld);
+				debugDraw.debugMode |= AWPDebugDraw.DBG_DrawTransform;
+			}
+		}
+		
+		private function updateBody():void {
+			
+			var i:uint, x:int, y:int, z:int;
+			
+			/*  var bodyLength:int = _physicsWorld.rigidBodies.length;
 			   for (i = 0; i < bodyLength; ++i) {
 			   if (_physicsWorld.rigidBodies[i].activationState == AWPCollisionObject.ISLAND_SLEEPING)
 			   _physicsWorld.rigidBodies[i].activate(true);
 			 }*/
-			_terrainShape.update(_heights, _elevation);
-		}
-		
-		private function updateBody():void {
-			var i:uint, x:int, y:int, z:int;
+			
 			//var cubeLength:int = _rigidCubes.length;
 			var sphereLength:int = _rigidSpheres.length;
 			/*for (i = 0; i < cubeLength; ++i) {
@@ -543,7 +679,10 @@ package {
 				if (_rigidSpheres[i].position.y < 0) {
 					x = int(-2000 + Math.random() * 4000);
 					z = int(-2000 + Math.random() * 4000);
-					y = getHeightAt(x, z) + 200;
+					if (_isWithField)
+						y = getHeightAt(x, z) + 200;
+					else
+						y = 100;
 					_rigidSpheres[i].position = new Vector3D(x, y, z);
 					_rigidSpheres[i].linearVelocity = new Vector3D();
 				}
@@ -554,27 +693,34 @@ package {
 			var uv:Point = event.uv;
 			
 			// var mpos:Vector3D = new Vector3D(int(event.localPosition.x), 500, int(event.localPosition.z));
-			var mpos:Vector3D = new Vector3D(int(event.localPosition.x), int(event.localPosition.y), int(event.localPosition.z)); //event.scenePosition;//new Vector3D( uv.x , 500, uv.y);
+			var mpos:Vector3D = event.localPosition.add(new Vector3D(0, 150, 0));
+			//new Vector3D(int(event.localPosition.x), int(event.localPosition.y), int(event.localPosition.z)); //event.scenePosition;//new Vector3D( uv.x , 500, uv.y);
 			//mpos= _plane.entity.sceneTransform.transformVector(_plane.localPosition);
 			var normal:Vector3D = mpos.add(event.sceneNormal.clone());
 			_tf.text = "Vector" + mpos + "\n n:" + normal;
-			_sf.position = mpos;
-			_sf.lookAt(normal);
+			
+			//var angleRadian:Number = Math.atan2( -mpos.z, mpos.x);
+			// var angleDegree:Number = angleRadian * 180 / Math.PI;
+			//_shipTop.rotationY = angleDegree;
+			//_shipTop.lookAt(mpos, new Vector3D(0,1,0));
 			
 			if (!_sphereShape)
-				_sphereShape = new AWPSphereShape(50);
-			var pos:Vector3D = _view.camera.position;
+				_sphereShape = new AWPSphereShape(40);
+			var pos:Vector3D = _center.add(new Vector3D(0, 150, 0)); // _view.camera.position;
 			//var mpos:Vector3D = new Vector3D(event.localPosition.x, event.localPosition.y, event.localPosition.z);
+			
+			_target.position = mpos;
+			_target.lookAt(pos);
 			
 			var impulse:Vector3D = mpos.subtract(pos);
 			impulse.normalize();
 			impulse.scaleBy(30);
-			
+			_shipTop.lookAt(impulse);
 			// shoot a sphere
 			//var material:ColorMaterial = new ColorMaterial(Math.random() * 0xffffff);
 			//material.lightPicker = _lightPicker;
 			
-			var sphere:Mesh = new Mesh(new SphereGeometry(50), _sphereMaterial);
+			var sphere:Mesh = new Mesh(new SphereGeometry(40), _sphereMaterial);
 			_view.scene.addChild(sphere);
 			
 			var body:AWPRigidBody = new AWPRigidBody(_sphereShape, sphere, 1);
@@ -583,7 +729,8 @@ package {
 			body.ccdMotionThreshold = 1;
 			body.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
 			
-			_physicsWorld.addRigidBody(body);
+			//_physicsWorld.addRigidBody(body);
+			_physicsWorld.addRigidBodyWithGroup(body, collsionBullet, collsionGround | collsionPlane);
 			_rigidSpheres.push(body);
 			body.applyCentralImpulse(impulse);
 		}
@@ -598,9 +745,11 @@ package {
 			}
 			_controller.lookAtPosition = _center.add(new Vector3D(0, 50, 0));
 			_controller.update();
-			/*if (_shipBody){_shipBody.linearVelocity = new Vector3D();
-			   _shipBody.linearDamping = 0;
-			 }*/ //.warp(_center);
+			//if (_shipBody) {
+			//_shipTop.transform = _ship.transform;
+			//  _shipBody.linearVelocity = new Vector3D();
+			// _shipBody.linearDamping = 0;
+			// }
 			updateBody();
 			_physicsWorld.step(_timeStep, 4, _timeStep);
 			
@@ -609,7 +758,8 @@ package {
 				_reflectionTexture.render(_view);
 			}
 			
-			debugDraw.debugDrawWorld();
+			if (_isDebug)
+				debugDraw.debugDrawWorld();
 			_view.render();
 		}
 		
@@ -718,6 +868,16 @@ package {
 			return b;
 		}
 		
+		private function targetBitmap():BitmapData {
+			var s:Sprite = new Sprite();
+			s.graphics.lineStyle(10, 0xff0000, 1);
+			s.graphics.drawCircle(128, 128, 100);
+			s.graphics.endFill();
+			var b:BitmapData = new BitmapData(256, 256, true, 0x00000000);
+			b.draw(s);
+			return b;
+		}
+		
 		/**
 		 * Math function
 		 */
@@ -760,5 +920,79 @@ package {
 			_tf.mouseEnabled = false;
 			this.addChild(_tf);
 		}
+	}
+}
+
+//=============================================================
+//   BITMAP SCROLLING
+//=============================================================
+
+import flash.display.BitmapData;
+import flash.display.Graphics;
+import flash.display.Sprite;
+import flash.events.Event;
+import flash.geom.Matrix;
+
+internal class BitmapScrolling extends BitmapData {
+	public var scrollingBitmap:BitmapData;
+	private var matrix:Matrix;
+	private var content:Sprite;
+	private var canvas:Graphics;
+	private var _size:int;
+	
+	public function BitmapScrolling(B:BitmapData) {
+		super(B.width, B.height, false, 0x00);
+		_size = B.width;
+		scrollingBitmap = B;
+		content = new Sprite();
+		matrix = content.transform.matrix.clone();
+		canvas = content.graphics;
+		move();
+	}
+	
+	//[Inline]
+	
+	public function move(mx:Number = 0, my:Number = 0):void {
+		this.lock();
+		matrix.translate(mx, my);
+		drawCanvas();
+		if (dy > this.width * 10)
+			dy = 0;
+		if (dy < -this.width * 10)
+			dy = 0;
+		if (dx > this.width * 10)
+			dx = 0;
+		if (dx < -this.width * 10)
+			dx = 0;
+		
+		this.draw(content, null, null, null, null, true);
+		
+		this.unlock();
+	}
+	
+	//[Inline]
+	
+	private function drawCanvas():void {
+		canvas.clear();
+		canvas.beginBitmapFill(scrollingBitmap, matrix, true, false);
+		canvas.drawRect(0, 0, _size, _size);
+	}
+	
+	public function get dy():Number {
+		return matrix.ty;
+	}
+	
+	public function set dy(value:Number):void {
+		matrix.ty = value;
+		drawCanvas();
+	}
+	
+	public function get dx():Number {
+		return matrix.tx;
+	}
+	
+	public function set dx(value:Number):void {
+		matrix.tx = value;
+		drawCanvas();
 	}
 }
