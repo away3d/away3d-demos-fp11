@@ -9,13 +9,16 @@ package {
 	import away3d.lights.DirectionalLight;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.EnvMapMethod;
 	import away3d.materials.methods.FresnelEnvMapMethod;
+	import away3d.materials.methods.SimpleWaterNormalMethod;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.ConeGeometry;
 	import away3d.primitives.CubeGeometry;
 	import away3d.primitives.CylinderGeometry;
 	import away3d.primitives.PlaneGeometry;
 	import away3d.primitives.SphereGeometry;
+	import away3d.textures.BitmapCubeTexture;
 	import away3d.textures.BitmapTexture;
 	import away3d.materials.methods.TerrainDiffuseMethod;
 	import away3d.materials.methods.FresnelSpecularMethod;
@@ -68,6 +71,9 @@ package {
 	[SWF(backgroundColor="#c4d6e7",frameRate="60",width="1200",height="600")]
 	
 	public class PhysicsField extends Sprite {
+		[Embed(source="../embeds/water.jpg")]
+		private var WATER:Class;
+		
 		[Embed(source="/../embeds/terrain.jpg")]
 		private var TERRAIN:Class;
 		
@@ -89,6 +95,7 @@ package {
 		private var _light:PointLight;
 		private var _lightPicker:StaticLightPicker;
 		private var _bgColor:uint = 0xc4d6e7;
+		private var _skyColors:Array = [_bgColor, 0x55b2de, 0x0685d6, 0x041984];
 		private var _skySphere:Mesh;
 		
 		//methodes
@@ -124,7 +131,7 @@ package {
 		private var _offsets:Array;
 		private var _complex:Number;
 		private var _seed:int;
-		private var _tiles:Array = [1, 25, 25, 25];
+		private var _tiles:Array = [1, 20, 20, 20];
 		private var _position:Vector3D = new Vector3D();
 		private var _ease:Vector3D = new Vector3D();
 		private var _multy:Vector3D = new Vector3D();
@@ -158,7 +165,9 @@ package {
 		
 		//plane
 		private var _plane:Mesh;
-		private var _planeMaterial:ColorMaterial;
+		private var _planeMaterial:TextureMaterial;
+		private var _waterMethod:SimpleWaterNormalMethod;
+		private var _waterfresnel:FresnelSpecularMethod;
 		
 		//ship
 		private var _ship:Mesh;
@@ -252,31 +261,46 @@ package {
 			_sphereMaterial.specular = 1;
 			_sphereMaterial.gloss = 300;
 			
+			_waterfresnel = new FresnelSpecularMethod();
+			_waterfresnel.normalReflectance = .6;
+			
+			var waterMini:BitmapData = Bitmap(new WATER()).bitmapData;
+			var g:Sprite = new Sprite();
+			g.graphics.beginBitmapFill(waterMini);
+			g.graphics.drawRect(0, 0, 2048, 2048);
+			g.graphics.endFill();
+			var waterBig:BitmapData = new BitmapData(2048, 2048, false);
+			waterBig.draw(g);
+			g.graphics.clear();
+			g = null;
+			var waterNormal:BitmapTexture = new BitmapTexture(waterBig);
+			_waterMethod = new SimpleWaterNormalMethod(waterNormal, waterNormal);
+			
 			// setup the plane
-			_planeMaterial = new ColorMaterial(_bgColor, 0.3);
+			_planeMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, true, 0x45000000)));
+			_planeMaterial.alphaBlending = true;
+			_planeMaterial.alpha = 0.6;
 			_planeMaterial.lightPicker = _lightPicker;
+			_planeMaterial.normalMethod = _waterMethod;
+			_planeMaterial.specularMethod = _waterfresnel;
+			_planeMaterial.specular = 2;
+			_planeMaterial.gloss = 100;
+			_planeMaterial.repeat = true;
+			_planeMaterial.addMethod(new EnvMapMethod(CubicSky()));
 			_planeMaterial.addMethod(_fogMethod);
-			_planeMaterial.specular = 1;
-			_planeMaterial.gloss = 20;
+			
 			_plane = new Mesh(new PlaneGeometry(_dimension, _dimension), _planeMaterial);
 			_view.scene.addChild(_plane);
 			
 			//mouse interaction
-			_plane.addEventListener(MouseEvent3D.MOUSE_UP, on3DMouseUp);
-			_plane.mouseEnabled = true;
+			//_plane.addEventListener(MouseEvent3D.MOUSE_UP, on3DMouseUp);
+			//_plane.mouseEnabled = true;
 			
 			//physics plane
 			var shape:AWPStaticPlaneShape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));
 			var body:AWPRigidBody = new AWPRigidBody(shape, null, 0);
+			body.y = -70;
 			_physicsWorld.addRigidBodyWithGroup(body, collsionPlane, collisionAll);
-			
-			//_plane.y = _elevation - _elevation / 1.618;
-			
-			//_plane.mouseEnabled = true;
-			//_plane.mouseChildren = true;
-			// _plane.shaderPickingDetails = true;
-			// _plane.pickingCollider = PickingColliderType.AS3_FIRST_ENCOUNTERED;
-			//_plane.addEventListener(MouseEvent3D.MOUSE_UP, on3DMouseUp);
 			
 			//create background invers sphere
 			var skyMaterial:TextureMaterial = new TextureMaterial(new BitmapTexture(background()));
@@ -343,7 +367,7 @@ package {
 			for (var u:uint = 0; u < _numOctaves; ++u) {
 				_offsets[u] = new Point(0, 0);
 			}
-			_positionY = 700;
+			_positionY = 850;
 			//setup the field deformation bitmap
 			var b00:BitmapData = new BitmapData(_resolution, _resolution, false);
 			var b01:BitmapData = new BitmapData(_resolution * _factor, _resolution * _factor, false);
@@ -542,10 +566,14 @@ package {
 			layerTerrainBitmap();
 			_textures[3].bitmapData = _layers[0];
 			
+			BitmapTexture(TextureMaterial(_planeMaterial).texture).bitmapData = _layers[2];
+			BitmapTexture(TextureMaterial(_planeMaterial).texture).invalidateContent();
+			
 			//_normalBitmap.lock();
 			//_normalBitmap.applyFilter(_bump, _bump.rect, new Point(), _normalMapFilters[0]);
 			if (_factor != 1) {
 				BitmapTexture(TextureMaterial(_fieldMaterial).texture).bitmapData = _bumpBig;
+				
 				_normalBitmap.applyFilter(_bumpBig, _bumpBig.rect, new Point(), _normalMapFilters[0]);
 			} else {
 				BitmapTexture(TextureMaterial(_fieldMaterial).texture).bitmapData = _bump;
@@ -553,6 +581,7 @@ package {
 			}
 			_tf.text = "num" + _fieldSubGeometry.faceNormals.length;
 			BitmapTexture(TextureMaterial(_fieldMaterial).texture).invalidateContent();
+			
 			//_normalBitmap.unlock();
 			_textures[4].bitmapData = _normalBitmap;
 			_textures[4].invalidateContent();
@@ -607,7 +636,7 @@ package {
 			//update field mesh
 			updateField();
 			
-			_tf.text = "ship move : " + int(_position.x) + "/" + int(_position.y) + "/" + int(_position.z) + "\n speed: " + _ease.z.toFixed(2) + "/" + _ease.x.toFixed(2);
+			_tf.text = "ship move: " + int(_position.x) + "/" + int(_position.y) + "/" + int(_position.z) + "\n" + "ship speed: " + _ease.z.toFixed(2) + "/" + _ease.x.toFixed(2);
 			
 			//update physics field
 			_terrainShape.update(_heights, _elevation);
@@ -715,17 +744,8 @@ package {
 			
 			//var cubeLength:int = _rigidCubes.length;
 			var sphereLength:int = _rigidSpheres.length;
-			/*for (i = 0; i < cubeLength; ++i) {
-			   if (_rigidCubes[i].position.y < 0) {
-			   x = int(-2000 + Math.random() * 4000);
-			   z = int(-2000 + Math.random() * 4000);
-			   y = getHeightAt(x, z) + 200;
-			   _rigidCubes[i].position = new Vector3D(x, y, z);
-			   _rigidCubes[i].linearVelocity = new Vector3D();
-			   }
-			 }*/
 			for (i = 0; i < sphereLength; ++i) {
-				if (_rigidSpheres[i].position.y < 0) {
+				if (_rigidSpheres[i].position.y < -100) {
 					x = int(-2000 + Math.random() * 4000);
 					z = int(-2000 + Math.random() * 4000);
 					if (_isWithField)
@@ -739,24 +759,15 @@ package {
 		}
 		
 		private function on3DMouseUp(event:MouseEvent3D):void {
-			var uv:Point = event.uv;
-			
-			// var mpos:Vector3D = new Vector3D(int(event.localPosition.x), 500, int(event.localPosition.z));
 			var mpos:Vector3D = event.localPosition.add(new Vector3D(0, 150, 0));
-			//new Vector3D(int(event.localPosition.x), int(event.localPosition.y), int(event.localPosition.z)); //event.scenePosition;//new Vector3D( uv.x , 500, uv.y);
-			//mpos= _plane.entity.sceneTransform.transformVector(_plane.localPosition);
 			var normal:Vector3D = mpos.add(event.sceneNormal.clone());
-			//_tf.text = "Vector" + mpos + "\n n:" + normal;
 			
 			//var angleRadian:Number = Math.atan2( -mpos.z, mpos.x);
 			// var angleDegree:Number = angleRadian * 180 / Math.PI;
-			//_shipTop.rotationY = angleDegree;
-			//_shipTop.lookAt(mpos, new Vector3D(0,1,0));
 			
 			if (!_sphereShape)
 				_sphereShape = new AWPSphereShape(40);
 			var pos:Vector3D = _center.add(new Vector3D(0, 150, 0)); // _view.camera.position;
-			//var mpos:Vector3D = new Vector3D(event.localPosition.x, event.localPosition.y, event.localPosition.z);
 			
 			_target.position = mpos;
 			_target.lookAt(pos);
@@ -765,10 +776,8 @@ package {
 			impulse.normalize();
 			impulse.scaleBy(30);
 			_shipTop.lookAt(impulse);
-			// shoot a sphere
-			//var material:ColorMaterial = new ColorMaterial(Math.random() * 0xffffff);
-			//material.lightPicker = _lightPicker;
 			
+			// shoot a sphere
 			var sphere:Mesh = new Mesh(new SphereGeometry(40), _sphereMaterial);
 			_view.scene.addChild(sphere);
 			
@@ -810,6 +819,12 @@ package {
 				_reflectionTexture.position = _shipBody.position;
 				_reflectionTexture.render(_view);
 			}
+			
+			//animate our lake material
+			_waterMethod.water1OffsetX += .0003;
+			_waterMethod.water1OffsetY += .0004;
+			_waterMethod.water2OffsetX += .0001;
+			_waterMethod.water2OffsetY += .0002;
 			
 			if (_isDebug)
 				debugDraw.debugDrawWorld();
@@ -894,18 +909,17 @@ package {
 			//green _ mid
 			_layers[1].threshold(_layers[0], rect, p, ">", 0xFF000000 + layerTop[0], 0x0000000, 0xFFFFFFFF, true);
 			_layers[1].colorTransform(rect, new ColorTransform(0, 1, 0, 1, 0, 255, 0, 0));
-			//_layers[1].applyFilter(_layers[1], rect, p, new BlurFilter(10, 10, 1));
+			_layers[1].applyFilter(_layers[1], rect, p, new BlurFilter(6, 6, 1));
 			//blue _ bottom
 			_layers[2].threshold(_layers[0], rect, p, ">", 0xFF000000 + layerTop[1], 0x0000000, 0xFFFFFFFF, true);
 			_layers[2].colorTransform(rect, new ColorTransform(0, 0, 1, 1, 0, 0, 255, 0));
-			//_layers[2].applyFilter(_layers[2], rect, p, new BlurFilter(10, 10, 1));
+			_layers[2].applyFilter(_layers[2], rect, p, new BlurFilter(6, 6, 1));
 			_layers[1].unlock;
 			_layers[2].unlock;
 			//copy chanel from other layer to base layer
 			_layers[0].colorTransform(rect, new ColorTransform(1, 0, 0, 1, 255, 0, 0, 0));
 			_layers[0].draw(_layers[1]);
 			_layers[0].draw(_layers[2]);
-			_layers[0].applyFilter(_layers[0], rect, p, new BlurFilter(6, 6, 1));
 			_layers[0].unlock;
 		}
 		
@@ -913,7 +927,7 @@ package {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
 			m.createGradientBox(512, 512, RadDeg(-90));
-			s.graphics.beginGradientFill("linear", [_bgColor, 0x55b2de, 0x0685d6, 0x041984], [1, 1, 1, 1], [0x90, 0xAA, 0xCC, 0xFF], m);
+			s.graphics.beginGradientFill("linear", _skyColors, [1, 1, 1, 1], [0x90, 0xAA, 0xCC, 0xFF], m);
 			s.graphics.drawRect(0, 0, 512, 512);
 			s.graphics.endFill();
 			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
@@ -973,6 +987,29 @@ package {
 			_tf.mouseEnabled = false;
 			this.addChild(_tf);
 		}
+		
+		private function CubicSky(xl:int = 64):BitmapCubeTexture {
+			var h:BitmapData = new BitmapData(xl, xl, false, 0x000000);
+			var h2:BitmapData = new BitmapData(xl, xl, false, _skyColors[0]);
+			var h3:BitmapData = new BitmapData(xl, xl, false, _skyColors[2]);
+			var grad:Sprite = new Sprite();
+			var matrix:Matrix = new Matrix();
+			matrix.createGradientBox(xl, xl);
+			grad.graphics.beginGradientFill('radial', [_skyColors[3], _skyColors[2]], [1, 1], [0, 0xDD], matrix);
+			grad.graphics.drawRect(0, 0, xl, xl);
+			h3.draw(grad);
+			matrix = new Matrix();
+			matrix.createGradientBox(xl, xl, -Math.PI / 2);
+			grad.graphics.clear();
+			grad.graphics.beginGradientFill('linear', [_skyColors[0], _skyColors[0], _skyColors[1], _skyColors[2]], [1, 1, 1, 1], [0x00, 0x80, 0xAA, 0xFF], matrix);
+			grad.graphics.drawRect(0, 0, xl, xl);
+			h.draw(grad);
+			grad.graphics.clear();
+			grad = null;
+			var cc:BitmapCubeTexture = new BitmapCubeTexture(h, h, h3, h2, h, h);
+			return cc;
+		}
+	
 	}
 }
 
