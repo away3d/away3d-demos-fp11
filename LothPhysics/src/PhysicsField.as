@@ -153,7 +153,9 @@ package {
 		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 5000]);
 		private var _center:Vector3D = new Vector3D(0, 0, 0);
 		private var _move:Boolean = false;
-		private var _speed:Number = 0.5;
+		private var _speed:Number = 0.4;
+		private var _acc:Number = 0.05;
+		
 		//plane
 		private var _plane:Mesh;
 		private var _planeMaterial:ColorMaterial;
@@ -173,6 +175,12 @@ package {
 		private var _target:Mesh;
 		private var _isDebug:Boolean = false;
 		private var _isWithField:Boolean;
+		
+		//key control
+		private var _keyFront:Boolean;
+		private var _keyBack:Boolean;
+		private var _keyLeft:Boolean;
+		private var _keyRight:Boolean;
 		
 		public function PhysicsField() {
 			if (stage)
@@ -278,9 +286,10 @@ package {
 			_skySphere.castsShadows = false;
 			_view.scene.addChild(_skySphere);
 			
-			//parse tree model
+			//parse ship model
 			parseShipModel();
 			
+			//setup field
 			initField();
 			
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
@@ -522,6 +531,7 @@ package {
 				_heights[c] = n;
 				if (c == 2016) { //_center.y = n;
 					_center = new Vector3D(_fieldSubGeometry.vertexData[i - 1], _fieldSubGeometry.vertexData[i], _fieldSubGeometry.vertexData[i + 1]);
+					_position.y = _center.y + 150;
 				}
 			}
 			//var normal:Vector3D = _fieldSubGeometry.faceNormals[];
@@ -563,7 +573,32 @@ package {
 		/**
 		 * move field
 		 */
-		private function move():void {
+		[Inline]
+		
+		private function moveField():void {
+			//acceleration
+			if (_keyFront)
+				_ease.z += _acc;
+			if (_keyBack)
+				_ease.z -= _acc;
+			if (_keyLeft)
+				_ease.x += _acc;
+			if (_keyRight)
+				_ease.x -= _acc;
+			
+			//speed limite
+			if (_ease.x > _speed)
+				_ease.x = _speed;
+			if (_ease.z > _speed)
+				_ease.z = _speed;
+			if (_ease.x < -_speed)
+				_ease.x = -_speed;
+			if (_ease.z < -_speed)
+				_ease.z = -_speed;
+			
+			_tf.text = "ship stop";
+			if (_ease.x == 0 && _ease.z == 0)
+				return;
 			var i:uint;
 			for (i = 0; i < _numOctaves; ++i) {
 				_offsets[i].offset(_ease.x, _ease.z);
@@ -571,6 +606,8 @@ package {
 			_position = new Vector3D(_offsets[0].x, 0, _offsets[0].y)
 			//update field mesh
 			updateField();
+			
+			_tf.text = "ship move : " + int(_position.x) + "/" + int(_position.y) + "/" + int(_position.z) + "\n speed: " + _ease.z.toFixed(2) + "/" + _ease.x.toFixed(2);
 			
 			//update physics field
 			_terrainShape.update(_heights, _elevation);
@@ -585,6 +622,24 @@ package {
 			_textures[0].invalidateContent();
 			_textures[1].invalidateContent();
 			_textures[2].invalidateContent();
+			
+			//break
+			if (!_keyFront && !_keyBack) {
+				if (_ease.z > _acc)
+					_ease.z -= _acc;
+				else if (_ease.z < -_acc)
+					_ease.z += _acc;
+				else
+					_ease.z = 0;
+			}
+			if (!_keyLeft && !_keyRight) {
+				if (_ease.x > _acc)
+					_ease.x -= _acc;
+				else if (_ease.x < -_acc)
+					_ease.x += _acc;
+				else
+					_ease.x = 0;
+			}
 		}
 		
 		private function keyDownHandler(event:KeyboardEvent):void {
@@ -592,31 +647,25 @@ package {
 				case Keyboard.UP: 
 				case Keyboard.W: 
 				case Keyboard.Z: 
-					_position.z += _speed;
-					_ease.z = _speed;
+					_keyFront = true;
 					break;
 				case Keyboard.DOWN: 
 				case Keyboard.S: 
-					_position.z -= _speed;
-					_ease.z = -_speed;
+					_keyBack = true;
 					break;
 				case Keyboard.LEFT: 
 				case Keyboard.A: 
 				case Keyboard.Q: 
-					_position.x += _speed;
-					_ease.x = _speed;
+					_keyLeft = true;
 					break;
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
-					_position.x -= _speed;
-					_ease.x = -_speed;
+					_keyRight = true;
 					break;
 				case Keyboard.N: 
 					debugMode();
 					break;
 			}
-			if (_isWithField)
-				move();
 		}
 		
 		private function keyUpHandler(event:KeyboardEvent):void {
@@ -624,20 +673,20 @@ package {
 				case Keyboard.UP: 
 				case Keyboard.W: 
 				case Keyboard.Z: 
-					_ease.z = 0;
+					_keyFront = false;
 					break;
 				case Keyboard.DOWN: 
 				case Keyboard.S: 
-					_ease.z = 0;
+					_keyBack = false;
 					break;
 				case Keyboard.LEFT: 
 				case Keyboard.A: 
 				case Keyboard.Q: 
-					_ease.x = 0;
+					_keyLeft = false;
 					break;
 				case Keyboard.RIGHT: 
 				case Keyboard.D: 
-					_ease.x = 0;
+					_keyRight = false;
 					break;
 			}
 		}
@@ -697,7 +746,7 @@ package {
 			//new Vector3D(int(event.localPosition.x), int(event.localPosition.y), int(event.localPosition.z)); //event.scenePosition;//new Vector3D( uv.x , 500, uv.y);
 			//mpos= _plane.entity.sceneTransform.transformVector(_plane.localPosition);
 			var normal:Vector3D = mpos.add(event.sceneNormal.clone());
-			_tf.text = "Vector" + mpos + "\n n:" + normal;
+			//_tf.text = "Vector" + mpos + "\n n:" + normal;
 			
 			//var angleRadian:Number = Math.atan2( -mpos.z, mpos.x);
 			// var angleDegree:Number = angleRadian * 180 / Math.PI;
@@ -739,12 +788,16 @@ package {
 		 * stage listener for enterframe
 		 */
 		private function handleEnterFrame(e:Event):void {
+			if (_isWithField)
+				moveField();
+			
 			if (_move) {
 				_controller.panAngle = 0.3 * (stage.mouseX - _mouseNav[0]) + _mouseNav[2];
 				_controller.tiltAngle = 0.3 * (stage.mouseY - _mouseNav[1]) + _mouseNav[3];
 			}
-			_controller.lookAtPosition = _center.add(new Vector3D(0, 50, 0));
+			_controller.lookAtPosition = _center.add(new Vector3D(0, 70, 0));
 			_controller.update();
+			
 			//if (_shipBody) {
 			//_shipTop.transform = _ship.transform;
 			//  _shipBody.linearVelocity = new Vector3D();
