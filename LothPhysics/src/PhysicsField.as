@@ -7,9 +7,11 @@ package {
 	import away3d.events.MouseEvent3D;
 	import away3d.lights.PointLight;
 	import away3d.lights.DirectionalLight;
+	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
 	import away3d.materials.ColorMaterial;
 	import away3d.materials.lightpickers.StaticLightPicker;
 	import away3d.materials.methods.EnvMapMethod;
+	import away3d.materials.methods.FilteredShadowMapMethod;
 	import away3d.materials.methods.FresnelEnvMapMethod;
 	import away3d.materials.methods.SimpleWaterNormalMethod;
 	import away3d.materials.TextureMaterial;
@@ -22,6 +24,7 @@ package {
 	import away3d.textures.BitmapTexture;
 	import away3d.materials.methods.TerrainDiffuseMethod;
 	import away3d.materials.methods.FresnelSpecularMethod;
+	import away3d.materials.methods.NearShadowMapMethod;
 	import away3d.materials.methods.FogMethod;
 	import away3d.controllers.HoverController;
 	import away3d.cameras.lenses.PerspectiveLens;
@@ -97,10 +100,11 @@ package {
 		private var _bgColor:uint = 0xc4d6e7;
 		private var _skyColors:Array = [_bgColor, 0x55b2de, 0x0685d6, 0x041984];
 		private var _skySphere:Mesh;
-		
+		private var _skyCube:BitmapCubeTexture;
 		//methodes
 		private var _reflectionTexture:CubeReflectionTexture;
 		private var _fresnelMethod:FresnelEnvMapMethod;
+		private var _shadowMapMethod:NearShadowMapMethod;
 		private var _fogMethod:FogMethod;
 		
 		//field variables
@@ -222,7 +226,9 @@ package {
 			initInfo();
 			
 			//setup the light
-			_sunLight = new DirectionalLight(0, -1, 0.85);
+			_sunLight = new DirectionalLight(0.3, -1, -0.3);
+			_sunLight.shadowMapper = new NearDirectionalShadowMapper(.6);
+			_sunLight.shadowMapper.depthMapSize = 2048;
 			_view.scene.addChild(_sunLight);
 			_light = new PointLight();
 			_light.y = 4000;
@@ -231,6 +237,9 @@ package {
 			
 			//setup the method
 			_fogMethod = new FogMethod(1000, _dimension / 2, _bgColor);
+			_shadowMapMethod = new NearShadowMapMethod(new FilteredShadowMapMethod(_sunLight));
+			_shadowMapMethod.epsilon = .0007;
+			_shadowMapMethod.alpha = 0.6;
 			
 			//setup the camera
 			_view.camera.lens = new PerspectiveLens(80);
@@ -276,6 +285,7 @@ package {
 			var waterNormal:BitmapTexture = new BitmapTexture(waterBig);
 			_waterMethod = new SimpleWaterNormalMethod(waterNormal, waterNormal);
 			
+			_skyCube = CubicSky();
 			// setup the plane
 			_planeMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, true, 0x45000000)));
 			_planeMaterial.alphaBlending = true;
@@ -286,10 +296,11 @@ package {
 			_planeMaterial.specular = 2;
 			_planeMaterial.gloss = 100;
 			_planeMaterial.repeat = true;
-			_planeMaterial.addMethod(new EnvMapMethod(CubicSky()));
+			_planeMaterial.addMethod(new EnvMapMethod(_skyCube));
 			_planeMaterial.addMethod(_fogMethod);
 			
 			_plane = new Mesh(new PlaneGeometry(_dimension, _dimension), _planeMaterial);
+			//  _plane.castsShadows = false;
 			_view.scene.addChild(_plane);
 			
 			//mouse interaction
@@ -299,6 +310,8 @@ package {
 			//physics plane
 			var shape:AWPStaticPlaneShape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));
 			var body:AWPRigidBody = new AWPRigidBody(shape, null, 0);
+			body.friction = 0.3;
+			body.restitution = 0.0;
 			body.y = -70;
 			_physicsWorld.addRigidBodyWithGroup(body, collsionPlane, collisionAll);
 			
@@ -434,12 +447,14 @@ package {
 			_fieldMaterial.specular = 0.4;
 			_fieldMaterial.gloss = 100;
 			_fieldMaterial.normalMap = _textures[4];
+			_fieldMaterial.shadowMethod = _shadowMapMethod;
 			_fieldMaterial.addMethod(_fogMethod);
 			
 			//setup the field Mesh
 			_field = new Mesh(new PlaneGeometry(_dimension, _dimension, _resolution - 1, _resolution - 1, true, false), _fieldMaterial);
 			_field.geometry.convertToSeparateBuffers();
 			_field.pickingCollider = PickingColliderType.AS3_FIRST_ENCOUNTERED;
+			_field.castsShadows = false;
 			
 			//mouse interaction
 			_field.addEventListener(MouseEvent3D.MOUSE_UP, on3DMouseUp);
@@ -456,8 +471,8 @@ package {
 			//setup physics field
 			_terrainShape = new PerlinShape(_resolution, _resolution, _dimension, _dimension, _elevation, _heights);
 			_terrainBody = new AWPRigidBody(_terrainShape, null, 0);
-			_terrainBody.friction = 0.5;
-			_terrainBody.restitution = 0.1;
+			_terrainBody.friction = 0.3;
+			_terrainBody.restitution = 0.0;
 			_physicsWorld.addRigidBodyWithGroup(_terrainBody, collsionGround, collisionAll);
 			
 			_isWithField = true;
@@ -470,16 +485,20 @@ package {
 			//_physicsWorld.addRigidBody(_rootBox);
 			_physicsWorld.addRigidBodyWithGroup(_rootBox, collsionBox2, collsionNull);
 			
-			_reflectionTexture = new CubeReflectionTexture(128);
-			_reflectionTexture.farPlaneDistance = _dimension;
-			_reflectionTexture.nearPlaneDistance = 40;
-			_reflectionTexture.position = _center;
-			_fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);
-			_fresnelMethod.normalReflectance = .6;
-			_fresnelMethod.fresnelPower = 2;
+			/*_reflectionTexture = new CubeReflectionTexture(128);
+			   _reflectionTexture.farPlaneDistance = _dimension;
+			   _reflectionTexture.nearPlaneDistance = 40;
+			   _reflectionTexture.position = _center;
+			 _fresnelMethod = new FresnelEnvMapMethod(_reflectionTexture);*/
+			_fresnelMethod = new FresnelEnvMapMethod(_skyCube, 0.5);
+			_fresnelMethod.normalReflectance = .3;
+			_fresnelMethod.fresnelPower = 0.3;
 			
 			_shipdMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(64, 64, false, 0x333333)));
 			_shipdMaterial.lightPicker = _lightPicker;
+			_shipdMaterial.shadowMethod = _shadowMapMethod;
+			_shipdMaterial.gloss = 120;
+			//_shipdMaterial.addMethod(new EnvMapMethod(_skyCube));
 			_shipdMaterial.addMethod(_fresnelMethod);
 			_ship.material = _shipdMaterial;
 			_shipTop.material = _shipdMaterial;
@@ -493,10 +512,10 @@ package {
 			var shape:AWPConvexHullShape = new AWPConvexHullShape(_shipShape.geometry);
 			//var shape:AWPBoxShape = new AWPBoxShape(200, 200, 200);
 			
-			_shipBody = new AWPRigidBody(shape, _ship, 2);
-			_shipBody.position = _center.add(new Vector3D(0, 50, 0));
-			_shipBody.friction = 0.5;
-			_shipBody.restitution = 0.1;
+			_shipBody = new AWPRigidBody(shape, _ship, 3);
+			_shipBody.position = _center.add(new Vector3D(0, 70, 0));
+			_shipBody.friction = 0.3;
+			_shipBody.restitution = 0.0;
 			_shipBody.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
 			//	_shipBody.ccdSweptSphereRadius = 1;
 			//_shipBody.ccdMotionThreshold = 2;
@@ -513,9 +532,9 @@ package {
 			_ship.addChild(_shipTop);
 			_view.scene.addChild(_ship);
 			
-			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, 0, 0), new Vector3D(0, 1, 0), _rootBox, new Vector3D(0, 70, 0), new Vector3D(0, 1, 0));
+			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, -35, 0), new Vector3D(0, 1, 0), _rootBox, new Vector3D(0, 35, 0), new Vector3D(0, 1, 0));
 			_physicsWorld.addConstraint(_shipJoint, true);
-			_shipJoint.setLimit(5, 70, 0.9, 0.1, 1);
+			_shipJoint.setLimit(35, 70, 0.9, 0.5, 1);
 			//  _shipJoint.angularOnly = true;
 		}
 		
@@ -533,7 +552,6 @@ package {
 		 */
 		private function updateField():void {
 			_bump.lock();
-			//	
 			_bump.perlinNoise(_resolution * _complex, _resolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
 			//_bump.draw(_island);
 			_bump.unlock();
@@ -553,12 +571,14 @@ package {
 				n = (_elevation * px / 0xffffff - _positionY);
 				_fieldSubGeometry.vertexData[i] = n
 				_heights[c] = n;
-				if (c == 2016) { //_center.y = n;
+				if (c == 2016) {
 					_center = new Vector3D(_fieldSubGeometry.vertexData[i - 1], _fieldSubGeometry.vertexData[i], _fieldSubGeometry.vertexData[i + 1]);
+					if (_center.y < -70)
+						_center.y = -70;
 					_position.y = _center.y + 150;
 				}
 			}
-			//var normal:Vector3D = _fieldSubGeometry.faceNormals[];
+			
 			//update geometry
 			_fieldSubGeometry.updateVertexData(_fieldSubGeometry.vertexData);
 			
@@ -566,23 +586,21 @@ package {
 			layerTerrainBitmap();
 			_textures[3].bitmapData = _layers[0];
 			
+			//update water layer
 			BitmapTexture(TextureMaterial(_planeMaterial).texture).bitmapData = _layers[2];
 			BitmapTexture(TextureMaterial(_planeMaterial).texture).invalidateContent();
 			
-			//_normalBitmap.lock();
-			//_normalBitmap.applyFilter(_bump, _bump.rect, new Point(), _normalMapFilters[0]);
+			//update field layer
 			if (_factor != 1) {
 				BitmapTexture(TextureMaterial(_fieldMaterial).texture).bitmapData = _bumpBig;
-				
 				_normalBitmap.applyFilter(_bumpBig, _bumpBig.rect, new Point(), _normalMapFilters[0]);
 			} else {
 				BitmapTexture(TextureMaterial(_fieldMaterial).texture).bitmapData = _bump;
 				_normalBitmap.applyFilter(_bump, _bump.rect, new Point(), _normalMapFilters[0]);
 			}
-			_tf.text = "num" + _fieldSubGeometry.faceNormals.length;
 			BitmapTexture(TextureMaterial(_fieldMaterial).texture).invalidateContent();
 			
-			//_normalBitmap.unlock();
+			//update normal
 			_textures[4].bitmapData = _normalBitmap;
 			_textures[4].invalidateContent();
 			
@@ -815,10 +833,10 @@ package {
 			updateBody();
 			_physicsWorld.step(_timeStep, 4, _timeStep);
 			
-			if (_reflectionTexture) {
-				_reflectionTexture.position = _shipBody.position;
-				_reflectionTexture.render(_view);
-			}
+			/*if (_reflectionTexture) {
+			   _reflectionTexture.position = _shipBody.position;
+			   _reflectionTexture.render(_view);
+			 }*/
 			
 			//animate our lake material
 			_waterMethod.water1OffsetX += .0003;
