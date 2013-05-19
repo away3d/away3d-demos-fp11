@@ -195,6 +195,8 @@ package {
 		private var _keyLeft:Boolean;
 		private var _keyRight:Boolean;
 		
+		private var _info:String = "\ncontrol: arrow / WASD / ZQSD\nshow debug: N";
+		
 		public function PhysicsField() {
 			if (stage)
 				init();
@@ -310,7 +312,7 @@ package {
 			//physics plane
 			var shape:AWPStaticPlaneShape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));
 			var body:AWPRigidBody = new AWPRigidBody(shape, null, 0);
-			body.friction = 0.3;
+			body.friction = 0.2;
 			body.restitution = 0.0;
 			body.y = -70;
 			_physicsWorld.addRigidBodyWithGroup(body, collsionPlane, collisionAll);
@@ -471,7 +473,7 @@ package {
 			//setup physics field
 			_terrainShape = new PerlinShape(_resolution, _resolution, _dimension, _dimension, _elevation, _heights);
 			_terrainBody = new AWPRigidBody(_terrainShape, null, 0);
-			_terrainBody.friction = 0.3;
+			_terrainBody.friction = 0.6;
 			_terrainBody.restitution = 0.0;
 			_physicsWorld.addRigidBodyWithGroup(_terrainBody, collsionGround, collisionAll);
 			
@@ -482,7 +484,6 @@ package {
 			var bshape:AWPBoxShape = new AWPBoxShape(100, 70, 100);
 			_rootBox = new AWPRigidBody(bshape, null, 0);
 			_rootBox.position = _center;
-			//_physicsWorld.addRigidBody(_rootBox);
 			_physicsWorld.addRigidBodyWithGroup(_rootBox, collsionBox2, collsionNull);
 			
 			/*_reflectionTexture = new CubeReflectionTexture(128);
@@ -498,44 +499,31 @@ package {
 			_shipdMaterial.lightPicker = _lightPicker;
 			_shipdMaterial.shadowMethod = _shadowMapMethod;
 			_shipdMaterial.gloss = 120;
-			//_shipdMaterial.addMethod(new EnvMapMethod(_skyCube));
 			_shipdMaterial.addMethod(_fresnelMethod);
 			_ship.material = _shipdMaterial;
 			_shipTop.material = _shipdMaterial;
 			
-			//_ship = new Mesh(new SphereGeometry(130), _shipdMaterial);
-			//_ship.scaleY = (0.5);
-			// _ship.geometry.subGeometries[0].
-			// _ship.movePivot(0, -100, 0);
-			//var shape:AWPSphereShape = new AWPSphereShape(100);
-			//var shape:AWPCylinderShape = new AWPCylinderShape(100, 200);
 			var shape:AWPConvexHullShape = new AWPConvexHullShape(_shipShape.geometry);
-			//var shape:AWPBoxShape = new AWPBoxShape(200, 200, 200);
 			
-			_shipBody = new AWPRigidBody(shape, _ship, 3);
+			_shipBody = new AWPRigidBody(shape, _ship, 10);
 			_shipBody.position = _center.add(new Vector3D(0, 70, 0));
-			_shipBody.friction = 0.3;
+			_shipBody.friction = 0.6;
 			_shipBody.restitution = 0.0;
-			_shipBody.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
-			//	_shipBody.ccdSweptSphereRadius = 1;
-			//_shipBody.ccdMotionThreshold = 2;
-			//   _shipBody.linearDamping = 2;
-			//	_shipBody.angularDamping = 2;
-			//_shipBody.collisionFlags = AWPCollisionFlags.CF_CHARACTER_OBJECT;
-			//_shipBody.addEventListener(AWPEvent.COLLISION_ADDED, collisionAdded);
-			
+			//_shipBody.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
 			//_shipBody.ccdSweptSphereRadius = 0.5;
 			//_shipBody.ccdMotionThreshold = 1;
-			//_physicsWorld.addRigidBody(_shipBody);
+			//_shipBody.linearDamping = 2;
+			//_shipBody.angularDamping = 2;
+			//_shipBody.addEventListener(AWPEvent.COLLISION_ADDED, collisionAdded);
+			
 			_physicsWorld.addRigidBodyWithGroup(_shipBody, collsionBox, collsionGround | collsionPlane);
 			
 			_ship.addChild(_shipTop);
 			_view.scene.addChild(_ship);
 			
-			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, -35, 0), new Vector3D(0, 1, 0), _rootBox, new Vector3D(0, 35, 0), new Vector3D(0, 1, 0));
+			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, 0, 0), new Vector3D(0.2, 0, 0.2), _rootBox, new Vector3D(0, 70, 0), new Vector3D(0.2, 0, 0.2));
 			_physicsWorld.addConstraint(_shipJoint, true);
-			_shipJoint.setLimit(35, 70, 0.9, 0.5, 1);
-			//  _shipJoint.angularOnly = true;
+			_shipJoint.setLimit(0, 10, 0.3, 0.3, 0.1);
 		}
 		
 		private function collisionAdded(event:AWPEvent):void {
@@ -643,7 +631,7 @@ package {
 			if (_ease.z < -_speed)
 				_ease.z = -_speed;
 			
-			_tf.text = "ship stop";
+			_tf.text = "ship stop" + _info;
 			if (_ease.x == 0 && _ease.z == 0)
 				return;
 			var i:uint;
@@ -658,6 +646,10 @@ package {
 			
 			//update physics field
 			_terrainShape.update(_heights, _elevation);
+			
+			//activate shipbody if sleeping
+			if (_shipBody.activationState == AWPCollisionObject.ISLAND_SLEEPING)
+				_shipBody.activate(true);
 			
 			//update field material
 			_grounds[0].move(-_ease.x * _multy.x, -_ease.z * _multy.x);
@@ -1003,6 +995,7 @@ package {
 			_tf.height = 300;
 			_tf.text = "test";
 			_tf.mouseEnabled = false;
+			
 			this.addChild(_tf);
 		}
 		
