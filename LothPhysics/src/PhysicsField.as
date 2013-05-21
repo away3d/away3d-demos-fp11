@@ -139,10 +139,8 @@ package {
 		private var _complex:Number;
 		private var _seed:int;
 		
+		//gound map tiles
 		private var _tiles:Array = [1, 16, 10, 12];
-		private var _position:Vector3D = new Vector3D();
-		private var _ease:Vector3D = new Vector3D();
-		private var _easeRot:Vector3D = new Vector3D();
 		private var _multy:Vector3D = new Vector3D();
 		
 		//physics
@@ -169,11 +167,6 @@ package {
 		private var _center:Vector3D = new Vector3D(0, 0, 0);
 		private var _move:Boolean = false;
 		
-		//ship navigation
-		private var _rotation:Number;
-		private var _speed:Number = 0.5;
-		private var _acc:Number = 0.01;
-		
 		//plane
 		private var _plane:Mesh;
 		private var _planeMaterial:TextureMaterial;
@@ -189,8 +182,13 @@ package {
 		private var _shipdMaterial:TextureMaterial;
 		private var _rootBox:AWPRigidBody;
 		
-		private var _tf:TextField;
-		private var _title:TextField;
+		//ship navigation
+		private var _rotation:Number;
+		private var _speed:Number = 0.5;
+		private var _acc:Number = 0.01;
+		private var _position:Vector3D = new Vector3D();
+		private var _ease:Vector3D = new Vector3D();
+		private var _easeRot:Vector3D = new Vector3D();
 		
 		private var _target:Mesh;
 		private var _isDebug:Boolean = false;
@@ -202,6 +200,9 @@ package {
 		private var _keyLeft:Boolean;
 		private var _keyRight:Boolean;
 		
+		//text
+		private var _tf:TextField;
+		private var _title:TextField;
 		private var _info:String = "\ncontrol: arrow / WASD / ZQSD\nshow debug: N";
 		
 		public function PhysicsField() {
@@ -476,8 +477,6 @@ package {
 			_fieldSubGeometry.autoDeriveVertexTangents = false;
 			_view.scene.addChild(_field);
 			
-			rotateField(90);
-			
 			updateField();
 			
 			//setup physics field
@@ -519,7 +518,6 @@ package {
 			_shipBody.position = _center.add(new Vector3D(0, 70, 0));
 			_shipBody.friction = 0.3;
 			_shipBody.restitution = 0.0;
-			//_shipBody.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
 			//_shipBody.ccdSweptSphereRadius = 0.5;
 			//_shipBody.ccdMotionThreshold = 1;
 			//_shipBody.linearDamping = 2;
@@ -536,39 +534,21 @@ package {
 			_shipJoint.setLimit(0, 0.5, 0.2, 0.9, 0);
 		}
 		
-		private function collisionAdded(event:AWPEvent):void {
-			if (!(event.collisionObject.collisionFlags & AWPCollisionFlags.CF_STATIC_OBJECT)) {
-				var body:AWPRigidBody = AWPRigidBody(event.collisionObject);
-				var force:Vector3D = event.manifoldPoint.normalWorldOnB.clone();
-				force.scaleBy(-30);
-				body.applyForce(force, event.manifoldPoint.localPointB);
-			}
-		}
+		/*private function collisionAdded(event:AWPEvent):void {
+		   if (!(event.collisionObject.collisionFlags & AWPCollisionFlags.CF_STATIC_OBJECT)) {
+		   var body:AWPRigidBody = AWPRigidBody(event.collisionObject);
+		   var force:Vector3D = event.manifoldPoint.normalWorldOnB.clone();
+		   force.scaleBy(-30);
+		   body.applyForce(force, event.manifoldPoint.localPointB);
+		   }
+		 }*/
 		
 		/**
 		 * update field defformation and texture
 		 */
-		private var _matrix:Matrix = new Matrix();
-		private var _bump0:BitmapData;
-		
-		private function rotateField(degree:Number):void {
-			_matrix = new Matrix(0, -1, 1, 0, 0, 64); //new Matrix();
-			//_matrix.rotate((degree) * (Math.PI / 180));
-		/*
-		   if (degree == 90) {
-		   _matrix.translate(64, 0);
-		   } else if (degree == -90 || degree == 270) {
-		   _matrix.translate(0, 64);
-		   } else if (degree == 180) {
-		   _matrix.translate(64, 64);
-		 }*/
-		}
-		
 		private function updateField():void {
 			_bump.lock();
 			_bump.perlinNoise(_resolution * _complex, _resolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-			// _bump0.perlinNoise(_resolution * _complex, _resolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-			//_bump.draw(_bump0, _matrix, null, null, null, false);
 			_bump.draw(_island);
 			_bump.unlock();
 			if (_factor != 1) {
@@ -620,7 +600,6 @@ package {
 			_textures[4].bitmapData = _normalBitmap;
 			_textures[4].invalidateContent();
 			
-			//_center.y = getHeightAt();
 			if (_rootBox)
 				_rootBox.position = _center;
 		}
@@ -814,9 +793,6 @@ package {
 		private function on3DMouseUp(event:MouseEvent3D):void {
 			var mpos:Vector3D = event.localPosition.add(new Vector3D(0, 150, 0));
 			var normal:Vector3D = mpos.add(event.sceneNormal.clone());
-			
-			//var angleRadian:Number = Math.atan2( -mpos.z, mpos.x);
-			// var angleDegree:Number = angleRadian * 180 / Math.PI;
 			
 			if (!_sphereShape)
 				_sphereShape = new AWPSphereShape(40);
