@@ -110,9 +110,12 @@ package {
 		//field variables
 		
 		private var _resolution:int = 64;
+		private var _factor:uint = 2;
+		
 		private var _dimension:int = 10000;
 		private var _elevation:int = 2000;
-		private var _factor:uint = 2;
+		private var _positionY:int = 800;
+		
 		private var _field:Mesh;
 		private var _fieldSubGeometry:SubGeometry
 		private var _fieldMaterial:TextureMaterial;
@@ -135,15 +138,16 @@ package {
 		private var _offsets:Array;
 		private var _complex:Number;
 		private var _seed:int;
-		private var _tiles:Array = [1, 20, 20, 20];
+		
+		private var _tiles:Array = [1, 16, 10, 12];
 		private var _position:Vector3D = new Vector3D();
 		private var _ease:Vector3D = new Vector3D();
+		private var _easeRot:Vector3D = new Vector3D();
 		private var _multy:Vector3D = new Vector3D();
-		private var _positionY:int = 0;
 		
 		//physics
 		private var _physicsWorld:AWPDynamicsWorld;
-		private var debugDraw:AWPDebugDraw;
+		private var _debugDraw:AWPDebugDraw;
 		private var _timeStep:Number = 0.0167;
 		private var _sphereShape:AWPSphereShape;
 		private var _terrainShape:PerlinShape;
@@ -164,8 +168,11 @@ package {
 		private const _mouseNav:Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 50, 5000]);
 		private var _center:Vector3D = new Vector3D(0, 0, 0);
 		private var _move:Boolean = false;
-		private var _speed:Number = 0.4;
-		private var _acc:Number = 0.05;
+		
+		//ship navigation
+		private var _rotation:Number;
+		private var _speed:Number = 0.5;
+		private var _acc:Number = 0.01;
 		
 		//plane
 		private var _plane:Mesh;
@@ -233,6 +240,7 @@ package {
 			_sunLight.shadowMapper.depthMapSize = 2048;
 			_view.scene.addChild(_sunLight);
 			_light = new PointLight();
+			_light.color = _bgColor;
 			_light.y = 4000;
 			_view.scene.addChild(_light);
 			_lightPicker = new StaticLightPicker([_sunLight, _light]);
@@ -312,7 +320,7 @@ package {
 			//physics plane
 			var shape:AWPStaticPlaneShape = new AWPStaticPlaneShape(new Vector3D(0, 1, 0));
 			var body:AWPRigidBody = new AWPRigidBody(shape, null, 0);
-			body.friction = 0.2;
+			body.friction = 0.1;
 			body.restitution = 0.0;
 			body.y = -70;
 			_physicsWorld.addRigidBodyWithGroup(body, collsionPlane, collisionAll);
@@ -382,7 +390,6 @@ package {
 			for (var u:uint = 0; u < _numOctaves; ++u) {
 				_offsets[u] = new Point(0, 0);
 			}
-			_positionY = 850;
 			//setup the field deformation bitmap
 			var b00:BitmapData = new BitmapData(_resolution, _resolution, false);
 			var b01:BitmapData = new BitmapData(_resolution * _factor, _resolution * _factor, false);
@@ -390,6 +397,7 @@ package {
 			
 			_bumpBig = b01.clone();
 			_bump = b00.clone();
+			//_bump0 = b00.clone();
 			_island = islandMapCache();
 			_bigMatrix = new Matrix();
 			_bigMatrix.scale(_factor, _factor);
@@ -468,12 +476,14 @@ package {
 			_fieldSubGeometry.autoDeriveVertexTangents = false;
 			_view.scene.addChild(_field);
 			
+			rotateField(90);
+			
 			updateField();
 			
 			//setup physics field
 			_terrainShape = new PerlinShape(_resolution, _resolution, _dimension, _dimension, _elevation, _heights);
 			_terrainBody = new AWPRigidBody(_terrainShape, null, 0);
-			_terrainBody.friction = 0.6;
+			_terrainBody.friction = 0.3;
 			_terrainBody.restitution = 0.0;
 			_physicsWorld.addRigidBodyWithGroup(_terrainBody, collsionGround, collisionAll);
 			
@@ -505,9 +515,9 @@ package {
 			
 			var shape:AWPConvexHullShape = new AWPConvexHullShape(_shipShape.geometry);
 			
-			_shipBody = new AWPRigidBody(shape, _ship, 10);
+			_shipBody = new AWPRigidBody(shape, _ship, 1);
 			_shipBody.position = _center.add(new Vector3D(0, 70, 0));
-			_shipBody.friction = 0.6;
+			_shipBody.friction = 0.3;
 			_shipBody.restitution = 0.0;
 			//_shipBody.activationState = AWPCollisionObject.DISABLE_DEACTIVATION;
 			//_shipBody.ccdSweptSphereRadius = 0.5;
@@ -521,9 +531,9 @@ package {
 			_ship.addChild(_shipTop);
 			_view.scene.addChild(_ship);
 			
-			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, 0, 0), new Vector3D(0.2, 0, 0.2), _rootBox, new Vector3D(0, 70, 0), new Vector3D(0.2, 0, 0.2));
+			_shipJoint = new AWPHingeConstraint(_shipBody, new Vector3D(0, 0, 0), new Vector3D(1, 0, 1), _rootBox, new Vector3D(0, 60, 0), new Vector3D(1, 0, 1));
 			_physicsWorld.addConstraint(_shipJoint, true);
-			_shipJoint.setLimit(0, 10, 0.3, 0.3, 0.1);
+			_shipJoint.setLimit(0, 0.5, 0.2, 0.9, 0);
 		}
 		
 		private function collisionAdded(event:AWPEvent):void {
@@ -538,10 +548,28 @@ package {
 		/**
 		 * update field defformation and texture
 		 */
+		private var _matrix:Matrix = new Matrix();
+		private var _bump0:BitmapData;
+		
+		private function rotateField(degree:Number):void {
+			_matrix = new Matrix(0, -1, 1, 0, 0, 64); //new Matrix();
+			//_matrix.rotate((degree) * (Math.PI / 180));
+		/*
+		   if (degree == 90) {
+		   _matrix.translate(64, 0);
+		   } else if (degree == -90 || degree == 270) {
+		   _matrix.translate(0, 64);
+		   } else if (degree == 180) {
+		   _matrix.translate(64, 64);
+		 }*/
+		}
+		
 		private function updateField():void {
 			_bump.lock();
 			_bump.perlinNoise(_resolution * _complex, _resolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
-			//_bump.draw(_island);
+			// _bump0.perlinNoise(_resolution * _complex, _resolution * _complex, _numOctaves, _seed, false, _fractal, 7, true, _offsets);
+			//_bump.draw(_bump0, _matrix, null, null, null, false);
+			_bump.draw(_island);
 			_bump.unlock();
 			if (_factor != 1) {
 				_bumpBig.lock();
@@ -611,6 +639,8 @@ package {
 		[Inline]
 		
 		private function moveField():void {
+			_rotation = int(_controller.panAngle) * (Math.PI / 180);
+			
 			//acceleration
 			if (_keyFront)
 				_ease.z += _acc;
@@ -631,37 +661,6 @@ package {
 			if (_ease.z < -_speed)
 				_ease.z = -_speed;
 			
-			_tf.text = "ship stop" + _info;
-			if (_ease.x == 0 && _ease.z == 0)
-				return;
-			var i:uint;
-			for (i = 0; i < _numOctaves; ++i) {
-				_offsets[i].offset(_ease.x, _ease.z);
-			}
-			_position = new Vector3D(_offsets[0].x, 0, _offsets[0].y)
-			//update field mesh
-			updateField();
-			
-			_tf.text = "ship move: " + int(_position.x) + "/" + int(_position.y) + "/" + int(_position.z) + "\n" + "ship speed: " + _ease.z.toFixed(2) + "/" + _ease.x.toFixed(2);
-			
-			//update physics field
-			_terrainShape.update(_heights, _elevation);
-			
-			//activate shipbody if sleeping
-			if (_shipBody.activationState == AWPCollisionObject.ISLAND_SLEEPING)
-				_shipBody.activate(true);
-			
-			//update field material
-			_grounds[0].move(-_ease.x * _multy.x, -_ease.z * _multy.x);
-			_grounds[1].move(-_ease.x * _multy.y, -_ease.z * _multy.y);
-			_grounds[2].move(-_ease.x * _multy.z, -_ease.z * _multy.z);
-			_textures[0].bitmapData = _grounds[0];
-			_textures[1].bitmapData = _grounds[1];
-			_textures[2].bitmapData = _grounds[2];
-			_textures[0].invalidateContent();
-			_textures[1].invalidateContent();
-			_textures[2].invalidateContent();
-			
 			//break
 			if (!_keyFront && !_keyBack) {
 				if (_ease.z > _acc)
@@ -679,6 +678,50 @@ package {
 				else
 					_ease.x = 0;
 			}
+			
+			_tf.text = "ship stop" + _info;
+			if (_ease.x == 0 && _ease.z == 0)
+				return;
+			
+			//convert ease to camera look rotation
+			_easeRot.x = Math.cos(_rotation) * _ease.x - Math.sin(_rotation) * _ease.z;
+			_easeRot.z = Math.sin(_rotation) * _ease.x + Math.cos(_rotation) * _ease.z;
+			
+			var i:uint;
+			for (i = 0; i < _numOctaves; ++i) {
+				_offsets[i].offset(_easeRot.x, _easeRot.z);
+			}
+			
+			//absolute world position
+			_position.x = _offsets[0].x;
+			_position.z = _offsets[0].y;
+			
+			if (!_isWithField)
+				return;
+			
+			//update field mesh
+			updateField();
+			
+			//update physics field
+			_terrainShape.update(_heights);
+			
+			//activate shipbody if sleeping
+			if (_shipBody.activationState == AWPCollisionObject.ISLAND_SLEEPING)
+				_shipBody.activate(true);
+			
+			//update field material
+			_grounds[0].move(-_easeRot.x * _multy.x, -_easeRot.z * _multy.x);
+			_grounds[1].move(-_easeRot.x * _multy.y, -_easeRot.z * _multy.y);
+			_grounds[2].move(-_easeRot.x * _multy.z, -_easeRot.z * _multy.z);
+			_textures[0].bitmapData = _grounds[0];
+			_textures[1].bitmapData = _grounds[1];
+			_textures[2].bitmapData = _grounds[2];
+			_textures[0].invalidateContent();
+			_textures[1].invalidateContent();
+			_textures[2].invalidateContent();
+			
+			_tf.text = "ship move: " + int(_position.x) + "/" + int(_position.y) + "/" + int(_position.z) + "\n" + "ship speed: " + _ease.z.toFixed(2) + "/" + _ease.x.toFixed(2);
+		
 		}
 		
 		private function keyDownHandler(event:KeyboardEvent):void {
@@ -733,12 +776,12 @@ package {
 		private function debugMode():void {
 			if (_isDebug) {
 				_isDebug = false;
-				debugDraw.debugMode = AWPDebugDraw.DBG_NoDebug;
-				debugDraw.debugDrawWorld();
+				_debugDraw.debugMode = AWPDebugDraw.DBG_NoDebug;
+				_debugDraw.debugDrawWorld();
 			} else {
 				_isDebug = true;
-				debugDraw = new AWPDebugDraw(_view, _physicsWorld);
-				debugDraw.debugMode |= AWPDebugDraw.DBG_DrawTransform;
+				_debugDraw = new AWPDebugDraw(_view, _physicsWorld);
+				_debugDraw.debugMode |= AWPDebugDraw.DBG_DrawTransform;
 			}
 		}
 		
@@ -807,9 +850,8 @@ package {
 		 * stage listener for enterframe
 		 */
 		private function handleEnterFrame(e:Event):void {
-			if (_isWithField)
-				moveField();
 			
+			//camera
 			if (_move) {
 				_controller.panAngle = 0.3 * (stage.mouseX - _mouseNav[0]) + _mouseNav[2];
 				_controller.tiltAngle = 0.3 * (stage.mouseY - _mouseNav[1]) + _mouseNav[3];
@@ -817,13 +859,12 @@ package {
 			_controller.lookAtPosition = _center.add(new Vector3D(0, 70, 0));
 			_controller.update();
 			
-			//if (_shipBody) {
-			//_shipTop.transform = _ship.transform;
-			//  _shipBody.linearVelocity = new Vector3D();
-			// _shipBody.linearDamping = 0;
-			// }
-			updateBody();
+			//physics
 			_physicsWorld.step(_timeStep, 4, _timeStep);
+			
+			moveField();
+			
+			updateBody();
 			
 			/*if (_reflectionTexture) {
 			   _reflectionTexture.position = _shipBody.position;
@@ -837,7 +878,7 @@ package {
 			_waterMethod.water2OffsetY += .0002;
 			
 			if (_isDebug)
-				debugDraw.debugDrawWorld();
+				_debugDraw.debugDrawWorld();
 			_view.render();
 		}
 		
@@ -891,7 +932,9 @@ package {
 			var g:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
 			m.createGradientBox(_resolution, _resolution);
-			g.graphics.beginGradientFill("radial", [0x000000, 0x000000, 0x000000, 0x000000], [0, 0.2, 0.5, 1], [0x00, 0x99, 0xAA, 0xEF], m);
+			//g.graphics.beginGradientFill("radial", [0x000000, 0x000000, 0x000000, 0x000000], [0, 0.2, 0.5, 1], [0x00, 0x99, 0xAA, 0xEF], m);
+			g.graphics.beginGradientFill("radial", [0x000000, 0x000000, 0x000000, 0x000000], [0, 0, 0.15, 0.4], [0x00, 0x99, 0xDD, 0xFF], m);
+			
 			g.graphics.drawRect(0, 0, _resolution, _resolution);
 			groundAdd.draw(g);
 			g.graphics.clear();
@@ -899,8 +942,6 @@ package {
 		}
 		
 		private function layerTerrainBitmap():void {
-			
-			//_bumpBig.lock();
 			_layers[0].lock;
 			_layers[1].lock;
 			_layers[2].lock;
@@ -937,7 +978,7 @@ package {
 			var s:Sprite = new Sprite();
 			var m:Matrix = new Matrix();
 			m.createGradientBox(512, 512, RadDeg(-90));
-			s.graphics.beginGradientFill("linear", _skyColors, [1, 1, 1, 1], [0x90, 0xAA, 0xCC, 0xFF], m);
+			s.graphics.beginGradientFill("linear", _skyColors, [1, 1, 1, 1], [0x88, 0x99, 0xCC, 0xFF], m);
 			s.graphics.drawRect(0, 0, 512, 512);
 			s.graphics.endFill();
 			var b:BitmapData = new BitmapData(512, 512, false, 0x00000000);
